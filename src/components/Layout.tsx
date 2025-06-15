@@ -1,6 +1,5 @@
 
-```typescript
-import { Outlet, useNavigate, Link } from "react-router-dom";
+import { Outlet, useNavigate, Link, createSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "./AppSidebar";
 import SearchInterface from "./search/SearchInterface";
@@ -14,7 +13,13 @@ const Layout = () => {
   const navigate = useNavigate();
 
   const handleProjectSelect = (project: Report) => {
-    navigate(`/analytics?tab=reports&id=${project.id}`);
+    navigate({
+      pathname: '/analytics',
+      search: createSearchParams({
+        tab: 'reports',
+        id: project.id
+      }).toString()
+    });
   };
 
   const handleUserSelect = (user: MockUser) => {
