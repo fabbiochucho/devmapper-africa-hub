@@ -14,6 +14,7 @@ import { ThemeProvider } from "next-themes";
 import UserManagement from "./pages/UserManagement";
 import CorporateTargets from "./pages/CorporateTargets";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
+import SearchPage from "./pages/SearchPage";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/submit-report" element={<SubmitReport />} />
               <Route path="/user-management" element={<UserManagement />} />
+              <Route path="/search" element={<SearchPage />} />
               {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
             </Route>
             {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}

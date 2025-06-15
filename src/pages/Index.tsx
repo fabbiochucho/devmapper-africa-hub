@@ -258,9 +258,11 @@ export default function Index() {
                       Report Project
                     </Link>
                   </Button>
-                  <Button variant="outline">
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
+                  <Button asChild variant="outline">
+                    <Link to="/search">
+                      <Search className="w-4 h-4 mr-2" />
+                      Search
+                    </Link>
                   </Button>
                 </div>
               </div>
