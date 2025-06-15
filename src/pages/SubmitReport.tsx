@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,18 +21,14 @@ import ReportStep2 from '@/components/report/ReportStep2';
 import { mockReports, Report } from '@/data/mockReports';
 import { useUserRole } from '@/contexts/UserRoleContext';
 
-const reportFormSchema = reportSchema.extend({
-  sdg_target: z.string().optional(),
-});
-
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
   const [sdgTargets, setSdgTargets] = React.useState<string[]>([]);
-  type ReportFormValues = z.infer<typeof reportFormSchema>;
+  type ReportFormValues = z.infer<typeof reportSchema>;
   const { user } = useUserRole();
 
   const form = useForm<ReportFormValues>({
-    resolver: zodResolver(reportFormSchema),
+    resolver: zodResolver(reportSchema),
     defaultValues: {
       title: "",
       description: "",

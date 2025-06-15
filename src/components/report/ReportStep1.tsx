@@ -29,10 +29,7 @@ import { reportSchema } from '@/lib/reportSchema';
 import { reverseGeocode } from '@/lib/geocode';
 import { getCountries, Country } from '@/data/countries';
 
-const reportFormSchema = reportSchema.extend({
-  sdg_target: z.string().optional(),
-});
-type ReportFormValues = z.infer<typeof reportFormSchema>;
+type ReportFormValues = z.infer<typeof reportSchema>;
 
 interface ReportStep1Props {
   form: UseFormReturn<ReportFormValues>;

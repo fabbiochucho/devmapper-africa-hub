@@ -5,6 +5,7 @@ export const reportSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
   description: z.string().min(20, { message: "Description must be at least 20 characters." }),
   sdg_goal: z.string({ required_error: "Please select an SDG Goal." }),
+  sdg_target: z.string().optional(),
   project_status: z.string({ required_error: "Please select a project status." }),
   location: z.string().min(3, { message: "Location must be at least 3 characters." }),
   lat: z.coerce.number().optional(),
