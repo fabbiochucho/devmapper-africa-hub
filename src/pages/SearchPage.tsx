@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { mockReports, Report } from '@/data/mockReports';
 import { mockUsers, MockUser } from '@/data/mockUsers';
 import { mockOrganizations, Organization } from '@/data/mockOrganizations';
 import { sdgGoals } from '@/lib/constants';
-import { getCountries } from '@/data/countries';
+import { getCountries, Country } from '@/data/countries';
 import { Search, FolderKanban, User, Building } from 'lucide-react';
 
 type SearchResults = {
@@ -24,12 +24,11 @@ const SearchPage = () => {
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
 
   const typeFilter = searchParams.get('type') || 'all';
   const countryFilter = searchParams.get('country') || 'all';
   const sdgFilter = searchParams.get('sdg_goal') || 'all';
-
-  const countries = useMemo(() => getCountries(), []);
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -40,6 +39,14 @@ const SearchPage = () => {
       setResults(null);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    async function fetchCountries() {
+      const fetchedCountries = await getCountries();
+      setCountries(fetchedCountries);
+    }
+    fetchCountries();
+  }, []);
 
   const performSearch = (q: string, type: string, country: string, sdg: string) => {
     const lowerCaseQuery = q.toLowerCase();
