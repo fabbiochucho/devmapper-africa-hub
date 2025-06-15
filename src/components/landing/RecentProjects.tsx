@@ -13,12 +13,12 @@ interface RecentProjectsProps {
 }
 
 const cardColors = [
-  "dark:bg-blue-900/30 bg-blue-50/50",
-  "dark:bg-green-900/30 bg-green-50/50",
-  "dark:bg-yellow-900/30 bg-yellow-50/50",
-  "dark:bg-purple-900/30 bg-purple-50/50",
-  "dark:bg-pink-900/30 bg-pink-50/50",
-  "dark:bg-indigo-900/30 bg-indigo-50/50",
+  "dark:bg-blue-900/40 bg-blue-100",
+  "dark:bg-green-900/40 bg-green-100",
+  "dark:bg-yellow-900/40 bg-yellow-100",
+  "dark:bg-purple-900/40 bg-purple-100",
+  "dark:bg-pink-900/40 bg-pink-100",
+  "dark:bg-indigo-900/40 bg-indigo-100",
 ];
 
 const getUserById = (id: string) => mockUsers.find((u) => u.id.toString() === id);
@@ -52,7 +52,7 @@ export default function RecentProjects({ recentProjects }: RecentProjectsProps) 
               return (
                 <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1 h-full">
-                    <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
+                    <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl dark:hover:shadow-primary/20`}>
                       <CardContent className="flex flex-col items-start gap-4 p-6">
                         <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
                         <p className="font-semibold leading-none">{report.title}</p>

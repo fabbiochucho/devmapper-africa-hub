@@ -1,9 +1,8 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/contexts/UserRoleContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
-import SdgCarousel from "./SdgCarousel";
 
 interface UserType {
   id: number;
@@ -21,9 +20,20 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps) {
+  const [typewriterKey, setTypewriterKey] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTypewriterKey((prevKey) => prevKey + 1);
+    }, 2 * 60 * 1000); // 2 minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
   const { displayText: typedTitle, isFinished: titleIsFinished } = useTypewriter(
     "Track Sustainable Development Across Africa",
-    50
+    50,
+    typewriterKey
   );
 
   return (
@@ -56,11 +66,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
           </div>
         )}
       </div>
-      {titleIsFinished && (
-        <div className="mt-16 animate-fade-in">
-          <SdgCarousel />
-        </div>
-      )}
     </section>
   );
 }
+

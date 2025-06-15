@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-export const useTypewriter = (text: string, speed = 50) => {
+export const useTypewriter = (text: string, speed = 50, key: any = null) => {
   const [displayText, setDisplayText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
 
@@ -23,7 +23,8 @@ export const useTypewriter = (text: string, speed = 50) => {
     return () => {
       clearInterval(typingInterval);
     };
-  }, [text, speed]);
+  }, [text, speed, key]);
 
   return { displayText, isFinished };
 };
+
