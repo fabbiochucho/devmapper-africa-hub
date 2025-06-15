@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Building, Shield, Users, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -45,42 +45,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     setIsLoading(true);
     setError(null);
 
-    console.log("Attempting login with:", { email: loginData.email, password: "***" });
-
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(loginData),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
       });
 
-      console.log("Login response status:", response.status);
+      if (error) throw error;
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Login error response:", errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("Login success:", data);
-
-      if (data.user && data.token) {
-        localStorage.setItem("auth_token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        onAuthSuccess(data.user, data.token);
+      if (data.user && data.session) {
+        // The Supabase client handles session persistence automatically.
+        // We just call onAuthSuccess to update the app's state.
+        onAuthSuccess(data.user, data.session.access_token);
         onClose();
         setLoginData({ email: "", password: "" });
         setError(null);
       } else {
-        throw new Error("Invalid response format");
+        throw new Error("Login failed. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError(error instanceof Error ? error.message : "Login failed. Please try again.");
+      setError(error instanceof Error ? error.message : "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -106,28 +91,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const { data, error } = await supabase.auth.signUp({
+        email: registerData.email,
+        password: registerData.password,
+        options: {
+          data: {
+            full_name: registerData.name,
+            role: registerData.role,
+            organization: registerData.organization,
+            country: registerData.country,
+            phone: registerData.phone,
+            document: registerData.document,
+          },
+          // This is crucial for the confirmation email link to work correctly.
+          emailRedirectTo: window.location.origin,
         },
-        body: JSON.stringify({
-          name: registerData.name,
-          email: registerData.email,
-          password: registerData.password,
-          role: registerData.role,
-          organization: registerData.organization,
-          country: registerData.country,
-          phone: registerData.phone,
-          document: registerData.document,
-        }),
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (response.ok) {
-        setSuccess("Registration successful! " + data.message);
+      if (data.user) {
+        setSuccess("Registration successful! Please check your email to confirm your account.");
         setRegisterData({
           name: "",
           email: "",
@@ -140,11 +124,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           document: "",
         });
       } else {
-        setError(data.error || "Registration failed");
+        throw new Error("Registration failed. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);
-      setError("Network error. Please try again.");
+      setError(error instanceof Error ? error.message : "Registration failed. An account with this email may already exist.");
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +178,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   Admin
                 </Button>
               </div>
-              <p className="text-xs text-blue-600 mt-1">Click to auto-fill credentials</p>
+              <p className="text-xs text-blue-600 mt-1">Click to auto-fill credentials. Note: These users must exist in your Supabase project.</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
