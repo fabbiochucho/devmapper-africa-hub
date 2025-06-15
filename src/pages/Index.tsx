@@ -1,12 +1,20 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Pan-African SDG Project Map</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-[70vh] bg-muted rounded-lg border flex items-center justify-center">
+            <p className="text-muted-foreground">Interactive map will be rendered here.</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
