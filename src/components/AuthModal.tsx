@@ -12,6 +12,7 @@ import { signInSchema, signUpSchema } from "@/lib/authSchema";
 import { ALL_ROLES, UserRole } from "@/contexts/UserRoleContext";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
+import { mockUsers } from "@/data/mockUsers";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -36,19 +37,24 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
   });
 
   const handleSignIn = (values: SignInFormValues) => {
-    // This is a mock authentication.
-    const user = {
-      id: 1,
-      name: "John Doe",
-      email: values.email,
-      role: "Citizen Reporter",
-      verified: true,
-    };
-    const token = "fake-auth-token";
-    localStorage.setItem("auth_token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    onAuthSuccess(user, token);
-    toast.success("Signed in successfully!");
+    const user = mockUsers.find(
+      (u) => u.email.toLowerCase() === values.email.toLowerCase()
+    );
+
+    if (user && user.password === values.password) {
+      const { password, ...userToStore } = user;
+      const token = "fake-auth-token"; // This is still a mock token
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("user", JSON.stringify(userToStore));
+      onAuthSuccess(userToStore, token);
+      toast.success("Signed in successfully!");
+    } else {
+      toast.error("Invalid email or password.");
+      signInForm.setError("password", {
+        type: "manual",
+        message: "Invalid email or password",
+      });
+    }
   };
 
   const handleSignUp = (values: SignUpFormValues) => {
