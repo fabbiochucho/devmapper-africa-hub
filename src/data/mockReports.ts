@@ -1,4 +1,15 @@
 
+import { mockUsers } from "./mockUsers";
+
+export type Verification = {
+  id: number;
+  userId: number;
+  userName: string;
+  action: 'confirm' | 'dispute';
+  notes?: string;
+  createdAt: string;
+}
+
 export type Report = {
   id: string;
   title: string;
@@ -27,6 +38,8 @@ export type Report = {
   }>;
   official?: boolean;
   country_code?: string;
+  verifications: Verification[];
+  verification_score?: number;
 };
 
 export const mockReports: Report[] = [
@@ -40,6 +53,11 @@ export const mockReports: Report[] = [
     lat: -1.85,
     lng: 36.7833,
     validations: 12,
+    verifications: [
+      ...Array.from({ length: 10 }, (_, i) => ({ id: i + 1, userId: 100 + i, userName: `User ${100+i}`, action: 'confirm' as const, createdAt: new Date().toISOString() })),
+      ...Array.from({ length: 2 }, (_, i) => ({ id: i + 11, userId: 200 + i, userName: `User ${200+i}`, action: 'dispute' as const, createdAt: new Date().toISOString() })),
+    ],
+    verification_score: 83,
     official: true,
     country_code: "KEN",
     targetUnit: "wells built",
@@ -60,6 +78,8 @@ export const mockReports: Report[] = [
     lat: 11.5,
     lng: 8.5,
     validations: 25,
+    verifications: Array.from({ length: 25 }, (_, i) => ({ id: i + 1, userId: 300 + i, userName: `User ${300+i}`, action: 'confirm' as const, createdAt: new Date().toISOString() })),
+    verification_score: 100,
     official: false,
     country_code: "NGA",
     targetUnit: "students enrolled",
@@ -76,6 +96,8 @@ export const mockReports: Report[] = [
     lat: 5.6037,
     lng: -0.187,
     validations: 3,
+    verifications: [],
+    verification_score: undefined,
     official: true,
     country_code: "GHA",
   },
@@ -89,6 +111,8 @@ export const mockReports: Report[] = [
     lat: 9.03,
     lng: 38.74,
     validations: 8,
+    verifications: [],
+    verification_score: undefined,
     official: false,
     country_code: "ETH",
   },
@@ -102,6 +126,8 @@ export const mockReports: Report[] = [
     lat: -33.2278,
     lng: 21.8569,
     validations: 1,
+    verifications: [],
+    verification_score: undefined,
     official: false,
     country_code: "ZAF",
   },
@@ -115,6 +141,8 @@ export const mockReports: Report[] = [
     lat: 6.5244,
     lng: 3.3792,
     validations: 0,
+    verifications: [],
+    verification_score: undefined,
     official: false,
     country_code: "NGA",
   },

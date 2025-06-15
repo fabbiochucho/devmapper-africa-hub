@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Report } from "@/data/mockReports";
+import { Report, Verification } from "@/data/mockReports";
 import { sdgGoals, projectStatuses, projectStatusColors } from "@/lib/constants";
-import { X, Star, BadgeCheck, Pencil } from "lucide-react";
+import { X, Star, BadgeCheck, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
 import UpdateProgressDialog from "@/components/report/UpdateProgressDialog";
 import { Progress } from "@/components/ui/progress";
 import CommentsSection from "./comments/CommentsSection";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 interface ProjectDetailsProps {
   report: Report;
@@ -18,23 +20,56 @@ interface ProjectDetailsProps {
 
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpdate }) => {
   const [currentReport, setCurrentReport] = useState<Report>(report);
-  const [isValidated, setIsValidated] = useState(false);
   const [isUpdateProgressOpen, setUpdateProgressOpen] = useState(false);
+  const { user } = useUserRole();
 
   useEffect(() => {
     setCurrentReport(report);
-    setIsValidated(false); // Reset validation status when a new report is selected
   }, [report]);
 
-  const handleValidate = () => {
-    if (!isValidated) {
-      const updatedReport = { ...currentReport, validations: (currentReport.validations || 0) + 1 };
-      onUpdate(updatedReport);
-      setIsValidated(true);
-      toast.success("Project Validated!", {
-        description: `Thank you for validating "${updatedReport.title}".`,
-      });
+  const hasVerified = useMemo(() => 
+    currentReport.verifications?.some(v => v.userId === user.id) || false,
+    [currentReport.verifications, user.id]
+  );
+
+  const handleVerification = (action: 'confirm' | 'dispute') => {
+    if (hasVerified) {
+      toast.info("You have already verified this project.");
+      return;
     }
+
+    const newVerification: Verification = {
+      id: (currentReport.verifications?.length || 0) + 1,
+      userId: user.id,
+      userName: user.name,
+      action: action,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedVerifications = [...(currentReport.verifications || []), newVerification];
+
+    const confirmations = updatedVerifications.filter(v => v.action === 'confirm').length;
+    const disputes = updatedVerifications.filter(v => v.action === 'dispute').length;
+    const total = confirmations + disputes;
+    const verificationScore = total > 0 ? Math.round((confirmations / total) * 100) : 0;
+
+    let newStatus = currentReport.project_status;
+    if (verificationScore >= 80 && confirmations >= 3) {
+      newStatus = "completed"; // "confirmed" status mapped to "completed"
+    } else if (verificationScore <= 20 && disputes >= 3) {
+      newStatus = "stalled"; // "invalid" status mapped to "stalled"
+    }
+
+    const updatedReport: Report = {
+      ...currentReport,
+      verifications: updatedVerifications,
+      verification_score: verificationScore,
+      validations: updatedVerifications.length, // Keep validations in sync
+      project_status: newStatus,
+    };
+    
+    onUpdate(updatedReport);
+    toast.success(`Project ${action === 'confirm' ? 'confirmed' : 'disputed'} successfully!`);
   };
 
   const sdgGoal = sdgGoals.find(g => g.value === currentReport.sdg_goal);
@@ -69,17 +104,34 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Citizen Validations</h4>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <BadgeCheck className="h-5 w-5 mr-2 text-green-500" />
-                <span className="font-bold text-lg">{currentReport.validations}</span>
-                <span className="ml-1.5 text-muted-foreground">validations</span>
+            <h4 className="font-semibold mb-2">Project Verification</h4>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <BadgeCheck className="h-6 w-6 text-green-500" />
+                <div>
+                  <div className="font-bold text-lg">{currentReport.verifications?.length || 0}</div>
+                  <div className="text-xs text-muted-foreground">verifications</div>
+                </div>
               </div>
-              <Button onClick={handleValidate} disabled={isValidated}>
-                {isValidated ? "Validated" : "Validate Project"}
+              <div className="flex items-center space-x-2">
+                <Star className="h-6 w-6 text-yellow-400 fill-yellow-200" />
+                 <div>
+                  <div className="font-bold text-lg">{currentReport.verification_score ?? 'N/A'}{currentReport.verification_score !== undefined ? '%' : ''}</div>
+                  <div className="text-xs text-muted-foreground">score</div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center space-x-2">
+              <Button onClick={() => handleVerification('confirm')} disabled={hasVerified} size="sm">
+                <ThumbsUp className="mr-2 h-4 w-4" />
+                Confirm
+              </Button>
+              <Button onClick={() => handleVerification('dispute')} disabled={hasVerified} variant="destructive" size="sm">
+                <ThumbsDown className="mr-2 h-4 w-4" />
+                Dispute
               </Button>
             </div>
+            {hasVerified && <p className="text-sm text-muted-foreground mt-2">You have already verified this project.</p>}
           </div>
           {currentReport.targetValue && (
             <div>
