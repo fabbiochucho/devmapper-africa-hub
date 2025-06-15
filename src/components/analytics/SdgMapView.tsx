@@ -3,25 +3,10 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Filter, BarChart3, AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { MapPin, Filter, BarChart3 } from "lucide-react"
 import ProjectMap from "@/components/ProjectMap"
-import { Report } from "@/data/mockReports"
-
-interface MapProject {
-  id: number
-  title: string
-  content: string
-  sdg_goal: number
-  sdg_target: string
-  status: string
-  lat: number
-  lng: number
-  budget: number
-  verification_score: number
-  color: string
-  created_at: string
-}
+import { mockReports, Report } from "@/data/mockReports"
+import { sdgGoalColors, projectStatusColors } from "@/lib/constants"
 
 interface MapFilters {
   country_code: string
@@ -29,164 +14,60 @@ interface MapFilters {
   project_status: string
 }
 
-function mapProjectToReport(project: MapProject): Report {
-  let project_status: Report['project_status'] = 'planned';
-  if (project.status === 'pending') {
-    project_status = 'planned';
-  } else if (project.status === 'confirmed') {
-    project_status = 'in_progress';
-  } else if (project.status === 'completed') {
-    project_status = 'completed';
-  } else if (project.status === 'invalid') {
-    project_status = 'cancelled';
-  }
+const filterStatusMap: Record<string, Report['project_status']> = {
+  pending: 'planned',
+  confirmed: 'in_progress',
+  completed: 'completed',
+  invalid: 'cancelled',
+};
 
-  return {
-    id: `REP-MAP-${project.id.toString().padStart(3, '0')}`,
-    title: project.title,
-    description: project.content,
-    sdg_goal: project.sdg_goal.toString(),
-    sdg_target: project.sdg_target,
-    project_status,
-    location: '', 
-    submitted_at: project.created_at,
-    lat: project.lat,
-    lng: project.lng,
-    validations: 0,
-    verifications: [],
-    verification_score: project.verification_score,
-    cost: project.budget,
-    costCurrency: 'USD',
-    official: false,
-  };
-}
-
+const statusDisplayMap: Record<Report['project_status'], string> = {
+    planned: 'Pending',
+    in_progress: 'Confirmed',
+    completed: 'Completed',
+    cancelled: 'Invalid',
+    stalled: 'Stalled',
+};
 
 export default function SdgMapView() {
-  const [projects, setProjects] = useState<MapProject[]>([])
-  const [reports, setReports] = useState<Report[]>([])
+  const [filteredReports, setFilteredReports] = useState<Report[]>(mockReports)
   const [filters, setFilters] = useState<MapFilters>({
-    country_code: "",
-    sdg_goal: "",
-    project_status: "",
+    country_code: "all",
+    sdg_goal: "all",
+    project_status: "all",
   })
-  const [selectedProject, setSelectedProject] = useState<MapProject | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [selectedReport, setSelectedReport] = useState<Report | null>(
+    mockReports.length > 0 ? mockReports[0] : null
+  );
 
   useEffect(() => {
-    fetchMapData()
-  }, [filters])
-
-  const fetchMapData = async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const params = new URLSearchParams()
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== "all") params.append(key, value)
-      })
-
-      const response = await fetch(`/api/sdg/map-data?${params}`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+    let newFilteredReports = mockReports.filter(report => {
+      if (filters.country_code !== "all" && report.country_code !== filters.country_code) {
+        return false;
       }
-      
-      const data = await response.json()
-
-      if (Array.isArray(data)) {
-        setProjects(data)
-        setReports(data.map(mapProjectToReport))
-        if (data.length > 0 && !selectedProject) {
-          setSelectedProject(data[0])
-        } else if (data.length === 0) {
-          setSelectedProject(null)
-        }
-      } else {
-        throw new Error("Invalid data format received")
+      if (filters.sdg_goal !== "all" && report.sdg_goal !== filters.sdg_goal) {
+        return false;
       }
-    } catch (error) {
-      console.error("Failed to fetch map data:", error)
-      setError(error instanceof Error ? error.message : "Failed to fetch map data")
-
-      const mockProjects = getMockProjects();
-      setProjects(mockProjects)
-      setReports(mockProjects.map(mapProjectToReport))
-      if (mockProjects.length > 0 && !selectedProject) {
-        setSelectedProject(mockProjects[0])
+      if (filters.project_status !== "all") {
+          const mappedStatus = filterStatusMap[filters.project_status];
+          if (report.project_status !== mappedStatus) return false;
       }
-    } finally {
-      setIsLoading(false)
+      return true;
+    });
+
+    setFilteredReports(newFilteredReports);
+
+    if (newFilteredReports.length > 0) {
+      if (!selectedReport || !newFilteredReports.find(r => r.id === selectedReport.id)) {
+        setSelectedReport(newFilteredReports[0]);
+      }
+    } else {
+      setSelectedReport(null);
     }
-  }
+  }, [filters, selectedReport]);
 
   const handleMarkerClick = (report: Report) => {
-    const projectId = parseInt(report.id.split('-').pop() || '0');
-    if (projectId) {
-      const project = projects.find(p => p.id === projectId);
-      if (project) {
-          setSelectedProject(project);
-      }
-    }
-  }
-
-  const getMockProjects = (): MapProject[] => {
-    return [
-      {
-        id: 1,
-        title: "Clean Water Project - Nairobi",
-        content: "Installing water purification systems in Kibera slum to provide clean drinking water access...",
-        sdg_goal: 6,
-        sdg_target: "6.1",
-        status: "confirmed",
-        lat: -1.2921,
-        lng: 36.8219,
-        budget: 50000,
-        verification_score: 85,
-        color: "#26BDE2",
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 2,
-        title: "Education Center - Lagos",
-        content: "Building a new primary school to serve 500 children in underserved communities...",
-        sdg_goal: 4,
-        sdg_target: "4.1",
-        status: "pending",
-        lat: 6.5244,
-        lng: 3.3792,
-        budget: 120000,
-        verification_score: 72,
-        color: "#C5192D",
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 3,
-        title: "Solar Energy Initiative - Cape Town",
-        content: "Installing solar panels in rural communities to provide affordable clean energy...",
-        sdg_goal: 7,
-        sdg_target: "7.1",
-        status: "completed",
-        lat: -33.9249,
-        lng: 18.4241,
-        budget: 75000,
-        verification_score: 92,
-        color: "#FCC30B",
-        created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ]
-  }
-
-  const getStatusColor = (status: string): string => {
-    const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      confirmed: "bg-green-100 text-green-800",
-      invalid: "bg-red-100 text-red-800",
-      completed: "bg-blue-100 text-blue-800",
-    }
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"
+    setSelectedReport(report);
   }
 
   const formatBudget = (budget: number): string => {
@@ -200,13 +81,6 @@ export default function SdgMapView() {
 
   return (
     <div className="w-full space-y-6">
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error} Showing sample data for demonstration.</AlertDescription>
-        </Alert>
-      )}
-
       {/* Filters */}
       <Card>
         <CardHeader>
@@ -221,7 +95,7 @@ export default function SdgMapView() {
               <label className="text-sm font-medium mb-2 block">Country</label>
               <Select
                 value={filters.country_code}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, country_code: value === 'all' ? '' : value }))}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, country_code: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Countries" />
@@ -233,6 +107,9 @@ export default function SdgMapView() {
                   <SelectItem value="ZAF">South Africa</SelectItem>
                   <SelectItem value="GHA">Ghana</SelectItem>
                   <SelectItem value="ETH">Ethiopia</SelectItem>
+                  <SelectItem value="RWA">Rwanda</SelectItem>
+                  <SelectItem value="UGA">Uganda</SelectItem>
+                  <SelectItem value="TZA">Tanzania</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -241,7 +118,7 @@ export default function SdgMapView() {
               <label className="text-sm font-medium mb-2 block">SDG Goal</label>
               <Select
                 value={filters.sdg_goal}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, sdg_goal: value === 'all' ? '' : value }))}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, sdg_goal: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Goals" />
@@ -261,7 +138,7 @@ export default function SdgMapView() {
               <label className="text-sm font-medium mb-2 block">Status</label>
               <Select
                 value={filters.project_status}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, project_status: value === 'all' ? '' : value }))}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, project_status: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
@@ -286,11 +163,10 @@ export default function SdgMapView() {
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               SDG Projects Map
-              {isLoading && <span className="text-sm font-normal text-muted-foreground">(Loading...)</span>}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ProjectMap projects={reports} onMarkerClick={handleMarkerClick} />
+            <ProjectMap projects={filteredReports} onMarkerClick={handleMarkerClick} />
           </CardContent>
         </Card>
 
@@ -300,41 +176,43 @@ export default function SdgMapView() {
             <CardTitle>Project Details</CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedProject ? (
+            {selectedReport ? (
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{selectedProject.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{selectedProject.content}</p>
+                  <h3 className="font-semibold text-lg">{selectedReport.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{selectedReport.description}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: selectedProject.color }} />
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: sdgGoalColors[selectedReport.sdg_goal] || '#ccc' }} />
                   <span className="text-sm font-medium">
-                    SDG {selectedProject.sdg_goal}
-                    {selectedProject.sdg_target && ` - ${selectedProject.sdg_target}`}
+                    SDG {selectedReport.sdg_goal}
+                    {selectedReport.sdg_target && ` - ${selectedReport.sdg_target}`}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge className={getStatusColor(selectedProject.status)}>{selectedProject.status}</Badge>
-                  <span className="text-sm text-gray-600">
-                    {Math.round(selectedProject.verification_score)}% verified
-                  </span>
+                  <Badge className={projectStatusColors[selectedReport.project_status]}>
+                    {statusDisplayMap[selectedReport.project_status] || selectedReport.project_status}
+                  </Badge>
+                  {selectedReport.verification_score && <span className="text-sm text-gray-600">
+                    {Math.round(selectedReport.verification_score)}% verified
+                  </span>}
                 </div>
 
-                {selectedProject.budget > 0 && (
+                {selectedReport.cost && selectedReport.cost > 0 && (
                   <div className="text-sm">
                     <span className="font-medium">Budget: </span>
-                    {formatBudget(selectedProject.budget)}
+                    {formatBudget(selectedReport.cost)}
                   </div>
                 )}
 
                 <div className="text-xs text-gray-500">
-                  Reported: {new Date(selectedProject.created_at).toLocaleDateString()}
+                  Reported: {new Date(selectedReport.submitted_at).toLocaleDateString()}
                 </div>
 
                 <div className="text-xs text-gray-400">
-                  Location: {selectedProject.lat.toFixed(4)}, {selectedProject.lng.toFixed(4)}
+                  Location: {selectedReport.lat?.toFixed(4)}, {selectedReport.lng?.toFixed(4)}
                 </div>
               </div>
             ) : (
@@ -353,28 +231,26 @@ export default function SdgMapView() {
           <CardTitle>Filtered Projects</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="text-center py-4 text-muted-foreground">Loading projects...</div>
-          ) : projects.length > 0 ? (
+          {filteredReports.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {projects.map((project) => (
+              {filteredReports.map((report) => (
                 <div
-                  key={project.id}
-                  className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${selectedProject?.id === project.id ? 'bg-blue-50 border-blue-200' : ''}`}
-                  onClick={() => setSelectedProject(project)}
+                  key={report.id}
+                  className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors ${selectedReport?.id === report.id ? 'bg-blue-50 border-blue-200' : ''}`}
+                  onClick={() => setSelectedReport(report)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: project.color }} />
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: sdgGoalColors[report.sdg_goal] || '#ccc' }} />
                     <div>
-                      <h4 className="font-medium text-sm">{project.title}</h4>
+                      <h4 className="font-medium text-sm">{report.title}</h4>
                       <p className="text-xs text-gray-600">
-                        SDG {project.sdg_goal} • {project.status}
+                        SDG {report.sdg_goal} • {statusDisplayMap[report.project_status] || report.project_status}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    {project.budget > 0 && <div className="text-sm font-medium">{formatBudget(project.budget)}</div>}
-                    <div className="text-xs text-gray-500">{Math.round(project.verification_score)}% verified</div>
+                    {report.cost && report.cost > 0 && <div className="text-sm font-medium">{formatBudget(report.cost)}</div>}
+                    {report.verification_score && <div className="text-xs text-gray-500">{Math.round(report.verification_score)}% verified</div>}
                   </div>
                 </div>
               ))}
