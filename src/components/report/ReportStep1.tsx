@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import * as z from 'zod';
 import { UseFormReturn } from 'react-hook-form';
@@ -27,6 +26,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import ExifReader from "exif-reader";
 import { Buffer } from 'buffer';
 import { reportSchema } from '@/lib/reportSchema';
+import { reverseGeocode } from '@/lib/geocode';
 
 type ReportFormValues = z.infer<typeof reportSchema>;
 
@@ -42,8 +42,26 @@ const getGpsData = (tags: any): { latitude: number | null; longitude: number | n
 };
 
 const ReportStep1: React.FC<ReportStep1Props> = ({ form }) => {
-  const { control, watch, setValue, getValues } = form;
+  const { control, watch, setValue, getValues, formState: { dirtyFields } } = form;
   const photos = watch("photos");
+  const lat = watch("lat");
+  const lng = watch("lng");
+
+  React.useEffect(() => {
+    const latValue = getValues('lat');
+    const lngValue = getValues('lng');
+
+    if (latValue !== undefined && lngValue !== undefined) {
+        // Only auto-fill location if user hasn't typed in it manually
+        if (!dirtyFields.location) {
+            const geocodeResult = reverseGeocode(Number(latValue), Number(lngValue));
+            if (geocodeResult) {
+                setValue('location', geocodeResult.country, { shouldValidate: true });
+                toast.success(`Location auto-detected as ${geocodeResult.country}.`);
+            }
+        }
+    }
+  }, [lat, lng, getValues, setValue, dirtyFields.location]);
 
   const handlePhotoChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
