@@ -1,208 +1,420 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Report, Verification } from "@/data/mockReports";
-import { sdgGoals, projectStatuses, projectStatusColors } from "@/lib/constants";
-import { X, Star, BadgeCheck, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
-import { toast } from "sonner";
-import UpdateProgressDialog from "@/components/report/UpdateProgressDialog";
-import { Progress } from "@/components/ui/progress";
-import CommentsSection from "./comments/CommentsSection";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Star,
+  MessageCircle,
+  CheckCircle,
+  XCircle,
+  MapPin,
+  Calendar,
+  DollarSign,
+  User,
+} from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import VerificationDialog from "@/components/report/VerificationDialog";
+import { getComments, addComment, Comment } from "@/data/mockComments";
+import { Report, Verification } from "@/data/mockReports";
+import { toast } from "sonner";
 
 interface ProjectDetailsProps {
-  report: Report;
+  report: Report | null;
+  isOpen: boolean;
   onClose: () => void;
   onUpdate: (updatedReport: Report) => void;
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpdate }) => {
-  const [currentReport, setCurrentReport] = useState<Report>(report);
-  const [isUpdateProgressOpen, setUpdateProgressOpen] = useState(false);
-  const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
-  const [verificationAction, setVerificationAction] = useState<'confirm' | 'dispute' | null>(null);
+export default function ProjectDetails({
+  report: project,
+  isOpen,
+  onClose,
+  onUpdate,
+}: ProjectDetailsProps) {
   const { user } = useUserRole();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [newRating, setNewRating] = useState(0);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    setCurrentReport(report);
-  }, [report]);
+    if (project && isOpen) {
+      fetchComments();
+    }
+  }, [project, isOpen]);
 
-  const hasVerified = useMemo(() => 
-    currentReport.verifications?.some(v => v.userId === user.id) || false,
-    [currentReport.verifications, user.id]
-  );
+  const fetchComments = async () => {
+    if (!project) return;
+    try {
+      const data = await getComments(project.id);
+      setComments(data);
+    } catch (error) {
+      console.error("Failed to fetch comments:", error);
+      toast.error("Failed to fetch comments.");
+    }
+  };
 
-  const handleVerification = (notes?: string) => {
-    if (!verificationAction) return;
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || !user || !project) {
+      if (!user) toast.error("You must be logged in to comment.");
+      return;
+    }
+
+    setIsSubmittingComment(true);
+
+    try {
+      await addComment({
+        projectId: project.id,
+        comment: newComment,
+        rating: newRating > 0 ? newRating : null,
+        userId: user.id,
+        userName: user.name,
+      });
+      toast.success("Comment submitted successfully!");
+      setNewComment("");
+      setNewRating(0);
+      fetchComments();
+    } catch (error) {
+      console.error("Failed to submit comment:", error);
+      toast.error("Failed to submit comment.");
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleVerification = async (action: "confirm" | "dispute") => {
+    if (!user) {
+      toast.error("You must be logged in to verify projects.");
+      return;
+    }
+    if (!project) return;
+
+    const hasVerified =
+      project.verifications?.some((v) => v.userId === user.id) || false;
 
     if (hasVerified) {
       toast.info("You have already verified this project.");
       return;
     }
 
+    setIsVerifying(true);
+
     const newVerification: Verification = {
-      id: (currentReport.verifications?.length || 0) + 1,
+      id: (project.verifications?.length || 0) + 1,
       userId: user.id,
       userName: user.name,
-      action: verificationAction,
+      action: action,
       createdAt: new Date().toISOString(),
-      notes: notes,
+      notes: `${
+        action === "confirm" ? "Confirmed" : "Disputed"
+      } by ${user.name}`,
     };
 
-    const updatedVerifications = [...(currentReport.verifications || []), newVerification];
+    const updatedVerifications = [
+      ...(project.verifications || []),
+      newVerification,
+    ];
 
-    const confirmations = updatedVerifications.filter(v => v.action === 'confirm').length;
-    const disputes = updatedVerifications.filter(v => v.action === 'dispute').length;
+    const confirmations = updatedVerifications.filter(
+      (v) => v.action === "confirm"
+    ).length;
+    const disputes = updatedVerifications.filter(
+      (v) => v.action === "dispute"
+    ).length;
     const total = confirmations + disputes;
-    const verificationScore = total > 0 ? Math.round((confirmations / total) * 100) : 0;
+    const verificationScore =
+      total > 0 ? Math.round((confirmations / total) * 100) : 0;
 
-    let newStatus = currentReport.project_status;
+    let newStatus = project.project_status;
     if (verificationScore >= 80 && confirmations >= 3) {
-      newStatus = "completed"; // "confirmed" status mapped to "completed"
+      newStatus = "completed";
     } else if (verificationScore <= 20 && disputes >= 3) {
-      newStatus = "stalled"; // "invalid" status mapped to "stalled"
+      newStatus = "stalled";
     }
 
     const updatedReport: Report = {
-      ...currentReport,
+      ...project,
       verifications: updatedVerifications,
       verification_score: verificationScore,
-      validations: updatedVerifications.length, // Keep validations in sync
+      validations: updatedVerifications.length,
       project_status: newStatus,
     };
-    
+
     onUpdate(updatedReport);
-    toast.success(`Project ${verificationAction === 'confirm' ? 'confirmed' : 'disputed'} successfully!`);
-    setVerificationDialogOpen(false);
-    setVerificationAction(null);
+    toast.success(
+      `Project ${
+        action === "confirm" ? "confirmed" : "disputed"
+      } successfully!`
+    );
+    setIsVerifying(false);
   };
 
-  const handleOpenVerificationDialog = (action: 'confirm' | 'dispute') => {
-    setVerificationAction(action);
-    setVerificationDialogOpen(true);
+  const renderStars = (
+    rating: number,
+    interactive = false,
+    onRate?: (rating: number) => void
+  ) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-4 h-4 ${
+              star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+            } ${interactive ? "cursor-pointer hover:text-yellow-400" : ""}`}
+            onClick={() => interactive && onRate && onRate(star)}
+          />
+        ))}
+      </div>
+    );
   };
 
-  const sdgGoal = sdgGoals.find(g => g.value === currentReport.sdg_goal);
-  const status = projectStatuses.find(s => s.value === currentReport.project_status);
-  const statusColor = projectStatusColors[currentReport.project_status] || "bg-gray-100 text-gray-800";
+  const getStatusColor = (status: Report["project_status"]) => {
+    const statusColors: Record<Report["project_status"], string> = {
+      planned: "bg-gray-100 text-gray-800",
+      in_progress: "bg-blue-100 text-blue-800",
+      completed: "bg-green-100 text-green-800",
+      stalled: "bg-yellow-100 text-yellow-800",
+      cancelled: "bg-red-100 text-red-800",
+    };
+    return statusColors[status] || "bg-gray-100 text-gray-800";
+  };
 
-  const progressPercentage = (currentReport.targetValue && currentReport.currentValue) 
-    ? (currentReport.currentValue / currentReport.targetValue) * 100 
-    : 0;
+  const getSdgColor = (goal: string) => {
+    const sdgGoalNumber = parseInt(goal, 10);
+    const colors: Record<number, string> = {
+      1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",
+      6: "#26BDE2", 7: "#FCC30B", 8: "#A21942", 9: "#FD6925", 10: "#DD1367",
+      11: "#FD9D24", 12: "#BF8B2E", 13: "#3F7E44", 14: "#0A97D9", 15: "#56C02B",
+      16: "#00689D", 17: "#19486A",
+    };
+    return colors[sdgGoalNumber] || "#666666";
+  };
+
+  const formatBudget = (budget?: number) => {
+    if (!budget) return "N/A";
+    if (budget >= 1000000) return `$${(budget / 1000000).toFixed(1)}M`;
+    if (budget >= 1000) return `$${(budget / 1000).toFixed(1)}K`;
+    return `$${budget}`;
+  };
+
+  if (!project) return null;
 
   return (
-    <>
-      <Card className="relative animate-in fade-in-0 zoom-in-95">
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                {currentReport.title}
-                {currentReport.validations > 10 && (
-                  <Badge variant="secondary" className="border-yellow-400 text-yellow-600 bg-yellow-50">
-                    <Star className="mr-1 h-3 w-3 fill-yellow-400 text-yellow-500" />
-                    Highly Validated
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>{currentReport.location}</CardDescription>
-            </div>
-            <Button variant="ghost" size="icon" className="absolute top-4 right-4" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {currentReport.description && (
-            <div>
-              <h4 className="font-semibold mb-2">Description</h4>
-              <p className="text-sm text-muted-foreground">{currentReport.description}</p>
-            </div>
-          )}
-          <div>
-            <h4 className="font-semibold mb-2">Project Verification</h4>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <BadgeCheck className="h-6 w-6 text-green-500" />
-                <div>
-                  <div className="font-bold text-lg">{currentReport.verifications?.length || 0}</div>
-                  <div className="text-xs text-muted-foreground">verifications</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Star className="h-6 w-6 text-yellow-400 fill-yellow-200" />
-                 <div>
-                  <div className="font-bold text-lg">{currentReport.verification_score ?? 'N/A'}{currentReport.verification_score !== undefined ? '%' : ''}</div>
-                  <div className="text-xs text-muted-foreground">score</div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex items-center space-x-2">
-              <Button onClick={() => handleOpenVerificationDialog('confirm')} disabled={hasVerified} size="sm">
-                <ThumbsUp className="mr-2 h-4 w-4" />
-                Confirm
-              </Button>
-              <Button onClick={() => handleOpenVerificationDialog('dispute')} disabled={hasVerified} variant="destructive" size="sm">
-                <ThumbsDown className="mr-2 h-4 w-4" />
-                Dispute
-              </Button>
-            </div>
-            {hasVerified && <p className="text-sm text-muted-foreground mt-2">You have already verified this project.</p>}
-          </div>
-          {currentReport.targetValue && (
-            <div>
-              <h4 className="font-semibold mb-2">Project Progress</h4>
-              <div className="space-y-2">
-                <Progress value={progressPercentage} className="w-full" />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{currentReport.currentValue || 0} / {currentReport.targetValue} {currentReport.targetUnit}</span>
-                    <span>{Math.round(progressPercentage)}%</span>
-                </div>
-              </div>
-              <Button onClick={() => setUpdateProgressOpen(true)} size="sm" variant="outline" className="mt-2">
-                <Pencil className="mr-2 h-4 w-4" />
-                Update Progress
-              </Button>
-            </div>
-          )}
-          <div>
-            <h4 className="font-semibold mb-2">SDG Goal</h4>
-            <p>{sdgGoal ? sdgGoal.label : "N/A"}</p>
-            {currentReport.sdg_target && (
-              <p className="text-sm text-muted-foreground mt-1">Target: {currentReport.sdg_target}</p>
-            )}
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Project Status</h4>
-            <Badge className={statusColor}>{status ? status.label : "N/A"}</Badge>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">Submitted On</h4>
-            <p>{new Date(currentReport.submitted_at).toLocaleDateString()}</p>
-          </div>
-          <CommentsSection projectId={currentReport.id} />
-        </CardContent>
-      </Card>
-      {isUpdateProgressOpen && (
-        <UpdateProgressDialog 
-          isOpen={isUpdateProgressOpen}
-          onOpenChange={setUpdateProgressOpen}
-          report={currentReport}
-          onUpdate={onUpdate}
-        />
-      )}
-      {isVerificationDialogOpen && verificationAction && (
-        <VerificationDialog
-          isOpen={isVerificationDialogOpen}
-          onOpenChange={setVerificationDialogOpen}
-          action={verificationAction}
-          onSubmit={handleVerification}
-        />
-      )}
-    </>
-  );
-};
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl">{project.title}</DialogTitle>
+        </DialogHeader>
 
-export default ProjectDetails;
+        <div className="space-y-6 p-1">
+          {/* Project Header */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: getSdgColor(project.sdg_goal) }}
+                />
+                <span className="font-medium">SDG {project.sdg_goal}</span>
+                {project.sdg_target && (
+                  <span className="text-gray-600">- {project.sdg_target}</span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  {project.location}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(project.submitted_at).toLocaleDateString()}
+                </span>
+                {project.cost && (
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="w-4 h-4" />
+                    {formatBudget(project.cost)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0 ml-4">
+              <Badge className={getStatusColor(project.project_status)}>
+                {project.project_status.replace("_", " ")}
+              </Badge>
+              <div className="text-sm text-gray-600 mt-1">
+                {project.verification_score ?? 0}% verified
+              </div>
+            </div>
+          </div>
+
+          {/* Project Description */}
+          <div>
+            <h3 className="font-semibold mb-2">Description</h3>
+            <p className="text-gray-700">{project.description}</p>
+          </div>
+
+          {/* Author Info */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <User className="w-4 h-4" />
+            <span>Reported by Anonymous</span>
+          </div>
+
+          {/* Verification Actions */}
+          {user && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  Community Verification
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() => handleVerification("confirm")}
+                    disabled={
+                      isVerifying ||
+                      project.verifications?.some((v) => v.userId === user.id)
+                    }
+                    className="flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Confirm Project
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleVerification("dispute")}
+                    disabled={
+                      isVerifying ||
+                      project.verifications?.some((v) => v.userId === user.id)
+                    }
+                    className="flex items-center gap-2"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Dispute Project
+                  </Button>
+                </div>
+                {project.verifications?.some((v) => v.userId === user.id) ? (
+                  <p className="text-sm text-green-600 mt-2">
+                    Thanks for your contribution!
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Help verify this project's authenticity and impact
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Comments Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Comments & Ratings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Add Comment Form */}
+              {user ? (
+                <form onSubmit={handleSubmitComment} className="space-y-4 mb-6">
+                  <div>
+                    <Label htmlFor="comment">Add a comment</Label>
+                    <Textarea
+                      id="comment"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Share your thoughts about this project..."
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label>Rate this project (optional)</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      {renderStars(newRating, true, setNewRating)}
+                      {newRating > 0 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setNewRating(0)}
+                        >
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={isSubmittingComment || !newComment.trim()}
+                  >
+                    {isSubmittingComment ? "Posting..." : "Post Comment"}
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <p>Please login to comment and rate projects</p>
+                </div>
+              )}
+
+              {/* Comments List */}
+              <div className="space-y-4">
+                {comments.length > 0 ? (
+                  comments.map((comment: Comment) => (
+                    <div key={comment.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">
+                              {comment.userName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(
+                                comment.createdAt
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        {comment.rating && (
+                          <div className="flex items-center gap-1">
+                            {renderStars(comment.rating)}
+                            <span className="text-sm text-gray-600">
+                              ({comment.rating})
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-gray-700">{comment.comment}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                    <p>No comments yet</p>
+                    <p className="text-sm">
+                      Be the first to share your thoughts!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

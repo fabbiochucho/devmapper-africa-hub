@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import ProjectMap from "@/components/ProjectMap";
@@ -86,20 +85,19 @@ const Analytics = () => {
         </CardContent>
       </Card>
       
-      {selectedReport && (
-        <ProjectDetails
-          report={selectedReport}
-          onClose={() => setSelectedReport(null)}
-          onUpdate={(updatedReport) => {
-            // This is a dummy update for the preview. In a real app, this would be a state update.
-            const index = mockReports.findIndex(r => r.id === updatedReport.id);
-            if (index !== -1) {
-                mockReports[index] = updatedReport;
-            }
-            setSelectedReport(updatedReport);
-          }}
-        />
-      )}
+      <ProjectDetails
+        report={selectedReport}
+        isOpen={!!selectedReport}
+        onClose={() => setSelectedReport(null)}
+        onUpdate={(updatedReport) => {
+          // This is a dummy update for the preview. In a real app, this would be a state update.
+          const index = mockReports.findIndex(r => r.id === updatedReport.id);
+          if (index !== -1) {
+              mockReports[index] = updatedReport;
+          }
+          setSelectedReport(updatedReport);
+        }}
+      />
 
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         <SdgDistributionChart />
