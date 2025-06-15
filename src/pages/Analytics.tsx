@@ -1,5 +1,9 @@
 import { useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import ProjectMap from "@/components/ProjectMap";
 import ProjectDetails from "@/components/ProjectDetails";
 import { mockReports, Report } from "@/data/mockReports";
@@ -85,19 +89,23 @@ const Analytics = () => {
         </CardContent>
       </Card>
       
-      <ProjectDetails
-        report={selectedReport}
-        isOpen={!!selectedReport}
-        onClose={() => setSelectedReport(null)}
-        onUpdate={(updatedReport) => {
-          // This is a dummy update for the preview. In a real app, this would be a state update.
-          const index = mockReports.findIndex(r => r.id === updatedReport.id);
-          if (index !== -1) {
-              mockReports[index] = updatedReport;
-          }
-          setSelectedReport(updatedReport);
-        }}
-      />
+      <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedReport && (
+            <ProjectDetails
+              report={selectedReport}
+              onUpdate={(updatedReport) => {
+                // This is a dummy update for the preview. In a real app, this would be a state update.
+                const index = mockReports.findIndex(r => r.id === updatedReport.id);
+                if (index !== -1) {
+                    mockReports[index] = updatedReport;
+                }
+                setSelectedReport(updatedReport);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         <SdgDistributionChart />

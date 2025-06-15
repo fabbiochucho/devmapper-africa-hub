@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -28,15 +27,11 @@ import { toast } from "sonner";
 
 interface ProjectDetailsProps {
   report: Report | null;
-  isOpen: boolean;
-  onClose: () => void;
   onUpdate: (updatedReport: Report) => void;
 }
 
 export default function ProjectDetails({
   report: project,
-  isOpen,
-  onClose,
   onUpdate,
 }: ProjectDetailsProps) {
   const { user } = useUserRole();
@@ -47,10 +42,10 @@ export default function ProjectDetails({
   const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    if (project && isOpen) {
+    if (project) {
       fetchComments();
     }
-  }, [project, isOpen]);
+  }, [project]);
 
   const fetchComments = async () => {
     if (!project) return;
@@ -211,210 +206,208 @@ export default function ProjectDetails({
   if (!project) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl">{project.title}</DialogTitle>
-        </DialogHeader>
+    <>
+      <div className="mb-4">
+        <h2 className="text-xl font-bold">{project.title}</h2>
+      </div>
 
-        <div className="space-y-6 p-1">
-          {/* Project Header */}
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: getSdgColor(project.sdg_goal) }}
-                />
-                <span className="font-medium">SDG {project.sdg_goal}</span>
-                {project.sdg_target && (
-                  <span className="text-gray-600">- {project.sdg_target}</span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  {project.location}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(project.submitted_at).toLocaleDateString()}
-                </span>
-                {project.cost && (
-                  <span className="flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
-                    {formatBudget(project.cost)}
-                  </span>
-                )}
-              </div>
+      <div className="space-y-6">
+        {/* Project Header */}
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: getSdgColor(project.sdg_goal) }}
+              />
+              <span className="font-medium">SDG {project.sdg_goal}</span>
+              {project.sdg_target && (
+                <span className="text-gray-600">- {project.sdg_target}</span>
+              )}
             </div>
-            <div className="text-right flex-shrink-0 ml-4">
-              <Badge className={getStatusColor(project.project_status)}>
-                {project.project_status.replace("_", " ")}
-              </Badge>
-              <div className="text-sm text-gray-600 mt-1">
-                {project.verification_score ?? 0}% verified
-              </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                {project.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {new Date(project.submitted_at).toLocaleDateString()}
+              </span>
+              {project.cost && (
+                <span className="flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  {formatBudget(project.cost)}
+                </span>
+              )}
             </div>
           </div>
-
-          {/* Project Description */}
-          <div>
-            <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-gray-700">{project.description}</p>
+          <div className="text-right flex-shrink-0 ml-4">
+            <Badge className={getStatusColor(project.project_status)}>
+              {project.project_status.replace("_", " ")}
+            </Badge>
+            <div className="text-sm text-gray-600 mt-1">
+              {project.verification_score ?? 0}% verified
+            </div>
           </div>
+        </div>
 
-          {/* Author Info */}
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <User className="w-4 h-4" />
-            <span>Reported by Anonymous</span>
-          </div>
+        {/* Project Description */}
+        <div>
+          <h3 className="font-semibold mb-2">Description</h3>
+          <p className="text-gray-700">{project.description}</p>
+        </div>
 
-          {/* Verification Actions */}
-          {user && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Community Verification
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() => handleVerification("confirm")}
-                    disabled={
-                      isVerifying ||
-                      project.verifications?.some((v) => v.userId === user.id)
-                    }
-                    className="flex items-center gap-2"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    Confirm Project
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleVerification("dispute")}
-                    disabled={
-                      isVerifying ||
-                      project.verifications?.some((v) => v.userId === user.id)
-                    }
-                    className="flex items-center gap-2"
-                  >
-                    <XCircle className="w-4 h-4" />
-                    Dispute Project
-                  </Button>
-                </div>
-                {project.verifications?.some((v) => v.userId === user.id) ? (
-                  <p className="text-sm text-green-600 mt-2">
-                    Thanks for your contribution!
-                  </p>
-                ) : (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Help verify this project's authenticity and impact
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )}
+        {/* Author Info */}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <User className="w-4 h-4" />
+          <span>Reported by Anonymous</span>
+        </div>
 
-          {/* Comments Section */}
+        {/* Verification Actions */}
+        {user && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Comments & Ratings
+              <CardTitle className="text-lg">
+                Community Verification
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Add Comment Form */}
-              {user ? (
-                <form onSubmit={handleSubmitComment} className="space-y-4 mb-6">
-                  <div>
-                    <Label htmlFor="comment">Add a comment</Label>
-                    <Textarea
-                      id="comment"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Share your thoughts about this project..."
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label>Rate this project (optional)</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      {renderStars(newRating, true, setNewRating)}
-                      {newRating > 0 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setNewRating(0)}
-                        >
-                          Clear
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isSubmittingComment || !newComment.trim()}
-                  >
-                    {isSubmittingComment ? "Posting..." : "Post Comment"}
-                  </Button>
-                </form>
-              ) : (
-                <div className="text-center py-4 text-gray-500">
-                  <p>Please login to comment and rate projects</p>
-                </div>
-              )}
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {comments.length > 0 ? (
-                  comments.map((comment: Comment) => (
-                    <div key={comment.id} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">
-                              {comment.userName}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(
-                                comment.createdAt
-                              ).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        {comment.rating && (
-                          <div className="flex items-center gap-1">
-                            {renderStars(comment.rating)}
-                            <span className="text-sm text-gray-600">
-                              ({comment.rating})
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="mt-2 text-gray-700">{comment.comment}</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                    <p>No comments yet</p>
-                    <p className="text-sm">
-                      Be the first to share your thoughts!
-                    </p>
-                  </div>
-                )}
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => handleVerification("confirm")}
+                  disabled={
+                    isVerifying ||
+                    project.verifications?.some((v) => v.userId === user.id)
+                  }
+                  className="flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Confirm Project
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleVerification("dispute")}
+                  disabled={
+                    isVerifying ||
+                    project.verifications?.some((v) => v.userId === user.id)
+                  }
+                  className="flex items-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Dispute Project
+                </Button>
               </div>
+              {project.verifications?.some((v) => v.userId === user.id) ? (
+                <p className="text-sm text-green-600 mt-2">
+                  Thanks for your contribution!
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600 mt-2">
+                  Help verify this project's authenticity and impact
+                </p>
+              )}
             </CardContent>
           </Card>
-        </div>
-      </DialogContent>
-    </Dialog>
+        )}
+
+        {/* Comments Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              Comments & Ratings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Add Comment Form */}
+            {user ? (
+              <form onSubmit={handleSubmitComment} className="space-y-4 mb-6">
+                <div>
+                  <Label htmlFor="comment">Add a comment</Label>
+                  <Textarea
+                    id="comment"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your thoughts about this project..."
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label>Rate this project (optional)</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    {renderStars(newRating, true, setNewRating)}
+                    {newRating > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setNewRating(0)}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isSubmittingComment || !newComment.trim()}
+                >
+                  {isSubmittingComment ? "Posting..." : "Post Comment"}
+                </Button>
+              </form>
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                <p>Please login to comment and rate projects</p>
+              </div>
+            )}
+
+            {/* Comments List */}
+            <div className="space-y-4">
+              {comments.length > 0 ? (
+                comments.map((comment: Comment) => (
+                  <div key={comment.id} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {comment.userName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(
+                              comment.createdAt
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      {comment.rating && (
+                        <div className="flex items-center gap-1">
+                          {renderStars(comment.rating)}
+                          <span className="text-sm text-gray-600">
+                            ({comment.rating})
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-2 text-gray-700">{comment.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p>No comments yet</p>
+                  <p className="text-sm">
+                    Be the first to share your thoughts!
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

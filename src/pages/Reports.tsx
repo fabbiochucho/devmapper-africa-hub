@@ -184,11 +184,14 @@ const Reports = () => {
 
         <div className="lg:col-span-3">
           {selectedReport ? (
-            <ProjectDetails 
-              report={selectedReport} 
-              onClose={() => setSelectedReport(null)}
-              onUpdate={handleUpdateReport}
-            />
+            <Card>
+              <CardContent className="p-6 h-full overflow-y-auto">
+                 <ProjectDetails 
+                    report={selectedReport} 
+                    onUpdate={handleUpdateReport}
+                 />
+              </CardContent>
+            </Card>
           ) : (
             <Card className="flex h-full min-h-[400px] items-center justify-center">
               <CardContent className="p-6 text-center text-muted-foreground">
