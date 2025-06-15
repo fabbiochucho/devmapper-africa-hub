@@ -1,3 +1,4 @@
+
 export type Report = {
   id: string;
   title: string;
@@ -24,6 +25,8 @@ export type Report = {
     recordedAt: string;
     notes: string;
   }>;
+  official?: boolean;
+  country_code?: string;
 };
 
 export const mockReports: Report[] = [
@@ -37,6 +40,8 @@ export const mockReports: Report[] = [
     lat: -1.85,
     lng: 36.7833,
     validations: 12,
+    official: true,
+    country_code: "KEN",
     targetUnit: "wells built",
     targetValue: 20,
     currentValue: 15,
@@ -55,6 +60,8 @@ export const mockReports: Report[] = [
     lat: 11.5,
     lng: 8.5,
     validations: 25,
+    official: false,
+    country_code: "NGA",
     targetUnit: "students enrolled",
     targetValue: 500,
     currentValue: 500,
@@ -69,6 +76,8 @@ export const mockReports: Report[] = [
     lat: 5.6037,
     lng: -0.187,
     validations: 3,
+    official: true,
+    country_code: "GHA",
   },
   {
     id: "REP-004",
@@ -80,6 +89,8 @@ export const mockReports: Report[] = [
     lat: 9.03,
     lng: 38.74,
     validations: 8,
+    official: false,
+    country_code: "ETH",
   },
   {
     id: "REP-005",
@@ -91,6 +102,8 @@ export const mockReports: Report[] = [
     lat: -33.2278,
     lng: 21.8569,
     validations: 1,
+    official: false,
+    country_code: "ZAF",
   },
   {
     id: "REP-006",
@@ -102,5 +115,15 @@ export const mockReports: Report[] = [
     lat: 6.5244,
     lng: 3.3792,
     validations: 0,
+    official: false,
+    country_code: "NGA",
   },
 ];
+
+export const getOfficialProjects = (countryCode?: string): Report[] => {
+  const officialProjects = mockReports.filter(p => p.official);
+  if (countryCode) {
+    return officialProjects.filter(p => p.country_code === countryCode);
+  }
+  return officialProjects;
+};
