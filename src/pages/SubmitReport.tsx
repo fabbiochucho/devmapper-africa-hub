@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -45,12 +44,38 @@ const reportSchema = z.object({
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
   cost: z.coerce.number().optional(),
+  costCurrency: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   sponsor: z.string().optional(),
   funder: z.string().optional(),
   contractor: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if ((data.cost !== undefined && data.cost !== 0) && !data.costCurrency) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Currency is required when cost is provided.",
+      path: ["costCurrency"],
+    });
+  }
+  if (data.costCurrency && (data.cost === undefined || data.cost === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Cost is required when currency is selected.",
+      path: ["cost"],
+    });
+  }
 });
+
+const currencies = [
+    { value: 'USD', label: 'USD - US Dollar' },
+    { value: 'EUR', label: 'EUR - Euro' },
+    { value: 'KES', label: 'KES - Kenyan Shilling' },
+    { value: 'NGN', label: 'NGN - Nigerian Naira' },
+    { value: 'GHS', label: 'GHS - Ghanaian Cedi' },
+    { value: 'ETB', label: 'ETB - Ethiopian Birr' },
+    { value: 'ZAR', label: 'ZAR - South African Rand' },
+];
 
 const SubmitReport = () => {
   const form = useForm<z.infer<typeof reportSchema>>({
@@ -62,6 +87,7 @@ const SubmitReport = () => {
       lat: undefined,
       lng: undefined,
       cost: undefined,
+      costCurrency: undefined,
       sponsor: "",
       funder: "",
       contractor: "",
@@ -70,6 +96,20 @@ const SubmitReport = () => {
 
   function onSubmit(values: z.infer<typeof reportSchema>) {
     console.log("Form Submitted:", values);
+    // TODO: Implement currency conversion logic.
+    // This requires an API for historical exchange rates.
+    // Once an API is available, you could implement a function like:
+    //
+    // async function getHistoricalRate(date, fromCurrency, toCurrency) {
+    //   // ... API call logic to fetch rate from a service
+    // }
+    //
+    // And then use it:
+    // if (values.cost && values.costCurrency && values.startDate) {
+    //   const usdAmount = await getHistoricalRate(values.startDate, values.costCurrency, 'USD');
+    //   // Save the converted amount with the report
+    // }
+
     toast.success("Report submitted successfully!", {
       description: "Your report has been received and will be reviewed.",
     });
@@ -210,19 +250,51 @@ const SubmitReport = () => {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="cost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Cost (USD, if known)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="e.g., 150000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="cost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Cost (if known)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 150000" 
+                          {...field} 
+                          onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="costCurrency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((currency) => (
+                            <SelectItem key={currency.value} value={currency.value}>
+                              {currency.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField

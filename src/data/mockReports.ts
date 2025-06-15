@@ -10,6 +10,7 @@ export type Report = {
   lng?: number;
   validations: number;
   cost?: number;
+  costCurrency?: string;
   startDate?: string;
   endDate?: string;
   sponsor?: string;
