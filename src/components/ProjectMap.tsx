@@ -1,11 +1,10 @@
-
 import React from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import MarkerClusterGroup from '@changey/react-leaflet-markercluster';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { mockReports, Report } from '@/data/mockReports';
 import { sdgGoalColors } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
