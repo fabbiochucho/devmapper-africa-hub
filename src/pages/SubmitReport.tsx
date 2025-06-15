@@ -35,6 +35,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const reportSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
@@ -46,6 +47,7 @@ const reportSchema = z.object({
   lng: z.coerce.number().optional(),
   cost: z.coerce.number().optional(),
   costCurrency: z.string().optional(),
+  exchangeRateMode: z.enum(['manual', 'auto']).optional(),
   usd_exchange_rate: z.coerce.number().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
@@ -66,6 +68,27 @@ const reportSchema = z.object({
       message: "Cost is required when currency is selected.",
       path: ["cost"],
     });
+  }
+  if (data.costCurrency && data.costCurrency !== 'USD') {
+    if (!data.exchangeRateMode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select an exchange rate option.",
+        path: ["exchangeRateMode"],
+      });
+    } else if (data.exchangeRateMode === 'manual' && (!data.usd_exchange_rate || data.usd_exchange_rate <= 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A valid exchange rate is required for manual entry.",
+        path: ["usd_exchange_rate"],
+      });
+    } else if (data.exchangeRateMode === 'auto' && !data.startDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Project Start Date is required for automatic calculation.",
+        path: ["startDate"],
+      });
+    }
   }
 });
 
@@ -90,6 +113,7 @@ const SubmitReport = () => {
       lng: undefined,
       cost: undefined,
       costCurrency: undefined,
+      exchangeRateMode: undefined,
       usd_exchange_rate: undefined,
       sponsor: "",
       funder: "",
@@ -97,11 +121,17 @@ const SubmitReport = () => {
     },
   });
 
+  const costCurrency = form.watch('costCurrency');
+  const exchangeRateMode = form.watch('exchangeRateMode');
+
   function onSubmit(values: z.infer<typeof reportSchema>) {
     console.log("Form Submitted:", values);
-    // TODO: Implement currency conversion logic with an API.
-    // For now, we can calculate the USD amount if the exchange rate is provided.
-    if (values.cost && values.costCurrency && values.costCurrency !== 'USD' && values.usd_exchange_rate) {
+    
+    if (values.exchangeRateMode === 'auto' && values.startDate) {
+      const year = values.startDate.getFullYear();
+      console.log(`TODO: Automatically fetch exchange rate for currency ${values.costCurrency} for the year ${year}.`);
+      // This would be where the API call for automatic conversion would happen.
+    } else if (values.cost && values.costCurrency && values.costCurrency !== 'USD' && values.usd_exchange_rate) {
       const usdAmount = values.cost / values.usd_exchange_rate;
       console.log(`Converted USD amount: ${usdAmount.toFixed(2)}`);
       // This converted amount can then be saved with the report.
@@ -293,29 +323,76 @@ const SubmitReport = () => {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="usd_exchange_rate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exchange Rate (Local Currency per 1 USD)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="e.g., 110.5 for KES"
-                        {...field}
-                        onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)}
-                        value={field.value ?? ""}
-                        disabled={!form.watch('costCurrency') || form.watch('costCurrency') === 'USD'}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                        Optional. Enter the exchange rate if known. We plan to add automatic conversion in the future.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {costCurrency && costCurrency !== 'USD' && (
+                <FormField
+                  control={form.control}
+                  name="exchangeRateMode"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 pt-2">
+                      <FormLabel>Exchange Rate Option</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Reset exchange rate when switching modes
+                            if (value === 'auto') {
+                              form.setValue('usd_exchange_rate', undefined);
+                            }
+                          }}
+                          defaultValue={field.value}
+                          className="flex space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="manual" id="manual" />
+                            </FormControl>
+                            <Label htmlFor="manual" className="font-normal">
+                              Enter manually
+                            </Label>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="auto" id="auto" />
+                            </FormControl>
+                            <Label htmlFor="auto" className="font-normal">
+                              Calculate automatically
+                            </Label>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormDescription>
+                        Automatic calculation requires the Project Start Date.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {costCurrency && costCurrency !== 'USD' && exchangeRateMode === 'manual' && (
+                <FormField
+                  control={form.control}
+                  name="usd_exchange_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Exchange Rate (Local Currency per 1 USD)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="e.g., 110.5 for KES"
+                          {...field}
+                          onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                          Enter the exchange rate if known.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
