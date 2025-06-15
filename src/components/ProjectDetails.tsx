@@ -28,10 +28,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
 
   const handleValidate = () => {
     if (!isValidated) {
-      setCurrentReport(prev => ({ ...prev, validations: (prev.validations || 0) + 1 }));
+      const updatedReport = { ...currentReport, validations: (currentReport.validations || 0) + 1 };
+      onUpdate(updatedReport);
       setIsValidated(true);
       toast.success("Project Validated!", {
-        description: `Thank you for validating "${currentReport.title}".`,
+        description: `Thank you for validating "${updatedReport.title}".`,
       });
     }
   };
