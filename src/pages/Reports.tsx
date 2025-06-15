@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -19,11 +18,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { mockReports } from "@/data/mockReports";
 import { sdgGoals, projectStatuses, projectStatusColors } from "@/lib/constants";
-import { Download, Star } from "lucide-react";
+import { Download, Star, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import GenerateReportDialog from "@/components/report/GenerateReportDialog";
 
 const Reports = () => {
   const [statusFilter, setStatusFilter] = React.useState("all");
+  const [isGenerateDialogOpen, setGenerateDialogOpen] = React.useState(false);
 
   const sdgGoalMap = React.useMemo(() => new Map(sdgGoals.map(g => [g.value, g.label])), []);
   const projectStatusMap = React.useMemo(() => new Map(projectStatuses.map(s => [s.value, s.label])), []);
@@ -83,7 +84,7 @@ const Reports = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Project Reports</CardTitle>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <div className="w-48">
                <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
@@ -102,6 +103,10 @@ const Reports = () => {
             <Button onClick={handleExport} variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
               Export CSV
+            </Button>
+            <Button onClick={() => setGenerateDialogOpen(true)} size="sm">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Generate Report
             </Button>
           </div>
         </CardHeader>
@@ -141,6 +146,7 @@ const Reports = () => {
           </Table>
         </CardContent>
       </Card>
+      <GenerateReportDialog isOpen={isGenerateDialogOpen} onOpenChange={setGenerateDialogOpen} />
     </div>
   );
 };
