@@ -1,0 +1,59 @@
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Users } from "lucide-react";
+
+interface SocialFeed {
+  platform: string;
+  user: string;
+  content: string;
+  avatar: string;
+}
+
+interface SocialFeedProps {
+  socialMediaFeeds: SocialFeed[];
+}
+
+export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
+  return (
+    <section className="py-16 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl font-bold text-foreground mb-4">What People Are Saying</h3>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Updates from our community on social media.
+          </p>
+        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full max-w-4xl mx-auto"
+        >
+          <CarouselContent>
+            {socialMediaFeeds.map((feed, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <Card className="h-full">
+                    <CardContent className="flex flex-col items-start gap-4 p-6">
+                      <div className="flex items-center gap-2">
+                         <Users className="w-4 h-4" /> {/* Placeholder icon */}
+                        <span className="font-semibold">{feed.user}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">"{feed.content}"</p>
+                      <Badge variant="outline" className="mt-auto">{feed.platform}</Badge>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+    </section>
+  );
+}
