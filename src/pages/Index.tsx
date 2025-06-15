@@ -7,6 +7,8 @@ import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOu
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Link } from "react-router-dom";
 import NotificationBell from "@/components/NotificationBell";
+import { mockReports, Report } from "@/data/mockReports";
+import MapIntegration from "@/components/MapIntegration";
 
 interface UserType {
   id: number;
@@ -23,6 +25,41 @@ export default function Index() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { setRole } = useUserRole();
+  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
+
+  const handleProjectSelect = (project: any) => {
+    if (selectedMapProject && selectedMapProject.id === project.id) {
+      setSelectedMapProject(null);
+    } else {
+      setSelectedMapProject(project);
+    }
+  };
+
+  const getStatusInfo = (status: Report["project_status"]): { name: string; color: string } => {
+    switch (status) {
+      case "in_progress": return { name: "Confirmed", color: "#22c55e" };
+      case "planned": return { name: "Pending", color: "#eab308" };
+      case "completed": return { name: "Completed", color: "#3b82f6" };
+      case "stalled": return { name: "Stalled", color: "#ef4444" };
+      case "cancelled": return { name: "Cancelled", color: "#6b7280" };
+      default: return { name: "Unknown", color: "#6b7280" };
+    }
+  };
+
+  const projectsForMap = mockReports.map(report => {
+      if (!report.lat || !report.lng) return null;
+      const statusInfo = getStatusInfo(report.project_status);
+      return {
+          id: parseInt(report.id.replace("REP-", "")),
+          title: report.title,
+          lat: report.lat,
+          lng: report.lng,
+          sdg_goal: parseInt(report.sdg_goal),
+          status: statusInfo.name,
+          color: statusInfo.color,
+          budget: report.cost || 0,
+      };
+  }).filter(Boolean) as any[];
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
@@ -221,6 +258,22 @@ export default function Index() {
                 </CardHeader>
               </Card>
             </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-foreground mb-4">Explore Projects on the Map</h3>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Visually track the progress and location of development projects across the continent.
+              </p>
+            </div>
+            <MapIntegration 
+              projects={projectsForMap} 
+              onProjectSelect={handleProjectSelect} 
+              selectedProject={selectedMapProject} 
+            />
           </div>
         </section>
 
