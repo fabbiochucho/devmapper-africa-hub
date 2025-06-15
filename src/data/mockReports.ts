@@ -1,6 +1,7 @@
 
-import { mockUsers } from "./mockUsers";
+import { reverseGeocode } from "@/lib/geocode";
 
+// Type definitions are kept to maintain the data contract with other components.
 export type Verification = {
   id: number;
   userId: number;
@@ -43,132 +44,210 @@ export type Report = {
   verification_score?: number;
 };
 
-export const mockReports: Report[] = [
-  {
-    id: "REP-001",
-    title: "Clean Water Initiative in Rural Kenya",
-    sdg_goal: "6",
-    project_status: "in_progress",
-    location: "Kajiado County, Kenya",
-    description: "Drilling and installation of 20 boreholes to provide clean water access to pastoralist communities.",
-    submitted_at: "2025-05-20",
-    lat: -1.85,
-    lng: 36.7833,
-    validations: 12,
-    verifications: [
-      ...Array.from({ length: 10 }, (_, i) => ({ id: i + 1, userId: 100 + i, userName: `User ${100+i}`, action: 'confirm' as const, createdAt: new Date().toISOString() })),
-      ...Array.from({ length: 2 }, (_, i) => ({ id: i + 11, userId: 200 + i, userName: `User ${200+i}`, action: 'dispute' as const, createdAt: new Date().toISOString() })),
-    ],
-    verification_score: 83,
-    official: true,
-    country_code: "KEN",
-    cost: 50000,
-    costCurrency: "USD",
-    targetUnit: "wells built",
-    targetValue: 20,
-    currentValue: 15,
-    progressHistory: [
-      { value: 5, recordedAt: "2025-03-10", notes: "Initial phase complete" },
-      { value: 15, recordedAt: "2025-05-15", notes: "Phase 2 construction finished" },
-    ],
-  },
-  {
-    id: "REP-002",
-    title: "Girls' Education Program in Northern Nigeria",
-    sdg_goal: "4",
-    project_status: "completed",
-    location: "Kano State, Nigeria",
-    description: "A program to increase primary school enrollment for girls through scholarships and community engagement.",
-    submitted_at: "2025-04-15",
-    lat: 11.5,
-    lng: 8.5,
-    validations: 25,
-    verifications: Array.from({ length: 25 }, (_, i) => ({ id: i + 1, userId: 300 + i, userName: `User ${300+i}`, action: 'confirm' as const, createdAt: new Date().toISOString() })),
-    verification_score: 100,
-    official: false,
-    country_code: "NGA",
-    cost: 120000,
-    costCurrency: "USD",
-    targetUnit: "students enrolled",
-    targetValue: 500,
-    currentValue: 500,
-  },
-  {
-    id: "REP-003",
-    title: "Solar Mini-Grid Installation",
-    sdg_goal: "7",
-    project_status: "planned",
-    location: "Accra, Ghana",
-    description: "Development of a solar-powered mini-grid to provide electricity to an off-grid community.",
-    submitted_at: "2025-06-01",
-    lat: 5.6037,
-    lng: -0.187,
-    validations: 3,
-    verifications: [],
-    verification_score: undefined,
-    official: true,
-    country_code: "GHA",
-    cost: 750000,
-    costCurrency: "GHS",
-    usd_exchange_rate: 14.5,
-  },
-  {
-    id: "REP-004",
-    title: "Community Health Clinic Upgrade",
-    sdg_goal: "3",
-    project_status: "stalled",
-    location: "Addis Ababa, Ethiopia",
-    description: "Renovation and re-equipment of a local health clinic. Project currently stalled due to funding issues.",
-    submitted_at: "2025-03-10",
-    lat: 9.03,
-    lng: 38.74,
-    validations: 8,
-    verifications: [],
-    verification_score: undefined,
-    official: false,
-    country_code: "ETH",
-    cost: 80000,
-    costCurrency: "USD",
-  },
-  {
-    id: "REP-005",
-    title: "Sustainable Agriculture Training",
-    sdg_goal: "2",
-    project_status: "completed",
-    location: "Western Cape, South Africa",
-    description: "Training program for smallholder farmers on sustainable and climate-resilient agricultural practices.",
-    submitted_at: "2025-05-30",
-    lat: -33.2278,
-    lng: 21.8569,
-    validations: 1,
-    verifications: [],
-    verification_score: undefined,
-    official: false,
-    country_code: "ZAF",
-    cost: 450000,
-    costCurrency: "ZAR",
-    usd_exchange_rate: 18.2,
-  },
-  {
-    id: "REP-006",
-    title: "Youth Tech Hub Launch",
-    sdg_goal: "9",
-    project_status: "in_progress",
-    location: "Lagos, Nigeria",
-    description: "Establishment of a technology and innovation hub for young entrepreneurs in Yaba.",
-    submitted_at: "2025-06-10",
-    lat: 6.5244,
-    lng: 3.3792,
-    validations: 0,
-    verifications: [],
-    verification_score: undefined,
-    official: false,
-    country_code: "NGA",
-    cost: 280000000,
-    costCurrency: "NGN",
-    usd_exchange_rate: 1480,
-  },
-];
+// Internal type for the new raw data structure provided by the user.
+interface MapProject {
+  id: number;
+  title: string;
+  content: string;
+  sdg_goal: number;
+  sdg_target: string;
+  status: "pending" | "confirmed" | "completed";
+  lat: number;
+  lng: number;
+  budget: number;
+  verification_score: number;
+  created_at: string;
+}
+
+// Function to get the new raw data.
+function getRawMockProjects(): MapProject[] {
+  return [
+    {
+      id: 1,
+      title: "Clean Water Project - Nairobi",
+      content:
+        "Installing water purification systems in Kibera slum to provide clean drinking water access to over 10,000 residents. The project includes community training and maintenance programs.",
+      sdg_goal: 6,
+      sdg_target: "6.1",
+      status: "confirmed",
+      lat: -1.2921,
+      lng: 36.8219,
+      budget: 50000,
+      verification_score: 85,
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 2,
+      title: "Education Center - Lagos",
+      content:
+        "Building a new primary school to serve 500 children in underserved communities. Includes teacher training and digital learning resources.",
+      sdg_goal: 4,
+      sdg_target: "4.1",
+      status: "pending",
+      lat: 6.5244,
+      lng: 3.3792,
+      budget: 120000,
+      verification_score: 72,
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 3,
+      title: "Solar Energy Initiative - Cape Town",
+      content:
+        "Installing solar panels in rural communities to provide affordable clean energy access. Project covers 15 villages with 2,000 households.",
+      sdg_goal: 7,
+      sdg_target: "7.1",
+      status: "completed",
+      lat: -33.9249,
+      lng: 18.4241,
+      budget: 75000,
+      verification_score: 92,
+      created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 4,
+      title: "Healthcare Clinic - Accra",
+      content:
+        "Establishing a maternal health clinic to reduce infant mortality rates. Provides prenatal care, delivery services, and postnatal support.",
+      sdg_goal: 3,
+      sdg_target: "3.2",
+      status: "confirmed",
+      lat: 5.6037,
+      lng: -0.187,
+      budget: 80000,
+      verification_score: 88,
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 5,
+      title: "Agricultural Training - Addis Ababa",
+      content:
+        "Training farmers in sustainable agriculture practices to combat hunger. Includes seed distribution and irrigation system installation.",
+      sdg_goal: 2,
+      sdg_target: "2.3",
+      status: "pending",
+      lat: 9.145,
+      lng: 40.4897,
+      budget: 35000,
+      verification_score: 65,
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 6,
+      title: "Women's Empowerment Center - Kigali",
+      content:
+        "Creating economic opportunities for women through skills training and microfinance programs. Supporting 200 women entrepreneurs.",
+      sdg_goal: 5,
+      sdg_target: "5.5",
+      status: "confirmed",
+      lat: -1.9441,
+      lng: 30.0619,
+      budget: 45000,
+      verification_score: 78,
+      created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 7,
+      title: "Urban Housing Project - Johannesburg",
+      content:
+        "Developing affordable housing units for low-income families. Includes community facilities and green spaces.",
+      sdg_goal: 11,
+      sdg_target: "11.1",
+      status: "pending",
+      lat: -26.2041,
+      lng: 28.0473,
+      budget: 200000,
+      verification_score: 70,
+      created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 8,
+      title: "Reforestation Initiative - Kampala",
+      content:
+        "Planting 50,000 trees to combat deforestation and climate change. Involves local communities in tree care and maintenance.",
+      sdg_goal: 15,
+      sdg_target: "15.2",
+      status: "confirmed",
+      lat: 0.3476,
+      lng: 32.5825,
+      budget: 25000,
+      verification_score: 89,
+      created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 9,
+      title: "Digital Skills Training - Dar es Salaam",
+      content:
+        "Providing digital literacy training to youth for better employment opportunities. Includes computer labs and internet access.",
+      sdg_goal: 8,
+      sdg_target: "8.6",
+      status: "pending",
+      lat: -6.7924,
+      lng: 39.2083,
+      budget: 60000,
+      verification_score: 75,
+      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 10,
+      title: "Waste Management System - Abuja",
+      content:
+        "Implementing sustainable waste management and recycling programs. Includes community education and waste collection infrastructure.",
+      sdg_goal: 12,
+      sdg_target: "12.5",
+      status: "confirmed",
+      lat: 9.0765,
+      lng: 7.3986,
+      budget: 90000,
+      verification_score: 82,
+      created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+}
+
+
+const rawProjects = getRawMockProjects();
+
+export const mockReports: Report[] = rawProjects.map(p => {
+  const geocodeResult = reverseGeocode(p.lat, p.lng);
+  
+  let project_status: Report['project_status'] = 'planned';
+  if (p.status === 'pending') {
+    project_status = 'planned';
+  } else if (p.status === 'confirmed') {
+    project_status = 'in_progress';
+  } else if (p.status === 'completed') {
+    project_status = 'completed';
+  }
+
+  const confirmations = Math.round((p.verification_score / 100) * 10);
+  const disputes = Math.max(0, 10 - confirmations);
+  const verifications: Verification[] = [
+    ...Array.from({ length: confirmations }, (_, i) => ({ id: i, userId: 100 + i, userName: `User ${100+i}`, action: 'confirm' as const, createdAt: new Date().toISOString() })),
+    ...Array.from({ length: disputes }, (_, i) => ({ id: confirmations + i, userId: 200 + i, userName: `User ${200+i}`, action: 'dispute' as const, createdAt: new Date().toISOString() }))
+  ];
+  
+  const city = p.title.split(" - ")[1] || "Unknown City";
+
+  return {
+    id: `REP-${p.id.toString().padStart(3, '0')}`,
+    title: p.title,
+    description: p.content,
+    sdg_goal: p.sdg_goal.toString(),
+    project_status: project_status,
+    location: geocodeResult ? `${city}, ${geocodeResult.country}` : city,
+    submitted_at: p.created_at,
+    lat: p.lat,
+    lng: p.lng,
+    validations: verifications.length,
+    verifications: verifications,
+    verification_score: p.verification_score,
+    country_code: geocodeResult?.country_code,
+    cost: p.budget,
+    costCurrency: 'USD',
+    official: Math.random() > 0.5,
+  };
+});
 
 export const getOfficialProjects = (countryCode?: string): Report[] => {
   const officialProjects = mockReports.filter(p => p.official);
