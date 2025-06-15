@@ -1,4 +1,3 @@
-
 import { formatDistanceToNow } from "date-fns";
 
 export interface Notification {
@@ -119,6 +118,29 @@ export const markAllNotificationsAsRead = (
     }
     setTimeout(() => {
       resolve(userNotifications || []);
+    }, 200);
+  });
+};
+
+export const deleteNotification = (
+  userId: string,
+  notificationId: number
+): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const userNotifications = notifications[userId];
+    if (!userNotifications) {
+      resolve(false);
+      return;
+    }
+
+    const initialLength = userNotifications.length;
+    notifications[userId] = userNotifications.filter(
+      (n) => n.id !== notificationId
+    );
+    const success = notifications[userId].length < initialLength;
+
+    setTimeout(() => {
+      resolve(success);
     }, 200);
   });
 };
