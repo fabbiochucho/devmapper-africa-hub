@@ -79,7 +79,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 85,
       created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Kenya",
-      country_code: "KE",
+      country_code: "KEN",
     },
     {
       id: 2,
@@ -95,7 +95,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 72,
       created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Nigeria",
-      country_code: "NG",
+      country_code: "NGA",
     },
     {
       id: 3,
@@ -111,7 +111,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 92,
       created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
       country: "South Africa",
-      country_code: "ZA",
+      country_code: "ZAF",
     },
     {
       id: 4,
@@ -127,7 +127,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 88,
       created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Ghana",
-      country_code: "GH",
+      country_code: "GHA",
     },
     {
       id: 5,
@@ -143,7 +143,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 65,
       created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Ethiopia",
-      country_code: "ET",
+      country_code: "ETH",
     },
     {
       id: 6,
@@ -159,7 +159,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 78,
       created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Rwanda",
-      country_code: "RW",
+      country_code: "RWA",
     },
     {
       id: 7,
@@ -175,7 +175,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 70,
       created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
       country: "South Africa",
-      country_code: "ZA",
+      country_code: "ZAF",
     },
     {
       id: 8,
@@ -191,7 +191,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 89,
       created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Uganda",
-      country_code: "UG",
+      country_code: "UGA",
     },
     {
       id: 9,
@@ -207,7 +207,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 75,
       created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Tanzania",
-      country_code: "TZ",
+      country_code: "TZA",
     },
     {
       id: 10,
@@ -223,7 +223,7 @@ function getRawMockProjects(): MapProject[] {
       verification_score: 82,
       created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
       country: "Nigeria",
-      country_code: "NG",
+      country_code: "NGA",
     },
   ];
 }
@@ -264,7 +264,7 @@ export const mockReports: Report[] = rawProjects.map(p => {
     validations: verifications.length,
     verifications: verifications,
     verification_score: p.verification_score,
-    country_code: p.country_code.toUpperCase(),
+    country_code: p.country_code,
     cost: p.budget,
     costCurrency: 'USD',
     official: Math.random() > 0.5,
