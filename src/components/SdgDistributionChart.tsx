@@ -1,5 +1,4 @@
 
-```typescript
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -95,4 +94,3 @@ const SdgDistributionChart = () => {
 };
 
 export default SdgDistributionChart;
-```
