@@ -21,7 +21,7 @@ const SdgDistributionChart = () => {
       name: sdgGoalMap.get(goal.value) || `Goal ${goal.value}`,
       value: counts[goal.value] || 0,
       fill: sdgGoalColors[goal.value],
-    })).filter(item => item.value > 0).sort((a,b) => b.value - a.value).slice(0, 5);
+    })).filter(item => item.value > 0).sort((a,b) => b.value - a.value);
   }, []);
 
   const chartConfig = {
@@ -57,14 +57,16 @@ const SdgDistributionChart = () => {
     );
   };
 
+  const chartHeight = Math.max(400, data.length * 40);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top 5 SDG Goals Distribution</CardTitle>
-        <CardDescription>Distribution of projects across the top 5 SDGs with the most projects.</CardDescription>
+        <CardTitle>SDG Goals Distribution</CardTitle>
+        <CardDescription>Distribution of projects across all SDGs.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px] w-full">
+        <ChartContainer config={chartConfig} style={{ height: `${chartHeight}px` }} className="w-full">
           <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
             <CartesianGrid horizontal={false} />
             <YAxis
