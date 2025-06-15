@@ -48,11 +48,13 @@ export const getCorporateTargets = async (): Promise<CorporateTarget[]> => {
 
 // Simulate API to add a new target
 export const addCorporateTarget = async (
-  targetData: Omit<TargetFormValues, 'deadline'> & { deadline: string }
+  targetData: TargetFormValues
 ): Promise<CorporateTarget> => {
+  const { deadline, ...rest } = targetData;
   const newTarget: CorporateTarget = {
     id: corporateTargets.length > 0 ? Math.max(...corporateTargets.map(t => t.id)) + 1 : 1,
-    ...targetData,
+    ...rest,
+    deadline: deadline.toISOString(),
     currentValue: 0,
     progress: 0,
     createdAt: new Date().toISOString(),
@@ -61,4 +63,3 @@ export const addCorporateTarget = async (
   corporateTargets.push(newTarget);
   return Promise.resolve(newTarget);
 };
-

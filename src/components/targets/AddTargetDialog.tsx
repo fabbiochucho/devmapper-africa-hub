@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -39,11 +38,7 @@ const AddTargetDialog = ({ isOpen, onOpenChange, onTargetAdded }: AddTargetDialo
 
   const onSubmit = async (values: TargetFormValues) => {
     try {
-      const targetData = {
-        ...values,
-        deadline: values.deadline.toISOString(),
-      };
-      const newTarget = await addCorporateTarget(targetData);
+      const newTarget = await addCorporateTarget(values);
       toast.success("ESG Target Created", {
         description: `Successfully created target: "${newTarget.title}"`,
       });
@@ -175,4 +170,3 @@ const AddTargetDialog = ({ isOpen, onOpenChange, onTargetAdded }: AddTargetDialo
 };
 
 export default AddTargetDialog;
-
