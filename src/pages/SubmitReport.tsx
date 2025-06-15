@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -32,12 +31,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { sdgGoals, projectStatuses } from "@/lib/constants";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, ImagePlus, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import ExifReader from "exif-reader";
 
 const reportSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
@@ -56,6 +56,7 @@ const reportSchema = z.object({
   sponsor: z.string().optional(),
   funder: z.string().optional(),
   contractor: z.string().optional(),
+  photos: z.any().optional(),
 }).superRefine((data, ctx) => {
   if ((data.cost !== undefined && data.cost !== 0) && !data.costCurrency) {
     ctx.addIssue({
@@ -104,6 +105,13 @@ const currencies = [
     { value: 'ZAR', label: 'ZAR - South African Rand' },
 ];
 
+const getGpsData = (tags: any): { latitude: number | null; longitude: number | null } => {
+  if (tags && tags.gps && tags.gps.Latitude && tags.gps.Longitude) {
+    return { latitude: tags.gps.Latitude, longitude: tags.gps.Longitude };
+  }
+  return { latitude: null, longitude: null };
+};
+
 const SubmitReport = () => {
   const form = useForm<z.infer<typeof reportSchema>>({
     resolver: zodResolver(reportSchema),
@@ -120,14 +128,52 @@ const SubmitReport = () => {
       sponsor: "",
       funder: "",
       contractor: "",
+      photos: undefined,
     },
   });
 
   const costCurrency = form.watch('costCurrency');
   const exchangeRateMode = form.watch('exchangeRateMode');
+  const photos = form.watch("photos");
+
+  const handlePhotoChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldOnChange: (value: FileList | null) => void
+  ) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      fieldOnChange(files);
+
+      // Try to extract GPS from the first image that has it
+      for (const file of Array.from(files)) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const tags = ExifReader.load(arrayBuffer, { expanded: true });
+          const { latitude, longitude } = getGpsData(tags);
+
+          if (latitude && longitude && !form.getValues('lat') && !form.getValues('lng')) {
+            form.setValue('lat', parseFloat(latitude.toFixed(6)));
+            form.setValue('lng', parseFloat(longitude.toFixed(6)));
+            toast.success("Location data extracted from photo and pre-filled.");
+            break; // Stop after finding the first one
+          }
+        } catch (error) {
+          // It's normal for some images not to have EXIF data, so we can ignore errors here.
+        }
+      }
+    } else {
+      fieldOnChange(null);
+    }
+  };
 
   function onSubmit(values: z.infer<typeof reportSchema>) {
     console.log("Form Submitted:", values);
+    
+    if (values.photos) {
+      console.log("Photos to upload:", values.photos);
+      // In a real app, you would upload files to a storage server here
+      // and save the URLs with the report.
+    }
     
     if (values.exchangeRateMode === 'auto' && values.startDate) {
       const year = values.startDate.getFullYear();
@@ -512,6 +558,78 @@ const SubmitReport = () => {
                     <FormControl>
                       <Input placeholder="e.g., ABC Construction Ltd." {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="photos"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Photos</FormLabel>
+                    <FormDescription>
+                      Upload photos of the project. On mobile, you can use your camera. If photos have location data, it can pre-fill the coordinates.
+                    </FormDescription>
+                    <FormControl>
+                      <div className="flex flex-col gap-4">
+                        <Label
+                          htmlFor="photo-upload"
+                          className="flex flex-col items-center justify-center w-full h-32 px-4 text-center border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                        >
+                          <ImagePlus className="w-8 h-8 mb-2 text-gray-500" />
+                          <span className="font-semibold text-gray-600">
+                            Click to upload photos
+                          </span>
+                          <span className="text-sm text-gray-500">or use your camera on mobile</span>
+                        </Label>
+                        <Input
+                          id="photo-upload"
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={(e) => handlePhotoChange(e, field.onChange)}
+                          ref={field.ref}
+                        />
+                      </div>
+                    </FormControl>
+                    {photos && photos.length > 0 && (
+                      <div className="grid grid-cols-2 gap-4 mt-4 md:grid-cols-3 lg:grid-cols-4">
+                        {Array.from(photos).map((file: File, index: number) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`preview ${index}`}
+                              className="object-cover w-full h-32 rounded-md"
+                              onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                            />
+                            <div className="absolute top-0 right-0 p-1">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="w-6 h-6 transition-opacity opacity-0 group-hover:opacity-100"
+                                onClick={() => {
+                                  const newFiles = new DataTransfer();
+                                  Array.from(photos)
+                                    .filter((_, i) => i !== index)
+                                    .forEach((f) => newFiles.items.add(f));
+                                  form.setValue(
+                                    'photos',
+                                    newFiles.files.length > 0 ? newFiles.files : undefined,
+                                    { shouldValidate: true }
+                                  );
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

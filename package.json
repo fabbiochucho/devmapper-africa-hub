@@ -48,6 +48,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "exif-reader": "^2.0.2",
     "input-otp": "^1.2.4",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
