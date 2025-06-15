@@ -1,6 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Map from "@/components/Map";
+// import Map from "@/components/Map";
 
 const Index = () => {
   return (
@@ -11,7 +11,10 @@ const Index = () => {
           <CardTitle>Pan-African SDG Project Map</CardTitle>
         </CardHeader>
         <CardContent className="h-[calc(100%_-_72px)]">
-          <Map />
+          {/* <Map /> */}
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">Map is temporarily disabled for debugging.</p>
+          </div>
         </CardContent>
       </Card>
     </div>
