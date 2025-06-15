@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -148,7 +149,7 @@ const SubmitReport = () => {
       for (const file of Array.from(files)) {
         try {
           const arrayBuffer = await file.arrayBuffer();
-          const tags = ExifReader.load(arrayBuffer, { expanded: true });
+          const tags = ExifReader(arrayBuffer, { expanded: true });
           const { latitude, longitude } = getGpsData(tags);
 
           if (latitude && longitude && !form.getValues('lat') && !form.getValues('lng')) {
@@ -597,7 +598,7 @@ const SubmitReport = () => {
                     </FormControl>
                     {photos && photos.length > 0 && (
                       <div className="grid grid-cols-2 gap-4 mt-4 md:grid-cols-3 lg:grid-cols-4">
-                        {Array.from(photos).map((file: File, index: number) => (
+                        {Array.from(photos as FileList).map((file: File, index: number) => (
                           <div key={index} className="relative group">
                             <img
                               src={URL.createObjectURL(file)}
@@ -613,7 +614,7 @@ const SubmitReport = () => {
                                 className="w-6 h-6 transition-opacity opacity-0 group-hover:opacity-100"
                                 onClick={() => {
                                   const newFiles = new DataTransfer();
-                                  Array.from(photos)
+                                  Array.from(photos as FileList)
                                     .filter((_, i) => i !== index)
                                     .forEach((f) => newFiles.items.add(f));
                                   form.setValue(
