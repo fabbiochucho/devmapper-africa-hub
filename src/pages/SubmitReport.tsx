@@ -37,7 +37,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import ExifReader = require("exif-reader");
+import * as ExifReader from "exif-reader";
 
 const reportSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
