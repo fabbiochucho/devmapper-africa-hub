@@ -1,11 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AuthModal from "@/components/AuthModal";
-import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut, UserCheck, LayoutDashboard } from "lucide-react";
+import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut, UserCheck, LayoutDashboard, Bell } from "lucide-react";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Link } from "react-router-dom";
+import NotificationBell from "@/components/NotificationBell";
 
 interface UserType {
   id: number;
@@ -106,6 +108,7 @@ export default function Index() {
             <div className="flex items-center space-x-4">
               {user ? (
                 <div className="flex items-center space-x-3">
+                  <NotificationBell userId={user.id.toString()} />
                   <div className="flex items-center space-x-2">
                     {getRoleIcon(user.role)}
                     <div className="text-right">
