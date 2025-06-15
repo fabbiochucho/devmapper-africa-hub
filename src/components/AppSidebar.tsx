@@ -1,5 +1,6 @@
 
-import { NavLink, useMatch } from "react-router-dom";
+```typescript
+import { NavLink, useMatch, Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -38,10 +39,10 @@ const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="p-2">
+        <Link to="/" className="block p-2">
           <h1 className="text-xl font-semibold">DevMapper</h1>
           <p className="text-sm text-muted-foreground">Africa SDG Tracker</p>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="flex flex-col">
         <div className="flex-1">
@@ -92,3 +93,4 @@ const AppSidebar = () => {
 };
 
 export default AppSidebar;
+```

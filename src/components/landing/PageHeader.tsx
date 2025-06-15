@@ -1,9 +1,11 @@
 
+```typescript
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotificationSystem from "@/components/NotificationSystem";
 import { UserRole } from "@/contexts/UserRoleContext";
 import { Building, Globe, LogOut, Shield, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface UserType {
   id: number;
@@ -52,13 +54,13 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
     <header className="bg-card shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <Link to="/" className="flex items-center">
             <Globe className="w-8 h-8 text-primary mr-3" />
             <div>
               <h1 className="text-xl font-bold text-foreground">DevMapper</h1>
               <p className="text-xs text-muted-foreground">Africa SDG Tracker</p>
             </div>
-          </div>
+          </Link>
 
           <div className="flex items-center space-x-4">
             {user ? (
@@ -87,3 +89,4 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
     </header>
   );
 }
+```
