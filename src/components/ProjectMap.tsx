@@ -96,4 +96,3 @@ const ProjectMap: React.FC<ProjectMapProps> = ({ projects, onMarkerClick }) => {
 };
 
 export default ProjectMap;
-

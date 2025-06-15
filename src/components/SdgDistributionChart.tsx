@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { sdgGoals, sdgGoalColors } from "@/lib/constants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import SdgIcon from "./landing/SdgIcon";
 
-const SdgDistributionChart = ({ topN }: { topN?: number }) => {
+const SdgDistributionChart = () => {
   const sdgGoalMap = new Map(sdgGoals.map((g) => [g.value, g.label.replace(/Goal \d+: /, '')]));
 
   const data = React.useMemo(() => {
@@ -17,18 +16,12 @@ const SdgDistributionChart = ({ topN }: { topN?: number }) => {
       counts[report.sdg_goal] = (counts[report.sdg_goal] || 0) + 1;
     });
 
-    const allData = sdgGoals.map(goal => ({
+    return sdgGoals.map(goal => ({
       name: sdgGoalMap.get(goal.value) || `Goal ${goal.value}`,
       value: counts[goal.value] || 0,
       fill: sdgGoalColors[goal.value],
     })).filter(item => item.value > 0).sort((a,b) => b.value - a.value);
-
-    if (topN) {
-      return allData.slice(0, topN);
-    }
-    return allData;
-
-  }, [topN]);
+  }, []);
 
   const chartConfig = {
       value: { label: "Projects" },
@@ -66,7 +59,7 @@ const SdgDistributionChart = ({ topN }: { topN?: number }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{topN ? `Top ${topN} SDG Goals Distribution` : 'Projects by SDG Goal'}</CardTitle>
+        <CardTitle>Projects by SDG Goal</CardTitle>
         <CardDescription>Distribution of projects across different SDGs.</CardDescription>
       </CardHeader>
       <CardContent>

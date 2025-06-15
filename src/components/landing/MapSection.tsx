@@ -1,6 +1,5 @@
 
 import MapIntegration from "@/components/MapIntegration";
-import SdgDistributionChart from "@/components/SdgDistributionChart";
 
 interface MapSectionProps {
   projects: any[];
@@ -18,16 +17,12 @@ export default function MapSection({ projects, onProjectSelect, selectedProject 
             Visually track the progress and location of development projects across the continent.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <MapIntegration 
-              projects={projects} 
-              onProjectSelect={onProjectSelect} 
-              selectedProject={selectedProject} 
-            />
-            <SdgDistributionChart topN={5} />
-        </div>
+        <MapIntegration 
+          projects={projects} 
+          onProjectSelect={onProjectSelect} 
+          selectedProject={selectedProject} 
+        />
       </div>
     </section>
   );
 }
-

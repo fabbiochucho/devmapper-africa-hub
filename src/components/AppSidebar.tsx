@@ -38,12 +38,10 @@ const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <NavLink to="/">
-          <div className="p-2">
-            <h1 className="text-xl font-semibold">DevMapper</h1>
-            <p className="text-sm text-muted-foreground">Africa SDG Tracker</p>
-          </div>
-        </NavLink>
+        <div className="p-2">
+          <h1 className="text-xl font-semibold">DevMapper</h1>
+          <p className="text-sm text-muted-foreground">Africa SDG Tracker</p>
+        </div>
       </SidebarHeader>
       <SidebarContent className="flex flex-col">
         <div className="flex-1">
@@ -59,6 +57,7 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
+              <SidebarNavLink to="/reports" icon={List}>Reports</SidebarNavLink>
               <SidebarNavLink to="/analytics" icon={BarChart2}>Analytics</SidebarNavLink>
             </SidebarMenu>
           </SidebarGroup>
@@ -93,4 +92,3 @@ const AppSidebar = () => {
 };
 
 export default AppSidebar;
-
