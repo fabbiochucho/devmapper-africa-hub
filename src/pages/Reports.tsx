@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { mockReports } from "@/data/mockReports";
 import { sdgGoals, projectStatuses, projectStatusColors } from "@/lib/constants";
+import { Star } from "lucide-react";
 
 const Reports = () => {
   const [statusFilter, setStatusFilter] = React.useState("all");
@@ -28,9 +29,11 @@ const Reports = () => {
 
   const filteredReports = React.useMemo(() => {
     if (statusFilter === "all") {
-      return mockReports;
+      return [...mockReports].sort((a, b) => b.validations - a.validations);
     }
-    return mockReports.filter((report) => report.project_status === statusFilter);
+    return mockReports
+      .filter((report) => report.project_status === statusFilter)
+      .sort((a, b) => b.validations - a.validations);
   }, [statusFilter]);
 
   return (
@@ -63,6 +66,7 @@ const Reports = () => {
                 <TableHead>SDG Goal</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">Validations</TableHead>
                 <TableHead>Submitted</TableHead>
               </TableRow>
             </TableHeader>
@@ -76,6 +80,12 @@ const Reports = () => {
                     <Badge className={projectStatusColors[report.project_status] || ''}>
                       {projectStatusMap.get(report.project_status) || 'N/A'}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <span>{report.validations}</span>
+                      {report.validations > 10 && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
+                    </div>
                   </TableCell>
                   <TableCell>{report.submitted_at}</TableCell>
                 </TableRow>
