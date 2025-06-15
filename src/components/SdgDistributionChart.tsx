@@ -2,7 +2,7 @@
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { mockReports } from "@/data/mockReports";
 import { sdgGoals, sdgGoalColors } from "@/lib/constants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
@@ -12,6 +12,10 @@ const SdgDistributionChart = () => {
   const sdgGoalMap = new Map(sdgGoals.map((g) => [g.value, g.label.replace(/Goal \d+: /, '')]));
 
   const data = React.useMemo(() => {
+    const totalProjects = mockReports.length;
+    if (totalProjects === 0) {
+        return [];
+    }
     const counts: { [key: string]: number } = {};
     mockReports.forEach((report) => {
       counts[report.sdg_goal] = (counts[report.sdg_goal] || 0) + 1;
@@ -19,13 +23,13 @@ const SdgDistributionChart = () => {
 
     return sdgGoals.map(goal => ({
       name: sdgGoalMap.get(goal.value) || `Goal ${goal.value}`,
-      value: counts[goal.value] || 0,
+      value: (counts[goal.value] || 0) * 100 / totalProjects,
       fill: sdgGoalColors[goal.value],
     })).filter(item => item.value > 0).sort((a,b) => b.value - a.value);
   }, []);
 
   const chartConfig = {
-      value: { label: "Projects" },
+      value: { label: "Percentage" },
   } as ChartConfig;
   data.forEach(item => {
     chartConfig[item.name] = {
@@ -57,13 +61,38 @@ const SdgDistributionChart = () => {
     );
   };
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="rounded-lg border bg-background p-2 shadow-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col">
+              <span className="text-[0.7rem] uppercase text-muted-foreground">
+                SDG
+              </span>
+              <span className="font-bold text-foreground">{data.name}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[0.7rem] uppercase text-muted-foreground">
+                Projects
+              </span>
+              <span className="font-bold">{`${data.value.toFixed(1)}%`}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const chartHeight = Math.max(400, data.length * 40);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>SDG Goals Distribution</CardTitle>
-        <CardDescription>Distribution of projects across all SDGs.</CardDescription>
+        <CardDescription>Distribution of projects across all SDGs by percentage.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} style={{ height: `${chartHeight}px` }} className="w-full">
@@ -78,10 +107,10 @@ const SdgDistributionChart = () => {
               width={150}
               tick={<CustomYAxisTick />}
             />
-            <XAxis dataKey="value" type="number" hide />
+            <XAxis dataKey="value" type="number" hide tickFormatter={(value) => `${Math.round(value)}%`} />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dot" hideLabel />}
+              content={<CustomTooltip />}
             />
             <Bar dataKey="value" radius={4}>
                 {data.map((entry) => (

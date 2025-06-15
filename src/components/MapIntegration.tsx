@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -78,7 +77,7 @@ export default function MapIntegration({ projects, onProjectSelect, selectedProj
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -102,12 +101,12 @@ export default function MapIntegration({ projects, onProjectSelect, selectedProj
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="relative">
+      <CardContent className="flex-grow flex flex-col">
+        <div className="relative flex-grow">
           {/* Map Container */}
           <div
             ref={mapRef}
-            className="w-full h-[600px] bg-gradient-to-br from-blue-50 to-green-50 rounded-lg border relative overflow-hidden"
+            className="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 rounded-lg border relative overflow-hidden"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23e5e7eb' fillOpacity='0.3'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
             }}
@@ -205,14 +204,6 @@ export default function MapIntegration({ projects, onProjectSelect, selectedProj
                 <div className="text-xs text-gray-600">Projects</div>
               </div>
             </div>
-          </div>
-
-          {/* Map Instructions */}
-          <div className="mt-4 text-center text-sm text-gray-600">
-            <p>Click on project markers to view details • Use zoom controls to navigate</p>
-            <p className="text-xs mt-1">
-              This is a demo map. In production, integrate with Mapbox, Google Maps, or OpenStreetMap.
-            </p>
           </div>
         </div>
       </CardContent>
