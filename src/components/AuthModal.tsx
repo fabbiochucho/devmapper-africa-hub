@@ -1,18 +1,8 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { signInSchema, signUpSchema } from "@/lib/authSchema";
-import { ALL_ROLES, UserRole } from "@/contexts/UserRoleContext";
-import { toast } from "sonner";
-import { LogIn } from "lucide-react";
-import { mockUsers, MockUser } from "@/data/mockUsers";
+import SignInForm from "./auth/SignInForm";
+import SignUpForm from "./auth/SignUpForm";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,80 +10,8 @@ interface AuthModalProps {
   onAuthSuccess: (userData: any, token: string) => void;
 }
 
-type SignInFormValues = z.infer<typeof signInSchema>;
-type SignUpFormValues = z.infer<typeof signUpSchema>;
-
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
   const [isSigningUp, setIsSigningUp] = useState(false);
-
-  const signInForm = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const signUpForm = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", role: "Citizen Reporter" },
-  });
-
-  const handleSignIn = (values: SignInFormValues) => {
-    const user = mockUsers.find(
-      (u) => u.email.toLowerCase() === values.email.toLowerCase()
-    );
-
-    if (user && user.password === values.password) {
-      const { password, ...userToStore } = user;
-      const token = "fake-auth-token"; // This is still a mock token
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user", JSON.stringify(userToStore));
-      onAuthSuccess(userToStore, token);
-      toast.success("Signed in successfully!");
-    } else {
-      toast.error("Invalid email or password.");
-      signInForm.setError("password", {
-        type: "manual",
-        message: "Invalid email or password",
-      });
-    }
-  };
-
-  const handleSignUp = (values: SignUpFormValues) => {
-    const existingUser = mockUsers.find(
-      (u) => u.email.toLowerCase() === values.email.toLowerCase()
-    );
-
-    if (existingUser) {
-      toast.error("User with this email already exists.");
-      signUpForm.setError("email", {
-        type: "manual",
-        message: "User with this email already exists.",
-      });
-      return;
-    }
-
-    const newUser: MockUser = {
-      id: mockUsers.length + 1,
-      name: values.name,
-      email: values.email,
-      password: values.password, // Storing plain text for mock purposes
-      role: values.role,
-      verified: values.role === "Citizen Reporter", // Auto-verify citizens
-      createdAt: new Date().toISOString(),
-    };
-
-    mockUsers.push(newUser);
-
-    const { password, ...userToStore } = newUser;
-    const token = "fake-auth-token-signup";
-    localStorage.setItem("auth_token", token);
-    localStorage.setItem("user", JSON.stringify(userToStore));
-    onAuthSuccess(userToStore, token);
-    toast.success(
-      newUser.verified
-        ? "Signed up successfully! Welcome!"
-        : "Sign-up successful! Your account is pending verification."
-    );
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -105,108 +23,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
           </DialogDescription>
         </DialogHeader>
         {isSigningUp ? (
-          <Form {...signUpForm}>
-            <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-              <FormField
-                control={signUpForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signUpForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signUpForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signUpForm.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {ALL_ROLES.map((role) => (
-                          <SelectItem key={role} value={role}>{role}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">
-                Sign Up
-              </Button>
-            </form>
-          </Form>
+          <SignUpForm onAuthSuccess={onAuthSuccess} />
         ) : (
-          <Form {...signInForm}>
-            <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-              <FormField
-                control={signInForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signInForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">
-                <LogIn className="mr-2 h-4 w-4" /> Sign In
-              </Button>
-            </form>
-          </Form>
+          <SignInForm onAuthSuccess={onAuthSuccess} />
         )}
         <div className="mt-4 text-center text-sm">
           {isSigningUp ? "Already have an account?" : "Don't have an account?"}{" "}
