@@ -17,13 +17,13 @@ interface SocialFeedProps {
 }
 
 const cardColors = [
-    "dark:bg-sky-900/30 bg-sky-50/50",
-    "dark:bg-emerald-900/30 bg-emerald-50/50",
-    "dark:bg-amber-900/30 bg-amber-50/50",
-    "dark:bg-fuchsia-900/30 bg-fuchsia-50/50",
-    "dark:bg-rose-900/30 bg-rose-50/50",
-    "dark:bg-violet-900/30 bg-violet-50/50",
-  ];
+    "dark:bg-sky-700/60 bg-sky-100",
+    "dark:bg-emerald-700/60 bg-emerald-100",
+    "dark:bg-amber-600/60 bg-amber-100",
+    "dark:bg-fuchsia-700/60 bg-fuchsia-100",
+    "dark:bg-rose-700/60 bg-rose-100",
+    "dark:bg-violet-700/60 bg-violet-100",
+];
 
 export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
   return (
@@ -52,7 +52,7 @@ export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
             {socialMediaFeeds.map((feed, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1 h-full">
-                  <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
+                  <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-1 shadow-lg hover:shadow-xl`}>
                     <CardContent className="flex flex-col items-start gap-4 p-6">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" /> {/* Placeholder icon */}
