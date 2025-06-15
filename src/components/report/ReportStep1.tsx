@@ -24,7 +24,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { sdgGoals, projectStatuses } from "@/lib/constants";
 import { ImagePlus, Trash2 } from "lucide-react";
-import * as ExifReader from "exif-reader";
+import ExifReader from "exif-reader";
+import { Buffer } from 'buffer';
 import { reportSchema } from '@/lib/reportSchema';
 
 type ReportFormValues = z.infer<typeof reportSchema>;
@@ -55,7 +56,8 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form }) => {
       for (const file of Array.from(files)) {
         try {
           const arrayBuffer = await file.arrayBuffer();
-          const tags = ExifReader(arrayBuffer);
+          const buffer = Buffer.from(arrayBuffer);
+          const tags = ExifReader(buffer);
           const { latitude, longitude } = getGpsData(tags);
 
           if (latitude && longitude && !getValues('lat') && !getValues('lng')) {
