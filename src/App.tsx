@@ -11,13 +11,13 @@ import SubmitReport from "./pages/SubmitReport";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
-import { ThemeProvider } from "./contexts/ThemeProvider";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Toaster />
       <Sonner />
       <UserRoleProvider>
