@@ -1,4 +1,3 @@
-
 export type Report = {
   id: string;
   title: string;
@@ -17,6 +16,14 @@ export type Report = {
   sponsor?: string;
   funder?: string;
   contractor?: string;
+  targetUnit?: string;
+  targetValue?: number;
+  currentValue?: number;
+  progressHistory?: Array<{
+    value: number;
+    recordedAt: string;
+    notes: string;
+  }>;
 };
 
 export const mockReports: Report[] = [
@@ -30,6 +37,13 @@ export const mockReports: Report[] = [
     lat: -1.85,
     lng: 36.7833,
     validations: 12,
+    targetUnit: "wells built",
+    targetValue: 20,
+    currentValue: 15,
+    progressHistory: [
+      { value: 5, recordedAt: "2025-03-10", notes: "Initial phase complete" },
+      { value: 15, recordedAt: "2025-05-15", notes: "Phase 2 construction finished" },
+    ],
   },
   {
     id: "REP-002",
@@ -41,6 +55,9 @@ export const mockReports: Report[] = [
     lat: 11.5,
     lng: 8.5,
     validations: 25,
+    targetUnit: "students enrolled",
+    targetValue: 500,
+    currentValue: 500,
   },
   {
     id: "REP-003",
