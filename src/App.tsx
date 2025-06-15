@@ -12,6 +12,7 @@ import Layout from "./components/Layout";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
 import { ThemeProvider } from "next-themes";
 import UserManagement from "./pages/UserManagement";
+import CorporateTargets from "./pages/CorporateTargets";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/corporate-targets" element={<CorporateTargets />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/submit-report" element={<SubmitReport />} />
               <Route path="/user-management" element={<UserManagement />} />
