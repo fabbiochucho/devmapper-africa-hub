@@ -19,7 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { mockReports } from "@/data/mockReports";
 import { sdgGoals, projectStatuses, projectStatusColors } from "@/lib/constants";
-import { Star } from "lucide-react";
+import { Download, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Reports = () => {
   const [statusFilter, setStatusFilter] = React.useState("all");
@@ -36,26 +37,72 @@ const Reports = () => {
       .sort((a, b) => b.validations - a.validations);
   }, [statusFilter]);
 
+  const handleExport = () => {
+    const headers = [
+      "Project ID",
+      "Title",
+      "SDG Goal",
+      "Location",
+      "Status",
+      "Validations",
+      "Submitted Date",
+    ];
+
+    const csvRows = [
+      headers.join(","),
+      ...filteredReports.map((report) =>
+        [
+          report.id,
+          `"${report.title.replace(/"/g, '""')}"`,
+          `"${sdgGoalMap.get(report.sdg_goal) || "N/A"}"`,
+          `"${report.location.replace(/"/g, '""')}"`,
+          `"${projectStatusMap.get(report.project_status) || "N/A"}"`,
+          report.validations,
+          report.submitted_at,
+        ].join(",")
+      ),
+    ];
+
+    const csvData = csvRows.join("\n");
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `reports-${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Reports</h1>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Project Reports</CardTitle>
-          <div className="w-48">
-             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {projectStatuses.map(status => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="flex items-center gap-4">
+            <div className="w-48">
+               <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    {projectStatuses.map(status => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+            </div>
+            <Button onClick={handleExport} variant="outline" size="sm">
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
