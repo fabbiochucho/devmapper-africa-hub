@@ -22,17 +22,25 @@ import ReportStep2 from '@/components/report/ReportStep2';
 import { mockReports, Report } from '@/data/mockReports';
 import { useUserRole } from '@/contexts/UserRoleContext';
 
+const reportFormSchema = reportSchema.extend({
+  sdg_target: z.string().optional(),
+});
+
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
-  type ReportFormValues = z.infer<typeof reportSchema>;
+  const [sdgTargets, setSdgTargets] = React.useState<string[]>([]);
+  type ReportFormValues = z.infer<typeof reportFormSchema>;
   const { user } = useUserRole();
 
   const form = useForm<ReportFormValues>({
-    resolver: zodResolver(reportSchema),
+    resolver: zodResolver(reportFormSchema),
     defaultValues: {
       title: "",
       description: "",
       location: "",
+      sdg_goal: "",
+      sdg_target: "",
+      project_status: "",
       lat: undefined,
       lng: undefined,
       cost: undefined,
@@ -47,6 +55,19 @@ const SubmitReport = () => {
     mode: 'onChange',
   });
 
+  const sdgGoal = form.watch('sdg_goal');
+
+  React.useEffect(() => {
+    if (sdgGoal) {
+      // In a real app, you'd fetch this. For now, we'll mock it like in your example.
+      const mockTargets = [`${sdgGoal}.1`, `${sdgGoal}.2`, `${sdgGoal}.a`, `${sdgGoal}.b`, `${sdgGoal}.c`];
+      setSdgTargets(mockTargets);
+      form.setValue('sdg_target', ''); // Reset target when goal changes
+    } else {
+      setSdgTargets([]);
+    }
+  }, [sdgGoal, form]);
+
   function onSubmit(values: ReportFormValues) {
     console.log("Form Submitted:", values);
 
@@ -55,6 +76,7 @@ const SubmitReport = () => {
       title: values.title,
       description: values.description,
       sdg_goal: values.sdg_goal,
+      sdg_target: values.sdg_target,
       project_status: values.project_status as Report['project_status'],
       location: values.location,
       submitted_at: new Date().toISOString(),
@@ -121,7 +143,7 @@ const SubmitReport = () => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <CardContent>
-              {step === 1 && <ReportStep1 form={form} />}
+              {step === 1 && <ReportStep1 form={form} sdgTargets={sdgTargets} />}
               {step === 2 && <ReportStep2 form={form} />}
             </CardContent>
             <CardFooter className="flex justify-between">
