@@ -1,3 +1,4 @@
+
 import React from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -49,11 +50,13 @@ const createClusterCustomIcon = (cluster: L.MarkerCluster) => {
 };
 
 interface ProjectMapProps {
+  projects?: Report[];
   onMarkerClick: (report: Report) => void;
 }
 
-const ProjectMap: React.FC<ProjectMapProps> = ({ onMarkerClick }) => {
+const ProjectMap: React.FC<ProjectMapProps> = ({ projects, onMarkerClick }) => {
   const position: L.LatLngExpression = [5, 20]; // Centered on Africa
+  const reportsToRender = projects || mockReports;
 
   return (
     <MapContainer
@@ -67,10 +70,10 @@ const ProjectMap: React.FC<ProjectMapProps> = ({ onMarkerClick }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-        {mockReports.map((report) => (
+        {reportsToRender.filter(p => p.lat != null && p.lng != null).map((report) => (
           <Marker
             key={report.id}
-            position={[report.lat, report.lng]}
+            position={[report.lat!, report.lng!]}
             icon={createSdgIcon(report.sdg_goal)}
             // @ts-ignore - custom property to access in cluster function
             sdg_goal={report.sdg_goal}
