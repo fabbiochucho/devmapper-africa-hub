@@ -6,6 +6,8 @@ export type Report = {
   project_status: "planned" | "in_progress" | "completed" | "stalled" | "cancelled";
   location: string;
   submitted_at: string;
+  lat: number;
+  lng: number;
 };
 
 export const mockReports: Report[] = [
@@ -16,6 +18,8 @@ export const mockReports: Report[] = [
     project_status: "in_progress",
     location: "Kajiado County, Kenya",
     submitted_at: "2025-05-20",
+    lat: -1.85,
+    lng: 36.7833,
   },
   {
     id: "REP-002",
@@ -24,6 +28,8 @@ export const mockReports: Report[] = [
     project_status: "completed",
     location: "Kano State, Nigeria",
     submitted_at: "2025-04-15",
+    lat: 11.5,
+    lng: 8.5,
   },
   {
     id: "REP-003",
@@ -32,6 +38,8 @@ export const mockReports: Report[] = [
     project_status: "planned",
     location: "Accra, Ghana",
     submitted_at: "2025-06-01",
+    lat: 5.6037,
+    lng: -0.187,
   },
   {
     id: "REP-004",
@@ -40,6 +48,8 @@ export const mockReports: Report[] = [
     project_status: "stalled",
     location: "Addis Ababa, Ethiopia",
     submitted_at: "2025-03-10",
+    lat: 9.03,
+    lng: 38.74,
   },
   {
     id: "REP-005",
@@ -48,6 +58,8 @@ export const mockReports: Report[] = [
     project_status: "completed",
     location: "Western Cape, South Africa",
     submitted_at: "2025-05-30",
+    lat: -33.2278,
+    lng: 21.8569,
   },
   {
     id: "REP-006",
@@ -56,5 +68,7 @@ export const mockReports: Report[] = [
     project_status: "in_progress",
     location: "Lagos, Nigeria",
     submitted_at: "2025-06-10",
+    lat: 6.5244,
+    lng: 3.3792,
   },
 ];
