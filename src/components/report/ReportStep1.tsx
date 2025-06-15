@@ -48,20 +48,18 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form }) => {
   const lng = watch("lng");
 
   React.useEffect(() => {
-    const latValue = getValues('lat');
-    const lngValue = getValues('lng');
-
-    if (latValue !== undefined && lngValue !== undefined) {
-        // Only auto-fill location if user hasn't typed in it manually
-        if (!dirtyFields.location) {
-            const geocodeResult = reverseGeocode(Number(latValue), Number(lngValue));
-            if (geocodeResult) {
-                setValue('location', geocodeResult.country, { shouldValidate: true });
-                toast.success(`Location auto-detected as ${geocodeResult.country}.`);
-            }
+    const performGeocoding = async () => {
+      // Only auto-fill location if user hasn't typed in it manually and we have coordinates
+      if (lat !== undefined && lng !== undefined && !dirtyFields.location) {
+        const geocodeResult = await reverseGeocode(lat, lng);
+        if (geocodeResult) {
+          setValue('location', geocodeResult.country, { shouldValidate: true });
+          toast.success(`Location auto-detected as ${geocodeResult.country}.`);
         }
-    }
-  }, [lat, lng, getValues, setValue, dirtyFields.location]);
+      }
+    };
+    performGeocoding();
+  }, [lat, lng, setValue, dirtyFields]);
 
   const handlePhotoChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
