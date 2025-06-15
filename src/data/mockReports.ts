@@ -1,3 +1,4 @@
+
 import { reverseGeocode } from "@/lib/geocode";
 
 // Type definitions are kept to maintain the data contract with other components.
@@ -57,6 +58,8 @@ interface MapProject {
   budget: number;
   verification_score: number;
   created_at: string;
+  country: string;
+  country_code: string;
 }
 
 // Function to get the new raw data.
@@ -75,6 +78,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 50000,
       verification_score: 85,
       created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Kenya",
+      country_code: "KE",
     },
     {
       id: 2,
@@ -89,6 +94,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 120000,
       verification_score: 72,
       created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Nigeria",
+      country_code: "NG",
     },
     {
       id: 3,
@@ -103,6 +110,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 75000,
       verification_score: 92,
       created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "South Africa",
+      country_code: "ZA",
     },
     {
       id: 4,
@@ -117,6 +126,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 80000,
       verification_score: 88,
       created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Ghana",
+      country_code: "GH",
     },
     {
       id: 5,
@@ -131,6 +142,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 35000,
       verification_score: 65,
       created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Ethiopia",
+      country_code: "ET",
     },
     {
       id: 6,
@@ -145,6 +158,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 45000,
       verification_score: 78,
       created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Rwanda",
+      country_code: "RW",
     },
     {
       id: 7,
@@ -159,6 +174,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 200000,
       verification_score: 70,
       created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "South Africa",
+      country_code: "ZA",
     },
     {
       id: 8,
@@ -173,6 +190,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 25000,
       verification_score: 89,
       created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Uganda",
+      country_code: "UG",
     },
     {
       id: 9,
@@ -187,6 +206,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 60000,
       verification_score: 75,
       created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Tanzania",
+      country_code: "TZ",
     },
     {
       id: 10,
@@ -201,6 +222,8 @@ function getRawMockProjects(): MapProject[] {
       budget: 90000,
       verification_score: 82,
       created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+      country: "Nigeria",
+      country_code: "NG",
     },
   ];
 }
@@ -209,8 +232,6 @@ function getRawMockProjects(): MapProject[] {
 const rawProjects = getRawMockProjects();
 
 export const mockReports: Report[] = rawProjects.map(p => {
-  const geocodeResult = reverseGeocode(p.lat, p.lng);
-  
   let project_status: Report['project_status'] = 'planned';
   if (p.status === 'pending') {
     project_status = 'planned';
@@ -236,14 +257,14 @@ export const mockReports: Report[] = rawProjects.map(p => {
     sdg_goal: p.sdg_goal.toString(),
     sdg_target: p.sdg_target,
     project_status: project_status,
-    location: geocodeResult ? `${city}, ${geocodeResult.country}` : city,
+    location: `${city}, ${p.country}`,
     submitted_at: p.created_at,
     lat: p.lat,
     lng: p.lng,
     validations: verifications.length,
     verifications: verifications,
     verification_score: p.verification_score,
-    country_code: geocodeResult?.country_code,
+    country_code: p.country_code.toUpperCase(),
     cost: p.budget,
     costCurrency: 'USD',
     official: Math.random() > 0.5,
