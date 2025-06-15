@@ -21,17 +21,9 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps) {
-  const titleText = "Track Sustainable Development Across Africa";
-  const typingDuration = 30000; // 30 seconds
-  const repeatInterval = 180000; // 3 minutes
-  const typingSpeed = typingDuration / titleText.length;
-  // Delay after typing finishes before it repeats.
-  const repeatDelay = repeatInterval - typingDuration;
-
   const { displayText: typedTitle, isFinished: titleIsFinished } = useTypewriter(
-    titleText,
-    typingSpeed,
-    repeatDelay > 0 ? repeatDelay : 0
+    "Track Sustainable Development Across Africa",
+    50
   );
 
   return (

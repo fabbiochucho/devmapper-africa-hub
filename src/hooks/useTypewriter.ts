@@ -1,51 +1,29 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
-export const useTypewriter = (text: string, speed = 50, repeatDelay: number | null = null) => {
+export const useTypewriter = (text: string, speed = 50) => {
   const [displayText, setDisplayText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
-  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const repeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const startTyping = useCallback(() => {
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-    }
+  useEffect(() => {
+    if (!text) return;
     setDisplayText('');
     setIsFinished(false);
     let i = 0;
-
-    typingIntervalRef.current = setInterval(() => {
+    const typingInterval = setInterval(() => {
       if (i < text.length) {
         setDisplayText(text.substring(0, i + 1));
         i++;
       } else {
-        if (typingIntervalRef.current) {
-          clearInterval(typingIntervalRef.current);
-        }
+        clearInterval(typingInterval);
         setIsFinished(true);
-
-        if (repeatDelay !== null) {
-          repeatTimeoutRef.current = setTimeout(startTyping, repeatDelay);
-        }
       }
     }, speed);
-  }, [text, speed, repeatDelay]);
-
-  useEffect(() => {
-    if (!text) return;
-
-    startTyping();
 
     return () => {
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-      }
-      if (repeatTimeoutRef.current) {
-        clearTimeout(repeatTimeoutRef.current);
-      }
+      clearInterval(typingInterval);
     };
-  }, [text, startTyping]);
+  }, [text, speed]);
 
   return { displayText, isFinished };
 };
