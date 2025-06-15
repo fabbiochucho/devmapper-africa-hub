@@ -17,6 +17,8 @@ import CorporateTargets from "./pages/CorporateTargets";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import SearchPage from "./pages/SearchPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import Forum from "./pages/Forum";
+import Messages from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/user-management" element={<UserManagement />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/messages" element={<Messages />} />
               {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
             </Route>
             {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}

@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { MapPin, List, BarChart2, Settings, User, LogOut, PlusCircle } from "lucide-react";
+import { MapPin, BarChart2, Settings, User, LogOut, PlusCircle, Users, MessageSquare } from "lucide-react";
 import UserRoleSwitcher from "./UserRoleSwitcher";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
@@ -57,8 +57,9 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
-              <SidebarNavLink to="/reports" icon={List}>Reports</SidebarNavLink>
               <SidebarNavLink to="/analytics" icon={BarChart2}>Analytics</SidebarNavLink>
+              <SidebarNavLink to="/forum" icon={Users}>Community Forum</SidebarNavLink>
+              <SidebarNavLink to="/messages" icon={MessageSquare}>Messages</SidebarNavLink>
             </SidebarMenu>
           </SidebarGroup>
         </div>
