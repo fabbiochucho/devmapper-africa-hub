@@ -13,7 +13,7 @@ import MapIntegration from "@/components/MapIntegration";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface UserType {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: UserRole;
