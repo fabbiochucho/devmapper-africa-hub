@@ -4,7 +4,7 @@ export type Country = {
   name: string;
 };
 
-const africanCountries: Country[] = [
+export const africanCountries: Country[] = [
   { code: "DZA", name: "Algeria" },
   { code: "AGO", name: "Angola" },
   { code: "BEN", name: "Benin" },

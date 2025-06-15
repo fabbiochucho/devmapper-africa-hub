@@ -4,10 +4,10 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { mockReports } from "@/data/mockReports";
-import { countries } from "@/data/countries";
+import { africanCountries } from "@/data/countries";
 
 const ProjectsByCountryChart = () => {
-  const countryMap = new Map(countries.map((c) => [c.value, c.label]));
+  const countryMap = new Map(africanCountries.map((c) => [c.code, c.name]));
 
   const data = React.useMemo(() => {
     const counts: { [key: string]: number } = {};
@@ -31,8 +31,13 @@ const ProjectsByCountryChart = () => {
 
   const chartConfig = {
       value: { label: "Projects" },
-      ...Object.fromEntries(data.map(item => [item.name, { label: item.name, color: item.fill }]))
   } as ChartConfig;
+  data.forEach(item => {
+    chartConfig[item.name] = {
+      label: item.name,
+      color: item.fill,
+    };
+  });
 
   return (
     <Card>
@@ -60,7 +65,7 @@ const ProjectsByCountryChart = () => {
             />
             <Bar dataKey="value" radius={4}>
                 {data.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
             </Bar>
           </BarChart>
