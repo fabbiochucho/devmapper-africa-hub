@@ -1,8 +1,13 @@
 
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import HeatMap from "@/components/HeatMap";
+import ProjectMap from "@/components/ProjectMap";
+import ProjectDetails from "@/components/ProjectDetails";
+import { Report } from "@/data/mockReports";
 
 const Analytics = () => {
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Analytics</h1>
@@ -12,13 +17,18 @@ const Analytics = () => {
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-muted-foreground">
-            This map shows the geographic concentration of submitted projects.
+            This map shows a clustered view of projects. Clusters are colored by the most common SDG goal.
           </p>
           <div className="h-[500px] w-full">
-            <HeatMap />
+            <ProjectMap onMarkerClick={setSelectedReport} />
           </div>
         </CardContent>
       </Card>
+      
+      {selectedReport && (
+        <ProjectDetails report={selectedReport} onClose={() => setSelectedReport(null)} />
+      )}
+
        <Card>
         <CardHeader>
           <CardTitle>More Analytics</CardTitle>
