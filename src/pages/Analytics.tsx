@@ -4,6 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import ProjectMap from "@/components/ProjectMap";
 import ProjectDetails from "@/components/ProjectDetails";
 import { Report } from "@/data/mockReports";
+import SdgDistributionChart from "@/components/SdgDistributionChart";
+import ProjectStatusChart from "@/components/ProjectStatusChart";
 
 const Analytics = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
@@ -29,14 +31,10 @@ const Analytics = () => {
         <ProjectDetails report={selectedReport} onClose={() => setSelectedReport(null)} />
       )}
 
-       <Card>
-        <CardHeader>
-          <CardTitle>More Analytics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>This area will display more charts and visualizations.</p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <SdgDistributionChart />
+        <ProjectStatusChart />
+      </div>
     </div>
   );
 };

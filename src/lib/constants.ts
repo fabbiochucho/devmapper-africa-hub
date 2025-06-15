@@ -54,3 +54,11 @@ export const sdgGoalColors: { [key: string]: string } = {
   "16": "#00689d",
   "17": "#19486a",
 };
+
+export const projectStatusChartColors: { [key: string]: string } = {
+  planned: "#3b82f6",
+  in_progress: "#f59e0b",
+  completed: "#22c55e",
+  stalled: "#f97316",
+  cancelled: "#ef4444",
+};
