@@ -24,11 +24,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { africanCountries } from "@/data/countries";
 import { sdgGoals } from "@/lib/constants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface CountryStat {
   country: string;
   projects: number;
   budget: number;
+}
+
+interface UserTypeTrend {
+  'Citizen Reporter': number;
+  'NGO Staff': number;
+  'Government Official': number;
+  'Researcher': number;
+}
+
+interface MonthlyUserTypeTrend {
+  month: string;
+  trends: UserTypeTrend;
 }
 
 interface AnalyticsData {
@@ -41,6 +55,7 @@ interface AnalyticsData {
   countryStatsByBudget: CountryStat[];
   monthlyTrends: { month: string; projects: number; budget: number }[];
   verificationStats: { verified: number; pending: number; disputed: number };
+  monthlyUserTypeTrends: MonthlyUserTypeTrend[];
 }
 
 const countryCodeMap = new Map(africanCountries.map((c) => [c.name, c.code]));
@@ -112,6 +127,14 @@ const SdgDashboardView = () => {
         pending: 234,
         disputed: 121,
       },
+      monthlyUserTypeTrends: [
+        { month: "Jan", trends: { 'Citizen Reporter': 60, 'NGO Staff': 15, 'Government Official': 10, 'Researcher': 4 } },
+        { month: "Feb", trends: { 'Citizen Reporter': 70, 'NGO Staff': 20, 'Government Official': 12, 'Researcher': 10 } },
+        { month: "Mar", trends: { 'Citizen Reporter': 80, 'NGO Staff': 25, 'Government Official': 15, 'Researcher': 14 } },
+        { month: "Apr", trends: { 'Citizen Reporter': 95, 'NGO Staff': 30, 'Government Official': 18, 'Researcher': 13 } },
+        { month: "May", trends: { 'Citizen Reporter': 110, 'NGO Staff': 35, 'Government Official': 20, 'Researcher': 13 } },
+        { month: "Jun", trends: { 'Citizen Reporter': 120, 'NGO Staff': 40, 'Government Official': 25, 'Researcher': 18 } },
+      ],
     };
   };
 
@@ -197,6 +220,18 @@ const SdgDashboardView = () => {
   }
 
   if (!analytics) return <div>No analytics data available.</div>;
+
+  const userTypeTrendsChartData = analytics.monthlyUserTypeTrends.map(d => ({
+    month: d.month,
+    ...d.trends,
+  }));
+
+  const userTypeChartConfig = {
+    'Citizen Reporter': { label: 'Citizen Reporter', color: '#3b82f6' },
+    'NGO Staff': { label: 'NGO Staff', color: '#22c55e' },
+    'Government Official': { label: 'Government Official', color: '#f97316' },
+    'Researcher': { label: 'Researcher', color: '#8b5cf6' },
+  }
 
   return (
     <div className="space-y-6">
@@ -457,6 +492,26 @@ const SdgDashboardView = () => {
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Submissions by User Type</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={userTypeChartConfig} className="h-[300px] w-full">
+            <BarChart data={userTypeTrendsChartData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend />
+              <Bar dataKey="Citizen Reporter" stackId="a" fill="var(--color-Citizen Reporter)" />
+              <Bar dataKey="NGO Staff" stackId="a" fill="var(--color-NGO Staff)" />
+              <Bar dataKey="Government Official" stackId="a" fill="var(--color-Government Official)" />
+              <Bar dataKey="Researcher" stackId="a" fill="var(--color-Researcher)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 };

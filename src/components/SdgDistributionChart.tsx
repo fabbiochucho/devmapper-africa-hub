@@ -1,10 +1,11 @@
-
 import React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { mockReports } from "@/data/mockReports";
 import { sdgGoals, sdgGoalColors } from "@/lib/constants";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import SdgIcon from "./landing/SdgIcon";
 
 const SdgDistributionChart = () => {
   const sdgGoalMap = new Map(sdgGoals.map((g) => [g.value, g.label.replace(/Goal \d+: /, '')]));
@@ -32,6 +33,29 @@ const SdgDistributionChart = () => {
     };
   });
 
+  const CustomYAxisTick = (props: any) => {
+    const { x, y, payload } = props;
+    const goalInfo = sdgGoals.find(g => sdgGoalMap.get(g.value) === payload.value);
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <foreignObject x={-160} y={-12} width="150" height="24">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-end gap-2 w-full pr-2 cursor-help">
+                  <p className="text-xs text-right truncate">{payload.value}</p>
+                  {goalInfo && <SdgIcon goal={goalInfo.value} className="w-5 h-5 !text-xs" />}
+                </div>
+              </TooltipTrigger>
+              {goalInfo && <TooltipContent><p>{goalInfo.label}</p></TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
+        </foreignObject>
+      </g>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -49,7 +73,7 @@ const SdgDistributionChart = () => {
               axisLine={false}
               tickMargin={10}
               width={150}
-              tick={{ fontSize: 12 }}
+              tick={<CustomYAxisTick />}
             />
             <XAxis dataKey="value" type="number" hide />
             <ChartTooltip
@@ -58,7 +82,7 @@ const SdgDistributionChart = () => {
             />
             <Bar dataKey="value" radius={4}>
                 {data.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} className="fill-[--color-value]" />
+                    <Cell key={entry.name} fill={entry.fill} />
                 ))}
             </Bar>
           </BarChart>
