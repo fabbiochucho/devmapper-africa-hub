@@ -12,7 +12,6 @@ import SubmitReport from "./pages/SubmitReport";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
-import { Textarea } from "./components/ui/textarea";
 
 const queryClient = new QueryClient();
 
