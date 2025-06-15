@@ -1,5 +1,5 @@
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useMatch } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,22 @@ import { Button } from "@/components/ui/button";
 import { MapPin, List, BarChart2, Settings, User, LogOut, PlusCircle } from "lucide-react";
 import UserRoleSwitcher from "./UserRoleSwitcher";
 import { useUserRole } from "@/contexts/UserRoleContext";
+
+const SidebarNavLink = ({ to, end, icon: Icon, children }: { to: string, end?: boolean, icon: React.ElementType, children: React.ReactNode }) => {
+  const match = useMatch({ path: to, end });
+
+  return (
+    <SidebarMenuItem>
+      <NavLink to={to} end={end}>
+        <SidebarMenuButton isActive={!!match}>
+          <Icon />
+          <span>{children}</span>
+        </SidebarMenuButton>
+      </NavLink>
+    </SidebarMenuItem>
+  );
+};
+
 
 const AppSidebar = () => {
   const { role } = useUserRole();
@@ -40,36 +56,9 @@ const AppSidebar = () => {
           <SidebarGroup>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <NavLink to="/" end>
-                  {({ isActive }) => (
-                    <SidebarMenuButton isActive={isActive}>
-                      <MapPin />
-                      <span>Map Dashboard</span>
-                    </SidebarMenuButton>
-                  )}
-                </NavLink>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <NavLink to="/reports">
-                  {({ isActive }) => (
-                    <SidebarMenuButton isActive={isActive}>
-                      <List />
-                      <span>Reports</span>
-                    </SidebarMenuButton>
-                  )}
-                </NavLink>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <NavLink to="/analytics">
-                  {({ isActive }) => (
-                    <SidebarMenuButton isActive={isActive}>
-                      <BarChart2 />
-                      <span>Analytics</span>
-                    </SidebarMenuButton>
-                  )}
-                </NavLink>
-              </SidebarMenuItem>
+              <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
+              <SidebarNavLink to="/reports" icon={List}>Reports</SidebarNavLink>
+              <SidebarNavLink to="/analytics" icon={BarChart2}>Analytics</SidebarNavLink>
             </SidebarMenu>
           </SidebarGroup>
         </div>
@@ -78,16 +67,7 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <NavLink to="/settings">
-                {({ isActive }) => (
-                  <SidebarMenuButton isActive={isActive}>
-                    <Settings />
-                    <span>Settings</span>
-                  </SidebarMenuButton>
-                )}
-              </NavLink>
-            </SidebarMenuItem>
+            <SidebarNavLink to="/settings" icon={Settings}>Settings</SidebarNavLink>
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <LogOut />
