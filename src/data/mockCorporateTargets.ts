@@ -50,11 +50,13 @@ export const getCorporateTargets = async (): Promise<CorporateTarget[]> => {
 export const addCorporateTarget = async (
   targetData: TargetFormValues
 ): Promise<CorporateTarget> => {
-  const { deadline, ...rest } = targetData;
   const newTarget: CorporateTarget = {
     id: corporateTargets.length > 0 ? Math.max(...corporateTargets.map(t => t.id)) + 1 : 1,
-    ...rest,
-    deadline: deadline.toISOString(),
+    title: targetData.title,
+    metric: targetData.metric,
+    targetValue: targetData.targetValue,
+    targetUnit: targetData.targetUnit,
+    deadline: targetData.deadline.toISOString(),
     currentValue: 0,
     progress: 0,
     createdAt: new Date().toISOString(),
