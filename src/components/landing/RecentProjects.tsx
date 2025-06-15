@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export default function RecentProjects({ recentProjects }: RecentProjectsProps) 
               return (
                 <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1 h-full">
-                    <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-1 shadow-lg hover:shadow-xl`}>
+                    <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
                       <CardContent className="flex flex-col items-start gap-4 p-6">
                         <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
                         <p className="font-semibold leading-none">{report.title}</p>

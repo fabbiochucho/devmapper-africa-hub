@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -52,7 +51,7 @@ export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
             {socialMediaFeeds.map((feed, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1 h-full">
-                  <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-1 shadow-lg hover:shadow-xl`}>
+                  <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
                     <CardContent className="flex flex-col items-start gap-4 p-6">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" /> {/* Placeholder icon */}

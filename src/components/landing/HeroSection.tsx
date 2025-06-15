@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/contexts/UserRoleContext";
@@ -44,7 +45,7 @@ const sdgDetails = [
 
 export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps) {
   const titleText = "Track Sustainable Development Across Africa";
-  const typingDuration = 10000; // 10 seconds
+  const typingDuration = 30000; // 30 seconds
   const repeatInterval = 180000; // 3 minutes
   const typingSpeed = typingDuration / titleText.length;
   const repeatDelay = repeatInterval - typingDuration;
