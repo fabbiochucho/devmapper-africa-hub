@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
 import { ThemeProvider } from "next-themes";
+import UserManagement from "./pages/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/submit-report" element={<SubmitReport />} />
+              <Route path="/user-management" element={<UserManagement />} />
               {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
             </Route>
             {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}

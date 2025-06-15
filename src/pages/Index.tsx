@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AuthModal from "@/components/AuthModal";
-import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut } from "lucide-react";
+import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut, UserCheck } from "lucide-react";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Link } from "react-router-dom";
 
@@ -234,6 +233,14 @@ export default function Index() {
                   </p>
                 </div>
                 <div className="flex space-x-3">
+                  {["Platform Admin", "Country Admin"].includes(user.role) && (
+                    <Button asChild variant="secondary">
+                      <Link to="/user-management">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        User Management
+                      </Link>
+                    </Button>
+                  )}
                   <Button asChild>
                     <Link to="/submit-report">
                       <Plus className="w-4 h-4 mr-2" />

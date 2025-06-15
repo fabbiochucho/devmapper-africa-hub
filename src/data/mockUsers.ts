@@ -1,4 +1,3 @@
-
 import { UserRole } from "@/contexts/UserRoleContext";
 
 export interface MockUser {
@@ -55,6 +54,26 @@ export const mockUsers: MockUser[] = [
     verified: true,
     organization: "Sustainable Corp Ltd",
     country: "NGA",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 5,
+    name: "Platform Admin",
+    email: "admin@demo.com",
+    password: "password",
+    role: "Platform Admin",
+    verified: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 6,
+    name: "Unverified NGO",
+    email: "unverified.ngo@demo.com",
+    password: "password",
+    role: "NGO Member",
+    verified: false,
+    organization: "New Hope NGO",
+    country: "GHA",
     createdAt: new Date().toISOString(),
   },
 ];
