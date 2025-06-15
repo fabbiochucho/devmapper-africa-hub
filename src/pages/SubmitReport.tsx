@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,6 +67,11 @@ const SubmitReport = () => {
   function onSubmit(values: ReportFormValues) {
     console.log("Form Submitted:", values);
 
+    if (!user) {
+      toast.error("You must be logged in to submit a report.");
+      return;
+    }
+
     const newReport: Report = {
       id: `REP-${String(mockReports.length + 1).padStart(3, '0')}`,
       title: values.title,
@@ -74,6 +80,7 @@ const SubmitReport = () => {
       sdg_target: values.sdg_target,
       project_status: values.project_status as Report['project_status'],
       location: values.location,
+      submitted_by: user.id.toString(),
       submitted_at: new Date().toISOString(),
       lat: values.lat,
       lng: values.lng,

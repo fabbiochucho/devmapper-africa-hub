@@ -1,4 +1,3 @@
-
 import { reverseGeocode } from "@/lib/geocode";
 import { mockUsers } from "./mockUsers";
 
@@ -261,7 +260,7 @@ export const mockReports: Report[] = rawProjects.map(p => {
     sdg_target: p.sdg_target,
     project_status: project_status,
     location: `${city}, ${p.country}`,
-    submitted_by: randomUser.id,
+    submitted_by: randomUser.id.toString(),
     submitted_at: p.created_at,
     lat: p.lat,
     lng: p.lng,

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import MapIntegration from "@/components/MapIntegration";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface UserType {
-  id: string;
+  id: number;
   name: string;
   email: string;
   role: UserRole;
@@ -60,7 +61,7 @@ export default function Index() {
     .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())
     .slice(0, 10);
 
-  const getUserById = (id: string) => mockUsers.find(u => u.id === id);
+  const getUserById = (id: string) => mockUsers.find(u => u.id.toString() === id);
 
   const handleProjectSelect = (project: any) => {
     if (selectedMapProject && selectedMapProject.id === project.id) {
