@@ -4,10 +4,15 @@ import SdgDashboardView from "@/components/analytics/SdgDashboardView";
 import SdgMapView from "@/components/analytics/SdgMapView";
 import { BarChart3, Map, FileText } from "lucide-react";
 import ProjectReportsView from "@/components/analytics/ProjectReportsView";
+import { useSearchParams } from "react-router-dom";
 
 const AnalyticsPage = () => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab");
+  const projectId = searchParams.get("id");
+
   return (
-    <Tabs defaultValue="dashboard" className="w-full">
+    <Tabs defaultValue={tab || "dashboard"} className="w-full">
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="dashboard">
           <BarChart3 className="mr-2 h-4 w-4" />
@@ -29,11 +34,10 @@ const AnalyticsPage = () => {
         <SdgMapView />
       </TabsContent>
       <TabsContent value="reports" className="mt-4">
-        <ProjectReportsView />
+        <ProjectReportsView selectedProjectId={projectId} />
       </TabsContent>
     </Tabs>
   );
 };
 
 export default AnalyticsPage;
-

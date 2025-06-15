@@ -24,12 +24,25 @@ import { Button } from "@/components/ui/button";
 import GenerateReportDialog from "@/components/report/GenerateReportDialog";
 import ProjectDetails from "@/components/ProjectDetails";
 
-const ProjectReportsView = () => {
+type ProjectReportsViewProps = {
+  selectedProjectId?: string | null;
+};
+
+const ProjectReportsView: React.FC<ProjectReportsViewProps> = ({ selectedProjectId }) => {
   const [reports, setReports] = React.useState<Report[]>(mockReports);
   const [selectedReport, setSelectedReport] = React.useState<Report | null>(null);
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [sdgFilter, setSdgFilter] = React.useState("all");
   const [isGenerateDialogOpen, setGenerateDialogOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (selectedProjectId) {
+      const reportToSelect = reports.find((r) => r.id === selectedProjectId);
+      if (reportToSelect) {
+        setSelectedReport(reportToSelect);
+      }
+    }
+  }, [selectedProjectId, reports]);
 
   const sdgGoalMap = React.useMemo(() => new Map(sdgGoals.map(g => [g.value, g.label])), []);
   const projectStatusMap = React.useMemo(() => new Map(projectStatuses.map(s => [s.value, s.label])), []);
@@ -103,7 +116,7 @@ const ProjectReportsView = () => {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Project Reports</CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <div className="w-48">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger>
@@ -158,7 +171,11 @@ const ProjectReportsView = () => {
                     </TableHeader>
                     <TableBody>
                     {filteredReports.map((report) => (
-                        <TableRow key={report.id} onClick={() => setSelectedReport(report)} className="cursor-pointer hover:bg-muted/50">
+                        <TableRow 
+                          key={report.id} 
+                          onClick={() => setSelectedReport(report)} 
+                          className={`cursor-pointer hover:bg-muted/50 ${selectedReport?.id === report.id ? 'bg-muted' : ''}`}
+                        >
                         <TableCell className="font-medium">{report.title}</TableCell>
                         <TableCell>{sdgGoalMap.get(report.sdg_goal) || 'N/A'}</TableCell>
                         <TableCell>{report.location}</TableCell>
@@ -185,7 +202,7 @@ const ProjectReportsView = () => {
         <div className="lg:col-span-3">
           {selectedReport ? (
             <Card>
-              <CardContent className="p-6 h-full overflow-y-auto">
+              <CardContent className="p-6 h-full overflow-y-auto max-h-[calc(100vh-220px)]">
                  <ProjectDetails 
                     report={selectedReport} 
                     onUpdate={handleUpdateReport}
@@ -207,4 +224,3 @@ const ProjectReportsView = () => {
 };
 
 export default ProjectReportsView;
-

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,9 @@ import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Link } from "react-router-dom";
 import NotificationSystem from "@/components/NotificationSystem";
 import { mockReports, Report } from "@/data/mockReports";
+import { mockUsers } from "@/data/mockUsers";
 import MapIntegration from "@/components/MapIntegration";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface UserType {
   id: number;
@@ -27,6 +28,39 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(true);
   const { setRole } = useUserRole();
   const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
+
+  const socialMediaFeeds = [
+    {
+      platform: "Twitter",
+      user: "@devadvocate",
+      content: "Just used #DevMapper to report a new school being built in my village. Transparency is key for development! Great platform.",
+      avatar: "/placeholder.svg",
+    },
+    {
+      platform: "LinkedIn",
+      user: "Amina Okoro, NGO Director",
+      content: "Our team at 'Educate Africa' is now using DevMapper to track our projects. The analytics dashboard provides incredible insights into our SDG alignment.",
+      avatar: "/placeholder.svg",
+    },
+    {
+      platform: "Facebook",
+      user: "John Mensah",
+      content: "It's amazing to see so many projects mapped out across Ghana on DevMapper. I just verified a clean water well project near me. Feeling empowered!",
+      avatar: "/placeholder.svg",
+    },
+    {
+      platform: "Twitter",
+      user: "@EcoWarriorJane",
+      content: "Kudos to the DevMapper team for creating a tool that holds organizations accountable. Following the progress of the solar farm installation in Kenya.",
+      avatar: "/placeholder.svg",
+    },
+  ];
+
+  const recentProjects = mockReports
+    .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())
+    .slice(0, 10);
+
+  const getUserById = (id: string) => mockUsers.find(u => u.id === id);
 
   const handleProjectSelect = (project: any) => {
     if (selectedMapProject && selectedMapProject.id === project.id) {
@@ -48,18 +82,18 @@ export default function Index() {
   };
 
   const projectsForMap = mockReports.map(report => {
-      if (!report.lat || !report.lng) return null;
-      const statusInfo = getStatusInfo(report.project_status);
-      return {
-          id: parseInt(report.id.replace("REP-", "")),
-          title: report.title,
-          lat: report.lat,
-          lng: report.lng,
-          sdg_goal: parseInt(report.sdg_goal),
-          status: statusInfo.name,
-          color: statusInfo.color,
-          budget: report.cost || 0,
-      };
+    if (!report.lat || !report.lng) return null;
+    const statusInfo = getStatusInfo(report.project_status);
+    return {
+      id: parseInt(report.id.replace("REP-", "")),
+      title: report.title,
+      lat: report.lat,
+      lng: report.lng,
+      sdg_goal: parseInt(report.sdg_goal),
+      status: statusInfo.name,
+      color: statusInfo.color,
+      budget: report.cost || 0,
+    };
   }).filter(Boolean) as any[];
 
   useEffect(() => {
@@ -130,7 +164,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" id="top">
       <header className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -278,6 +312,91 @@ export default function Index() {
           </div>
         </section>
 
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-foreground mb-4">Recently Added Projects</h3>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Check out the latest development projects reported by the community.
+              </p>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full max-w-4xl mx-auto"
+            >
+              <CarouselContent>
+                {recentProjects.map((report) => {
+                  const user = getUserById(report.submitted_by);
+                  return (
+                    <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1">
+                        <Card className="h-full">
+                          <CardContent className="flex flex-col items-start gap-4 p-6">
+                            <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
+                            <p className="font-semibold leading-none">{report.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Reported by: {user?.name || "Anonymous"}
+                            </p>
+                            <Button asChild variant="outline" size="sm" className="mt-auto">
+                              <Link to={`/analytics?tab=reports&id=${report.id}`}>
+                                View Project
+                              </Link>
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
+        </section>
+
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-foreground mb-4">What People Are Saying</h3>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Updates from our community on social media.
+              </p>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full max-w-4xl mx-auto"
+            >
+              <CarouselContent>
+                {socialMediaFeeds.map((feed, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <Card className="h-full">
+                        <CardContent className="flex flex-col items-start gap-4 p-6">
+                          <div className="flex items-center gap-2">
+                             <Users className="w-4 h-4" /> {/* Placeholder icon */}
+                            <span className="font-semibold">{feed.user}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">"{feed.content}"</p>
+                          <Badge variant="outline" className="mt-auto">{feed.platform}</Badge>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
+        </section>
+
         {user && (
           <section className="py-16 bg-card">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -418,33 +537,33 @@ export default function Index() {
             <div>
               <h4 className="font-semibold mb-4">Platform</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Report Projects</li>
-                <li>Verify Data</li>
-                <li>Track Progress</li>
-                <li>Analytics</li>
+                <li><Link to="/submit-report" className="hover:text-white transition-colors">Report Projects</Link></li>
+                <li><Link to="/analytics" className="hover:text-white transition-colors">Verify Data</Link></li>
+                <li><Link to="/analytics" className="hover:text-white transition-colors">Track Progress</Link></li>
+                <li><Link to="/analytics" className="hover:text-white transition-colors">Analytics</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Community</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Guidelines</li>
-                <li>Support</li>
-                <li>Training</li>
-                <li>Resources</li>
+                <li><a href="#" className="hover:text-white transition-colors">Guidelines</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Training</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Resources</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Connect</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Telegram Bot</li>
-                <li>Mobile App</li>
-                <li>API Access</li>
-                <li>Partnerships</li>
+                <li><a href="#" className="hover:text-white transition-colors">Telegram Bot</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Mobile App</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">API Access</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Partnerships</a></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 DevMapper. Built for sustainable development in Africa.</p>
+            <a href="#top" className="hover:text-white transition-colors">&copy; 2025 DevMapper. Built for sustainable development in Africa.</a>
           </div>
         </div>
       </footer>

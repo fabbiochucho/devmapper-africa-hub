@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import Reports from "./pages/Reports";
+// import Reports from "./pages/Reports"; // This page is removed
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import SubmitReport from "./pages/SubmitReport";
@@ -28,7 +28,7 @@ const App = () => (
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Index />} />
-              <Route path="/reports" element={<Reports />} />
+              {/* <Route path="/reports" element={<Reports />} /> */}
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/corporate-targets" element={<CorporateTargets />} />
               <Route path="/government-dashboard" element={<GovernmentDashboard />} />

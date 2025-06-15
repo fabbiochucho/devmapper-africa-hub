@@ -1,4 +1,3 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "./AppSidebar";
@@ -11,7 +10,7 @@ const Layout = () => {
   const navigate = useNavigate();
 
   const handleProjectSelect = (project: Report) => {
-    navigate(`/reports?id=${project.id}`);
+    navigate(`/analytics?tab=reports&id=${project.id}`);
   };
 
   const handleUserSelect = (user: MockUser) => {
