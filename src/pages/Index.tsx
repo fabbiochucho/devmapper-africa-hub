@@ -1,18 +1,17 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Map from "@/components/Map";
 
 const Index = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <Card className="w-full">
+      <Card className="w-full flex-grow">
         <CardHeader>
           <CardTitle>Pan-African SDG Project Map</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="w-full h-[70vh] bg-muted rounded-lg border flex items-center justify-center">
-            <p className="text-muted-foreground">Interactive map will be rendered here.</p>
-          </div>
+        <CardContent className="h-[calc(100%_-_72px)]">
+          <Map />
         </CardContent>
       </Card>
     </div>
