@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -34,6 +33,7 @@ const reportSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
   description: z.string().min(20, { message: "Description must be at least 20 characters." }),
   sdg_goal: z.string({ required_error: "Please select an SDG Goal." }),
+  project_status: z.string({ required_error: "Please select a project status." }),
   location: z.string().min(3, { message: "Location must be at least 3 characters." }),
 });
 
@@ -55,6 +55,14 @@ const sdgGoals = [
   { value: "15", label: "Goal 15: Life on Land" },
   { value: "16", label: "Goal 16: Peace and Justice Strong Institutions" },
   { value: "17", label: "Goal 17: Partnerships to achieve the Goal" },
+];
+
+const projectStatuses = [
+  { value: "planned", label: "Planned" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "stalled", label: "Stalled / On Hold" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
 const SubmitReport = () => {
@@ -133,6 +141,30 @@ const SubmitReport = () => {
                           {sdgGoals.map((goal) => (
                             <SelectItem key={goal.value} value={goal.value}>
                               {goal.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="project_status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {projectStatuses.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
