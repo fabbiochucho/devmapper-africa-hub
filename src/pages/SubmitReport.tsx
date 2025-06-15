@@ -19,10 +19,13 @@ import { toast } from "@/components/ui/sonner";
 import { reportSchema } from "@/lib/reportSchema";
 import ReportStep1 from '@/components/report/ReportStep1';
 import ReportStep2 from '@/components/report/ReportStep2';
+import { mockReports, Report } from '@/data/mockReports';
+import { useUserRole } from '@/contexts/UserRoleContext';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
   type ReportFormValues = z.infer<typeof reportSchema>;
+  const { user } = useUserRole();
 
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
@@ -46,6 +49,29 @@ const SubmitReport = () => {
 
   function onSubmit(values: ReportFormValues) {
     console.log("Form Submitted:", values);
+
+    const newReport: Report = {
+      id: `REP-${String(mockReports.length + 1).padStart(3, '0')}`,
+      title: values.title,
+      description: values.description,
+      sdg_goal: values.sdg_goal,
+      project_status: values.project_status as Report['project_status'],
+      location: values.location,
+      submitted_at: new Date().toISOString(),
+      lat: values.lat,
+      lng: values.lng,
+      validations: 0,
+      verifications: [],
+      cost: values.cost,
+      costCurrency: values.costCurrency,
+      usd_exchange_rate: values.usd_exchange_rate,
+      startDate: values.startDate?.toISOString(),
+      endDate: values.endDate?.toISOString(),
+      sponsor: values.sponsor,
+      funder: values.funder,
+      contractor: values.contractor,
+      official: user.role === 'Government Official' || user.role === 'Platform Admin',
+    };
     
     if (values.photos) {
       console.log("Photos to upload:", values.photos);
@@ -58,6 +84,8 @@ const SubmitReport = () => {
       const usdAmount = values.cost / values.usd_exchange_rate;
       console.log(`Converted USD amount: ${usdAmount.toFixed(2)}`);
     }
+
+    mockReports.push(newReport);
 
     toast.success("Report submitted successfully!", {
       description: "Your report has been received and will be reviewed.",
@@ -121,4 +149,3 @@ const SubmitReport = () => {
 };
 
 export default SubmitReport;
-

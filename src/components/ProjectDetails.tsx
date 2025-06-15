@@ -103,6 +103,12 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {currentReport.description && (
+            <div>
+              <h4 className="font-semibold mb-2">Description</h4>
+              <p className="text-sm text-muted-foreground">{currentReport.description}</p>
+            </div>
+          )}
           <div>
             <h4 className="font-semibold mb-2">Project Verification</h4>
             <div className="flex items-center space-x-6">

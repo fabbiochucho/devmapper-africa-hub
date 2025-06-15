@@ -13,6 +13,7 @@ export type Verification = {
 export type Report = {
   id: string;
   title: string;
+  description?: string;
   sdg_goal: string;
   project_status: "planned" | "in_progress" | "completed" | "stalled" | "cancelled";
   location: string;

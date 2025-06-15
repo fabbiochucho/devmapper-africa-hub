@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -28,19 +27,25 @@ const Reports = () => {
   const [reports, setReports] = React.useState<Report[]>(mockReports);
   const [selectedReport, setSelectedReport] = React.useState<Report | null>(null);
   const [statusFilter, setStatusFilter] = React.useState("all");
+  const [sdgFilter, setSdgFilter] = React.useState("all");
   const [isGenerateDialogOpen, setGenerateDialogOpen] = React.useState(false);
 
   const sdgGoalMap = React.useMemo(() => new Map(sdgGoals.map(g => [g.value, g.label])), []);
   const projectStatusMap = React.useMemo(() => new Map(projectStatuses.map(s => [s.value, s.label])), []);
 
   const filteredReports = React.useMemo(() => {
-    const sortedReports = [...reports].sort((a, b) => b.validations - a.validations);
-    if (statusFilter === "all") {
-      return sortedReports;
+    let filtered = [...reports].sort((a, b) => b.validations - a.validations);
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((report) => report.project_status === statusFilter);
     }
-    return sortedReports
-      .filter((report) => report.project_status === statusFilter);
-  }, [statusFilter, reports]);
+
+    if (sdgFilter !== "all") {
+      filtered = filtered.filter((report) => report.sdg_goal === sdgFilter);
+    }
+    
+    return filtered;
+  }, [statusFilter, sdgFilter, reports]);
 
   const handleUpdateReport = (updatedReport: Report) => {
     const newReports = reports.map(r => r.id === updatedReport.id ? updatedReport : r);
@@ -113,6 +118,21 @@ const Reports = () => {
                             ))}
                         </SelectContent>
                         </Select>
+                    </div>
+                    <div className="w-48">
+                      <Select value={sdgFilter} onValueChange={setSdgFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by SDG..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All SDGs</SelectItem>
+                          {sdgGoals.map((goal) => (
+                            <SelectItem key={goal.value} value={goal.value}>
+                              {goal.label.split(':')[0]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button onClick={handleExport} variant="outline" size="sm">
                     <Download className="mr-2 h-4 w-4" />
