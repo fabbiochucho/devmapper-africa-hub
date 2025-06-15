@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -16,13 +17,13 @@ interface SocialFeedProps {
 }
 
 const cardColors = [
-    "dark:bg-sky-700/60 bg-sky-100",
-    "dark:bg-emerald-700/60 bg-emerald-100",
-    "dark:bg-amber-600/60 bg-amber-100",
-    "dark:bg-fuchsia-700/60 bg-fuchsia-100",
-    "dark:bg-rose-700/60 bg-rose-100",
-    "dark:bg-violet-700/60 bg-violet-100",
-];
+    "dark:bg-sky-900/30 bg-sky-50/50",
+    "dark:bg-emerald-900/30 bg-emerald-50/50",
+    "dark:bg-amber-900/30 bg-amber-50/50",
+    "dark:bg-fuchsia-900/30 bg-fuchsia-50/50",
+    "dark:bg-rose-900/30 bg-rose-50/50",
+    "dark:bg-violet-900/30 bg-violet-50/50",
+  ];
 
 export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
   return (

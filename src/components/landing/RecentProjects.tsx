@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,12 @@ interface RecentProjectsProps {
 }
 
 const cardColors = [
-  "dark:bg-blue-800/50 bg-blue-100",
-  "dark:bg-green-800/50 bg-green-100",
-  "dark:bg-yellow-700/50 bg-yellow-100",
-  "dark:bg-purple-800/50 bg-purple-100",
-  "dark:bg-pink-800/50 bg-pink-100",
-  "dark:bg-indigo-800/50 bg-indigo-100",
+  "dark:bg-blue-900/30 bg-blue-50/50",
+  "dark:bg-green-900/30 bg-green-50/50",
+  "dark:bg-yellow-900/30 bg-yellow-50/50",
+  "dark:bg-purple-900/30 bg-purple-50/50",
+  "dark:bg-pink-900/30 bg-pink-50/50",
+  "dark:bg-indigo-900/30 bg-indigo-50/50",
 ];
 
 const getUserById = (id: string) => mockUsers.find((u) => u.id.toString() === id);
