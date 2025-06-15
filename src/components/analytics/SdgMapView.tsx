@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -7,6 +6,7 @@ import { MapPin, Filter, BarChart3 } from "lucide-react"
 import ProjectMap from "@/components/ProjectMap"
 import { mockReports, Report } from "@/data/mockReports"
 import { sdgGoalColors, projectStatusColors } from "@/lib/constants"
+import SdgDistributionChart from "@/components/SdgDistributionChart";
 
 interface MapFilters {
   country_code: string
@@ -158,17 +158,20 @@ export default function SdgMapView() {
 
       {/* Map Container */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              SDG Projects Map
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProjectMap projects={filteredReports} onMarkerClick={handleMarkerClick} />
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  SDG Projects Map
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectMap projects={filteredReports} onMarkerClick={handleMarkerClick} />
+              </CardContent>
+            </Card>
+            <SdgDistributionChart topN={5} />
+        </div>
 
         {/* Project Details */}
         <Card>

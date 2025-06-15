@@ -1,4 +1,3 @@
-
 import { NavLink, useMatch } from "react-router-dom";
 import {
   Sidebar,
@@ -57,7 +56,6 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
-              <SidebarNavLink to="/reports" icon={List}>Reports</SidebarNavLink>
               <SidebarNavLink to="/analytics" icon={BarChart2}>Analytics</SidebarNavLink>
             </SidebarMenu>
           </SidebarGroup>

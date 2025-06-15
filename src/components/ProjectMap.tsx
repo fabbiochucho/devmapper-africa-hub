@@ -63,7 +63,7 @@ const ProjectMap: React.FC<ProjectMapProps> = ({ projects, onMarkerClick }) => {
       center={position}
       zoom={4}
       scrollWheelZoom={true}
-      className="w-full h-[500px] rounded-lg"
+      className="w-full h-[250px] rounded-lg"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
