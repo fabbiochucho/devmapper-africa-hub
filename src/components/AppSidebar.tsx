@@ -1,5 +1,4 @@
 
-```typescript
 import { NavLink, useMatch, Link } from "react-router-dom";
 import {
   Sidebar,
@@ -93,4 +92,3 @@ const AppSidebar = () => {
 };
 
 export default AppSidebar;
-```

@@ -1,5 +1,4 @@
 
-```typescript
 import MapIntegration from "@/components/MapIntegration";
 import SdgDistributionChart from "@/components/SdgDistributionChart";
 
@@ -35,4 +34,3 @@ export default function MapSection({ projects, onProjectSelect, selectedProject 
     </section>
   );
 }
-```

@@ -1,5 +1,4 @@
 
-```typescript
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotificationSystem from "@/components/NotificationSystem";
@@ -89,4 +88,3 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
     </header>
   );
 }
-```
