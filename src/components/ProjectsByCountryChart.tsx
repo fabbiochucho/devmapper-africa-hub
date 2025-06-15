@@ -6,9 +6,10 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { mockReports } from "@/data/mockReports";
 import { africanCountries } from "@/data/countries";
 
-const ProjectsByCountryChart = () => {
-  const countryMap = new Map(africanCountries.map((c) => [c.code, c.name]));
+// Moved countryMap outside the component for performance, as it's constant.
+const countryMap = new Map(africanCountries.map((c) => [c.code, c.name]));
 
+const ProjectsByCountryChart = () => {
   const data = React.useMemo(() => {
     const counts: { [key: string]: number } = {};
     mockReports.forEach((report) => {
