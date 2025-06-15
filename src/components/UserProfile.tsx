@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -210,7 +209,7 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
                     <div className="w-full bg-muted rounded-full h-2"><div className="bg-primary h-2 rounded-full" style={{ width: "75%" }}></div></div>
                   </div>
                 </div>
-              </TabsContent>
+              </CardContent>
             </Card>
           </TabsContent>
         )}
@@ -228,6 +227,14 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
                   <div className="text-center p-4 border rounded-lg">
                     <div className="text-2xl font-bold text-green-600">$45.6M</div>
                     <div className="text-sm text-muted-foreground">Total Budget</div>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">67</div>
+                    <div className="text-sm text-muted-foreground">Pending Review</div>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">89%</div>
+                    <div className="text-sm text-muted-foreground">Completion Rate</div>
                   </div>
                 </div>
               </CardContent>
