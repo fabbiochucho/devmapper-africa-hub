@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { X, Star, BadgeCheck, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import UpdateProgressDialog from "@/components/report/UpdateProgressDialog";
 import { Progress } from "@/components/ui/progress";
+import CommentsSection from "./comments/CommentsSection";
 
 interface ProjectDetailsProps {
   report: Report;
@@ -109,6 +109,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
             <h4 className="font-semibold mb-2">Submitted On</h4>
             <p>{new Date(currentReport.submitted_at).toLocaleDateString()}</p>
           </div>
+          <CommentsSection projectId={currentReport.id} />
         </CardContent>
       </Card>
       {isUpdateProgressOpen && (
