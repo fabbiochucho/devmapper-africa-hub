@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -45,6 +46,8 @@ const SdgMapView = () => {
     setFilteredReports(newReports)
   }, [filters])
 
+  const selectedProjectCountry = selectedProject ? africanCountries.find(c => c.code === selectedProject.country_code) : null;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -58,12 +61,12 @@ const SdgMapView = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Country</label>
-              <Select onValueChange={(value) => setFilters({ ...filters, country: value })}>
+              <Select onValueChange={(value) => setFilters({ ...filters, country: value === 'all' ? null : value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   {africanCountries.map((country) => (
                     <SelectItem key={country.code} value={country.code}>
                       {country.name}
@@ -74,12 +77,12 @@ const SdgMapView = () => {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block text-muted-foreground">SDG Goal</label>
-              <Select onValueChange={(value) => setFilters({ ...filters, sdgGoal: value })}>
+              <Select onValueChange={(value) => setFilters({ ...filters, sdgGoal: value === 'all' ? null : value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select SDG Goal" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Goals</SelectItem>
+                  <SelectItem value="all">All Goals</SelectItem>
                   {Array.from({ length: 17 }, (_, i) => i + 1).map((goal) => (
                     <SelectItem key={goal} value={goal.toString()}>
                       SDG {goal}
@@ -90,12 +93,12 @@ const SdgMapView = () => {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Project Status</label>
-              <Select onValueChange={(value) => setFilters({ ...filters, status: value })}>
+              <Select onValueChange={(value) => setFilters({ ...filters, status: value === 'all' ? null : value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="planned">Planned</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -144,7 +147,7 @@ const SdgMapView = () => {
                   </Badge>
                 </div>
                 <div className="text-sm">
-                  <strong>Country:</strong> {selectedProject.country_name}
+                  <strong>Country:</strong> {selectedProjectCountry ? selectedProjectCountry.name : selectedProject.country_code}
                 </div>
                 {selectedProject.cost && <div className="text-sm"><strong>Budget:</strong> ${selectedProject.cost.toLocaleString()}</div>}
                 <div className="text-sm">
