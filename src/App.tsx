@@ -15,6 +15,7 @@ import UserManagement from "./pages/UserManagement";
 import CorporateTargets from "./pages/CorporateTargets";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import SearchPage from "./pages/SearchPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/submit-report" element={<SubmitReport />} />
               <Route path="/user-management" element={<UserManagement />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
             </Route>
             {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}

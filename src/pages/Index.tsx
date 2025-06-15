@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,7 +234,15 @@ export default function Index() {
                     Role: {user.role} {user.organization && `• ${user.organization}`}
                   </p>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex flex-wrap gap-3">
+                  {["Platform Admin", "Country Admin"].includes(user.role) && (
+                    <Button asChild>
+                      <Link to="/admin-dashboard">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    </Button>
+                  )}
                   {["Government Official", "Country Admin"].includes(user.role) && (
                     <Button asChild>
                       <Link to="/government-dashboard">
