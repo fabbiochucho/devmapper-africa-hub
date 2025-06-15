@@ -6,9 +6,15 @@ export type Report = {
   project_status: "planned" | "in_progress" | "completed" | "stalled" | "cancelled";
   location: string;
   submitted_at: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   validations: number;
+  cost?: number;
+  startDate?: string;
+  endDate?: string;
+  sponsor?: string;
+  funder?: string;
+  contractor?: string;
 };
 
 export const mockReports: Report[] = [
