@@ -10,6 +10,7 @@ import UpdateProgressDialog from "@/components/report/UpdateProgressDialog";
 import { Progress } from "@/components/ui/progress";
 import CommentsSection from "./comments/CommentsSection";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import VerificationDialog from "@/components/report/VerificationDialog";
 
 interface ProjectDetailsProps {
   report: Report;
@@ -20,6 +21,8 @@ interface ProjectDetailsProps {
 const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpdate }) => {
   const [currentReport, setCurrentReport] = useState<Report>(report);
   const [isUpdateProgressOpen, setUpdateProgressOpen] = useState(false);
+  const [isVerificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [verificationAction, setVerificationAction] = useState<'confirm' | 'dispute' | null>(null);
   const { user } = useUserRole();
 
   useEffect(() => {
@@ -31,7 +34,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
     [currentReport.verifications, user.id]
   );
 
-  const handleVerification = (action: 'confirm' | 'dispute') => {
+  const handleVerification = (notes?: string) => {
+    if (!verificationAction) return;
+
     if (hasVerified) {
       toast.info("You have already verified this project.");
       return;
@@ -41,8 +46,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
       id: (currentReport.verifications?.length || 0) + 1,
       userId: user.id,
       userName: user.name,
-      action: action,
+      action: verificationAction,
       createdAt: new Date().toISOString(),
+      notes: notes,
     };
 
     const updatedVerifications = [...(currentReport.verifications || []), newVerification];
@@ -68,7 +74,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
     };
     
     onUpdate(updatedReport);
-    toast.success(`Project ${action === 'confirm' ? 'confirmed' : 'disputed'} successfully!`);
+    toast.success(`Project ${verificationAction === 'confirm' ? 'confirmed' : 'disputed'} successfully!`);
+    setVerificationDialogOpen(false);
+    setVerificationAction(null);
+  };
+
+  const handleOpenVerificationDialog = (action: 'confirm' | 'dispute') => {
+    setVerificationAction(action);
+    setVerificationDialogOpen(true);
   };
 
   const sdgGoal = sdgGoals.find(g => g.value === currentReport.sdg_goal);
@@ -127,11 +140,11 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
               </div>
             </div>
             <div className="mt-4 flex items-center space-x-2">
-              <Button onClick={() => handleVerification('confirm')} disabled={hasVerified} size="sm">
+              <Button onClick={() => handleOpenVerificationDialog('confirm')} disabled={hasVerified} size="sm">
                 <ThumbsUp className="mr-2 h-4 w-4" />
                 Confirm
               </Button>
-              <Button onClick={() => handleVerification('dispute')} disabled={hasVerified} variant="destructive" size="sm">
+              <Button onClick={() => handleOpenVerificationDialog('dispute')} disabled={hasVerified} variant="destructive" size="sm">
                 <ThumbsDown className="mr-2 h-4 w-4" />
                 Dispute
               </Button>
@@ -178,6 +191,14 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
           onOpenChange={setUpdateProgressOpen}
           report={currentReport}
           onUpdate={onUpdate}
+        />
+      )}
+      {isVerificationDialogOpen && verificationAction && (
+        <VerificationDialog
+          isOpen={isVerificationDialogOpen}
+          onOpenChange={setVerificationDialogOpen}
+          action={verificationAction}
+          onSubmit={handleVerification}
         />
       )}
     </>
