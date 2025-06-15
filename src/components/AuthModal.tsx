@@ -12,7 +12,7 @@ import { signInSchema, signUpSchema } from "@/lib/authSchema";
 import { ALL_ROLES, UserRole } from "@/contexts/UserRoleContext";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
-import { mockUsers } from "@/data/mockUsers";
+import { mockUsers, MockUser } from "@/data/mockUsers";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -58,19 +58,41 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
   };
 
   const handleSignUp = (values: SignUpFormValues) => {
-    // This is a mock authentication.
-    const user = {
-      id: 2,
+    const existingUser = mockUsers.find(
+      (u) => u.email.toLowerCase() === values.email.toLowerCase()
+    );
+
+    if (existingUser) {
+      toast.error("User with this email already exists.");
+      signUpForm.setError("email", {
+        type: "manual",
+        message: "User with this email already exists.",
+      });
+      return;
+    }
+
+    const newUser: MockUser = {
+      id: mockUsers.length + 1,
       name: values.name,
       email: values.email,
+      password: values.password, // Storing plain text for mock purposes
       role: values.role,
-      verified: false,
+      verified: values.role === "Citizen Reporter", // Auto-verify citizens
+      createdAt: new Date().toISOString(),
     };
+
+    mockUsers.push(newUser);
+
+    const { password, ...userToStore } = newUser;
     const token = "fake-auth-token-signup";
     localStorage.setItem("auth_token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    onAuthSuccess(user, token);
-    toast.success("Signed up successfully! Welcome!");
+    localStorage.setItem("user", JSON.stringify(userToStore));
+    onAuthSuccess(userToStore, token);
+    toast.success(
+      newUser.verified
+        ? "Signed up successfully! Welcome!"
+        : "Sign-up successful! Your account is pending verification."
+    );
   };
 
   return (
