@@ -1,3 +1,5 @@
+
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/contexts/UserRoleContext";
 import { useTypewriter } from "@/hooks/useTypewriter";

@@ -1,4 +1,5 @@
 
+import React from "react";
 import { sdgGoalColors } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
