@@ -13,6 +13,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -45,6 +46,7 @@ const reportSchema = z.object({
   lng: z.coerce.number().optional(),
   cost: z.coerce.number().optional(),
   costCurrency: z.string().optional(),
+  usd_exchange_rate: z.coerce.number().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   sponsor: z.string().optional(),
@@ -88,6 +90,7 @@ const SubmitReport = () => {
       lng: undefined,
       cost: undefined,
       costCurrency: undefined,
+      usd_exchange_rate: undefined,
       sponsor: "",
       funder: "",
       contractor: "",
@@ -96,19 +99,13 @@ const SubmitReport = () => {
 
   function onSubmit(values: z.infer<typeof reportSchema>) {
     console.log("Form Submitted:", values);
-    // TODO: Implement currency conversion logic.
-    // This requires an API for historical exchange rates.
-    // Once an API is available, you could implement a function like:
-    //
-    // async function getHistoricalRate(date, fromCurrency, toCurrency) {
-    //   // ... API call logic to fetch rate from a service
-    // }
-    //
-    // And then use it:
-    // if (values.cost && values.costCurrency && values.startDate) {
-    //   const usdAmount = await getHistoricalRate(values.startDate, values.costCurrency, 'USD');
-    //   // Save the converted amount with the report
-    // }
+    // TODO: Implement currency conversion logic with an API.
+    // For now, we can calculate the USD amount if the exchange rate is provided.
+    if (values.cost && values.costCurrency && values.costCurrency !== 'USD' && values.usd_exchange_rate) {
+      const usdAmount = values.cost / values.usd_exchange_rate;
+      console.log(`Converted USD amount: ${usdAmount.toFixed(2)}`);
+      // This converted amount can then be saved with the report.
+    }
 
     toast.success("Report submitted successfully!", {
       description: "Your report has been received and will be reviewed.",
@@ -295,6 +292,30 @@ const SubmitReport = () => {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="usd_exchange_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Exchange Rate (Local Currency per 1 USD)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="e.g., 110.5 for KES"
+                        {...field}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)}
+                        value={field.value ?? ""}
+                        disabled={!form.watch('costCurrency') || form.watch('costCurrency') === 'USD'}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                        Optional. Enter the exchange rate if known. We plan to add automatic conversion in the future.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField

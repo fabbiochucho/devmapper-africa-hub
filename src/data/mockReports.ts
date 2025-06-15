@@ -11,6 +11,7 @@ export type Report = {
   validations: number;
   cost?: number;
   costCurrency?: string;
+  usd_exchange_rate?: number;
   startDate?: string;
   endDate?: string;
   sponsor?: string;
