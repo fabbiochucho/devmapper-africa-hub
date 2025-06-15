@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,6 +21,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { africanCountries } from "@/data/countries";
+import { sdgGoals } from "@/lib/constants";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface CountryStat {
+  country: string;
+  projects: number;
+  budget: number;
+}
 
 interface AnalyticsData {
   totalProjects: number;
@@ -29,10 +37,14 @@ interface AnalyticsData {
   totalBudget: number;
   countriesActive: number;
   sdgDistribution: { goal: number; count: number; percentage: number }[];
-  countryStats: { country: string; projects: number; budget: number }[];
+  countryStats: CountryStat[];
+  countryStatsByBudget: CountryStat[];
   monthlyTrends: { month: string; projects: number; budget: number }[];
   verificationStats: { verified: number; pending: number; disputed: number };
 }
+
+const countryCodeMap = new Map(africanCountries.map((c) => [c.name, c.code]));
+const sdgGoalMap = new Map(sdgGoals.map(g => [g.value, g.label]));
 
 const SdgDashboardView = () => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -56,6 +68,17 @@ const SdgDashboardView = () => {
   };
 
   const getMockAnalytics = (): AnalyticsData => {
+    const baseCountryStats: CountryStat[] = [
+      { country: "Nigeria", projects: 298, budget: 12400000 },
+      { country: "Kenya", projects: 234, budget: 8900000 },
+      { country: "South Africa", projects: 187, budget: 11200000 },
+      { country: "Ghana", projects: 156, budget: 5600000 },
+      { country: "Ethiopia", projects: 134, budget: 4200000 },
+      { country: "Uganda", projects: 98, budget: 2800000 },
+      { country: "Tanzania", projects: 87, budget: 3100000 },
+      { country: "Rwanda", projects: 53, budget: 1400000 },
+    ];
+
     return {
       totalProjects: 1247,
       confirmedProjects: 892,
@@ -74,16 +97,8 @@ const SdgDashboardView = () => {
         { goal: 13, count: 54, percentage: 4.3 },
         { goal: 9, count: 33, percentage: 2.6 },
       ],
-      countryStats: [
-        { country: "Nigeria", projects: 298, budget: 12400000 },
-        { country: "Kenya", projects: 234, budget: 8900000 },
-        { country: "South Africa", projects: 187, budget: 11200000 },
-        { country: "Ghana", projects: 156, budget: 5600000 },
-        { country: "Ethiopia", projects: 134, budget: 4200000 },
-        { country: "Uganda", projects: 98, budget: 2800000 },
-        { country: "Tanzania", projects: 87, budget: 3100000 },
-        { country: "Rwanda", projects: 53, budget: 1400000 },
-      ],
+      countryStats: [...baseCountryStats].sort((a,b) => b.projects - a.projects),
+      countryStatsByBudget: [...baseCountryStats].sort((a,b) => b.budget - a.budget),
       monthlyTrends: [
         { month: "Jan", projects: 89, budget: 3200000 },
         { month: "Feb", projects: 112, budget: 4100000 },
@@ -290,25 +305,34 @@ const SdgDashboardView = () => {
             <CardTitle>SDG Goals Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {analytics.sdgDistribution.map((sdg) => (
-                <div key={sdg.goal} className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 w-32 shrink-0">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getSdgColor(sdg.goal) }} />
-                    <span className="text-sm font-medium">SDG {sdg.goal}</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div className="h-2 rounded-full" style={{ backgroundColor: getSdgColor(sdg.goal), width: `${sdg.percentage}%` }} />
-                    </div>
-                  </div>
-                  <div className="w-24 text-right">
-                    <span className="text-sm font-semibold">{sdg.percentage}%</span>
-                    <span className="text-xs text-muted-foreground ml-2">({sdg.count})</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="space-y-4">
+                {analytics.sdgDistribution.map((sdg) => (
+                  <Tooltip key={sdg.goal}>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-4 cursor-help">
+                        <div className="flex items-center gap-2 w-32 shrink-0">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getSdgColor(sdg.goal) }} />
+                          <span className="text-sm font-medium">SDG {sdg.goal}</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div className="h-2 rounded-full" style={{ backgroundColor: getSdgColor(sdg.goal), width: `${sdg.percentage}%` }} />
+                          </div>
+                        </div>
+                        <div className="w-24 text-right">
+                          <span className="text-sm font-semibold">{sdg.percentage}%</span>
+                          <span className="text-xs text-muted-foreground ml-2">({sdg.count})</span>
+                        </div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{sdgGoalMap.get(sdg.goal.toString()) || `Information for SDG ${sdg.goal}`}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
         <Card>
@@ -343,27 +367,74 @@ const SdgDashboardView = () => {
           </CardContent>
         </Card>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Top Countries by Projects</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {analytics.countryStats.map((country, index) => (
-                <div key={country.country} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-xs">
-                      {index + 1}
+              {analytics.countryStats.map((country, index) => {
+                const countryCode = countryCodeMap.get(country.country);
+                return (
+                  <div key={country.country} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {countryCode ? (
+                        <img
+                          src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+                          width="20"
+                          alt={`${country.country} flag`}
+                          className="rounded-sm"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-xs font-mono">
+                          {index + 1}
+                        </div>
+                      )}
+                      <span className="font-medium">{country.country}</span>
                     </div>
-                    <span className="font-medium">{country.country}</span>
+                    <div className="text-right">
+                      <div className="font-medium">{country.projects.toLocaleString()} projects</div>
+                      <div className="text-sm text-muted-foreground">{formatCurrency(country.budget)}</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">{country.projects.toLocaleString()} projects</div>
-                    <div className="text-sm text-muted-foreground">{formatCurrency(country.budget)}</div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Countries by Investment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics.countryStatsByBudget.map((country, index) => {
+                const countryCode = countryCodeMap.get(country.country);
+                return (
+                  <div key={country.country} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       {countryCode ? (
+                        <img
+                          src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+                          width="20"
+                          alt={`${country.country} flag`}
+                          className="rounded-sm"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 bg-muted text-muted-foreground rounded-full flex items-center justify-center text-xs font-mono">
+                          {index + 1}
+                        </div>
+                      )}
+                      <span className="font-medium">{country.country}</span>
+                    </div>
+                    <div className="text-right">
+                       <div className="font-medium">{formatCurrency(country.budget)}</div>
+                      <div className="text-sm text-muted-foreground">{country.projects.toLocaleString()} projects</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

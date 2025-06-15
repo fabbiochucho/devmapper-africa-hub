@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Users } from "lucide-react";
+import Autoplay from "embla-carousel-autoplay";
 
 interface SocialFeed {
   platform: string;
@@ -15,6 +16,15 @@ interface SocialFeedProps {
   socialMediaFeeds: SocialFeed[];
 }
 
+const cardColors = [
+    "dark:bg-sky-900/30 bg-sky-50/50",
+    "dark:bg-emerald-900/30 bg-emerald-50/50",
+    "dark:bg-amber-900/30 bg-amber-50/50",
+    "dark:bg-fuchsia-900/30 bg-fuchsia-50/50",
+    "dark:bg-rose-900/30 bg-rose-50/50",
+    "dark:bg-violet-900/30 bg-violet-50/50",
+  ];
+
 export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
   return (
     <section className="py-16 bg-background">
@@ -26,6 +36,12 @@ export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
           </p>
         </div>
         <Carousel
+          plugins={[
+            Autoplay({
+              delay: 5500,
+              stopOnInteraction: true,
+            }),
+          ]}
           opts={{
             align: "start",
             loop: true,
@@ -35,15 +51,17 @@ export default function SocialFeed({ socialMediaFeeds }: SocialFeedProps) {
           <CarouselContent>
             {socialMediaFeeds.map((feed, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                  <Card className="h-full">
+                <div className="p-1 h-full">
+                  <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
                     <CardContent className="flex flex-col items-start gap-4 p-6">
                       <div className="flex items-center gap-2">
-                         <Users className="w-4 h-4" /> {/* Placeholder icon */}
+                        <Users className="w-4 h-4" /> {/* Placeholder icon */}
                         <span className="font-semibold">{feed.user}</span>
                       </div>
                       <p className="text-sm text-muted-foreground">"{feed.content}"</p>
-                      <Badge variant="outline" className="mt-auto">{feed.platform}</Badge>
+                      <Badge variant="outline" className="mt-auto">
+                        {feed.platform}
+                      </Badge>
                     </CardContent>
                   </Card>
                 </div>

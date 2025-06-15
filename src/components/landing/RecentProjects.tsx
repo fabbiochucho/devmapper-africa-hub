@@ -6,12 +6,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Report } from "@/data/mockReports";
 import { mockUsers } from "@/data/mockUsers";
+import Autoplay from "embla-carousel-autoplay";
 
 interface RecentProjectsProps {
   recentProjects: Report[];
 }
 
-const getUserById = (id: string) => mockUsers.find(u => u.id.toString() === id);
+const cardColors = [
+  "dark:bg-blue-900/30 bg-blue-50/50",
+  "dark:bg-green-900/30 bg-green-50/50",
+  "dark:bg-yellow-900/30 bg-yellow-50/50",
+  "dark:bg-purple-900/30 bg-purple-50/50",
+  "dark:bg-pink-900/30 bg-pink-50/50",
+  "dark:bg-indigo-900/30 bg-indigo-50/50",
+];
+
+const getUserById = (id: string) => mockUsers.find((u) => u.id.toString() === id);
 
 export default function RecentProjects({ recentProjects }: RecentProjectsProps) {
   return (
@@ -24,6 +34,12 @@ export default function RecentProjects({ recentProjects }: RecentProjectsProps) 
           </p>
         </div>
         <Carousel
+          plugins={[
+            Autoplay({
+              delay: 5000,
+              stopOnInteraction: true,
+            }),
+          ]}
           opts={{
             align: "start",
             loop: true,
@@ -31,22 +47,18 @@ export default function RecentProjects({ recentProjects }: RecentProjectsProps) 
           className="w-full max-w-4xl mx-auto"
         >
           <CarouselContent>
-            {recentProjects.map((report) => {
+            {recentProjects.map((report, index) => {
               const user = getUserById(report.submitted_by);
               return (
                 <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <Card className="h-full">
+                  <div className="p-1 h-full">
+                    <Card className={`h-full ${cardColors[index % cardColors.length]}`}>
                       <CardContent className="flex flex-col items-start gap-4 p-6">
                         <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
                         <p className="font-semibold leading-none">{report.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Reported by: {user?.name || "Anonymous"}
-                        </p>
+                        <p className="text-sm text-muted-foreground">Reported by: {user?.name || "Anonymous"}</p>
                         <Button asChild variant="outline" size="sm" className="mt-auto">
-                          <Link to={`/analytics?tab=reports&id=${report.id}`}>
-                            View Project
-                          </Link>
+                          <Link to={`/analytics?tab=reports&id=${report.id}`}>View Project</Link>
                         </Button>
                       </CardContent>
                     </Card>
