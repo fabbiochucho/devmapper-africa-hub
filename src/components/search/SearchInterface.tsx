@@ -1,7 +1,7 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -30,6 +30,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
   const [isSearching, setIsSearching] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -103,6 +104,14 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
     setIsOpen(false);
   }
 
+  const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && query.trim().length > 0) {
+      e.preventDefault()
+      setIsOpen(false)
+      navigate(`/search?q=${encodeURIComponent(query)}`)
+    }
+  }
+
   const getStatusColor = (status: Report['project_status']) => {
     switch (status) {
       case "in_progress":
@@ -143,6 +152,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleSearchSubmit}
           placeholder="Search projects, users, organizations..."
           className="pl-10 pr-10"
         />
@@ -180,6 +190,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
                         onClick={() => handleProjectClick(project)}
                       >
                         <h4 className="font-medium text-sm">{project.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <Badge variant="outline" className="text-xs">
                             SDG {project.sdg_goal}
@@ -215,6 +226,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
                             <div className="flex items-center gap-2 mt-1">
                               <Badge className={`text-xs ${getRoleColor(user.role)}`}>{user.role}</Badge>
                               {user.organization && <span className="text-xs text-muted-foreground">{user.organization}</span>}
+                              {user.country && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> {user.country}</span>}
                             </div>
                           </div>
                         </div>
@@ -243,6 +255,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
                             <div className="flex items-center gap-2 mt-1">
                               <Badge className={`text-xs ${getRoleColor(org.type)}`}>{org.type}</Badge>
                               <span className="text-xs text-muted-foreground">{org.projects_count} projects</span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> {org.country}</span>
                             </div>
                           </div>
                         </div>
