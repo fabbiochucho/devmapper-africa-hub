@@ -1,4 +1,3 @@
-
 import { reverseGeocode } from "@/lib/geocode";
 
 // Type definitions are kept to maintain the data contract with other components.
@@ -16,6 +15,7 @@ export type Report = {
   title: string;
   description?: string;
   sdg_goal: string;
+  sdg_target?: string;
   project_status: "planned" | "in_progress" | "completed" | "stalled" | "cancelled";
   location: string;
   submitted_at: string;
@@ -234,6 +234,7 @@ export const mockReports: Report[] = rawProjects.map(p => {
     title: p.title,
     description: p.content,
     sdg_goal: p.sdg_goal.toString(),
+    sdg_target: p.sdg_target,
     project_status: project_status,
     location: geocodeResult ? `${city}, ${geocodeResult.country}` : city,
     submitted_at: p.created_at,

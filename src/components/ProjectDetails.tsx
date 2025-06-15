@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -158,6 +157,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ report, onClose, onUpda
           <div>
             <h4 className="font-semibold mb-2">SDG Goal</h4>
             <p>{sdgGoal ? sdgGoal.label : "N/A"}</p>
+            {currentReport.sdg_target && (
+              <p className="text-sm text-muted-foreground mt-1">Target: {currentReport.sdg_target}</p>
+            )}
           </div>
           <div>
             <h4 className="font-semibold mb-2">Project Status</h4>
