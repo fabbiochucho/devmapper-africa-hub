@@ -1,0 +1,66 @@
+
+export type Country = {
+  code: string;
+  name: string;
+};
+
+const africanCountries: Country[] = [
+  { code: "DZA", name: "Algeria" },
+  { code: "AGO", name: "Angola" },
+  { code: "BEN", name: "Benin" },
+  { code: "BWA", name: "Botswana" },
+  { code: "BFA", name: "Burkina Faso" },
+  { code: "BDI", name: "Burundi" },
+  { code: "CMR", name: "Cameroon" },
+  { code: "CPV", name: "Cape Verde" },
+  { code: "CAF", name: "Central African Republic" },
+  { code: "TCD", name: "Chad" },
+  { code: "COM", name: "Comoros" },
+  { code: "COG", name: "Congo" },
+  { code: "COD", name: "Democratic Republic of Congo" },
+  { code: "CIV", name: "Côte d'Ivoire" },
+  { code: "DJI", name: "Djibouti" },
+  { code: "EGY", name: "Egypt" },
+  { code: "GNQ", name: "Equatorial Guinea" },
+  { code: "ERI", name: "Eritrea" },
+  { code: "ETH", name: "Ethiopia" },
+  { code: "GAB", name: "Gabon" },
+  { code: "GMB", name: "Gambia" },
+  { code: "GHA", name: "Ghana" },
+  { code: "GIN", name: "Guinea" },
+  { code: "GNB", name: "Guinea-Bissau" },
+  { code: "KEN", name: "Kenya" },
+  { code: "LSO", name: "Lesotho" },
+  { code: "LBR", name: "Liberia" },
+  { code: "LBY", name: "Libya" },
+  { code: "MDG", name: "Madagascar" },
+  { code: "MWI", name: "Malawi" },
+  { code: "MLI", name: "Mali" },
+  { code: "MRT", name: "Mauritania" },
+  { code: "MUS", name: "Mauritius" },
+  { code: "MAR", name: "Morocco" },
+  { code: "MOZ", name: "Mozambique" },
+  { code: "NAM", name: "Namibia" },
+  { code: "NER", name: "Niger" },
+  { code: "NGA", name: "Nigeria" },
+  { code: "RWA", name: "Rwanda" },
+  { code: "STP", name: "São Tomé and Príncipe" },
+  { code: "SEN", name: "Senegal" },
+  { code: "SYC", name: "Seychelles" },
+  { code: "SLE", name: "Sierra Leone" },
+  { code: "SOM", name: "Somalia" },
+  { code: "ZAF", name: "South Africa" },
+  { code: "SSD", name: "South Sudan" },
+  { code: "SDN", name: "Sudan" },
+  { code: "SWZ", name: "Eswatini" },
+  { code: "TZA", name: "Tanzania" },
+  { code: "TGO", name: "Togo" },
+  { code: "TUN", name: "Tunisia" },
+  { code: "UGA", name: "Uganda" },
+  { code: "ZMB", name: "Zambia" },
+  { code: "ZWE", name: "Zimbabwe" },
+];
+
+export const getCountries = async (): Promise<Country[]> => {
+  return Promise.resolve(africanCountries);
+};
