@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AuthModal from "@/components/AuthModal";
-import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut, UserCheck } from "lucide-react";
+import { MapPin, Users, TrendingUp, Globe, Shield, Building, Plus, Search, LogOut, UserCheck, LayoutDashboard } from "lucide-react";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Link } from "react-router-dom";
 
@@ -233,6 +233,14 @@ export default function Index() {
                   </p>
                 </div>
                 <div className="flex space-x-3">
+                  {["Government Official", "Country Admin"].includes(user.role) && (
+                    <Button asChild>
+                      <Link to="/government-dashboard">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                  )}
                   {["Platform Admin", "Country Admin"].includes(user.role) && (
                     <Button asChild variant="secondary">
                       <Link to="/user-management">
