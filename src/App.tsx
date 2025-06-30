@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -25,6 +24,9 @@ import Resources from "./pages/Resources";
 import Connect from "./pages/Connect";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import SubmitChangeMaker from "./pages/SubmitChangeMaker";
+import ChangeMakers from "./pages/ChangeMakers";
+import ChangeMakerAnalyticsPage from "./pages/ChangeMakerAnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,9 @@ const App = () => (
               <Route path="/government-dashboard" element={<GovernmentDashboard />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/submit-report" element={<SubmitReport />} />
+              <Route path="/submit-change-maker" element={<SubmitChangeMaker />} />
+              <Route path="/change-makers" element={<ChangeMakers />} />
+              <Route path="/change-maker-analytics" element={<ChangeMakerAnalyticsPage />} />
               <Route path="/user-management" element={<UserManagement />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
