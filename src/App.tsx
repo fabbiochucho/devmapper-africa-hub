@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-// import Reports from "./pages/Reports"; // This page is removed
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import SubmitReport from "./pages/SubmitReport";
@@ -24,6 +23,8 @@ import Support from "./pages/Support";
 import Training from "./pages/Training";
 import Resources from "./pages/Resources";
 import Connect from "./pages/Connect";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,6 @@ const App = () => (
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Index />} />
-              {/* <Route path="/reports" element={<Reports />} /> */}
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/corporate-targets" element={<CorporateTargets />} />
               <Route path="/government-dashboard" element={<GovernmentDashboard />} />
@@ -52,9 +52,9 @@ const App = () => (
               <Route path="/training" element={<Training />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/connect" element={<Connect />} />
-              {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
             </Route>
-            {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

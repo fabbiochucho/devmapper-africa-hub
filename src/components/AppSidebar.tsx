@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { MapPin, BarChart2, Settings, User, LogOut, PlusCircle, Users, MessageSquare } from "lucide-react";
+import { MapPin, BarChart2, Settings, User, LogOut, PlusCircle, Users, MessageSquare, HelpCircle, Phone, Info } from "lucide-react";
 import UserRoleSwitcher from "./UserRoleSwitcher";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
@@ -31,7 +31,6 @@ const SidebarNavLink = ({ to, end, icon: Icon, children }: { to: string, end?: b
   );
 };
 
-
 const AppSidebar = () => {
   const { role } = useUserRole();
 
@@ -45,11 +44,17 @@ const AppSidebar = () => {
       </SidebarHeader>
       <SidebarContent className="flex flex-col">
         <div className="flex-1">
-          <div className="p-2">
+          <div className="p-2 space-y-2">
             <Button asChild className="w-full">
               <NavLink to="/submit-report">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Submit Report
+              </NavLink>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <NavLink to="/submit-change-maker">
+                <Users className="mr-2 h-4 w-4" />
+                Submit Change Maker
               </NavLink>
             </Button>
           </div>
@@ -57,9 +62,19 @@ const AppSidebar = () => {
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
-              <SidebarNavLink to="/analytics" icon={BarChart2}>Analytics</SidebarNavLink>
+              <SidebarNavLink to="/analytics" icon={BarChart2}>Project Analytics</SidebarNavLink>
+              <SidebarNavLink to="/change-maker-analytics" icon={BarChart2}>Change Maker Analytics</SidebarNavLink>
+              <SidebarNavLink to="/change-makers" icon={Users}>Change Makers</SidebarNavLink>
               <SidebarNavLink to="/forum" icon={Users}>Community Forum</SidebarNavLink>
               <SidebarNavLink to="/messages" icon={MessageSquare}>Messages</SidebarNavLink>
+            </SidebarMenu>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Support</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarNavLink to="/support" icon={HelpCircle}>FAQ & Support</SidebarNavLink>
+              <SidebarNavLink to="/contact" icon={Phone}>Contact Us</SidebarNavLink>
+              <SidebarNavLink to="/about" icon={Info}>About Us</SidebarNavLink>
             </SidebarMenu>
           </SidebarGroup>
         </div>

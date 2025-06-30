@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import AuthModal from "@/components/AuthModal";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
@@ -6,6 +5,7 @@ import { mockReports, Report } from "@/data/mockReports";
 import PageHeader from "@/components/landing/PageHeader";
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
+import ChangeMakersSection from "@/components/landing/ChangeMakersSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import MapSection from "@/components/landing/MapSection";
 import RecentProjects from "@/components/landing/RecentProjects";
@@ -143,6 +143,7 @@ export default function Index() {
       <main>
         <HeroSection user={user} setShowAuthModal={setShowAuthModal} />
         <StatsSection />
+        <ChangeMakersSection />
         <HowItWorksSection />
         <MapSection projects={projectsForMap} onProjectSelect={handleProjectSelect} selectedProject={selectedMapProject} />
         <RecentProjects recentProjects={recentProjects} />
