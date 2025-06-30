@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Building, Shield, Users, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { mockUsers } from "@/data/mockUsers";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -40,11 +42,35 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     document: "",
   });
 
+  const handleDemoLogin = (userData: any) => {
+    const { password, ...userToStore } = userData;
+    const token = "demo-auth-token";
+    onAuthSuccess(userToStore, token);
+    onClose();
+    setError(null);
+    setLoginData({ email: "", password: "" });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    // First, check if this is a demo account
+    const demoUser = mockUsers.find(
+      (u) => u.email.toLowerCase() === loginData.email.toLowerCase() && u.password === loginData.password
+    );
+
+    if (demoUser) {
+      // Handle demo login
+      setTimeout(() => {
+        handleDemoLogin(demoUser);
+        setIsLoading(false);
+      }, 500); // Small delay to show loading state
+      return;
+    }
+
+    // If not a demo account, try Supabase authentication
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
@@ -54,8 +80,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       if (error) throw error;
 
       if (data.user && data.session) {
-        // The Supabase client handles session persistence automatically.
-        // We just call onAuthSuccess to update the app's state.
         onAuthSuccess(data.user, data.session.access_token);
         onClose();
         setLoginData({ email: "", password: "" });
@@ -65,7 +89,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError(error instanceof Error ? error.message : "Login failed. Please check your credentials.");
+      setError(error instanceof Error ? error.message : "Login failed. Please check your credentials or try a demo account.");
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +127,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             phone: registerData.phone,
             document: registerData.document,
           },
-          // This is crucial for the confirmation email link to work correctly.
           emailRedirectTo: window.location.origin,
         },
       });
@@ -134,16 +157,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     }
   };
 
-  const fillDemoCredentials = (role: string) => {
-    const credentials = {
-      citizen: { email: "citizen@demo.com", password: "password" },
-      admin: { email: "admin@demo.com", password: "password" },
-      government: { email: "gov@demo.com", password: "password" },
-      corporate: { email: "corp@demo.com", password: "password" },
+  const fillDemoCredentials = (userType: string) => {
+    const demoUsers = {
+      citizen: mockUsers.find(u => u.role === "Citizen Reporter"),
+      ngo: mockUsers.find(u => u.role === "NGO Member"),
+      government: mockUsers.find(u => u.role === "Government Official"),
+      corporate: mockUsers.find(u => u.role === "Company Representative"),
+      admin: mockUsers.find(u => u.role === "Platform Admin"),
     };
 
-    const creds = credentials[role as keyof typeof credentials] || credentials.citizen;
-    setLoginData(creds);
+    const selectedUser = demoUsers[userType as keyof typeof demoUsers];
+    if (selectedUser) {
+      setLoginData({
+        email: selectedUser.email,
+        password: selectedUser.password,
+      });
+    }
   };
 
   return (
@@ -168,17 +197,28 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             )}
 
             {/* Demo Accounts */}
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm font-medium text-blue-800 mb-2">Demo Accounts:</p>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">Try Demo Accounts (Click to auto-fill):</p>
+              <div className="grid grid-cols-2 gap-2 mb-2">
                 <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("citizen")} className="text-xs">
-                  Citizen
+                  👥 Citizen
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("admin")} className="text-xs">
-                  Admin
+                <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("ngo")} className="text-xs">
+                  🏢 NGO
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("government")} className="text-xs">
+                  🏛️ Government
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("corporate")} className="text-xs">
+                  🏭 Corporate
                 </Button>
               </div>
-              <p className="text-xs text-blue-600 mt-1">Click to auto-fill credentials. Note: These users must exist in your Supabase project.</p>
+              <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("admin")} className="text-xs w-full">
+                🔧 Platform Admin
+              </Button>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                All demo accounts use password: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">password</code>
+              </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
