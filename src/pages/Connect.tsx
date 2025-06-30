@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,8 @@ import {
   Zap,
   Globe,
   Users,
-  Building
+  Building,
+  MessageCircle
 } from 'lucide-react';
 
 const Connect = () => {
@@ -36,6 +36,25 @@ const Connect = () => {
         'Send /start to begin setup',
         'Link your DevMapper account',
         'Start reporting projects!'
+      ]
+    },
+    {
+      id: 'whatsapp',
+      name: 'WhatsApp Bot',
+      description: 'Access DevMapper features through WhatsApp messaging',
+      icon: <MessageCircle className="w-8 h-8" />,
+      status: 'Available',
+      features: [
+        'Voice and text project reporting',
+        'Photo and location sharing',
+        'Status updates and notifications',
+        'Group collaboration features'
+      ],
+      instructions: [
+        'Save +234 123 DEVMAP to your contacts',
+        'Send "Hello" to start conversation',
+        'Follow setup prompts to link account',
+        'Use voice commands or text to report'
       ]
     },
     {
