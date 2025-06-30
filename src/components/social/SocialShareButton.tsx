@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -191,10 +190,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     
     window.open(shareUrl, '_blank', 'width=600,height=400');
     
-    toast({
-      title: "Shared!",
-      description: `Content shared to ${platform.name} with DevMapper branding`,
-    });
+    toast(`Content shared to ${platform.name} with DevMapper branding`);
   };
 
   const copyToClipboard = async () => {
@@ -203,16 +199,9 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     
     try {
       await navigator.clipboard.writeText(textToCopy);
-      toast({
-        title: "Copied!",
-        description: "Shareable content copied to clipboard",
-      });
+      toast("Shareable content copied to clipboard");
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+      toast.error("Failed to copy to clipboard");
     }
   };
 
@@ -227,10 +216,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     link.href = previewUrl;
     link.click();
     
-    toast({
-      title: "Downloaded!",
-      description: "Preview image downloaded with DevMapper branding",
-    });
+    toast("Preview image downloaded with DevMapper branding");
   };
 
   React.useEffect(() => {
