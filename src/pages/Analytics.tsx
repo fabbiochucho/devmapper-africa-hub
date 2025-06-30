@@ -19,7 +19,7 @@ const AnalyticsPage = () => {
     const countriesCount = new Set(mockReports.map(r => r.country_code)).size;
     const sdgCount = new Set(mockReports.map(r => r.sdg_goal)).size;
     const completedProjects = mockReports.filter(r => r.project_status === 'completed').length;
-    const verifiedProjects = mockReports.filter(r => r.verification_status === 'verified').length;
+    const verifiedProjects = mockReports.filter(r => r.verifications && r.verifications.length > 0).length;
     
     return {
       totalProjects,
