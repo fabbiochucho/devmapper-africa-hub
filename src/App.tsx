@@ -19,6 +19,11 @@ import SearchPage from "./pages/SearchPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import Forum from "./pages/Forum";
 import Messages from "./pages/Messages";
+import Guidelines from "./pages/Guidelines";
+import Support from "./pages/Support";
+import Training from "./pages/Training";
+import Resources from "./pages/Resources";
+import Connect from "./pages/Connect";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +47,11 @@ const App = () => (
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/forum" element={<Forum />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/guidelines" element={<Guidelines />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/training" element={<Training />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/connect" element={<Connect />} />
               {/* ADD ALL CUSTOM ROUTES HERE, INSIDE THE LAYOUT */}
             </Route>
             {/* CATCH-ALL ROUTE (DOES NOT USE THE LAYOUT) */}

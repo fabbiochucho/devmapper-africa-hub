@@ -28,19 +28,19 @@ export default function PageFooter() {
           <div>
             <h4 className="font-semibold mb-4">Community</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Guidelines</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Training</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Resources</a></li>
+              <li><Link to="/guidelines" className="hover:text-white transition-colors">Guidelines</Link></li>
+              <li><Link to="/support" className="hover:text-white transition-colors">Support</Link></li>
+              <li><Link to="/training" className="hover:text-white transition-colors">Training</Link></li>
+              <li><Link to="/resources" className="hover:text-white transition-colors">Resources</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Connect</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Telegram Bot</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Mobile App</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">API Access</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Partnerships</a></li>
+              <li><Link to="/connect" className="hover:text-white transition-colors">Telegram Bot</Link></li>
+              <li><Link to="/connect" className="hover:text-white transition-colors">Mobile App</Link></li>
+              <li><Link to="/connect" className="hover:text-white transition-colors">API Access</Link></li>
+              <li><Link to="/connect" className="hover:text-white transition-colors">Partnerships</Link></li>
             </ul>
           </div>
         </div>
