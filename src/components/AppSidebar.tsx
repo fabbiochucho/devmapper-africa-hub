@@ -1,110 +1,170 @@
 
-import { NavLink, useMatch, Link } from "react-router-dom";
+import { Calendar, Home, Inbox, Search, Settings, Users, BarChart3, Target, Building2, Shield, MessageSquare, BookOpen, HelpCircle, FileText, Phone, Info, Heart, UserPlus, MapPin, TrendingUp } from "lucide-react"
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { MapPin, BarChart2, Settings, User, LogOut, PlusCircle, Users, MessageSquare, HelpCircle, Phone, Info } from "lucide-react";
-import UserRoleSwitcher from "./UserRoleSwitcher";
-import { useUserRole } from "@/contexts/UserRoleContext";
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
 
-const SidebarNavLink = ({ to, end, icon: Icon, children }: { to: string, end?: boolean, icon: React.ElementType, children: React.ReactNode }) => {
-  const match = useMatch({ path: to, end });
+// Menu items.
+const mainItems = [
+  { title: "Home", url: "/", icon: Home },
+  { title: "Search", url: "/search", icon: Search },
+  { title: "Change Makers", url: "/change-makers", icon: Users },
+  { title: "Fundraising", url: "/fundraising", icon: Heart },
+  { title: "Messages", url: "/messages", icon: Inbox },
+  { title: "Forum", url: "/forum", icon: MessageSquare },
+]
 
-  return (
-    <SidebarMenuItem>
-      <NavLink to={to} end={end}>
-        <SidebarMenuButton isActive={!!match}>
-          <Icon />
-          <span>{children}</span>
-        </SidebarMenuButton>
-      </NavLink>
-    </SidebarMenuItem>
-  );
-};
+const analyticsItems = [
+  { title: "Project Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Change Maker Analytics", url: "/change-maker-analytics", icon: TrendingUp },
+]
 
-const AppSidebar = () => {
-  const { role } = useUserRole();
+const submissionItems = [
+  { title: "Submit Report", url: "/submit-report", icon: FileText },
+  { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
+]
 
+const dashboardItems = [
+  { title: "Corporate Targets", url: "/corporate-targets", icon: Target },
+  { title: "Government Dashboard", url: "/government-dashboard", icon: Building2 },
+  { title: "Admin Dashboard", url: "/admin-dashboard", icon: Shield },
+  { title: "User Management", url: "/user-management", icon: Users },
+]
+
+const resourceItems = [
+  { title: "Guidelines", url: "/guidelines", icon: BookOpen },
+  { title: "Training", url: "/training", icon: Calendar },
+  { title: "Resources", url: "/resources", icon: FileText },
+  { title: "Connect", url: "/connect", icon: MapPin },
+]
+
+const supportItems = [
+  { title: "Support", url: "/support", icon: HelpCircle },
+  { title: "About", url: "/about", icon: Info },
+  { title: "Contact", url: "/contact", icon: Phone },
+  { title: "Settings", url: "/settings", icon: Settings },
+]
+
+export function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader>
-        <Link to="/" className="block p-2">
-          <h1 className="text-xl font-semibold">DevMapper</h1>
-          <p className="text-sm text-muted-foreground">Africa SDG Tracker</p>
-        </Link>
-      </SidebarHeader>
-      <SidebarContent className="flex flex-col">
-        <div className="flex-1">
-          <div className="p-2 space-y-2">
-            <Button asChild className="w-full">
-              <NavLink to="/submit-report">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Submit Report
-              </NavLink>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <NavLink to="/submit-change-maker">
-                <Users className="mr-2 h-4 w-4" />
-                Submit Change Maker
-              </NavLink>
-            </Button>
-          </div>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarNavLink to="/" end icon={MapPin}>Map Dashboard</SidebarNavLink>
-              <SidebarNavLink to="/analytics" icon={BarChart2}>Project Analytics</SidebarNavLink>
-              <SidebarNavLink to="/change-maker-analytics" icon={BarChart2}>Change Maker Analytics</SidebarNavLink>
-              <SidebarNavLink to="/change-makers" icon={Users}>Change Makers</SidebarNavLink>
-              <SidebarNavLink to="/forum" icon={Users}>Community Forum</SidebarNavLink>
-              <SidebarNavLink to="/messages" icon={MessageSquare}>Messages</SidebarNavLink>
-            </SidebarMenu>
-          </SidebarGroup>
-          <SidebarGroup>
-            <SidebarGroupLabel>Support</SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarNavLink to="/support" icon={HelpCircle}>FAQ & Support</SidebarNavLink>
-              <SidebarNavLink to="/contact" icon={Phone}>Contact Us</SidebarNavLink>
-              <SidebarNavLink to="/about" icon={Info}>About Us</SidebarNavLink>
-            </SidebarMenu>
-          </SidebarGroup>
-        </div>
-      </SidebarContent>
-      <SidebarFooter>
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarNavLink to="/settings" icon={Settings}>Settings</SidebarNavLink>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <LogOut />
-                <span>Logout</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
-        <div className="flex items-center gap-3 p-2 border-t">
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <User className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">Guest User</span>
-            <span className="text-xs text-muted-foreground">{role}</span>
-          </div>
-        </div>
-        <UserRoleSwitcher />
-      </SidebarFooter>
-    </Sidebar>
-  );
-};
 
-export default AppSidebar;
+        <SidebarGroup>
+          <SidebarGroupLabel>Analytics</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {analyticsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Submissions</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {submissionItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {dashboardItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Resources</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {resourceItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Support</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {supportItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  )
+}
