@@ -93,7 +93,7 @@ const SubmitChangeMaker = () => {
       lat: values.lat,
       lng: values.lng,
       photo: values.photo || "/placeholder.svg",
-      members: values.members,
+      members: values.members || [],
       email: values.email,
       phone: values.phone,
       website: values.website,

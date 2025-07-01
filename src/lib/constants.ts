@@ -1,3 +1,4 @@
+
 export const sdgGoals = [
   { number: 1, title: "No Poverty", value: "1", label: "No Poverty" },
   { number: 2, title: "Zero Hunger", value: "2", label: "Zero Hunger" },
@@ -73,4 +74,68 @@ export const africaCountries = [
   { name: 'Uganda', code: 'UG' },
   { name: 'Zambia', code: 'ZM' },
   { name: 'Zimbabwe', code: 'ZW' }
+];
+
+export const sdgGoalColors: { [key: string]: string } = {
+  "1": "#E5243B",
+  "2": "#DDA63A",
+  "3": "#4C9F38",
+  "4": "#C5192D",
+  "5": "#FF3A21",
+  "6": "#26BDE2",
+  "7": "#FCC30B",
+  "8": "#A21942",
+  "9": "#FD6925",
+  "10": "#DD1367",
+  "11": "#FD9D24",
+  "12": "#BF8B2E",
+  "13": "#3F7E44",
+  "14": "#0A97D9",
+  "15": "#56C02B",
+  "16": "#00689D",
+  "17": "#19486A"
+};
+
+export const projectStatuses = [
+  { value: 'planning', label: 'Planning' },
+  { value: 'active', label: 'Active' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'on-hold', label: 'On Hold' },
+  { value: 'cancelled', label: 'Cancelled' }
+];
+
+export const projectStatusColors: { [key: string]: string } = {
+  planning: '#94A3B8',
+  active: '#10B981',
+  completed: '#3B82F6',
+  'on-hold': '#F59E0B',
+  cancelled: '#EF4444'
+};
+
+export const projectStatusChartColors: { [key: string]: string } = {
+  planning: '#94A3B8',
+  active: '#10B981',
+  completed: '#3B82F6',
+  'on-hold': '#F59E0B',
+  cancelled: '#EF4444'
+};
+
+export const sdgTargets = [
+  { id: 1, title: "No Poverty", description: "End poverty in all its forms everywhere" },
+  { id: 2, title: "Zero Hunger", description: "End hunger, achieve food security and improved nutrition and promote sustainable agriculture" },
+  { id: 3, title: "Good Health and Well-being", description: "Ensure healthy lives and promote well-being for all at all ages" },
+  { id: 4, title: "Quality Education", description: "Ensure inclusive and equitable quality education and promote lifelong learning opportunities for all" },
+  { id: 5, title: "Gender Equality", description: "Achieve gender equality and empower all women and girls" },
+  { id: 6, title: "Clean Water and Sanitation", description: "Ensure availability and sustainable management of water and sanitation for all" },
+  { id: 7, title: "Affordable and Clean Energy", description: "Ensure access to affordable, reliable, sustainable and modern energy for all" },
+  { id: 8, title: "Decent Work and Economic Growth", description: "Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all" },
+  { id: 9, title: "Industry, Innovation and Infrastructure", description: "Build resilient infrastructure, promote inclusive and sustainable industrialization and foster innovation" },
+  { id: 10, title: "Reduced Inequalities", description: "Reduce inequality within and among countries" },
+  { id: 11, title: "Sustainable Cities and Communities", description: "Make cities and human settlements inclusive, safe, resilient and sustainable" },
+  { id: 12, title: "Responsible Consumption and Production", description: "Ensure sustainable consumption and production patterns" },
+  { id: 13, title: "Climate Action", description: "Take urgent action to combat climate change and its impacts" },
+  { id: 14, title: "Life Below Water", description: "Conserve and sustainably use the oceans, seas and marine resources for sustainable development" },
+  { id: 15, title: "Life on Land", description: "Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification, and halt and reverse land degradation and halt biodiversity loss" },
+  { id: 16, title: "Peace, Justice and Strong Institutions", description: "Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels" },
+  { id: 17, title: "Partnerships for the Goals", description: "Strengthen the means of implementation and revitalize the global partnership for sustainable development" }
 ];
