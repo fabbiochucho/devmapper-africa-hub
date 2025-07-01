@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -85,10 +84,10 @@ const SubmitChangeMaker = () => {
     const validMembers = (values.members || []).filter(member => 
       member.name && member.role && member.bio && member.email
     ).map(member => ({
-      name: member.name,
-      role: member.role,
-      bio: member.bio,
-      email: member.email,
+      name: member.name!,
+      role: member.role!,
+      bio: member.bio!,
+      email: member.email!,
       photo: member.photo,
       socialMedia: member.socialMedia || {
         linkedin: "",

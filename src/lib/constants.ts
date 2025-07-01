@@ -1,22 +1,22 @@
 
 export const sdgGoals = [
-  { number: 1, title: "No Poverty", value: "1", label: "No Poverty" },
-  { number: 2, title: "Zero Hunger", value: "2", label: "Zero Hunger" },
-  { number: 3, title: "Good Health and Well-being", value: "3", label: "Good Health and Well-being" },
-  { number: 4, title: "Quality Education", value: "4", label: "Quality Education" },
-  { number: 5, title: "Gender Equality", value: "5", label: "Gender Equality" },
-  { number: 6, title: "Clean Water and Sanitation", value: "6", label: "Clean Water and Sanitation" },
-  { number: 7, title: "Affordable and Clean Energy", value: "7", label: "Affordable and Clean Energy" },
-  { number: 8, title: "Decent Work and Economic Growth", value: "8", label: "Decent Work and Economic Growth" },
-  { number: 9, title: "Industry, Innovation and Infrastructure", value: "9", label: "Industry, Innovation and Infrastructure" },
-  { number: 10, title: "Reduced Inequalities", value: "10", label: "Reduced Inequalities" },
-  { number: 11, title: "Sustainable Cities and Communities", value: "11", label: "Sustainable Cities and Communities" },
-  { number: 12, title: "Responsible Consumption and Production", value: "12", label: "Responsible Consumption and Production" },
-  { number: 13, title: "Climate Action", value: "13", label: "Climate Action" },
-  { number: 14, title: "Life Below Water", value: "14", label: "Life Below Water" },
-  { number: 15, title: "Life on Land", value: "15", label: "Life on Land" },
-  { number: 16, title: "Peace, Justice and Strong Institutions", value: "16", label: "Peace, Justice and Strong Institutions" },
-  { number: 17, title: "Partnerships for the Goals", value: "17", label: "Partnerships for the Goals" }
+  { number: 1, title: "No Poverty", value: "1", label: "Goal 1: No Poverty" },
+  { number: 2, title: "Zero Hunger", value: "2", label: "Goal 2: Zero Hunger" },
+  { number: 3, title: "Good Health and Well-being", value: "3", label: "Goal 3: Good Health and Well-being" },
+  { number: 4, title: "Quality Education", value: "4", label: "Goal 4: Quality Education" },
+  { number: 5, title: "Gender Equality", value: "5", label: "Goal 5: Gender Equality" },
+  { number: 6, title: "Clean Water and Sanitation", value: "6", label: "Goal 6: Clean Water and Sanitation" },
+  { number: 7, title: "Affordable and Clean Energy", value: "7", label: "Goal 7: Affordable and Clean Energy" },
+  { number: 8, title: "Decent Work and Economic Growth", value: "8", label: "Goal 8: Decent Work and Economic Growth" },
+  { number: 9, title: "Industry, Innovation and Infrastructure", value: "9", label: "Goal 9: Industry, Innovation and Infrastructure" },
+  { number: 10, title: "Reduced Inequalities", value: "10", label: "Goal 10: Reduced Inequalities" },
+  { number: 11, title: "Sustainable Cities and Communities", value: "11", label: "Goal 11: Sustainable Cities and Communities" },
+  { number: 12, title: "Responsible Consumption and Production", value: "12", label: "Goal 12: Responsible Consumption and Production" },
+  { number: 13, title: "Climate Action", value: "13", label: "Goal 13: Climate Action" },
+  { number: 14, title: "Life Below Water", value: "14", label: "Goal 14: Life Below Water" },
+  { number: 15, title: "Life on Land", value: "15", label: "Goal 15: Life on Land" },
+  { number: 16, title: "Peace, Justice and Strong Institutions", value: "16", label: "Goal 16: Peace, Justice and Strong Institutions" },
+  { number: 17, title: "Partnerships for the Goals", value: "17", label: "Goal 17: Partnerships for the Goals" }
 ];
 
 export const africaCountries = [

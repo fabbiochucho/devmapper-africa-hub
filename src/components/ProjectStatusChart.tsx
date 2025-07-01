@@ -25,13 +25,14 @@ const ProjectStatusChart = () => {
         return Object.entries(counts).map(([status, count]) => ({
             name: projectStatusMap.get(status) || status,
             value: count,
-            fill: projectStatusChartColors[status]
+            fill: projectStatusChartColors[status] || '#94A3B8'
         }));
-    }, []);
+    }, [projectStatusMap]);
 
     const chartConfig = {} as ChartConfig;
     data.forEach(item => {
-        chartConfig[item.name] = {
+        const configKey = item.name as string;
+        chartConfig[configKey] = {
             label: item.name,
             color: item.fill,
         };
