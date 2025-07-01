@@ -81,6 +81,22 @@ const SubmitChangeMaker = () => {
       return;
     }
 
+    // Filter out incomplete members and ensure all required fields are present
+    const validMembers = (values.members || []).filter(member => 
+      member.name && member.role && member.bio && member.email
+    ).map(member => ({
+      name: member.name,
+      role: member.role,
+      bio: member.bio,
+      email: member.email,
+      photo: member.photo,
+      socialMedia: member.socialMedia || {
+        linkedin: "",
+        twitter: "",
+        facebook: "",
+      }
+    }));
+
     const newChangeMaker: ChangeMaker = {
       id: `CM-${String(mockChangeMakers.length + 1).padStart(3, '0')}`,
       type: values.type,
@@ -93,7 +109,7 @@ const SubmitChangeMaker = () => {
       lat: values.lat,
       lng: values.lng,
       photo: values.photo || "/placeholder.svg",
-      members: values.members || [],
+      members: validMembers,
       email: values.email,
       phone: values.phone,
       website: values.website,

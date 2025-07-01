@@ -1,7 +1,7 @@
 
 import { Outlet, useNavigate, Link, createSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "./AppSidebar";
+import { AppSidebar } from "./AppSidebar";
 import SearchInterface from "./search/SearchInterface";
 import { Report } from "@/data/mockReports";
 import { MockUser } from "@/data/mockUsers";
