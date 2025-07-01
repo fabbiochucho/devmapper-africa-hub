@@ -6,9 +6,9 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { signUpSchema } from "@/lib/authSchema";
-import { ALL_ROLES } from "@/contexts/UserRoleContext";
+import { ALL_ROLES, UserRole } from "@/contexts/UserRoleContext";
 import { toast } from "sonner";
 import { mockUsers, MockUser } from "@/data/mockUsers";
 
@@ -16,12 +16,21 @@ interface SignUpFormProps {
   onAuthSuccess: (userData: any, token: string) => void;
 }
 
-type SignUpFormValues = z.infer<typeof signUpSchema>;
+const multiRoleSignUpSchema = signUpSchema.extend({
+  roles: z.array(z.string()).min(1, "Please select at least one role"),
+});
+
+type SignUpFormValues = z.infer<typeof multiRoleSignUpSchema>;
 
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", role: "Citizen Reporter" },
+    resolver: zodResolver(multiRoleSignUpSchema),
+    defaultValues: { 
+      name: "", 
+      email: "", 
+      password: "", 
+      roles: ["Citizen Reporter"] 
+    },
   });
 
   const handleSignUp = (values: SignUpFormValues) => {
@@ -42,9 +51,9 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
       id: mockUsers.length + 1,
       name: values.name,
       email: values.email,
-      password: values.password, // Storing plain text for mock purposes
-      role: values.role,
-      verified: values.role === "Citizen Reporter", // Auto-verify citizens
+      password: values.password,
+      role: values.roles[0] as UserRole, // Primary role
+      verified: values.roles.includes("Citizen Reporter"),
       createdAt: new Date().toISOString(),
     };
 
@@ -55,11 +64,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
     localStorage.setItem("auth_token", token);
     localStorage.setItem("user", JSON.stringify(userToStore));
     onAuthSuccess(userToStore, token);
-    toast.success(
-      newUser.verified
-        ? "Signed up successfully! Welcome!"
-        : "Sign-up successful! Your account is pending verification."
-    );
+    toast.success("Sign-up successful! You can now access all your selected roles.");
   };
 
   return (
@@ -78,6 +83,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="email"
@@ -91,6 +97,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="password"
@@ -104,28 +111,44 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
-          name="role"
-          render={({ field }) => (
+          name="roles"
+          render={() => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {ALL_ROLES.map((role) => (
-                    <SelectItem key={role} value={role}>{role}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Roles (Select all that apply)</FormLabel>
+              <div className="grid grid-cols-1 gap-2">
+                {ALL_ROLES.map((role) => (
+                  <FormField
+                    key={role}
+                    control={form.control}
+                    name="roles"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(role)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...field.value, role])
+                                : field.onChange(field.value?.filter((value) => value !== role));
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal cursor-pointer">
+                          {role}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <Button type="submit" className="w-full">
           Sign Up
         </Button>
