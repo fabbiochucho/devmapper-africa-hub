@@ -7,13 +7,13 @@ import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Settings = () => {
-  const { user, setRole } = useUserRole();
+  const { user, setCurrentRole } = useUserRole();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // This is a mock logout. In a real app, you would clear auth tokens.
     // For this demo, we reset to the default "Citizen Reporter" role.
-    setRole('Citizen Reporter');
+    setCurrentRole('Citizen Reporter');
     toast.info("You have been logged out.");
     navigate("/");
   };

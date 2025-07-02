@@ -9,7 +9,7 @@ import { toast } from "sonner";
 const ADMIN_ROLES = ["Platform Admin", "Country Admin"];
 
 const UserManagement = () => {
-  const { role } = useUserRole();
+  const { currentRole } = useUserRole();
   const [users, setUsers] = useState(mockUsers);
 
   const handleUpdateUserVerification = (userId: number, verified: boolean) => {
@@ -23,7 +23,7 @@ const UserManagement = () => {
     }
   };
 
-  if (!ADMIN_ROLES.includes(role)) {
+  if (!ADMIN_ROLES.includes(currentRole)) {
     return (
       <div className="flex items-center justify-center h-full p-4">
         <Card className="w-full max-w-md">

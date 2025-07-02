@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ interface FlaggedProject {
 }
 
 export default function AdminDashboard() {
-  const { user, role } = useUserRole();
+  const { user, currentRole } = useUserRole();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>([]);
   const [adminStats, setAdminStats] = useState({
@@ -104,7 +103,7 @@ export default function AdminDashboard() {
     setAdminStats(stats => ({ ...stats, flaggedContent: stats.flaggedContent - 1, resolvedIssues: stats.resolvedIssues + 1 }));
   };
   
-  if (!ADMIN_ROLES.includes(role)) {
+  if (!ADMIN_ROLES.includes(currentRole)) {
     return (
       <div className="flex items-center justify-center h-full p-4">
         <Card className="w-full max-w-md">

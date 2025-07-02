@@ -27,7 +27,7 @@ export default function Index() {
   const [user, setUser] = useState<UserType | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { setRole } = useUserRole();
+  const { setCurrentRole } = useUserRole();
   const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
   const socialMediaFeeds = [
@@ -103,18 +103,18 @@ export default function Index() {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        setRole(parsedUser.role);
+        setCurrentRole(parsedUser.role);
       } catch (error) {
         console.error("Error parsing user data:", error);
         handleLogout();
       }
     }
     setIsLoading(false);
-  }, [setRole]);
+  }, [setCurrentRole]);
 
   const handleAuthSuccess = (userData: UserType, token: string) => {
     setUser(userData);
-    setRole(userData.role);
+    setCurrentRole(userData.role);
     setShowAuthModal(false);
   };
 
@@ -122,7 +122,7 @@ export default function Index() {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user");
     setUser(null);
-    setRole("Citizen Reporter"); 
+    setCurrentRole("Citizen Reporter"); 
   };
 
   if (isLoading) {
