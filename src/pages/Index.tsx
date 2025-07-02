@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import AuthModal from "@/components/AuthModal";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
@@ -11,6 +12,7 @@ import MapSection from "@/components/landing/MapSection";
 import RecentProjects from "@/components/landing/RecentProjects";
 import SocialFeed from "@/components/landing/SocialFeed";
 import UserDashboard from "@/components/landing/UserDashboard";
+import PartnersCarousel from "@/components/landing/PartnersCarousel";
 import PageFooter from "@/components/landing/PageFooter";
 
 interface UserType {
@@ -151,6 +153,7 @@ export default function Index() {
         {user && <UserDashboard user={user} />}
       </main>
 
+      <PartnersCarousel />
       <PageFooter />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />

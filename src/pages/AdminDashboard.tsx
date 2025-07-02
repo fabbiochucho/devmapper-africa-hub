@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { toast } from "sonner";
+import PartnerManagement from "@/components/admin/PartnerManagement";
 
 const ADMIN_ROLES = ["Platform Admin", "Country Admin"];
 
@@ -153,6 +154,7 @@ export default function AdminDashboard() {
         <TabsList>
           <TabsTrigger value="users">User Verification</TabsTrigger>
           <TabsTrigger value="content">Content Moderation</TabsTrigger>
+          <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
@@ -273,6 +275,10 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="partners">
+          <PartnerManagement />
         </TabsContent>
 
         <TabsContent value="reports">
