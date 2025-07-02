@@ -150,10 +150,10 @@ export default function Index() {
         <MapSection projects={projectsForMap} onProjectSelect={handleProjectSelect} selectedProject={selectedMapProject} />
         <RecentProjects recentProjects={recentProjects} />
         <SocialFeed socialMediaFeeds={socialMediaFeeds} />
+        <PartnersCarousel />
         {user && <UserDashboard user={user} />}
       </main>
 
-      <PartnersCarousel />
       <PageFooter />
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />
