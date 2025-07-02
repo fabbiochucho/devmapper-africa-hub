@@ -41,7 +41,7 @@ export default function PartnerManagement() {
 
   const fetchPartners = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('partners')
         .select('*')
         .order('display_order');
@@ -61,7 +61,7 @@ export default function PartnerManagement() {
     
     try {
       if (editingPartner) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('partners')
           .update(formData)
           .eq('id', editingPartner.id);
@@ -69,7 +69,7 @@ export default function PartnerManagement() {
         if (error) throw error;
         toast.success('Partner updated successfully');
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('partners')
           .insert([formData]);
         
@@ -103,7 +103,7 @@ export default function PartnerManagement() {
     if (!confirm('Are you sure you want to delete this partner?')) return;
     
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('partners')
         .delete()
         .eq('id', id);
@@ -119,7 +119,7 @@ export default function PartnerManagement() {
 
   const toggleActive = async (id: string, is_active: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('partners')
         .update({ is_active })
         .eq('id', id);
