@@ -46,7 +46,10 @@ export default function PartnerManagement() {
         .select('*')
         .order('display_order');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       setPartners(data || []);
     } catch (error) {
       console.error('Error fetching partners:', error);
@@ -59,21 +62,49 @@ export default function PartnerManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
+    if (!formData.name.trim()) {
+      toast.error('Partner name is required');
+      return;
+    }
+    
+    if (!formData.logo_url.trim()) {
+      toast.error('Logo URL is required');
+      return;
+    }
+
+    // Prepare data for Supabase
+    const partnerData = {
+      name: formData.name.trim(),
+      logo_url: formData.logo_url.trim(),
+      website_url: formData.website_url.trim() || null,
+      display_order: Number(formData.display_order) || 0,
+      is_active: formData.is_active
+    };
+
+    console.log('Submitting partner data:', partnerData);
+    
     try {
       if (editingPartner) {
         const { error } = await (supabase as any)
           .from('partners')
-          .update(formData)
+          .update(partnerData)
           .eq('id', editingPartner.id);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         toast.success('Partner updated successfully');
       } else {
         const { error } = await (supabase as any)
           .from('partners')
-          .insert([formData]);
+          .insert([partnerData]);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         toast.success('Partner added successfully');
       }
       
@@ -83,7 +114,7 @@ export default function PartnerManagement() {
       fetchPartners();
     } catch (error) {
       console.error('Error saving partner:', error);
-      toast.error('Failed to save partner');
+      toast.error(`Failed to ${editingPartner ? 'update' : 'add'} partner: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -165,31 +196,45 @@ export default function PartnerManagement() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Partner Name</Label>
+                  <Label htmlFor="name">Partner Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Enter partner name"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="logo_url">Logo URL</Label>
+                  <Label htmlFor="logo_url">Logo URL *</Label>
                   <Input
                     id="logo_url"
-                    type="url"
                     value={formData.logo_url}
                     onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                    placeholder="https://example.com/logo.png"
                     required
                   />
+                  {formData.logo_url && (
+                    <div className="mt-2">
+                      <img 
+                        src={formData.logo_url} 
+                        alt="Logo preview" 
+                        className="w-24 h-12 object-contain border rounded"
+                        onError={(e) => {
+                          console.log('Logo preview failed to load');
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="website_url">Website URL (Optional)</Label>
                   <Input
                     id="website_url"
-                    type="url"
                     value={formData.website_url}
                     onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                    placeholder="https://example.com"
                   />
                 </div>
                 <div>
@@ -199,6 +244,7 @@ export default function PartnerManagement() {
                     type="number"
                     value={formData.display_order}
                     onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                    min="0"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -243,6 +289,10 @@ export default function PartnerManagement() {
                     src={partner.logo_url} 
                     alt={partner.name}
                     className="w-16 h-8 object-contain"
+                    onError={(e) => {
+                      console.log(`Logo failed to load for ${partner.name}`);
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
                   />
                 </TableCell>
                 <TableCell>
