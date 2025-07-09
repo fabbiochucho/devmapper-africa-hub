@@ -10,6 +10,7 @@ import SubmitReport from "./pages/SubmitReport";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import UserManagement from "./pages/UserManagement";
 import CorporateTargets from "./pages/CorporateTargets";
@@ -29,6 +30,9 @@ import SubmitChangeMaker from "./pages/SubmitChangeMaker";
 import ChangeMakers from "./pages/ChangeMakers";
 import ChangeMakerAnalyticsPage from "./pages/ChangeMakerAnalyticsPage";
 import Fundraising from "./pages/Fundraising";
+import Auth from "./pages/Auth";
+import CorporateDashboard from "./pages/CorporateDashboard";
+import NgoDashboard from "./pages/NgoDashboard";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +40,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Sonner />
-      <UserRoleProvider>
-        <BrowserRouter>
+      <AuthProvider>
+        <UserRoleProvider>
+          <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Index />} />
@@ -60,15 +65,19 @@ const App = () => (
               <Route path="/training" element={<Training />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/connect" element={<Connect />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </UserRoleProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
+            <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </UserRoleProvider>
+  </AuthProvider>
+</ThemeProvider>
+</QueryClientProvider>
 );
 
 export default App;

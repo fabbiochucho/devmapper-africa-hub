@@ -1,0 +1,435 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Target, TrendingUp, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface CorporateTarget {
+  id: string;
+  title: string;
+  description: string;
+  sdg_goals: number[];
+  target_value: number;
+  current_value: number;
+  unit: string;
+  target_date: string;
+  status: string;
+  visibility: string;
+  created_at: string;
+}
+
+const CorporateDashboard = () => {
+  const { user, hasRole } = useAuth();
+  const [targets, setTargets] = useState<CorporateTarget[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    sdg_goals: [] as number[],
+    target_value: '',
+    unit: '',
+    target_date: '',
+    visibility: 'public'
+  });
+
+  useEffect(() => {
+    if (user && hasRole('company_representative')) {
+      fetchTargets();
+    }
+  }, [user, hasRole]);
+
+  const fetchTargets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('corporate_targets')
+        .select('*')
+        .eq('company_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTargets(data || []);
+    } catch (error) {
+      console.error('Error fetching targets:', error);
+      toast.error('Failed to load targets');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateTarget = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const { error } = await supabase
+        .from('corporate_targets')
+        .insert([{
+          company_id: user?.id,
+          title: formData.title,
+          description: formData.description,
+          sdg_goals: formData.sdg_goals,
+          target_value: parseFloat(formData.target_value),
+          unit: formData.unit,
+          target_date: formData.target_date,
+          visibility: formData.visibility
+        }]);
+
+      if (error) throw error;
+      
+      toast.success('Target created successfully!');
+      setShowCreateDialog(false);
+      setFormData({
+        title: '',
+        description: '',
+        sdg_goals: [],
+        target_value: '',
+        unit: '',
+        target_date: '',
+        visibility: 'public'
+      });
+      fetchTargets();
+    } catch (error) {
+      console.error('Error creating target:', error);
+      toast.error('Failed to create target');
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'on_track': return 'bg-blue-100 text-blue-800';
+      case 'at_risk': return 'bg-yellow-100 text-yellow-800';
+      case 'delayed': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getProgressPercentage = (current: number, target: number) => {
+    return Math.min((current / target) * 100, 100);
+  };
+
+  if (!hasRole('company_representative')) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+        <p className="text-muted-foreground">
+          You need to be a company representative to access this dashboard.
+        </p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Corporate SDG Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track and manage your corporate sustainability targets
+          </p>
+        </div>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Target
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New SDG Target</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateTarget} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Target Title</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Reduce carbon emissions by 50%"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Detailed description of the target and how it will be achieved"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="target_value">Target Value</Label>
+                  <Input
+                    id="target_value"
+                    type="number"
+                    value={formData.target_value}
+                    onChange={(e) => setFormData({ ...formData, target_value: e.target.value })}
+                    placeholder="100"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="unit">Unit</Label>
+                  <Input
+                    id="unit"
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    placeholder="e.g., tons CO2, people trained"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="target_date">Target Date</Label>
+                <Input
+                  id="target_date"
+                  type="date"
+                  value={formData.target_date}
+                  onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="visibility">Visibility</Label>
+                <Select
+                  value={formData.visibility}
+                  onValueChange={(value) => setFormData({ ...formData, visibility: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="restricted">Restricted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Create Target
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Dashboard Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Targets</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{targets.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {targets.filter(t => t.status === 'completed').length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">On Track</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {targets.filter(t => t.status === 'on_track').length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {targets.filter(t => t.status === 'at_risk').length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Targets List */}
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList>
+          <TabsTrigger value="all">All Targets</TabsTrigger>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-4">
+          {targets.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Target className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No targets</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Get started by creating your first SDG target.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {targets.map((target) => (
+                <Card key={target.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{target.title}</CardTitle>
+                      <Badge className={getStatusColor(target.status)}>
+                        {target.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <CardDescription>{target.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>
+                          {target.current_value} / {target.target_value} {target.unit}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={getProgressPercentage(target.current_value, target.target_value)} 
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Target Date: {new Date(target.target_date).toLocaleDateString()}</span>
+                      <span>SDG Goals: {target.sdg_goals.join(', ')}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="active" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {targets
+              .filter(t => t.status === 'active' || t.status === 'on_track')
+              .map((target) => (
+                <Card key={target.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{target.title}</CardTitle>
+                      <Badge className={getStatusColor(target.status)}>
+                        {target.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <CardDescription>{target.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>
+                          {target.current_value} / {target.target_value} {target.unit}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={getProgressPercentage(target.current_value, target.target_value)} 
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Target Date: {new Date(target.target_date).toLocaleDateString()}</span>
+                      <span>SDG Goals: {target.sdg_goals.join(', ')}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {targets
+              .filter(t => t.status === 'completed')
+              .map((target) => (
+                <Card key={target.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{target.title}</CardTitle>
+                      <Badge className={getStatusColor(target.status)}>
+                        {target.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <CardDescription>{target.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Final Result</span>
+                        <span>
+                          {target.current_value} / {target.target_value} {target.unit}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={getProgressPercentage(target.current_value, target.target_value)} 
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Completed: {new Date(target.target_date).toLocaleDateString()}</span>
+                      <span>SDG Goals: {target.sdg_goals.join(', ')}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default CorporateDashboard;
