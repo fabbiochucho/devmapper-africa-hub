@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PartnerManagement from "@/components/admin/PartnerManagement";
 
@@ -31,20 +33,58 @@ interface FlaggedProject {
   status: string;
 }
 
+interface FundraisingCampaign {
+  id: string;
+  title: string;
+  target_amount: number;
+  raised_amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  created_by: string;
+  profiles?: { full_name: string | null } | null;
+}
+
 export default function AdminDashboard() {
   const { user, currentRole } = useUserRole();
+  const { user: authUser } = useAuth();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>([]);
+  const [campaigns, setCampaigns] = useState<FundraisingCampaign[]>([]);
   const [adminStats, setAdminStats] = useState({
     totalUsers: 0,
     pendingVerifications: 0,
     flaggedContent: 0,
     resolvedIssues: 0,
+    totalCampaigns: 0,
+    totalRaised: 0,
+    activeCampaigns: 0,
   });
 
   useEffect(() => {
-    // In a real app, you'd fetch this data. For now, we use mock data.
-    const fetchAdminData = () => {
+    fetchCampaigns();
+    fetchAdminData();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('fundraising_campaigns')
+        .select(`
+          *,
+          profiles!fundraising_campaigns_created_by_fkey(full_name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setCampaigns((data as any) || []);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    }
+  };
+
+  const fetchAdminData = () => {
       const mockPendingUsers: PendingUser[] = [
         {
           id: 1,
@@ -82,15 +122,19 @@ export default function AdminDashboard() {
       ];
       setFlaggedProjects(mockFlaggedProjects);
 
+      const totalRaised = campaigns.reduce((sum, c) => sum + c.raised_amount, 0);
+      const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+      
       setAdminStats({
         totalUsers: 1247,
         pendingVerifications: mockPendingUsers.length,
         flaggedContent: mockFlaggedProjects.length,
         resolvedIssues: 156,
+        totalCampaigns: campaigns.length,
+        totalRaised,
+        activeCampaigns,
       });
     };
-    fetchAdminData();
-  }, []);
 
   const handleUserVerification = (userId: number, verified: boolean) => {
     setPendingUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
@@ -129,7 +173,7 @@ export default function AdminDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{adminStats.totalUsers}</div>
               <div className="text-sm text-muted-foreground">Total Users</div>
@@ -146,6 +190,14 @@ export default function AdminDashboard() {
               <div className="text-2xl font-bold text-green-500">{adminStats.resolvedIssues}</div>
               <div className="text-sm text-muted-foreground">Resolved Issues</div>
             </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-500">{adminStats.totalCampaigns}</div>
+              <div className="text-sm text-muted-foreground">Total Campaigns</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">${adminStats.totalRaised.toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">Total Raised</div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -153,6 +205,7 @@ export default function AdminDashboard() {
       <Tabs defaultValue="users" className="w-full">
         <TabsList>
           <TabsTrigger value="users">User Verification</TabsTrigger>
+          <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
           <TabsTrigger value="content">Content Moderation</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
@@ -213,6 +266,62 @@ export default function AdminDashboard() {
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                     <p>No pending user verifications</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="campaigns">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart />
+                Campaign Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {campaigns.map((campaign) => (
+                  <div key={campaign.id} className="border rounded-lg p-4">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div>
+                          <h3 className="font-semibold">{campaign.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            By: {campaign.profiles?.full_name || 'Anonymous'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
+                            {campaign.status}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {campaign.currency} {campaign.raised_amount.toLocaleString()} / {campaign.target_amount.toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Created: {new Date(campaign.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <Button size="sm" variant="outline">
+                          <TrendingUp className="w-4 h-4" />
+                          View Analytics
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <DollarSign className="w-4 h-4" />
+                          View Donations
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {campaigns.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Heart className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                    <p>No campaigns found</p>
                   </div>
                 )}
               </div>

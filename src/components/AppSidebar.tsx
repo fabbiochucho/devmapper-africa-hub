@@ -1,5 +1,5 @@
 
-import { Calendar, Home, Inbox, Search, Settings, Users, BarChart3, Target, Building2, Shield, MessageSquare, BookOpen, HelpCircle, FileText, Phone, Info, Heart, UserPlus, MapPin, TrendingUp } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings, Users, BarChart3, Target, Building2, Shield, MessageSquare, BookOpen, HelpCircle, FileText, Phone, Info, Heart, UserPlus, MapPin, TrendingUp, Globe } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -63,6 +63,7 @@ const resourceItems = [
   { title: "Training", url: "/training", icon: Calendar },
   { title: "Resources", url: "/resources", icon: FileText },
   { title: "Connect", url: "/connect", icon: MapPin },
+  { title: "SDG-Agenda 2063", url: "/sdg-agenda2063", icon: Globe },
 ]
 
 const supportItems = [

@@ -33,6 +33,7 @@ import Fundraising from "./pages/Fundraising";
 import Auth from "./pages/Auth";
 import CorporateDashboard from "./pages/CorporateDashboard";
 import NgoDashboard from "./pages/NgoDashboard";
+import SdgAgenda2063Alignment from "./components/SdgAgenda2063Alignment";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
             <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+            <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

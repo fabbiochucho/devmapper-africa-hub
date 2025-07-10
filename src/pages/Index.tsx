@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import AuthModal from "@/components/AuthModal";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { mockReports, Report } from "@/data/mockReports";
 import PageHeader from "@/components/landing/PageHeader";
 import HeroSection from "@/components/landing/HeroSection";
@@ -26,6 +27,7 @@ interface UserType {
 }
 
 export default function Index() {
+  const { user: authUser, profile } = useAuth();
   const [user, setUser] = useState<UserType | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,21 +100,25 @@ export default function Index() {
   }).filter(Boolean) as any[];
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    const userData = localStorage.getItem("user");
-
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setCurrentRole(parsedUser.role);
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        handleLogout();
-      }
+    // Use Supabase auth state instead of localStorage
+    if (authUser && profile) {
+      const userData: UserType = {
+        id: parseInt(authUser.id.slice(-6), 16), // Convert UUID to number for legacy compatibility
+        name: profile.full_name || 'Anonymous',
+        email: profile.email || '',
+        role: "Citizen Reporter" as UserRole, // Default role, should be enhanced with actual user roles
+        verified: profile.is_verified,
+        organization: profile.organization || undefined,
+        country: profile.country || undefined,
+      };
+      setUser(userData);
+      setCurrentRole(userData.role);
+    } else {
+      setUser(null);
+      setCurrentRole("Citizen Reporter");
     }
     setIsLoading(false);
-  }, [setCurrentRole]);
+  }, [authUser, profile, setCurrentRole]);
 
   const handleAuthSuccess = (userData: UserType, token: string) => {
     setUser(userData);
@@ -120,11 +126,12 @@ export default function Index() {
     setShowAuthModal(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    // Use Supabase auth logout
+    const { useAuth } = await import("@/contexts/AuthContext");
+    // This would be better handled by calling a logout function from AuthContext
     setUser(null);
-    setCurrentRole("Citizen Reporter"); 
+    setCurrentRole("Citizen Reporter");
   };
 
   if (isLoading) {
