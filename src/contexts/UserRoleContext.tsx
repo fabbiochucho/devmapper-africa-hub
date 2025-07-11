@@ -1,91 +1,120 @@
 
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
-import { MockUser, mockUsers } from '@/data/mockUsers';
+import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'Citizen Reporter' | 'NGO Member' | 'Government Official' | 'Company Representative' | 'Country Admin' | 'Platform Admin' | 'Change Maker';
+export type UserRole = 'citizen_reporter' | 'ngo_member' | 'government_official' | 'company_representative' | 'country_admin' | 'platform_admin' | 'change_maker' | 'admin';
 
-export const ALL_ROLES: UserRole[] = ['Citizen Reporter', 'NGO Member', 'Government Official', 'Company Representative', 'Country Admin', 'Platform Admin', 'Change Maker'];
+export const ALL_ROLES: UserRole[] = ['citizen_reporter', 'ngo_member', 'government_official', 'company_representative', 'country_admin', 'platform_admin', 'change_maker', 'admin'];
 
 export interface UserRoleData {
   role: UserRole;
   organization?: string;
   country?: string;
+  is_active: boolean;
 }
 
 interface UserRoleContextType {
   roles: UserRoleData[];
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
-  user: MockUser | null;
   hasRole: (role: UserRole) => boolean;
   addRole: (roleData: UserRoleData) => Promise<void>;
   removeRole: (role: UserRole) => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
 
 export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<UserRoleData[]>([]);
-  const [currentRole, setCurrentRole] = useState<UserRole>('Citizen Reporter');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentRole, setCurrentRole] = useState<UserRole>('citizen_reporter');
+  const [loading, setLoading] = useState(true);
+  const { user: authUser, session, loading: authLoading } = useAuth();
 
-  // For demo purposes, we'll use mock data, but in production this would fetch from Supabase
-  const user = useMemo(() => {
-    if (!isAuthenticated) return null;
-    
-    // Find user based on current role for demo
-    const foundUser = mockUsers.find(u => u.role === currentRole);
-    return foundUser || mockUsers[0];
-  }, [currentRole, isAuthenticated]);
+  const isAuthenticated = !!authUser;
 
   const hasRole = (role: UserRole): boolean => {
     return roles.some(r => r.role === role);
   };
 
+  const fetchUserRoles = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role, organization, country, is_active')
+        .eq('user_id', userId)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      const userRoles = data?.map(role => ({
+        role: role.role as UserRole,
+        organization: role.organization,
+        country: role.country,
+        is_active: role.is_active
+      })) || [];
+
+      setRoles(userRoles);
+      
+      // Set current role to first available role or default
+      if (userRoles.length > 0) {
+        setCurrentRole(userRoles[0].role);
+      }
+    } catch (error) {
+      console.error('Error fetching user roles:', error);
+      // Default to citizen_reporter if no roles found
+      setRoles([{ role: 'citizen_reporter', is_active: true }]);
+      setCurrentRole('citizen_reporter');
+    }
+  };
+
   const addRole = async (roleData: UserRoleData): Promise<void> => {
-    if (!user) return;
+    if (!authUser) return;
     
     try {
-      // In production, this would insert into Supabase
-      // const { error } = await supabase
-      //   .from('user_roles')
-      //   .insert({
-      //     user_id: user.id,
-      //     role: roleData.role,
-      //     organization: roleData.organization,
-      //     country: roleData.country
-      //   });
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authUser.id,
+          role: roleData.role,
+          organization: roleData.organization,
+          country: roleData.country,
+          is_active: true
+        });
       
-      // For demo, just update local state
-      if (!hasRole(roleData.role)) {
-        setRoles(prev => [...prev, roleData]);
-      }
+      if (error) throw error;
+      
+      // Refresh roles
+      fetchUserRoles(authUser.id);
     } catch (error) {
       console.error('Error adding role:', error);
     }
   };
 
   const removeRole = async (role: UserRole): Promise<void> => {
-    if (!user) return;
+    if (!authUser) return;
     
     try {
-      // In production, this would delete from Supabase
-      // const { error } = await supabase
-      //   .from('user_roles')
-      //   .delete()
-      //   .eq('user_id', user.id)
-      //   .eq('role', role);
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ is_active: false })
+        .eq('user_id', authUser.id)
+        .eq('role', role);
       
-      // For demo, just update local state
-      setRoles(prev => prev.filter(r => r.role !== role));
+      if (error) throw error;
+      
+      // Refresh roles
+      fetchUserRoles(authUser.id);
       
       // If removing current role, switch to first available role
-      if (currentRole === role && roles.length > 1) {
+      if (currentRole === role) {
         const remainingRoles = roles.filter(r => r.role !== role);
         if (remainingRoles.length > 0) {
           setCurrentRole(remainingRoles[0].role);
+        } else {
+          setCurrentRole('citizen_reporter');
         }
       }
     } catch (error) {
@@ -93,31 +122,27 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Initialize with demo data
+  // Fetch user roles when authenticated
   useEffect(() => {
-    // For demo purposes, initialize with default roles
-    // In production, this would fetch from Supabase when user authenticates
-    const initializeRoles = () => {
-      setRoles([
-        { role: 'Citizen Reporter' },
-        { role: 'Change Maker' }
-      ]);
-      setIsAuthenticated(true);
-    };
-
-    initializeRoles();
-  }, []);
+    if (authUser && !authLoading) {
+      fetchUserRoles(authUser.id);
+    } else if (!authUser) {
+      setRoles([]);
+      setCurrentRole('citizen_reporter');
+    }
+    setLoading(authLoading);
+  }, [authUser, authLoading]);
 
   return (
     <UserRoleContext.Provider value={{ 
       roles, 
       currentRole, 
       setCurrentRole, 
-      user, 
       hasRole, 
       addRole, 
       removeRole,
-      isAuthenticated 
+      isAuthenticated,
+      loading
     }}>
       {children}
     </UserRoleContext.Provider>

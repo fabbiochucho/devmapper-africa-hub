@@ -8,9 +8,12 @@ import { MockUser } from "@/data/mockUsers";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft } from "lucide-react";
+import UserRoleSwitcher from "./UserRoleSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Layout = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleProjectSelect = (project: Report) => {
     navigate({
@@ -35,7 +38,10 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex bg-background">
-        <AppSidebar />
+        <div className="flex flex-col">
+          <AppSidebar />
+          {user && <UserRoleSwitcher />}
+        </div>
         <SidebarInset className="flex-1">
           <main className="p-4 h-full flex flex-col">
             <header className="flex justify-between items-center mb-4 gap-4 shrink-0">

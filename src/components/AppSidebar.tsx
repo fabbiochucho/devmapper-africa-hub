@@ -2,6 +2,7 @@
 import { Calendar, Home, Inbox, Search, Settings, Users, BarChart3, Target, Building2, Shield, MessageSquare, BookOpen, HelpCircle, FileText, Phone, Info, Heart, UserPlus, MapPin, TrendingUp, Globe } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
+import { useUserRole } from "@/contexts/UserRoleContext"
 
 import {
   Sidebar,
@@ -35,22 +36,22 @@ const submissionItems = [
   { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
 ]
 
-const getDashboardItems = (userRoles: string[], isAdmin: boolean) => {
+const getDashboardItems = (userRoles: string[], hasRole: (role: string) => boolean, isAdmin: boolean) => {
   const items = [];
   
-  if (userRoles.includes('company_representative')) {
+  if (hasRole('company_representative')) {
     items.push({ title: "Corporate Dashboard", url: "/corporate-dashboard", icon: Target });
   }
   
-  if (userRoles.includes('government_official')) {
+  if (hasRole('government_official')) {
     items.push({ title: "Government Dashboard", url: "/government-dashboard", icon: Building2 });
   }
   
-  if (userRoles.includes('ngo_member')) {
+  if (hasRole('ngo_member')) {
     items.push({ title: "NGO Dashboard", url: "/ngo-dashboard", icon: Users });
   }
   
-  if (isAdmin) {
+  if (isAdmin || hasRole('admin') || hasRole('platform_admin')) {
     items.push({ title: "Admin Dashboard", url: "/admin-dashboard", icon: Shield });
     items.push({ title: "User Management", url: "/user-management", icon: Users });
   }
@@ -77,13 +78,14 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { userRoles, isAdmin, user } = useAuth();
+  const { hasRole, isAuthenticated } = useUserRole();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50";
 
-  const dashboardItems = getDashboardItems(userRoles, isAdmin);
+  const dashboardItems = getDashboardItems(userRoles, hasRole, isAdmin);
   const collapsed = state === "collapsed";
 
   return (
@@ -107,7 +109,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {user && (
+        {isAuthenticated && (
           <SidebarGroup>
             <SidebarGroupLabel>Analytics</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -127,7 +129,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {user && (
+        {isAuthenticated && (
           <SidebarGroup>
             <SidebarGroupLabel>Submissions</SidebarGroupLabel>
             <SidebarGroupContent>
