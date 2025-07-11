@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { addComment } from "@/data/mockComments";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +31,7 @@ interface AddCommentFormProps {
 }
 
 const AddCommentForm: React.FC<AddCommentFormProps> = ({ projectId, onCommentAdded }) => {
-  const { user } = useUserRole();
+  const { user } = useAuth();
   const [rating, setRating] = useState<number | null>(null);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
@@ -53,7 +54,7 @@ const AddCommentForm: React.FC<AddCommentFormProps> = ({ projectId, onCommentAdd
         comment: values.comment,
         rating,
         userId: user.id,
-        userName: user.name,
+        userName: user.email || 'Anonymous',
       });
       toast.success("Comment added successfully!");
       form.reset();

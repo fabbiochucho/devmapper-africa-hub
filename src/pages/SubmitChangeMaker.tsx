@@ -11,10 +11,11 @@ import ChangeMakerStep1 from '@/components/changemaker/ChangeMakerStep1';
 import ChangeMakerStep2 from '@/components/changemaker/ChangeMakerStep2';
 import { mockChangeMakers, ChangeMaker } from '@/data/mockChangeMakers';
 import { useUserRole } from '@/contexts/UserRoleContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SubmitChangeMaker = () => {
   const [step, setStep] = React.useState(1);
-  const { user } = useUserRole();
+  const { user } = useAuth();
   type ChangeMakerFormValues = z.infer<typeof changeMakerSchema>;
 
   const form = useForm<ChangeMakerFormValues>({

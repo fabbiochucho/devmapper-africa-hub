@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building, Download, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { getCorporateTargets, addCorporateEsgTarget, updateCorporateTarget, CorporateTarget } from "@/data/mockCorporateTargets";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CorporateTargets = () => {
-  const { user } = useUserRole();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: targets = [], isLoading } = useQuery({
@@ -113,7 +114,7 @@ const CorporateTargets = () => {
     );
   }
 
-  if (!user || user.role !== "Company Representative") {
+  if (!user) {
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-semibold">Access Denied</h2>
@@ -130,7 +131,7 @@ const CorporateTargets = () => {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <Building className="w-6 h-6" />
-              ESG Dashboard - {user.organization || user.name}
+              ESG Dashboard - {user.email || 'Corporate Dashboard'}
             </CardTitle>
             <div className="flex gap-2">
               <Button onClick={() => setIsAddingTarget(true)} className="flex items-center gap-2">

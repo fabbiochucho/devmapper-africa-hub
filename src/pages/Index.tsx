@@ -12,7 +12,7 @@ import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import MapSection from "@/components/landing/MapSection";
 import RecentProjects from "@/components/landing/RecentProjects";
 import SocialFeed from "@/components/landing/SocialFeed";
-import UserDashboard from "@/components/landing/UserDashboard";
+import UnifiedDashboard from "@/components/UnifiedDashboard";
 import PartnersCarousel from "@/components/landing/PartnersCarousel";
 import PageFooter from "@/components/landing/PageFooter";
 
@@ -27,12 +27,28 @@ interface UserType {
 }
 
 export default function Index() {
-  const { user: authUser, profile } = useAuth();
+  const { user: authUser, profile, loading } = useAuth();
+  const { isAuthenticated, loading: roleLoading } = useUserRole();
   const [user, setUser] = useState<UserType | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { setCurrentRole } = useUserRole();
   const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
+
+  if (loading || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated && authUser) {
+    return <UnifiedDashboard />;
+  }
 
   const socialMediaFeeds = [
     {
@@ -106,7 +122,7 @@ export default function Index() {
         id: parseInt(authUser.id.slice(-6), 16), // Convert UUID to number for legacy compatibility
         name: profile.full_name || 'Anonymous',
         email: profile.email || '',
-        role: "Citizen Reporter" as UserRole, // Default role, should be enhanced with actual user roles
+        role: "citizen_reporter" as UserRole, // Default role, should be enhanced with actual user roles
         verified: profile.is_verified,
         organization: profile.organization || undefined,
         country: profile.country || undefined,
@@ -115,7 +131,7 @@ export default function Index() {
       setCurrentRole(userData.role);
     } else {
       setUser(null);
-      setCurrentRole("Citizen Reporter");
+      setCurrentRole("citizen_reporter");
     }
     setIsLoading(false);
   }, [authUser, profile, setCurrentRole]);
@@ -131,7 +147,7 @@ export default function Index() {
     const { useAuth } = await import("@/contexts/AuthContext");
     // This would be better handled by calling a logout function from AuthContext
     setUser(null);
-    setCurrentRole("Citizen Reporter");
+    setCurrentRole("citizen_reporter");
   };
 
   if (isLoading) {
@@ -158,7 +174,7 @@ export default function Index() {
         <RecentProjects recentProjects={recentProjects} />
         <SocialFeed socialMediaFeeds={socialMediaFeeds} />
         <PartnersCarousel />
-        {user && <UserDashboard user={user} />}
+        {user && <UnifiedDashboard />}
       </main>
 
       <PageFooter />

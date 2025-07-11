@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useUserRole, UserRole, ALL_ROLES } from "@/contexts/UserRoleContext";
 import { Button } from "@/components/ui/button";
@@ -32,13 +31,29 @@ export const AddRoleDialog = ({ onClose }: AddRoleDialogProps) => {
         role: selectedRole as UserRole,
         organization: organization || undefined,
         country: country || undefined,
+        is_active: true
       });
       
-      toast.success(`${selectedRole} role added successfully`);
+      const roleDisplayName = getRoleDisplayName(selectedRole as UserRole);
+      toast.success(`${roleDisplayName} role added successfully`);
       onClose();
     } catch (error) {
       toast.error("Failed to add role");
     }
+  };
+
+  const getRoleDisplayName = (role: UserRole) => {
+    const roleMap: Record<UserRole, string> = {
+      'citizen_reporter': 'Citizen Reporter',
+      'ngo_member': 'NGO Member',
+      'government_official': 'Government Official',
+      'company_representative': 'Company Representative',
+      'country_admin': 'Country Admin',
+      'platform_admin': 'Platform Admin',
+      'change_maker': 'Change Maker',
+      'admin': 'Administrator'
+    };
+    return roleMap[role] || role;
   };
 
   if (availableRoles.length === 0) {
@@ -63,14 +78,14 @@ export const AddRoleDialog = ({ onClose }: AddRoleDialogProps) => {
           <SelectContent>
             {availableRoles.map((role) => (
               <SelectItem key={role} value={role}>
-                {role}
+                {getRoleDisplayName(role)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      {selectedRole && (selectedRole === "NGO Member" || selectedRole === "Government Official" || selectedRole === "Company Representative") && (
+      {selectedRole && (selectedRole === "ngo_member" || selectedRole === "government_official" || selectedRole === "company_representative") && (
         <div>
           <Label htmlFor="organization">Organization</Label>
           <Input

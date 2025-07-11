@@ -21,12 +21,13 @@ import ReportStep1 from '@/components/report/ReportStep1';
 import ReportStep2 from '@/components/report/ReportStep2';
 import { mockReports, Report } from '@/data/mockReports';
 import { useUserRole } from '@/contexts/UserRoleContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
   const [sdgTargets, setSdgTargets] = React.useState<string[]>([]);
   type ReportFormValues = z.infer<typeof reportSchema>;
-  const { user } = useUserRole();
+  const { user } = useAuth();
 
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),

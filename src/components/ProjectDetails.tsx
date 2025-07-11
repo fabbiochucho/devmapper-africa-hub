@@ -21,6 +21,7 @@ import {
   User,
 } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getComments, addComment, Comment } from "@/data/mockComments";
 import { Report, Verification } from "@/data/mockReports";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ export default function ProjectDetails({
   report: project,
   onUpdate,
 }: ProjectDetailsProps) {
-  const { user } = useUserRole();
+  const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [newRating, setNewRating] = useState(0);
@@ -73,7 +74,7 @@ export default function ProjectDetails({
         comment: newComment,
         rating: newRating > 0 ? newRating : null,
         userId: user.id,
-        userName: user.name,
+        userName: user.email || 'Anonymous',
       });
       toast.success("Comment submitted successfully!");
       setNewComment("");
@@ -107,12 +108,12 @@ export default function ProjectDetails({
     const newVerification: Verification = {
       id: (project.verifications?.length || 0) + 1,
       userId: user.id,
-      userName: user.name,
+      userName: user.email || 'Anonymous',
       action: action,
       createdAt: new Date().toISOString(),
       notes: `${
         action === "confirm" ? "Confirmed" : "Disputed"
-      } by ${user.name}`,
+      } by ${user.email || 'Anonymous'}`,
     };
 
     const updatedVerifications = [

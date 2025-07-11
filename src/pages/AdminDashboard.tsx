@@ -46,7 +46,7 @@ interface FundraisingCampaign {
 }
 
 export default function AdminDashboard() {
-  const { user, currentRole } = useUserRole();
+  const { currentRole } = useUserRole();
   const { user: authUser } = useAuth();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>([]);
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield />
-            Admin Dashboard - {user.country || "Global"}
+            Admin Dashboard - {authUser?.user_metadata?.country || "Global"}
           </CardTitle>
         </CardHeader>
         <CardContent>
