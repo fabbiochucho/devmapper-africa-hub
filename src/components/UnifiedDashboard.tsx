@@ -279,20 +279,56 @@ const UnifiedDashboard = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4" />
-                <p>Analytics features coming soon</p>
-                <Button className="mt-4" asChild>
-                  <a href="/analytics">View Project Analytics</a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6">
+            {/* SDG-Agenda 2063 Dashboard Integration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  SDG-Agenda 2063 Alignment Dashboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    Explore how your work aligns with global SDGs and African Agenda 2063 goals.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">17</div>
+                      <p className="text-sm text-muted-foreground">SDG Goals</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">7</div>
+                      <p className="text-sm text-muted-foreground">Aspirations</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">150+</div>
+                      <p className="text-sm text-muted-foreground">Alignments</p>
+                    </div>
+                  </div>
+                  <Button className="w-full" asChild>
+                    <a href="/sdg-agenda2063">Explore Full SDG-Agenda 2063 Dashboard</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4" />
+                  <p>View detailed analytics and insights</p>
+                  <Button className="mt-4" asChild>
+                    <a href="/analytics">View Project Analytics</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="actions">
