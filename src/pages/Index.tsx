@@ -28,13 +28,35 @@ interface UserType {
 
 export default function Index() {
   const { user: authUser, profile, loading } = useAuth();
-  const { isAuthenticated, loading: roleLoading } = useUserRole();
+  const { isAuthenticated, loading: roleLoading, setCurrentRole } = useUserRole();
   const [user, setUser] = useState<UserType | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { setCurrentRole } = useUserRole();
   const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
+  // All useEffect hooks must come before any early returns
+  useEffect(() => {
+    // Use Supabase auth state instead of localStorage
+    if (authUser && profile) {
+      const userData: UserType = {
+        id: parseInt(authUser.id.slice(-6), 16), // Convert UUID to number for legacy compatibility
+        name: profile.full_name || 'Anonymous',
+        email: profile.email || '',
+        role: "citizen_reporter" as UserRole, // Default role, should be enhanced with actual user roles
+        verified: profile.is_verified,
+        organization: profile.organization || undefined,
+        country: profile.country || undefined,
+      };
+      setUser(userData);
+      setCurrentRole(userData.role);
+    } else {
+      setUser(null);
+      setCurrentRole("citizen_reporter");
+    }
+    setIsLoading(false);
+  }, [authUser, profile, setCurrentRole]);
+
+  // Early returns after all hooks
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -48,6 +70,17 @@ export default function Index() {
 
   if (isAuthenticated && authUser) {
     return <UnifiedDashboard />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading DevMapper...</p>
+        </div>
+      </div>
+    );
   }
 
   const socialMediaFeeds = [
@@ -115,27 +148,6 @@ export default function Index() {
     };
   }).filter(Boolean) as any[];
 
-  useEffect(() => {
-    // Use Supabase auth state instead of localStorage
-    if (authUser && profile) {
-      const userData: UserType = {
-        id: parseInt(authUser.id.slice(-6), 16), // Convert UUID to number for legacy compatibility
-        name: profile.full_name || 'Anonymous',
-        email: profile.email || '',
-        role: "citizen_reporter" as UserRole, // Default role, should be enhanced with actual user roles
-        verified: profile.is_verified,
-        organization: profile.organization || undefined,
-        country: profile.country || undefined,
-      };
-      setUser(userData);
-      setCurrentRole(userData.role);
-    } else {
-      setUser(null);
-      setCurrentRole("citizen_reporter");
-    }
-    setIsLoading(false);
-  }, [authUser, profile, setCurrentRole]);
-
   const handleAuthSuccess = (userData: UserType, token: string) => {
     setUser(userData);
     setCurrentRole(userData.role);
@@ -149,17 +161,6 @@ export default function Index() {
     setUser(null);
     setCurrentRole("citizen_reporter");
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading DevMapper...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background" id="top">
