@@ -159,11 +159,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const fillDemoCredentials = (userType: string) => {
     const demoUsers = {
-      citizen: mockUsers.find(u => u.role === "Citizen Reporter"),
-      ngo: mockUsers.find(u => u.role === "NGO Member"),
-      government: mockUsers.find(u => u.role === "Government Official"),
-      corporate: mockUsers.find(u => u.role === "Company Representative"),
-      admin: mockUsers.find(u => u.role === "Platform Admin"),
+      citizen: mockUsers.find(u => u.role === "citizen_reporter"),
+      ngo: mockUsers.find(u => u.role === "ngo_member"),
+      government: mockUsers.find(u => u.role === "government_official"),
+      corporate: mockUsers.find(u => u.role === "company_representative"),
+      admin: mockUsers.find(u => u.role === "platform_admin"),
     };
 
     const selectedUser = demoUsers[userType as keyof typeof demoUsers];

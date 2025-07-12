@@ -73,7 +73,7 @@ export default function ProjectDetails({
         projectId: project.id,
         comment: newComment,
         rating: newRating > 0 ? newRating : null,
-        userId: user.id,
+        userId: user.id ? parseInt(user.id.slice(-6), 16) : 0,
         userName: user.email || 'Anonymous',
       });
       toast.success("Comment submitted successfully!");
@@ -96,7 +96,7 @@ export default function ProjectDetails({
     if (!project) return;
 
     const hasVerified =
-      project.verifications?.some((v) => v.userId === user.id) || false;
+      project.verifications?.some((v) => v.userId === (user.id ? parseInt(user.id.slice(-6), 16) : 0)) || false;
 
     if (hasVerified) {
       toast.info("You have already verified this project.");
@@ -107,7 +107,7 @@ export default function ProjectDetails({
 
     const newVerification: Verification = {
       id: (project.verifications?.length || 0) + 1,
-      userId: user.id,
+      userId: user.id ? parseInt(user.id.slice(-6), 16) : 0,
       userName: user.email || 'Anonymous',
       action: action,
       createdAt: new Date().toISOString(),
@@ -279,7 +279,7 @@ export default function ProjectDetails({
                   onClick={() => handleVerification("confirm")}
                   disabled={
                     isVerifying ||
-                    project.verifications?.some((v) => v.userId === user.id)
+                    project.verifications?.some((v) => v.userId === (user.id ? parseInt(user.id.slice(-6), 16) : 0))
                   }
                   className="flex items-center gap-2"
                 >
@@ -291,7 +291,7 @@ export default function ProjectDetails({
                   onClick={() => handleVerification("dispute")}
                   disabled={
                     isVerifying ||
-                    project.verifications?.some((v) => v.userId === user.id)
+                    project.verifications?.some((v) => v.userId === (user.id ? parseInt(user.id.slice(-6), 16) : 0))
                   }
                   className="flex items-center gap-2"
                 >
@@ -299,7 +299,7 @@ export default function ProjectDetails({
                   Dispute Project
                 </Button>
               </div>
-              {project.verifications?.some((v) => v.userId === user.id) ? (
+              {project.verifications?.some((v) => v.userId === (user.id ? parseInt(user.id.slice(-6), 16) : 0)) ? (
                 <p className="text-sm text-green-600 mt-2">
                   Thanks for your contribution!
                 </p>

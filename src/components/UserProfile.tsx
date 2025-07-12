@@ -51,10 +51,10 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
 
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case "Government Official": return "bg-blue-100 text-blue-800"
-      case "Company Representative": return "bg-purple-100 text-purple-800"
-      case "NGO Member": return "bg-green-100 text-green-800"
-      case "Platform Admin": return "bg-red-100 text-red-800"
+      case "government_official": return "bg-blue-100 text-blue-800"
+      case "company_representative": return "bg-purple-100 text-purple-800"
+      case "ngo_member": return "bg-green-100 text-green-800"
+      case "platform_admin": return "bg-red-100 text-red-800"
       default: return "bg-gray-100 text-gray-800"
     }
   }
@@ -127,8 +127,8 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
         <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-flex">
           <TabsTrigger value="projects">My Projects</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
-          {user.role === "Company Representative" && <TabsTrigger value="esg">ESG Targets</TabsTrigger>}
-          {user.role === "Government Official" && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
+          {user.role === "company_representative" && <TabsTrigger value="esg">ESG Targets</TabsTrigger>}
+          {user.role === "government_official" && <TabsTrigger value="dashboard">Dashboard</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="projects">
@@ -194,7 +194,7 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
           </Card>
         </TabsContent>
 
-        {user.role === "Company Representative" && (
+        {user.role === "company_representative" && (
           <TabsContent value="esg">
             <Card>
               <CardHeader><CardTitle>ESG Targets & Progress</CardTitle></CardHeader>
@@ -214,7 +214,7 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
           </TabsContent>
         )}
 
-        {user.role === "Government Official" && (
+        {user.role === "government_official" && (
           <TabsContent value="dashboard">
             <Card>
               <CardHeader><CardTitle>Government Dashboard</CardTitle></CardHeader>

@@ -53,7 +53,7 @@ const AddCommentForm: React.FC<AddCommentFormProps> = ({ projectId, onCommentAdd
         projectId,
         comment: values.comment,
         rating,
-        userId: user.id,
+        userId: user.id ? parseInt(user.id.slice(-6), 16) : 0,
         userName: user.email || 'Anonymous',
       });
       toast.success("Comment added successfully!");

@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,7 +39,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
     return roles.some(r => r.role === role);
   };
 
-  const fetchUserRoles = async (userId: string) => {
+  const fetchUserRoles = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -68,7 +68,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
       setRoles([{ role: 'citizen_reporter', is_active: true }]);
       setCurrentRole('citizen_reporter');
     }
-  };
+  }, []);
 
   const addRole = async (roleData: UserRoleData): Promise<void> => {
     if (!authUser) return;
@@ -131,7 +131,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
       setCurrentRole('citizen_reporter');
     }
     setLoading(authLoading);
-  }, [authUser, authLoading]);
+  }, [authUser, authLoading, fetchUserRoles]);
 
   return (
     <UserRoleContext.Provider value={{ 
