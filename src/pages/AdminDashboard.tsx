@@ -42,7 +42,7 @@ interface FundraisingCampaign {
   status: string;
   created_at: string;
   created_by: string;
-  profiles?: { full_name: string | null } | null;
+  public_profiles?: { full_name: string | null } | null;
 }
 
 export default function AdminDashboard() {
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
         .from('fundraising_campaigns')
         .select(`
           *,
-          profiles!fundraising_campaigns_created_by_fkey(full_name)
+          public_profiles!fundraising_campaigns_created_by_fkey(full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                         <div>
                           <h3 className="font-semibold">{campaign.title}</h3>
                           <p className="text-sm text-muted-foreground">
-                            By: {campaign.profiles?.full_name || 'Anonymous'}
+                            By: {campaign.public_profiles?.full_name || 'Anonymous'}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

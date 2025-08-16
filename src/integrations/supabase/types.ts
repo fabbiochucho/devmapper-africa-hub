@@ -115,6 +115,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "corporate_targets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       fundraising_campaigns: {
@@ -183,6 +190,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "fundraising_campaigns_change_maker_id_fkey"
+            columns: ["change_maker_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       government_projects: {
@@ -246,6 +260,13 @@ export type Database = {
             columns: ["government_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "government_projects_government_id_fkey"
+            columns: ["government_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -411,7 +432,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          country: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          is_verified: boolean | null
+          organization: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          organization?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          organization?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

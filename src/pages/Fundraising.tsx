@@ -87,7 +87,7 @@ const Fundraising = () => {
         .from('fundraising_campaigns')
         .select(`
           *,
-          profiles!fundraising_campaigns_change_maker_id_fkey(full_name)
+          public_profiles!fundraising_campaigns_change_maker_id_fkey(full_name)
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -97,7 +97,7 @@ const Fundraising = () => {
       const campaignsWithNames = data?.map(campaign => ({
         ...campaign,
         category: campaign.category as 'nano' | 'micro' | 'small',
-        change_maker_name: campaign.profiles?.full_name || 'Anonymous'
+        change_maker_name: campaign.public_profiles?.full_name || 'Anonymous'
       })) || [];
       
       setCampaigns(campaignsWithNames as FundraisingCampaign[]);
