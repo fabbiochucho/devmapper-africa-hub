@@ -54,10 +54,14 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center">
-            <Globe className="w-8 h-8 text-primary mr-3" />
+            <img 
+              src="/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png" 
+              alt="Dev Mapper Logo" 
+              className="w-12 h-12 mr-4"
+            />
             <div>
-              <h1 className="text-xl font-bold text-foreground">DevMapper</h1>
-              <p className="text-xs text-muted-foreground">Africa SDG Tracker</p>
+              <h1 className="text-2xl font-bold text-foreground">Dev Mapper</h1>
+              <p className="text-sm text-muted-foreground font-medium">Africa SDG Tracker</p>
             </div>
           </Link>
 
