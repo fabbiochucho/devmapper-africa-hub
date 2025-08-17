@@ -1,18 +1,81 @@
+import { useState, useEffect } from "react";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, Building2, Target, Globe, TrendingUp, 
   BarChart3, Heart, UserCheck, MapPin, Award,
   Calendar, Briefcase, Shield
 } from "lucide-react";
 
+interface DashboardStats {
+  userReports: number;
+  userVerifications: number;  
+  totalProjects: number;
+  totalFunding: number;
+}
+
 const UnifiedDashboard = () => {
   const { currentRole, roles, hasRole } = useUserRole();
   const { user, profile } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    userReports: 0,
+    userVerifications: 0,
+    totalProjects: 0,
+    totalFunding: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Fetch user's reports
+        const { data: userReports, error: reportsError } = await supabase
+          .from('reports')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (reportsError) throw reportsError;
+
+        // Fetch user's verifications
+        const { data: userVerifications, error: verificationsError } = await supabase
+          .from('verification_logs')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (verificationsError) throw verificationsError;
+
+        // Fetch total system stats
+        const { data: allReports, error: allReportsError } = await supabase
+          .from('reports')
+          .select('cost');
+
+        if (allReportsError) throw allReportsError;
+
+        const totalProjects = allReports?.length || 0;
+        const totalFunding = allReports?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) || 0;
+
+        setStats({
+          userReports: userReports?.length || 0,
+          userVerifications: userVerifications?.length || 0,
+          totalProjects,
+          totalFunding
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [user?.id]);
 
   if (!user) {
     return (
@@ -42,7 +105,7 @@ const UnifiedDashboard = () => {
   };
 
   const getRoleIcon = (role: string) => {
-    const iconMap: Record<string, React.ComponentType> = {
+    const iconMap: Record<string, React.ComponentType<any>> = {
       'citizen_reporter': Users,
       'ngo_member': Heart,
       'government_official': Building2,
@@ -58,33 +121,39 @@ const UnifiedDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Role Overview */}
+      {/* Welcome Header */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {getRoleIcon(currentRole)}
-            {getRoleDisplayName(currentRole)} Dashboard
+            Welcome back, {profile?.full_name || 'User'}!
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
                 {roles.length}
               </div>
-              <p className="text-muted-foreground">Active Roles</p>
+              <p className="text-muted-foreground text-sm">Active Roles</p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {profile?.is_verified ? 'Verified' : 'Pending'}
               </div>
-              <p className="text-muted-foreground">Account Status</p>
+              <p className="text-muted-foreground text-sm">Account Status</p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {profile?.country || 'Global'}
               </div>
-              <p className="text-muted-foreground">Location</p>
+              <p className="text-muted-foreground text-sm">Location</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {getRoleDisplayName(currentRole)}
+              </div>
+              <p className="text-muted-foreground text-sm">Current Role</p>
             </div>
           </div>
         </CardContent>
@@ -101,29 +170,54 @@ const UnifiedDashboard = () => {
 
         <TabsContent value="overview">
           <div className="grid gap-4">
-            {/* Citizen Reporter Features */}
+            {/* Personal Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Impact</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-semibold animate-pulse">--</div>
+                      <p className="text-sm text-muted-foreground">Loading...</p>
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold animate-pulse">--</div>
+                      <p className="text-sm text-muted-foreground">Loading...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-semibold text-green-600">{stats.userReports}</div>
+                      <p className="text-sm text-muted-foreground">Reports Submitted</p>
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-blue-600">{stats.userVerifications}</div>
+                      <p className="text-sm text-muted-foreground">Verifications Made</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Role-specific features */}
             {hasRole('citizen_reporter') && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    Citizen Reporter Features
+                    Citizen Reporter
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button className="w-full" asChild>
                     <a href="/submit-report">Submit New Report</a>
                   </Button>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold">12</div>
-                      <p className="text-sm text-muted-foreground">Reports Submitted</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">8</div>
-                      <p className="text-sm text-muted-foreground">Verified</p>
-                    </div>
-                  </div>
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href="/analytics?tab=reports">View Your Reports</a>
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -141,18 +235,16 @@ const UnifiedDashboard = () => {
                   <Button className="w-full" asChild>
                     <a href="/government-dashboard">View Full Dashboard</a>
                   </Button>
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <div className="text-lg font-semibold">45</div>
-                      <p className="text-sm text-muted-foreground">Projects</p>
+                      <div className="text-lg font-semibold text-blue-600">{stats.totalProjects}</div>
+                      <p className="text-sm text-muted-foreground">Total Projects</p>
                     </div>
                     <div>
-                      <div className="text-lg font-semibold">$2.4M</div>
-                      <p className="text-sm text-muted-foreground">Budget</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">23</div>
-                      <p className="text-sm text-muted-foreground">Pending</p>
+                      <div className="text-lg font-semibold text-green-600">
+                        ${(stats.totalFunding / 1000000).toFixed(1)}M
+                      </div>
+                      <p className="text-sm text-muted-foreground">Total Funding</p>
                     </div>
                   </div>
                 </CardContent>
@@ -172,16 +264,6 @@ const UnifiedDashboard = () => {
                   <Button className="w-full" asChild>
                     <a href="/corporate-dashboard">Manage ESG Targets</a>
                   </Button>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold">7</div>
-                      <p className="text-sm text-muted-foreground">Active Targets</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">64%</div>
-                      <p className="text-sm text-muted-foreground">Avg Progress</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -199,16 +281,6 @@ const UnifiedDashboard = () => {
                   <Button className="w-full" asChild>
                     <a href="/ngo-dashboard">View NGO Dashboard</a>
                   </Button>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold">15</div>
-                      <p className="text-sm text-muted-foreground">Active Programs</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">2.1K</div>
-                      <p className="text-sm text-muted-foreground">Beneficiaries</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -226,16 +298,6 @@ const UnifiedDashboard = () => {
                   <Button className="w-full" asChild>
                     <a href="/submit-change-maker">Update Profile</a>
                   </Button>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold">4.8</div>
-                      <p className="text-sm text-muted-foreground">Rating</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">89</div>
-                      <p className="text-sm text-muted-foreground">Connections</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -258,20 +320,6 @@ const UnifiedDashboard = () => {
                       <a href="/user-management">User Management</a>
                     </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold">1.2K</div>
-                      <p className="text-sm text-muted-foreground">Users</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">456</div>
-                      <p className="text-sm text-muted-foreground">Reports</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">78</div>
-                      <p className="text-sm text-muted-foreground">Pending</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -279,56 +327,19 @@ const UnifiedDashboard = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <div className="grid gap-6">
-            {/* SDG-Agenda 2063 Dashboard Integration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5" />
-                  SDG-Agenda 2063 Alignment Dashboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Explore how your work aligns with global SDGs and African Agenda 2063 goals.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">17</div>
-                      <p className="text-sm text-muted-foreground">SDG Goals</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">7</div>
-                      <p className="text-sm text-muted-foreground">Aspirations</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">150+</div>
-                      <p className="text-sm text-muted-foreground">Alignments</p>
-                    </div>
-                  </div>
-                  <Button className="w-full" asChild>
-                    <a href="/sdg-agenda2063">Explore Full SDG-Agenda 2063 Dashboard</a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4" />
-                  <p>View detailed analytics and insights</p>
-                  <Button className="mt-4" asChild>
-                    <a href="/analytics">View Project Analytics</a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics & Insights</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button className="w-full" asChild>
+                <a href="/analytics">View Full Analytics Dashboard</a>
+              </Button>
+              <Button variant="outline" className="w-full" asChild>
+                <a href="/sdg-agenda2063">SDG-Agenda 2063 Alignment</a>
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="actions">
@@ -355,18 +366,15 @@ const UnifiedDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>SDG Focus</CardTitle>
+                <CardTitle>Community</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button className="w-full" variant="outline" asChild>
-                  <a href="/sdg-agenda2063">SDG-Agenda 2063 Alignment</a>
+                  <a href="/messages">Messages</a>
                 </Button>
-                <div className="text-center py-4">
-                  <Award className="h-8 w-8 mx-auto text-primary mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Explore how your work aligns with global goals
-                  </p>
-                </div>
+                <Button className="w-full" variant="outline" asChild>
+                  <a href="/connect">Connect & Share</a>
+                </Button>
               </CardContent>
             </Card>
           </div>

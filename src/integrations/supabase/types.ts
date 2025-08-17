@@ -61,6 +61,57 @@ export type Database = {
           },
         ]
       }
+      change_makers: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          impact_description: string | null
+          is_verified: boolean | null
+          location: string
+          projects_count: number | null
+          sdg_goals: number[]
+          title: string
+          total_funding: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          impact_description?: string | null
+          is_verified?: boolean | null
+          location: string
+          projects_count?: number | null
+          sdg_goals: number[]
+          title: string
+          total_funding?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          impact_description?: string | null
+          is_verified?: boolean | null
+          location?: string
+          projects_count?: number | null
+          sdg_goals?: number[]
+          title?: string
+          total_funding?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       corporate_targets: {
         Row: {
           company_id: string
@@ -367,6 +418,66 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          beneficiaries: number | null
+          cost: number | null
+          country_code: string | null
+          description: string
+          evidence_url: string | null
+          id: string
+          is_verified: boolean | null
+          lat: number | null
+          lng: number | null
+          location: string | null
+          project_status: string
+          sdg_goal: number
+          submitted_at: string
+          title: string
+          updated_at: string
+          user_id: string | null
+          verification_count: number | null
+        }
+        Insert: {
+          beneficiaries?: number | null
+          cost?: number | null
+          country_code?: string | null
+          description: string
+          evidence_url?: string | null
+          id?: string
+          is_verified?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          project_status?: string
+          sdg_goal: number
+          submitted_at?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          verification_count?: number | null
+        }
+        Update: {
+          beneficiaries?: number | null
+          cost?: number | null
+          country_code?: string | null
+          description?: string
+          evidence_url?: string | null
+          id?: string
+          is_verified?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          project_status?: string
+          sdg_goal?: number
+          submitted_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          verification_count?: number | null
+        }
+        Relationships: []
+      }
       sdg_agenda2063_alignment: {
         Row: {
           agenda2063_aspiration: string
@@ -429,6 +540,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verification_logs: {
+        Row: {
+          comments: string | null
+          created_at: string
+          id: string
+          report_id: string | null
+          user_id: string | null
+          verification_type: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id?: string | null
+          verification_type: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id?: string | null
+          verification_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_logs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

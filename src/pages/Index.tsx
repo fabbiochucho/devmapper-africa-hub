@@ -1,45 +1,26 @@
-
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import AuthModal from "@/components/AuthModal";
-import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { mockReports, Report } from "@/data/mockReports";
 import PageHeader from "@/components/landing/PageHeader";
 import HeroSection from "@/components/landing/HeroSection";
-import StatsSection from "@/components/landing/StatsSection";
-import ChangeMakersSection from "@/components/landing/ChangeMakersSection";
+import StatsSection from "@/components/StatsSection";
+import ChangeMakersSection from "@/components/ChangeMakersSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import MapSection from "@/components/landing/MapSection";
-import RecentProjects from "@/components/landing/RecentProjects";
+import RecentProjects from "@/components/RecentProjects";
 import SocialFeed from "@/components/landing/SocialFeed";
 import UnifiedDashboard from "@/components/UnifiedDashboard";
 import PartnersCarousel from "@/components/landing/PartnersCarousel";
 import PageFooter from "@/components/landing/PageFooter";
-
-interface UserType {
-  id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  verified: boolean;
-  organization?: string;
-  country?: string;
-}
+import { useState } from "react";
 
 export default function Index() {
-  const { user: authUser, profile, loading } = useAuth();
-  const { isAuthenticated, loading: roleLoading, setCurrentRole } = useUserRole();
-  const [user, setUser] = useState<UserType | null>(null);
+  const { user: authUser, loading } = useAuth();
+  const { isAuthenticated, loading: roleLoading } = useUserRole();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
-  // All useEffect hooks must come before any early returns
-  useEffect(() => {
-    setIsLoading(false);
-  }, [authUser, profile, setCurrentRole]);
-
-  // Early returns after all hooks
+  // Show loading state while authentication is being determined
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -51,21 +32,12 @@ export default function Index() {
     );
   }
 
+  // If user is authenticated, show the unified dashboard
   if (isAuthenticated && authUser) {
     return <UnifiedDashboard />;
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading DevMapper...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Mock data for social feed
   const socialMediaFeeds = [
     {
       platform: "Twitter",
@@ -93,43 +65,45 @@ export default function Index() {
     },
   ];
 
-  const recentProjects = mockReports
-    .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())
-    .slice(0, 10);
+  // Mock data for map (this could be moved to a separate component later)
+  const projectsForMap = [
+    {
+      id: 1,
+      title: "Solar Panel Installation",
+      lat: -1.2921,
+      lng: 36.8219,
+      sdg_goal: 7,
+      status: "In Progress",
+      color: "#22c55e",
+      budget: 50000,
+    },
+    {
+      id: 2,
+      title: "Water Well Project",
+      lat: 5.6037,
+      lng: -0.1870,
+      sdg_goal: 6,
+      status: "Completed",
+      color: "#3b82f6",
+      budget: 25000,
+    },
+    {
+      id: 3,
+      title: "Education Program",
+      lat: 6.5244,
+      lng: 3.3792,
+      sdg_goal: 4,
+      status: "Planning",
+      color: "#eab308",
+      budget: 15000,
+    },
+  ];
+
+  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
   const handleProjectSelect = (project: any) => {
-    if (selectedMapProject && selectedMapProject.id === project.id) {
-      setSelectedMapProject(null);
-    } else {
-      setSelectedMapProject(project);
-    }
+    setSelectedMapProject(project?.id === selectedMapProject?.id ? null : project);
   };
-
-  const getStatusInfo = (status: Report["project_status"]): { name: string; color: string } => {
-    switch (status) {
-      case "in_progress": return { name: "Confirmed", color: "#22c55e" };
-      case "planned": return { name: "Pending", color: "#eab308" };
-      case "completed": return { name: "Completed", color: "#3b82f6" };
-      case "stalled": return { name: "Stalled", color: "#ef4444" };
-      case "cancelled": return { name: "Cancelled", color: "#6b7280" };
-      default: return { name: "Unknown", color: "#6b7280" };
-    }
-  };
-
-  const projectsForMap = mockReports.map(report => {
-    if (!report.lat || !report.lng) return null;
-    const statusInfo = getStatusInfo(report.project_status);
-    return {
-      id: parseInt(report.id.replace("REP-", "")),
-      title: report.title,
-      lat: report.lat,
-      lng: report.lng,
-      sdg_goal: parseInt(report.sdg_goal),
-      status: statusInfo.name,
-      color: statusInfo.color,
-      budget: report.cost || 0,
-    };
-  }).filter(Boolean) as any[];
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
@@ -144,16 +118,23 @@ export default function Index() {
         <StatsSection />
         <ChangeMakersSection />
         <HowItWorksSection />
-        <MapSection projects={projectsForMap} onProjectSelect={handleProjectSelect} selectedProject={selectedMapProject} />
-        <RecentProjects recentProjects={recentProjects} />
+        <MapSection 
+          projects={projectsForMap} 
+          onProjectSelect={handleProjectSelect} 
+          selectedProject={selectedMapProject} 
+        />
+        <RecentProjects />
         <SocialFeed socialMediaFeeds={socialMediaFeeds} />
         <PartnersCarousel />
-        
       </main>
 
       <PageFooter />
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        onAuthSuccess={handleAuthSuccess} 
+      />
     </div>
   );
 }
