@@ -57,7 +57,7 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
             <img 
               src="/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png" 
               alt="Dev Mapper Logo" 
-              className="w-12 h-12 mr-4"
+              className="w-16 h-16 mr-4"
             />
             <div>
               <h1 className="text-2xl font-bold text-foreground">Dev Mapper</h1>

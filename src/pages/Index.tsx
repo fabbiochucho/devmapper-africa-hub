@@ -36,23 +36,6 @@ export default function Index() {
 
   // All useEffect hooks must come before any early returns
   useEffect(() => {
-    // Use Supabase auth state instead of localStorage
-    if (authUser && profile) {
-      const userData: UserType = {
-        id: parseInt(authUser.id.slice(-6), 16), // Convert UUID to number for legacy compatibility
-        name: profile.full_name || 'Anonymous',
-        email: profile.email || '',
-        role: "citizen_reporter" as UserRole, // Default role, should be enhanced with actual user roles
-        verified: profile.is_verified,
-        organization: profile.organization || undefined,
-        country: profile.country || undefined,
-      };
-      setUser(userData);
-      setCurrentRole(userData.role);
-    } else {
-      setUser(null);
-      setCurrentRole("citizen_reporter");
-    }
     setIsLoading(false);
   }, [authUser, profile, setCurrentRole]);
 
@@ -148,26 +131,16 @@ export default function Index() {
     };
   }).filter(Boolean) as any[];
 
-  const handleAuthSuccess = (userData: UserType, token: string) => {
-    setUser(userData);
-    setCurrentRole(userData.role);
+  const handleAuthSuccess = () => {
     setShowAuthModal(false);
-  };
-
-  const handleLogout = async () => {
-    // Use Supabase auth logout
-    const { useAuth } = await import("@/contexts/AuthContext");
-    // This would be better handled by calling a logout function from AuthContext
-    setUser(null);
-    setCurrentRole("citizen_reporter");
   };
 
   return (
     <div className="min-h-screen bg-background" id="top">
-      <PageHeader user={user} handleLogout={handleLogout} setShowAuthModal={setShowAuthModal} />
+      <PageHeader user={null} handleLogout={() => {}} setShowAuthModal={setShowAuthModal} />
 
       <main>
-        <HeroSection user={user} setShowAuthModal={setShowAuthModal} />
+        <HeroSection user={null} setShowAuthModal={setShowAuthModal} />
         <StatsSection />
         <ChangeMakersSection />
         <HowItWorksSection />
@@ -175,7 +148,7 @@ export default function Index() {
         <RecentProjects recentProjects={recentProjects} />
         <SocialFeed socialMediaFeeds={socialMediaFeeds} />
         <PartnersCarousel />
-        {user && <UnifiedDashboard />}
+        
       </main>
 
       <PageFooter />

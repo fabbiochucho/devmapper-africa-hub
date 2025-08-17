@@ -9,8 +9,15 @@ export default function PageFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
-              <Globe className="w-6 h-6 mr-2" />
-              <span className="font-bold">DevMapper</span>
+              <img 
+                src="/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png" 
+                alt="Dev Mapper Logo" 
+                className="w-16 h-16 mr-4"
+              />
+              <div>
+                <h2 className="text-2xl font-bold text-white">Dev Mapper</h2>
+                <p className="text-sm text-gray-300 font-medium">Africa SDG Tracker</p>
+              </div>
             </div>
             <p className="text-gray-400 text-sm">
               Empowering communities to track sustainable development across Africa.
