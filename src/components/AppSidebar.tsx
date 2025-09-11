@@ -36,22 +36,22 @@ const submissionItems = [
   { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
 ]
 
-const getDashboardItems = (userRoles: string[], hasRole: (role: string) => boolean, isAdmin: boolean) => {
+const getDashboardItems = (hasRole: (role: string) => boolean, isAuthenticated: boolean) => {
   const items = [];
   
-  if (hasRole('company_representative')) {
+  if (isAuthenticated && hasRole('company_representative')) {
     items.push({ title: "Corporate Dashboard", url: "/corporate-dashboard", icon: Target });
   }
   
-  if (hasRole('government_official')) {
+  if (isAuthenticated && hasRole('government_official')) {
     items.push({ title: "Government Dashboard", url: "/government-dashboard", icon: Building2 });
   }
   
-  if (hasRole('ngo_member')) {
+  if (isAuthenticated && hasRole('ngo_member')) {
     items.push({ title: "NGO Dashboard", url: "/ngo-dashboard", icon: Users });
   }
   
-  if (isAdmin || hasRole('admin') || hasRole('platform_admin')) {
+  if (isAuthenticated && (hasRole('admin') || hasRole('platform_admin'))) {
     items.push({ title: "Admin Dashboard", url: "/admin-dashboard", icon: Shield });
     items.push({ title: "User Management", url: "/user-management", icon: Users });
   }
@@ -77,7 +77,7 @@ const supportItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { userRoles, isAdmin, user } = useAuth();
+  const { isAdmin } = useAuth();
   const { hasRole, isAuthenticated } = useUserRole();
   const currentPath = location.pathname;
 
@@ -85,7 +85,7 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50";
 
-  const dashboardItems = getDashboardItems(userRoles, hasRole, isAdmin);
+  const dashboardItems = getDashboardItems(hasRole, isAuthenticated);
   const collapsed = state === "collapsed";
 
   return (
