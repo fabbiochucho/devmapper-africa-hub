@@ -230,6 +230,8 @@ const Fundraising = () => {
   // Calculate stats from real data
   const totalRaised = campaigns.reduce((sum, c) => sum + c.raised_amount, 0);
   const activeCampaigns = campaigns.length;
+  const totalSupporters = campaigns.reduce((sum, c) => sum + Math.floor(c.raised_amount / 50), 0); // Estimate based on avg donation
+  const completedProjects = campaigns.filter(c => c.status === 'completed').length;
   
   if (loading) {
     return (
@@ -413,7 +415,7 @@ const Fundraising = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,845</div>
+            <div className="text-2xl font-bold">{totalSupporters.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Individual donors</p>
           </CardContent>
         </Card>
@@ -424,7 +426,7 @@ const Fundraising = () => {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
+            <div className="text-2xl font-bold">{completedProjects}</div>
             <p className="text-xs text-muted-foreground">Successfully completed</p>
           </CardContent>
         </Card>

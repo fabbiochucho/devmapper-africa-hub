@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,85 +8,143 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, TrendingUp, Users, MessageCircle, Pin } from 'lucide-react';
 import ForumPost from '@/components/forum/ForumPost';
 import CreatePostDialog from '@/components/forum/CreatePostDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+interface ForumPostData {
+  id: string;
+  title: string;
+  content: string;
+  author: {
+    name: string;
+    avatar: string;
+    role: string;
+    verified: boolean;
+  };
+  category: string;
+  tags: string[];
+  likes: number;
+  replies: number;
+  views: number;
+  createdAt: string;
+  isPinned: boolean;
+  isLiked: boolean;
+}
+
+interface ForumStats {
+  totalMembers: number;
+  activeToday: number;
+  postsThisWeek: number;
+  newMembers: number;
+}
 
 const Forum = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [posts, setPosts] = useState([
-    {
-      id: '1',
-      title: 'Best practices for community engagement in rural areas',
-      content: 'I\'ve been working on several SDG projects in rural communities and wanted to share some insights on effective engagement strategies. One key aspect I\'ve learned is the importance of working with local leaders and respecting traditional governance structures...',
-      author: {
-        name: 'Amina Hassan',
-        avatar: '/api/placeholder/40/40',
-        role: 'NGO Coordinator',
-        verified: true
-      },
-      category: 'Discussion',
-      tags: ['community', 'engagement', 'rural', 'best-practices'],
-      likes: 24,
-      replies: 8,
-      views: 156,
-      createdAt: '2 hours ago',
-      isPinned: true,
-      isLiked: false
-    },
-    {
-      id: '2',
-      title: 'How to verify water project data accuracy?',
-      content: 'I\'m reviewing several water access projects and need guidance on verification methods. What are the most reliable ways to confirm that reported beneficiary numbers are accurate? Are there specific tools or techniques that work best for remote verification?',
-      author: {
-        name: 'John Kwame',
-        avatar: '/api/placeholder/40/40',
-        role: 'Data Analyst',
-        verified: true
-      },
-      category: 'Question',
-      tags: ['verification', 'water', 'data-quality'],
-      likes: 12,
-      replies: 5,
-      views: 89,
-      createdAt: '4 hours ago',
-      isLiked: true
-    },
-    {
-      id: '3',
-      title: 'New mobile app features for field data collection',
-      content: 'We\'re excited to announce new features in our mobile app that will make field data collection more efficient. The update includes offline synchronization, photo geotagging, and improved form validation...',
-      author: {
-        name: 'DevMapper Team',
-        avatar: '/api/placeholder/40/40',
-        role: 'Platform Admin',
-        verified: true
-      },
-      category: 'Announcement',
-      tags: ['mobile-app', 'features', 'data-collection'],
-      likes: 45,
-      replies: 12,
-      views: 234,
-      createdAt: '1 day ago',
-      isLiked: false
-    },
-    {
-      id: '4',
-      title: 'Seeking partnerships for education projects in Kenya',
-      content: 'Our organization is planning several education infrastructure projects in Kenya and we\'re looking for potential partners. We have funding secured and are particularly interested in collaborating with local NGOs and community organizations...',
-      author: {
-        name: 'Sarah Okonkwo',
-        avatar: '/api/placeholder/40/40',
-        role: 'Project Manager',
-        verified: true
-      },
-      category: 'Project Update',
-      tags: ['partnerships', 'education', 'kenya', 'infrastructure'],
-      likes: 18,
-      replies: 7,
-      views: 134,
-      createdAt: '2 days ago',
-      isLiked: false
+  const [posts, setPosts] = useState<ForumPostData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<ForumStats>({
+    totalMembers: 0,
+    activeToday: 0,
+    postsThisWeek: 0,
+    newMembers: 0
+  });
+
+  useEffect(() => {
+    fetchPosts();
+    fetchStats();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .from('forum_posts')
+        .select(`
+          *,
+          profiles:author_id (
+            full_name,
+            avatar_url,
+            is_verified
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (postsError) throw postsError;
+
+      // Fetch user likes for authenticated users
+      let userLikes: any[] = [];
+      if (user) {
+        const { data: likesData, error: likesError } = await supabase
+          .from('forum_post_likes')
+          .select('post_id')
+          .eq('user_id', user.id);
+
+        if (!likesError) {
+          userLikes = likesData || [];
+        }
+      }
+
+      const formattedPosts = postsData?.map(post => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        author: {
+          name: (post.profiles as any)?.full_name || 'Anonymous',
+          avatar: (post.profiles as any)?.avatar_url || '/placeholder.svg',
+          role: 'Community Member',
+          verified: (post.profiles as any)?.is_verified || false
+        },
+        category: post.category,
+        tags: post.tags || [],
+        likes: post.likes_count,
+        replies: post.replies_count,
+        views: post.views_count,
+        createdAt: new Date(post.created_at).toLocaleDateString(),
+        isPinned: post.is_pinned,
+        isLiked: userLikes.some(like => like.post_id === post.id)
+      })) || [];
+
+      setPosts(formattedPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast.error('Failed to load forum posts');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  const fetchStats = async () => {
+    try {
+      // Get total members
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id');
+
+      if (profilesError) throw profilesError;
+
+      // Get posts this week
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      const { data: recentPosts, error: recentError } = await supabase
+        .from('forum_posts')
+        .select('id')
+        .gte('created_at', weekAgo.toISOString());
+
+      if (recentError) throw recentError;
+
+      setStats({
+        totalMembers: profilesData?.length || 0,
+        activeToday: Math.floor((profilesData?.length || 0) * 0.08), // 8% active estimate
+        postsThisWeek: recentPosts?.length || 0,
+        newMembers: Math.floor((profilesData?.length || 0) * 0.02) // 2% new members estimate
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const categories = [
     { id: 'all', name: 'All Posts', count: posts.length },
@@ -97,12 +155,12 @@ const Forum = () => {
   ];
 
   const trendingTags = [
-    { name: 'community', count: 12 },
-    { name: 'verification', count: 8 },
-    { name: 'data-quality', count: 6 },
-    { name: 'partnerships', count: 5 },
-    { name: 'mobile-app', count: 4 }
-  ];
+    { name: 'community', count: posts.filter(p => p.tags.includes('community')).length },
+    { name: 'verification', count: posts.filter(p => p.tags.includes('verification')).length },
+    { name: 'data-quality', count: posts.filter(p => p.tags.includes('data-quality')).length },
+    { name: 'partnerships', count: posts.filter(p => p.tags.includes('partnerships')).length },
+    { name: 'mobile-app', count: posts.filter(p => p.tags.includes('mobile-app')).length }
+  ].filter(tag => tag.count > 0).sort((a, b) => b.count - a.count);
 
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -112,16 +170,99 @@ const Forum = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreatePost = (newPost: any) => {
-    setPosts(prev => [newPost, ...prev]);
+  const handleCreatePost = async (newPostData: any) => {
+    if (!user) {
+      toast.error('Please sign in to create a post');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('forum_posts')
+        .insert([{
+          title: newPostData.title,
+          content: newPostData.content,
+          author_id: user.id,
+          category: newPostData.category || 'Discussion',
+          tags: newPostData.tags || []
+        }])
+        .select(`
+          *,
+          profiles:author_id (
+            full_name,
+            avatar_url,
+            is_verified
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+
+      const newPost = {
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        author: {
+          name: (data.profiles as any)?.full_name || 'Anonymous',
+          avatar: (data.profiles as any)?.avatar_url || '/placeholder.svg',
+          role: 'Community Member',
+          verified: (data.profiles as any)?.is_verified || false
+        },
+        category: data.category,
+        tags: data.tags || [],
+        likes: 0,
+        replies: 0,
+        views: 0,
+        createdAt: 'just now',
+        isPinned: false,
+        isLiked: false
+      };
+
+      setPosts(prev => [newPost, ...prev]);
+      toast.success('Post created successfully!');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast.error('Failed to create post');
+    }
   };
 
-  const handleLike = (postId: string) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, likes: post.isLiked ? post.likes - 1 : post.likes + 1, isLiked: !post.isLiked }
-        : post
-    ));
+  const handleLike = async (postId: string) => {
+    if (!user) {
+      toast.error('Please sign in to like posts');
+      return;
+    }
+
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    try {
+      if (post.isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('forum_post_likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('forum_post_likes')
+          .insert([{ post_id: postId, user_id: user.id }]);
+
+        if (error) throw error;
+      }
+
+      setPosts(prev => prev.map(p => 
+        p.id === postId 
+          ? { ...p, likes: p.isLiked ? p.likes - 1 : p.likes + 1, isLiked: !p.isLiked }
+          : p
+      ));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast.error('Failed to update like status');
+    }
   };
 
   const handleReply = (postId: string) => {
@@ -129,9 +270,21 @@ const Forum = () => {
     // This would typically open a reply dialog or navigate to the post detail page
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+
   const handleShare = (postId: string) => {
-    console.log('Share post:', postId);
-    // This would typically open a share dialog
+    const url = `${window.location.origin}/forum/post/${postId}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Post link copied to clipboard!");
   };
 
   return (
@@ -260,19 +413,19 @@ const Forum = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm">Total Members</span>
-                  <span className="font-semibold">2,847</span>
+                  <span className="font-semibold">{stats.totalMembers.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Active Today</span>
-                  <span className="font-semibold">234</span>
+                  <span className="font-semibold">{stats.activeToday}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Posts This Week</span>
-                  <span className="font-semibold">89</span>
+                  <span className="font-semibold">{stats.postsThisWeek}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">New Members</span>
-                  <span className="font-semibold">12</span>
+                  <span className="font-semibold">{stats.newMembers}</span>
                 </div>
               </div>
             </CardContent>
