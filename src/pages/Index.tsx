@@ -19,6 +19,7 @@ export default function Index() {
   const { user: authUser, loading } = useAuth();
   const { isAuthenticated, loading: roleLoading } = useUserRole();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
   // Show loading state while authentication is being determined
   if (loading || roleLoading) {
@@ -98,8 +99,6 @@ export default function Index() {
       budget: 15000,
     },
   ];
-
-  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
   const handleProjectSelect = (project: any) => {
     setSelectedMapProject(project?.id === selectedMapProject?.id ? null : project);
