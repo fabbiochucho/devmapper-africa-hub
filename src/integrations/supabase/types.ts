@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          external_id: string | null
+          id: string
+          new_plan: string | null
+          old_plan: string | null
+          organization_id: string
+          provider: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          external_id?: string | null
+          id?: string
+          new_plan?: string | null
+          old_plan?: string | null
+          organization_id: string
+          provider?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          external_id?: string | null
+          id?: string
+          new_plan?: string | null
+          old_plan?: string | null
+          organization_id?: string
+          provider?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_donations: {
         Row: {
           amount: number
@@ -395,6 +442,65 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          plan_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          plan_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          plan_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       otp_settings: {
         Row: {
