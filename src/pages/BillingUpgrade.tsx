@@ -133,7 +133,7 @@ const BillingUpgrade = () => {
     },
   ];
 
-  const handleUpgrade = async (provider: 'stripe' | 'paystack', planType: 'lite' | 'pro', interval: 'monthly' | 'yearly') => {
+  const handleUpgrade = async (provider: 'flutterwave' | 'paystack', planType: 'lite' | 'pro', interval: 'monthly' | 'yearly') => {
     if (!organization) {
       toast.error('Organization not found');
       return;
@@ -316,19 +316,21 @@ const BillingUpgrade = () => {
                   ) : plan.name === 'Pro' ? (
                     <div className="space-y-3">
                       <Button
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                        onClick={() => handleUpgrade('stripe', 'pro', isYearly ? 'yearly' : 'monthly')}
+                        className="w-full bg-orange-600 hover:bg-orange-700"
+                        onClick={() => handleUpgrade('flutterwave', 'pro', isYearly ? 'yearly' : 'monthly')}
                         disabled={upgrading !== null}
                       >
-                        {upgrading?.startsWith('stripe') ? (
+                        {upgrading?.startsWith('flutterwave') ? (
                           <div className="flex items-center">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                             Processing...
                           </div>
                         ) : (
                           <>
-                            <img src="/stripe-logo.svg" alt="Stripe" className="w-4 h-4 mr-2" />
-                            Upgrade with Stripe
+                            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8.5 5.5l7 7-7 7" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
+                            Upgrade with Flutterwave
                           </>
                         )}
                       </Button>
@@ -345,7 +347,9 @@ const BillingUpgrade = () => {
                           </div>
                         ) : (
                           <>
-                            <img src="/paystack-logo.svg" alt="Paystack" className="w-4 h-4 mr-2" />
+                            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            </svg>
                             Upgrade with Paystack
                           </>
                         )}

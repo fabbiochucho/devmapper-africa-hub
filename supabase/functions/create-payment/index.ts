@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface PaymentRequest {
   organizationId: string;
-  provider: 'stripe' | 'paystack';
+  provider: 'flutterwave' | 'paystack';
   planType: 'lite' | 'pro';
   interval: 'monthly' | 'yearly';
   amount: number;
@@ -56,11 +56,11 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // For demo purposes, simulate payment processing
-    // In production, integrate with actual Stripe/Paystack APIs
+    // In production, integrate with actual Flutterwave/Paystack APIs
     
-    if (provider === 'stripe') {
-      // Simulate Stripe payment URL generation
-      const paymentUrl = `https://checkout.stripe.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`;
+    if (provider === 'flutterwave') {
+      // Simulate Flutterwave payment URL generation
+      const paymentUrl = `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`;
       
       // Log billing event
       await supabase
@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
           event_type: 'payment',
           old_plan: org.plan_type,
           new_plan: planType,
-          provider: 'stripe',
+          provider: 'flutterwave',
           amount: amount,
           currency: 'USD'
         }]);
@@ -79,7 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           success: true, 
           url: paymentUrl,
-          message: 'Redirecting to Stripe checkout...'
+          message: 'Redirecting to Flutterwave checkout...'
         }),
         { 
           status: 200, 

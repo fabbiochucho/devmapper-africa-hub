@@ -873,6 +873,17 @@ export type Database = {
       }
     }
     Functions: {
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          countries_count: number
+          last_updated: string
+          total_campaigns: number
+          total_change_makers: number
+          total_funds_raised: number
+          total_reports: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
