@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          page_url: string | null
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       billing_events: {
         Row: {
           amount: number | null
@@ -443,6 +479,39 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          marketing_emails: boolean | null
+          push_notifications: boolean | null
+          sms_notifications: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -758,6 +827,17 @@ export type Database = {
       }
     }
     Views: {
+      dashboard_stats: {
+        Row: {
+          countries_count: number | null
+          last_updated: string | null
+          total_campaigns: number | null
+          total_change_makers: number | null
+          total_funds_raised: number | null
+          total_reports: number | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar_url: string | null
@@ -799,6 +879,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      refresh_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
