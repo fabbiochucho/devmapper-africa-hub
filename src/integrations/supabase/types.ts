@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      alphaearth_cache: {
+        Row: {
+          cache_key: string
+          expires_at: string | null
+          fetched_at: string | null
+          id: string
+          organization_id: string | null
+          payload: Json
+          provider: string
+        }
+        Insert: {
+          cache_key: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          organization_id?: string | null
+          payload: Json
+          provider: string
+        }
+        Update: {
+          cache_key?: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          organization_id?: string | null
+          payload?: Json
+          provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alphaearth_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           created_at: string | null
@@ -255,6 +293,284 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      esg_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          module: string
+          organization_id: string
+          row_id: string | null
+          table_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          module: string
+          organization_id: string
+          row_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          module?: string
+          organization_id?: string
+          row_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_indicators: {
+        Row: {
+          carbon_scope1_tonnes: number | null
+          carbon_scope2_tonnes: number | null
+          carbon_scope3_tonnes: number | null
+          community_investment: number | null
+          created_at: string | null
+          created_by: string | null
+          data_quality: string | null
+          energy_consumption_kwh: number | null
+          esg_score: number | null
+          id: string
+          organization_id: string
+          renewable_energy_percentage: number | null
+          reporting_year: number
+          updated_at: string | null
+          verification_status: string | null
+          waste_generated_tonnes: number | null
+          water_consumption_m3: number | null
+        }
+        Insert: {
+          carbon_scope1_tonnes?: number | null
+          carbon_scope2_tonnes?: number | null
+          carbon_scope3_tonnes?: number | null
+          community_investment?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          data_quality?: string | null
+          energy_consumption_kwh?: number | null
+          esg_score?: number | null
+          id?: string
+          organization_id: string
+          renewable_energy_percentage?: number | null
+          reporting_year: number
+          updated_at?: string | null
+          verification_status?: string | null
+          waste_generated_tonnes?: number | null
+          water_consumption_m3?: number | null
+        }
+        Update: {
+          carbon_scope1_tonnes?: number | null
+          carbon_scope2_tonnes?: number | null
+          carbon_scope3_tonnes?: number | null
+          community_investment?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          data_quality?: string | null
+          energy_consumption_kwh?: number | null
+          esg_score?: number | null
+          id?: string
+          organization_id?: string
+          renewable_energy_percentage?: number | null
+          reporting_year?: number
+          updated_at?: string | null
+          verification_status?: string | null
+          waste_generated_tonnes?: number | null
+          water_consumption_m3?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_indicators_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_scenarios: {
+        Row: {
+          assumptions: Json
+          baseline_year: number
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          results: Json | null
+          status: string | null
+          target_year: number
+          updated_at: string | null
+        }
+        Insert: {
+          assumptions?: Json
+          baseline_year: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          results?: Json | null
+          status?: string | null
+          target_year: number
+          updated_at?: string | null
+        }
+        Update: {
+          assumptions?: Json
+          baseline_year?: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          results?: Json | null
+          status?: string | null
+          target_year?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_scenarios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_supplier_emissions: {
+        Row: {
+          activity_description: string | null
+          alphaearth_benchmark_id: string | null
+          created_at: string | null
+          data_quality: string | null
+          emission_factor: number | null
+          emission_factor_source: string | null
+          emissions_tonnes: number
+          evidence_url: string | null
+          id: string
+          organization_id: string
+          reporting_year: number
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          activity_description?: string | null
+          alphaearth_benchmark_id?: string | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor?: number | null
+          emission_factor_source?: string | null
+          emissions_tonnes?: number
+          evidence_url?: string | null
+          id?: string
+          organization_id: string
+          reporting_year: number
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          activity_description?: string | null
+          alphaearth_benchmark_id?: string | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor?: number | null
+          emission_factor_source?: string | null
+          emissions_tonnes?: number
+          evidence_url?: string | null
+          id?: string
+          organization_id?: string
+          reporting_year?: number
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_supplier_emissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "esg_supplier_emissions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "esg_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_suppliers: {
+        Row: {
+          alphaearth_enriched: boolean | null
+          annual_spend: number | null
+          contact_email: string | null
+          country_code: string | null
+          created_at: string | null
+          data_source: string | null
+          id: string
+          name: string
+          organization_id: string
+          sector: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alphaearth_enriched?: boolean | null
+          annual_spend?: number | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          sector?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alphaearth_enriched?: boolean | null
+          annual_spend?: number | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          sector?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_suppliers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -546,27 +862,45 @@ export type Database = {
       }
       organizations: {
         Row: {
+          alphaearth_api_calls_limit: number | null
           created_at: string
           created_by: string
+          esg_enabled: boolean | null
+          esg_scenarios_limit: number | null
+          esg_suppliers_limit: number | null
           id: string
           name: string
           plan_type: string
+          primary_sector: string | null
+          reporting_year: number | null
           updated_at: string
         }
         Insert: {
+          alphaearth_api_calls_limit?: number | null
           created_at?: string
           created_by: string
+          esg_enabled?: boolean | null
+          esg_scenarios_limit?: number | null
+          esg_suppliers_limit?: number | null
           id?: string
           name: string
           plan_type?: string
+          primary_sector?: string | null
+          reporting_year?: number | null
           updated_at?: string
         }
         Update: {
+          alphaearth_api_calls_limit?: number | null
           created_at?: string
           created_by?: string
+          esg_enabled?: boolean | null
+          esg_scenarios_limit?: number | null
+          esg_suppliers_limit?: number | null
           id?: string
           name?: string
           plan_type?: string
+          primary_sector?: string | null
+          reporting_year?: number | null
           updated_at?: string
         }
         Relationships: []
