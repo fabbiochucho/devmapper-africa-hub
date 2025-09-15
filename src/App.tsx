@@ -34,6 +34,9 @@ import Auth from "./pages/Auth";
 import CorporateDashboard from "./pages/CorporateDashboard";
 import NgoDashboard from "./pages/NgoDashboard";
 import SdgAgenda2063Alignment from "./components/SdgAgenda2063Alignment";
+import ESG from "./pages/ESG";
+import BillingUpgrade from "./pages/BillingUpgrade";
+import AdvancedAnalyticsPage from "./pages/AdvancedAnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -66,8 +69,12 @@ const App = () => (
               <Route path="/training" element={<Training />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/connect" element={<Connect />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/esg" element={<ESG />} />
+              <Route path="/billing-upgrade" element={<BillingUpgrade />} />
+              <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
+            </Route>
             <Route path="/auth" element={<Auth />} />
             <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
             <Route path="/ngo-dashboard" element={<NgoDashboard />} />
