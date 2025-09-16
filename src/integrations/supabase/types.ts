@@ -1225,10 +1225,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      refresh_dashboard_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
     }
     Enums: {
       app_role:
