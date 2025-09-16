@@ -47,46 +47,45 @@ const App = () => (
       <AuthProvider>
         <UserRoleProvider>
           <BrowserRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/corporate-targets" element={<CorporateTargets />} />
-              <Route path="/government-dashboard" element={<GovernmentDashboard />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/submit-report" element={<SubmitReport />} />
-              <Route path="/submit-change-maker" element={<SubmitChangeMaker />} />
-              <Route path="/change-makers" element={<ChangeMakers />} />
-              <Route path="/change-maker-analytics" element={<ChangeMakerAnalyticsPage />} />
-              <Route path="/fundraising" element={<Fundraising />} />
-              <Route path="/user-management" element={<UserManagement />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/forum" element={<Forum />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/guidelines" element={<Guidelines />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/training" element={<Training />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/connect" element={<Connect />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/esg" element={<ESG />} />
-              <Route path="/billing-upgrade" element={<BillingUpgrade />} />
-              <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
-            </Route>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
-            <Route path="/ngo-dashboard" element={<NgoDashboard />} />
-            <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </UserRoleProvider>
-  </AuthProvider>
-</ThemeProvider>
-</QueryClientProvider>
+            <Routes>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/corporate-targets" element={<CorporateTargets />} />
+                <Route path="/government-dashboard" element={<GovernmentDashboard />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/submit-report" element={<SubmitReport />} />
+                <Route path="/submit-change-maker" element={<SubmitChangeMaker />} />
+                <Route path="/change-makers" element={<ChangeMakers />} />
+                <Route path="/change-maker-analytics" element={<ChangeMakerAnalyticsPage />} />
+                <Route path="/fundraising" element={<Fundraising />} />
+                <Route path="/user-management" element={<UserManagement />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/forum" element={<Forum />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/guidelines" element={<Guidelines />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/training" element={<Training />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/connect" element={<Connect />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/esg" element={<ESG />} />
+                <Route path="/billing-upgrade" element={<BillingUpgrade />} />
+                <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
+              </Route>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
+              <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+              <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </UserRoleProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;

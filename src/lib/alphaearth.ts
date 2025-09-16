@@ -15,7 +15,7 @@ interface AlphaEarthBenchmark {
 
 interface GEEBenchmark {
   country: string;
-  sector?: string;
+  sector: string;
   year?: number;
   avg_carbon_intensity: number;
   source: string;
@@ -95,8 +95,7 @@ async function getProBenchmark(
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
-    },
-    timeout: 15000
+    }
   });
 
   if (!response.ok) {
@@ -120,9 +119,9 @@ async function getProBenchmark(
  */
 async function getFreeBenchmarkViaGEE(
   country: string,
-  sector?: string,
+  sector: string,
   year?: number
-): Promise<GEEBenchmark> {
+): Promise<AlphaEarthBenchmark> {
   // TODO: Implement actual GEE Earth Engine API calls
   // For now, return estimated values based on country/sector
   
@@ -182,7 +181,7 @@ async function getCachedData(
     
     if (error || !data) return null;
     
-    return data.payload as AlphaEarthBenchmark;
+    return JSON.parse(JSON.stringify(data.payload)) as AlphaEarthBenchmark;
   } catch (error) {
     console.error('Cache read error:', error);
     return null;
@@ -206,7 +205,7 @@ async function setCachedData(
       .from('alphaearth_cache')
       .upsert({
         cache_key: cacheKey,
-        payload,
+        payload: JSON.parse(JSON.stringify(payload)),
         provider,
         organization_id: orgId || null,
         fetched_at: new Date().toISOString(),

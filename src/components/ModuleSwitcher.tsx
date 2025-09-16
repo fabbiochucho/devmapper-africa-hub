@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,8 +33,17 @@ const ModuleSwitcher = ({
   organizationId,
   showCompact = false 
 }: ModuleSwitcherProps) => {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Determine current module from location
+  const getCurrentModule = () => {
+    if (location.pathname.startsWith('/esg')) return 'esg';
+    return 'sdg';
+  };
+
+  const activeModule = getCurrentModule();
 
   const modules = [
     {
@@ -57,15 +66,15 @@ const ModuleSwitcher = ({
     }
   ];
 
-  const currentModuleData = modules.find(m => m.id === currentModule);
-
   const handleModuleSwitch = (moduleId: string) => {
     const module = modules.find(m => m.id === moduleId);
     if (module) {
-      router.push(module.path);
+      navigate(module.path);
       setIsOpen(false);
     }
   };
+
+  const currentModuleData = modules.find(m => m.id === activeModule);
 
   if (showCompact) {
     return (
@@ -82,7 +91,7 @@ const ModuleSwitcher = ({
         <DropdownMenuContent align="start" className="w-64">
           {modules.map((module) => {
             const Icon = module.icon;
-            const isActive = module.id === currentModule;
+            const isActive = module.id === activeModule;
             
             return (
               <DropdownMenuItem
@@ -116,7 +125,7 @@ const ModuleSwitcher = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {modules.map((module) => {
         const Icon = module.icon;
-        const isActive = module.id === currentModule;
+        const isActive = module.id === activeModule;
         
         return (
           <Card 
