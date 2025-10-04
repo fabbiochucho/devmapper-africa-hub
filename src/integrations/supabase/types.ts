@@ -905,24 +905,6 @@ export type Database = {
         }
         Relationships: []
       }
-      otp_settings: {
-        Row: {
-          created_at: string | null
-          expiration_time: number
-          id: number
-        }
-        Insert: {
-          created_at?: string | null
-          expiration_time: number
-          id?: never
-        }
-        Update: {
-          created_at?: string | null
-          expiration_time?: number
-          id?: never
-        }
-        Relationships: []
-      }
       partners: {
         Row: {
           created_at: string
