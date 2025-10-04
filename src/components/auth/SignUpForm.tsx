@@ -1,70 +1,64 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { signUpSchema } from "@/lib/authSchema";
-import { ALL_ROLES, UserRole } from "@/contexts/UserRoleContext";
 import { toast } from "sonner";
-import { mockUsers, MockUser } from "@/data/mockUsers";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SignUpFormProps {
-  onAuthSuccess: (userData: any, token: string) => void;
+  onAuthSuccess: () => void;
 }
 
-const multiRoleSignUpSchema = signUpSchema.extend({
-  roles: z.array(z.string()).min(1, "Please select at least one role"),
-});
-
-type SignUpFormValues = z.infer<typeof multiRoleSignUpSchema>;
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  
   const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(multiRoleSignUpSchema),
+    resolver: zodResolver(signUpSchema),
     defaultValues: { 
       name: "", 
       email: "", 
-      password: "", 
-      roles: ["Citizen Reporter"] 
+      password: "" 
     },
   });
 
-  const handleSignUp = (values: SignUpFormValues) => {
-    const existingUser = mockUsers.find(
-      (u) => u.email.toLowerCase() === values.email.toLowerCase()
-    );
-
-    if (existingUser) {
-      toast.error("User with this email already exists.");
-      form.setError("email", {
-        type: "manual",
-        message: "User with this email already exists.",
+  const handleSignUp = async (values: SignUpFormValues) => {
+    setIsLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: { full_name: values.name }
+        }
       });
-      return;
+
+      if (error) {
+        toast.error(error.message);
+        if (error.message.includes("already registered")) {
+          form.setError("email", {
+            type: "manual",
+            message: "User with this email already exists.",
+          });
+        }
+      } else {
+        toast.success("Check your email to confirm your account!");
+        onAuthSuccess();
+      }
+    } catch (error) {
+      toast.error("An error occurred during sign up");
+    } finally {
+      setIsLoading(false);
     }
-
-    const newUser: MockUser = {
-      id: mockUsers.length + 1,
-      name: values.name,
-      email: values.email,
-      password: values.password,
-      role: values.roles[0] as UserRole, // Primary role
-      verified: values.roles.includes("Citizen Reporter"),
-      createdAt: new Date().toISOString(),
-    };
-
-    mockUsers.push(newUser);
-
-    const { password, ...userToStore } = newUser;
-    const token = "fake-auth-token-signup";
-    localStorage.setItem("auth_token", token);
-    localStorage.setItem("user", JSON.stringify(userToStore));
-    onAuthSuccess(userToStore, token);
-    toast.success("Sign-up successful! You can now access all your selected roles.");
   };
 
   return (
@@ -112,45 +106,8 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           )}
         />
         
-        <FormField
-          control={form.control}
-          name="roles"
-          render={() => (
-            <FormItem>
-              <FormLabel>Roles (Select all that apply)</FormLabel>
-              <div className="grid grid-cols-1 gap-2">
-                {ALL_ROLES.map((role) => (
-                  <FormField
-                    key={role}
-                    control={form.control}
-                    name="roles"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(role)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, role])
-                                : field.onChange(field.value?.filter((value) => value !== role));
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal cursor-pointer">
-                          {role}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full">
-          Sign Up
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
     </Form>

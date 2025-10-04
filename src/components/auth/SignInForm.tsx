@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,38 +9,44 @@ import { Input } from "@/components/ui/input";
 import { signInSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
-import { mockUsers } from "@/data/mockUsers";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SignInFormProps {
-  onAuthSuccess: (userData: any, token: string) => void;
+  onAuthSuccess: () => void;
 }
 
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const handleSignIn = (values: SignInFormValues) => {
-    const user = mockUsers.find(
-      (u) => u.email.toLowerCase() === values.email.toLowerCase()
-    );
-
-    if (user && user.password === values.password) {
-      const { password, ...userToStore } = user;
-      const token = "fake-auth-token";
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user", JSON.stringify(userToStore));
-      onAuthSuccess(userToStore, token);
-      toast.success("Signed in successfully!");
-    } else {
-      toast.error("Invalid email or password.");
-      form.setError("password", {
-        type: "manual",
-        message: "Invalid email or password",
+  const handleSignIn = async (values: SignInFormValues) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
+
+      if (error) {
+        toast.error(error.message);
+        form.setError("password", {
+          type: "manual",
+          message: "Invalid credentials",
+        });
+      } else {
+        toast.success("Signed in successfully!");
+        onAuthSuccess();
+      }
+    } catch (error) {
+      toast.error("An error occurred during sign in");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,8 +79,8 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          <LogIn className="mr-2 h-4 w-4" /> Sign In
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          <LogIn className="mr-2 h-4 w-4" /> {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
     </Form>

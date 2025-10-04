@@ -32,8 +32,8 @@ const GovernmentDashboard = () => {
                 const userCountryCode = parsedUser.country_code || "DEFAULT";
                 const dashboardData = getGovernmentDashboardData(userCountryCode);
                 setData(dashboardData);
-            } catch (error) {
-                console.error("Failed to parse user data from localStorage", error);
+            } catch {
+                // Silent fail - load default data
                 const dashboardData = getGovernmentDashboardData("DEFAULT");
                 setData(dashboardData);
             }

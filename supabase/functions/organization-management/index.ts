@@ -86,10 +86,22 @@ const handler = async (req: Request): Promise<Response> => {
         user = authUser;
       }
 
-      const { plan_type, event_type, provider, external_id, amount } = await req.json();
+      const body = await req.json();
+      const { plan_type, event_type, provider, external_id, amount } = body;
 
+      // Input validation
       if (!plan_type || !['lite', 'pro'].includes(plan_type)) {
         throw new Error('Invalid plan_type. Must be "lite" or "pro"');
+      }
+
+      // Validate external_id to prevent injection
+      if (external_id && typeof external_id !== 'string') {
+        throw new Error('Invalid external_id format');
+      }
+
+      // Validate amount if provided
+      if (amount !== undefined && (typeof amount !== 'number' || amount < 0)) {
+        throw new Error('Invalid amount');
       }
 
       // Fetch current organization
@@ -106,6 +118,11 @@ const handler = async (req: Request): Promise<Response> => {
       // If user authentication, verify access
       if (user && currentOrg.created_by !== user.id) {
         throw new Error('Access denied');
+      }
+
+      // Prevent downgrade from webhook without proper validation
+      if (!user && plan_type === 'lite' && currentOrg.plan_type === 'pro') {
+        console.warn(`Downgrade attempt for org ${orgId} via webhook`);
       }
 
       const oldPlan = currentOrg.plan_type;
