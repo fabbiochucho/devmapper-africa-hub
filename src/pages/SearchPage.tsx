@@ -6,15 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { mockReports, Report } from '@/data/mockReports';
-import { mockUsers, MockUser } from '@/data/mockUsers';
 import { mockOrganizations, Organization } from '@/data/mockOrganizations';
 import { sdgGoals } from '@/lib/constants';
 import { getCountries, Country } from '@/data/countries';
 import { Search, FolderKanban, User, Building } from 'lucide-react';
 
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 type SearchResults = {
   projects: Report[];
-  users: MockUser[];
+  users: UserProfile[];
   organizations: Organization[];
 };
 
@@ -58,11 +63,7 @@ const SearchPage = () => {
       return matchesQuery && matchesCountry && matchesSdg;
     });
 
-    const filteredUsers = mockUsers.filter(u => {
-      const matchesQuery = u.name.toLowerCase().includes(lowerCaseQuery) || u.organization?.toLowerCase().includes(lowerCaseQuery);
-      const matchesCountry = country === 'all' || u.country === country;
-      return matchesQuery && matchesCountry;
-    });
+    const filteredUsers: UserProfile[] = []; // Removed mock users
 
     const filteredOrganizations = mockOrganizations.filter(o => {
       const matchesQuery = o.name.toLowerCase().includes(lowerCaseQuery);

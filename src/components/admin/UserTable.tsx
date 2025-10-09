@@ -1,49 +1,90 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MockUser } from "@/data/mockUsers";
-import { Check, UserX } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreVertical, CheckCircle, XCircle, Ban } from "lucide-react";
 
-interface UserTableProps {
-  users: MockUser[];
-  onUpdateUser: (userId: number, verified: boolean) => void;
+interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  organization: string | null;
+  country: string | null;
+  is_verified: boolean;
+  created_at: string;
 }
 
-const UserTable = ({ users, onUpdateUser }: UserTableProps) => {
+interface UserTableProps {
+  users: UserProfile[];
+  onUserAction: (userId: string, action: "block" | "verify" | "delete") => void;
+}
+
+const UserTable = ({ users, onUserAction }: UserTableProps) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
-          <TableHead>Role</TableHead>
+          <TableHead>Country</TableHead>
+          <TableHead>Organization</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.name}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>{user.role}</TableCell>
-            <TableCell>
-              <Badge variant={user.verified ? "default" : "destructive"}>
-                {user.verified ? "Verified" : "Not Verified"}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              {!user.verified && (
-                <div className="flex space-x-2 justify-end">
-                  <Button size="sm" variant="outline" onClick={() => onUpdateUser(user.id, true)}>
-                    <Check className="w-4 h-4 mr-1" /> Verify
-                  </Button>
-                </div>
-              )}
+        {users.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center text-muted-foreground">
+              No users found
             </TableCell>
           </TableRow>
-        ))}
+        ) : (
+          users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>{user.full_name || "—"}</TableCell>
+              <TableCell>{user.email || "—"}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{user.country || "N/A"}</Badge>
+              </TableCell>
+              <TableCell>{user.organization || "—"}</TableCell>
+              <TableCell>
+                <Badge variant={user.is_verified ? "default" : "destructive"}>
+                  {user.is_verified ? "Verified" : "Unverified"}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {!user.is_verified && (
+                      <DropdownMenuItem onClick={() => onUserAction(user.id, "verify")}>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Verify
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => onUserAction(user.id, "block")}>
+                      <Ban className="w-4 h-4 mr-2" />
+                      Block
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => onUserAction(user.id, "delete")}
+                      className="text-destructive"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </Table>
   );

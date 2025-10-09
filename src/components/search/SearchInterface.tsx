@@ -9,18 +9,23 @@ import { Badge } from "@/components/ui/badge"
 import { Search, X, MapPin, User, Building } from "lucide-react"
 
 import { mockReports, Report } from '@/data/mockReports';
-import { mockUsers, MockUser } from '@/data/mockUsers';
 import { mockOrganizations, Organization } from '@/data/mockOrganizations';
+
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
 
 interface SearchResult {
   projects: Report[]
-  users: MockUser[]
+  users: UserProfile[]
   organizations: Organization[]
 }
 
 interface SearchInterfaceProps {
   onProjectSelect?: (project: Report) => void
-  onUserSelect?: (user: MockUser) => void
+  onUserSelect?: (user: UserProfile) => void
   onOrganizationSelect?: (org: Organization) => void;
 }
 
@@ -65,10 +70,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
       p.description?.toLowerCase().includes(lowerCaseQuery)
     );
 
-    const filteredUsers = mockUsers.filter(u =>
-      u.name.toLowerCase().includes(lowerCaseQuery) ||
-      u.organization?.toLowerCase().includes(lowerCaseQuery)
-    );
+    const filteredUsers: UserProfile[] = []; // Removed mock users
 
     const filteredOrganizations = mockOrganizations.filter(o =>
       o.name.toLowerCase().includes(lowerCaseQuery)
@@ -94,7 +96,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
     setIsOpen(false)
   }
 
-  const handleUserClick = (user: MockUser) => {
+  const handleUserClick = (user: UserProfile) => {
     onUserSelect?.(user)
     setIsOpen(false)
   }

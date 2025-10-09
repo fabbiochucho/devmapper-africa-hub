@@ -3,14 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp } from "lucide-react";
-import { useUserRole } from "@/contexts/UserRoleContext";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PartnerManagement from "@/components/admin/PartnerManagement";
-
-const ADMIN_ROLES = ["Platform Admin", "Country Admin"];
+import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
   id: number;
@@ -46,8 +44,8 @@ interface FundraisingCampaign {
 }
 
 export default function AdminDashboard() {
-  const { currentRole } = useUserRole();
   const { user: authUser } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdminVerification();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>([]);
   const [campaigns, setCampaigns] = useState<FundraisingCampaign[]>([]);
@@ -147,8 +145,16 @@ export default function AdminDashboard() {
     toast.success(`Project has been ${action}.`);
     setAdminStats(stats => ({ ...stats, flaggedContent: stats.flaggedContent - 1, resolvedIssues: stats.resolvedIssues + 1 }));
   };
+
+  if (adminLoading) {
+    return (
+      <div className="flex items-center justify-center h-full p-4">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
   
-  if (!ADMIN_ROLES.includes(currentRole)) {
+  if (!isAdmin) {
     return (
       <div className="flex items-center justify-center h-full p-4">
         <Card className="w-full max-w-md">

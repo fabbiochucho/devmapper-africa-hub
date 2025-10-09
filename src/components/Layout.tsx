@@ -4,7 +4,6 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "./AppSidebar";
 import SearchInterface from "./search/SearchInterface";
 import { Report } from "@/data/mockReports";
-import { MockUser } from "@/data/mockUsers";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft } from "lucide-react";

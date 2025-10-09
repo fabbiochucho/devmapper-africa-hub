@@ -1,168 +1,232 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createHmac } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, verif-hash',
 };
 
-interface FlutterwaveWebhookPayload {
-  event: string;
-  data: {
-    id: string;
-    tx_ref: string;
-    status: string;
-    amount: number;
-    currency: string;
-    customer: {
-      email: string;
-    };
-    meta?: {
-      organizationId?: string;
-      planType?: string;
-    };
-  };
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const webhookSecretKey = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
 
-    // Verify webhook secret
-    const webhookSecret = req.headers.get('x-webhook-secret');
-    const expectedSecret = Deno.env.get('FLUTTERWAVE_WEBHOOK_SECRET');
-    
-    if (webhookSecret !== expectedSecret) {
-      throw new Error('Invalid webhook secret');
+    if (!supabaseUrl || !supabaseServiceKey || !webhookSecretKey) {
+      throw new Error("Missing required environment variables");
     }
 
-    const payload: FlutterwaveWebhookPayload = await req.json();
-    
-    console.log('Flutterwave webhook received:', payload);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Handle successful payment
-    if (payload.event === 'charge.completed' && payload.data.status === 'successful') {
-      const { organizationId, planType } = payload.data.meta || {};
-      
-      if (organizationId && planType) {
-        // Update organization plan
-        const { error: updateError } = await supabase
-          .from('organizations')
-          .update({ plan_type: planType })
-          .eq('id', organizationId);
+    // Get the raw body for signature verification
+    const rawBody = await req.text();
+    const payload = JSON.parse(rawBody);
 
-        if (updateError) {
-          throw updateError;
-        }
+    // 1. VERIFY WEBHOOK SIGNATURE
+    const verifHash = req.headers.get("verif-hash");
+    if (!verifHash) {
+      console.error("Missing verif-hash header");
+      return new Response(
+        JSON.stringify({ error: "Missing signature" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-        // Log billing event
-        await supabase
-          .from('billing_events')
-          .insert([{
-            organization_id: organizationId,
-            event_type: 'payment_completed',
-            old_plan: 'lite', // Assuming upgrading from lite
-            new_plan: planType,
-            provider: 'flutterwave',
-            amount: payload.data.amount,
-            currency: payload.data.currency,
-            external_id: payload.data.id
-          }]);
+    // Verify the signature using HMAC
+    const expectedHash = await createHmac("sha256", webhookSecretKey)
+      .update(rawBody)
+      .digest("hex");
 
-        console.log(`Organization ${organizationId} upgraded to ${planType}`);
+    if (verifHash !== expectedHash) {
+      console.error("Invalid webhook signature");
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 2. CHECK IDEMPOTENCY
+    const eventId = payload.id || payload.event_id || payload.txRef;
+    if (!eventId) {
+      console.error("Missing event ID in payload");
+      return new Response(
+        JSON.stringify({ error: "Missing event ID" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: existingEvent } = await supabase.rpc('check_webhook_processed', {
+      p_event_id: eventId,
+      p_provider: 'flutterwave'
+    });
+
+    if (existingEvent) {
+      console.log("Webhook event already processed:", eventId);
+      await supabase.rpc('record_webhook_event', {
+        p_event_id: eventId,
+        p_provider: 'flutterwave',
+        p_event_type: payload.event || 'unknown',
+        p_payload: payload,
+        p_status: 'duplicate'
+      });
+      return new Response(
+        JSON.stringify({ message: "Event already processed" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 3. PROCESS WEBHOOK EVENT
+    const event = payload.event || payload.status;
+    const data = payload.data || payload;
+
+    console.log("Processing webhook event:", event);
+
+    if (event === "charge.completed" && data.status === "successful") {
+      const metadata = data.meta || data.metadata || {};
+      const organizationId = metadata.organizationId || metadata.organization_id;
+      const newPlan = metadata.planType || metadata.plan_type || 'pro';
+
+      if (!organizationId) {
+        console.error("Missing organizationId in metadata");
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId,
+          p_provider: 'flutterwave',
+          p_event_type: event,
+          p_payload: payload,
+          p_status: 'failed',
+          p_error_message: 'Missing organizationId in metadata'
+        });
+        return new Response(
+          JSON.stringify({ error: "Missing organizationId" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-    }
 
-    // Handle failed payments
-    if (payload.event === 'charge.failed') {
-      const { organizationId } = payload.data.meta || {};
-      
-      if (organizationId) {
-        await supabase
-          .from('billing_events')
-          .insert([{
-            organization_id: organizationId,
-            event_type: 'payment_failed',
-            provider: 'flutterwave',
-            amount: payload.data.amount,
-            currency: payload.data.currency,
-            external_id: payload.data.id
-          }]);
+      // 4. VALIDATE ORGANIZATION OWNERSHIP
+      const { data: org, error: orgError } = await supabase
+        .from("organizations")
+        .select("id, created_by, plan_type, name")
+        .eq("id", organizationId)
+        .single();
 
-        console.log(`Payment failed for organization ${organizationId}`);
+      if (orgError || !org) {
+        console.error("Organization not found:", organizationId);
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId,
+          p_provider: 'flutterwave',
+          p_event_type: event,
+          p_payload: payload,
+          p_status: 'failed',
+          p_error_message: `Organization not found: ${organizationId}`
+        });
+        return new Response(
+          JSON.stringify({ error: "Organization not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-    }
 
-    // Handle refunds/downgrades
-    if (payload.event === 'charge.refunded') {
-      const { organizationId } = payload.data.meta || {};
-      
-      if (organizationId) {
-        // Downgrade to lite plan
-        const { error: updateError } = await supabase
-          .from('organizations')
-          .update({ plan_type: 'lite' })
-          .eq('id', organizationId);
+      const oldPlan = org.plan_type;
 
-        if (updateError) {
-          throw updateError;
-        }
+      // 5. UPDATE PLAN
+      const { error: updateError } = await supabase
+        .from("organizations")
+        .update({ plan_type: newPlan })
+        .eq("id", organizationId);
 
-        // Log billing event
-        await supabase
-          .from('billing_events')
-          .insert([{
-            organization_id: organizationId,
-            event_type: 'refund_processed',
-            old_plan: 'pro',
-            new_plan: 'lite',
-            provider: 'flutterwave',
-            amount: payload.data.amount,
-            currency: payload.data.currency,
-            external_id: payload.data.id
-          }]);
-
-        // Send downgrade email notification
-        try {
-          await supabase.functions.invoke('send-downgrade-email', {
-            body: { organizationId }
-          });
-        } catch (emailError) {
-          console.error('Error sending downgrade email:', emailError);
-        }
-
-        console.log(`Organization ${organizationId} downgraded due to refund`);
+      if (updateError) {
+        console.error("Error updating organization plan:", updateError);
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId,
+          p_provider: 'flutterwave',
+          p_event_type: event,
+          p_payload: payload,
+          p_status: 'failed',
+          p_error_message: updateError.message
+        });
+        throw updateError;
       }
+
+      // 6. LOG AUDIT EVENT
+      await supabase.rpc('log_audit_event', {
+        p_actor_id: null,
+        p_actor_type: 'webhook',
+        p_org_id: organizationId,
+        p_action: 'plan_upgraded',
+        p_target_table: 'organizations',
+        p_target_id: organizationId,
+        p_payload: {
+          old_plan: oldPlan,
+          new_plan: newPlan,
+          amount: data.amount,
+          currency: data.currency,
+          transaction_id: data.id || data.tx_ref,
+          provider: 'flutterwave'
+        }
+      });
+
+      // 7. LOG BILLING EVENT
+      const { error: billingError } = await supabase
+        .from("billing_events")
+        .insert({
+          organization_id: organizationId,
+          event_type: "upgrade",
+          old_plan: oldPlan,
+          new_plan: newPlan,
+          amount: data.amount,
+          currency: data.currency,
+          provider: "flutterwave",
+          external_id: data.id || data.tx_ref,
+        });
+
+      if (billingError) {
+        console.error("Error logging billing event:", billingError);
+      }
+
+      // 8. RECORD WEBHOOK SUCCESS
+      await supabase.rpc('record_webhook_event', {
+        p_event_id: eventId,
+        p_provider: 'flutterwave',
+        p_event_type: event,
+        p_payload: payload,
+        p_status: 'success'
+      });
+
+      console.log("Successfully upgraded organization:", organizationId, "to plan:", newPlan);
+
+      return new Response(
+        JSON.stringify({ message: "Webhook processed successfully" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // For other events, just log them
+    console.log("Unhandled webhook event:", event);
+    await supabase.rpc('record_webhook_event', {
+      p_event_id: eventId,
+      p_provider: 'flutterwave',
+      p_event_type: event,
+      p_payload: payload,
+      p_status: 'success'
+    });
 
     return new Response(
-      JSON.stringify({ success: true }),
-      { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
+      JSON.stringify({ message: "Event received but not processed" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error('Error in flutterwave-webhook function:', error);
+    console.error("Error processing webhook:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error' 
-      }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
-};
-
-serve(handler);
+});

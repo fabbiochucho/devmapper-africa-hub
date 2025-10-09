@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Report } from "@/data/mockReports";
-import { mockUsers } from "@/data/mockUsers";
 import Autoplay from "embla-carousel-autoplay";
 
 interface RecentProjectsProps {
@@ -20,8 +19,6 @@ const cardColors = [
   "dark:bg-pink-900/40 bg-pink-100",
   "dark:bg-indigo-900/40 bg-indigo-100",
 ];
-
-const getUserById = (id: string) => mockUsers.find((u) => u.id.toString() === id);
 
 export default function RecentProjects({ recentProjects }: RecentProjectsProps) {
   return (

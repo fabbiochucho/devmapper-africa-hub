@@ -1,5 +1,4 @@
 import { reverseGeocode } from "@/lib/geocode";
-import { mockUsers } from "./mockUsers";
 
 // Type definitions are kept to maintain the data contract with other components.
 export type Verification = {
@@ -250,7 +249,7 @@ export const mockReports: Report[] = rawProjects.map(p => {
   ];
   
   const city = p.title.split(" - ")[1] || "Unknown City";
-  const randomUser = mockUsers[p.id % mockUsers.length];
+  const randomUserId = `user-${p.id % 10}`; // Stub user ID
 
   return {
     id: `REP-${p.id.toString().padStart(3, '0')}`,
@@ -260,7 +259,7 @@ export const mockReports: Report[] = rawProjects.map(p => {
     sdg_target: p.sdg_target,
     project_status: project_status,
     location: `${city}, ${p.country}`,
-    submitted_by: randomUser.id.toString(),
+    submitted_by: randomUserId,
     submitted_at: p.created_at,
     lat: p.lat,
     lng: p.lng,
