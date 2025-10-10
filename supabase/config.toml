@@ -34,5 +34,17 @@ verify_jwt = true
 [functions.flutterwave-webhook]
 verify_jwt = false
 
+[functions.gee-proxy]
+verify_jwt = true
+
+[functions.sentinel-proxy]
+verify_jwt = true
+
+[functions.sdg-proxy]
+verify_jwt = true
+
+[functions.climatetrace-proxy]
+verify_jwt = true
+
 [edge_runtime]
 policy = "oneshot"
