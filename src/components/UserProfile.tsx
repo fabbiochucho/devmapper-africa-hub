@@ -9,8 +9,18 @@ import { User, MapPin, Calendar, Award, TrendingUp } from "lucide-react"
 import { Report, mockReports } from "@/data/mockReports"
 import { UserRole } from "@/contexts/UserRoleContext"
 
+interface UserData {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  verified: boolean;
+  organization?: string;
+  country?: string;
+}
+
 interface UserProfileProps {
-  user: MockUser
+  user: UserData
   onLogout: () => void
 }
 
@@ -48,7 +58,7 @@ export default function UserProfile({ user, onLogout }: UserProfileProps) {
     }
   }, [user])
 
-  const getRoleBadgeColor = (role: UserRole) => {
+  const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "government_official": return "bg-blue-100 text-blue-800"
       case "company_representative": return "bg-purple-100 text-purple-800"

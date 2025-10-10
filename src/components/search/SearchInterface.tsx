@@ -131,15 +131,12 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
     }
   }
 
-  const getRoleColor = (role: MockUser['role'] | Organization['type']) => {
+  const getRoleColor = (role: Organization['type']) => {
     switch (role) {
-      case "government_official":
       case "government":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200"
-      case "company_representative":
       case "company":
         return "bg-purple-100 text-purple-800 hover:bg-purple-200"
-      case "ngo_member":
       case "ngo":
         return "bg-green-100 text-green-800 hover:bg-green-200"
       default:
@@ -224,12 +221,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
                             <User className="w-4 h-4 text-muted-foreground" />
                           </div>
                           <div>
-                            <h4 className="font-medium text-sm">{user.name}</h4>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge className={`text-xs ${getRoleColor(user.role)}`}>{user.role}</Badge>
-                              {user.organization && <span className="text-xs text-muted-foreground">{user.organization}</span>}
-                              {user.country && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> {user.country}</span>}
-                            </div>
+                            <h4 className="font-medium text-sm">{user.full_name || 'Anonymous'}</h4>
                           </div>
                         </div>
                       </div>

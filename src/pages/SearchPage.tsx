@@ -174,8 +174,7 @@ const SearchPage = () => {
                   {results.users.map(u => (
                     <Card key={u.id}>
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-primary" />{u.name}</CardTitle>
-                        <CardDescription>{u.role}{u.organization && ` at ${u.organization}`}</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-primary" />{u.full_name || 'Anonymous'}</CardTitle>
                       </CardHeader>
                     </Card>
                   ))}

@@ -44,25 +44,22 @@ export default function RecentProjects({ recentProjects }: RecentProjectsProps) 
           className="w-full max-w-4xl mx-auto"
         >
           <CarouselContent>
-            {recentProjects.map((report, index) => {
-              const user = getUserById(report.submitted_by);
-              return (
-                <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1 h-full">
-                    <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl dark:hover:shadow-primary/20`}>
-                      <CardContent className="flex flex-col items-start gap-4 p-6">
-                        <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
-                        <p className="font-semibold leading-none">{report.title}</p>
-                        <p className="text-sm text-muted-foreground">Reported by: {user?.name || "Anonymous"}</p>
-                        <Button asChild variant="outline" size="sm" className="mt-auto">
-                          <Link to={`/analytics?tab=reports&id=${report.id}`}>View Project</Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              );
-            })}
+            {recentProjects.map((report, index) => (
+              <CarouselItem key={report.id} className="md:basis-1/2 lg:basis-1/3">
+                <div className="p-1 h-full">
+                  <Card className={`h-full ${cardColors[index % cardColors.length]} transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl dark:hover:shadow-primary/20`}>
+                    <CardContent className="flex flex-col items-start gap-4 p-6">
+                      <Badge variant="secondary">{new Date(report.submitted_at).toLocaleDateString()}</Badge>
+                      <p className="font-semibold leading-none">{report.title}</p>
+                      <p className="text-sm text-muted-foreground">SDG {report.sdg_goal}</p>
+                      <Button asChild variant="outline" size="sm" className="mt-auto">
+                        <Link to={`/analytics?tab=reports&id=${report.id}`}>View Project</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
           </CarouselContent>
           <CarouselPrevious />
           <CarouselNext />

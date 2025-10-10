@@ -24,7 +24,7 @@ const Layout = () => {
     });
   };
 
-  const handleUserSelect = (user: MockUser) => {
+  const handleUserSelect = (user: { id: string; full_name: string | null; avatar_url: string | null }) => {
     console.log("Selected user:", user);
     // Future: navigate to user profile page
   };
