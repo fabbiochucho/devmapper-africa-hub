@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Filter, BarChart3 } from "lucide-react"
-import ProjectMap from "@/components/ProjectMap"
+import EnhancedProjectMap from "@/components/map/EnhancedProjectMap"
 import { mockReports, Report } from "@/data/mockReports"
 import { sdgGoalColors, projectStatusColors } from "@/lib/constants"
 
@@ -162,11 +162,11 @@ export default function SdgMapView() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
-              SDG Projects Map
+              SDG Projects Map with Earth Intelligence
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ProjectMap projects={filteredReports} onMarkerClick={handleMarkerClick} />
+            <EnhancedProjectMap />
           </CardContent>
         </Card>
 
