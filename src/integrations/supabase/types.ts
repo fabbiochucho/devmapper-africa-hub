@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenda2063_links: {
+        Row: {
+          agenda_aspiration: number
+          agenda_goal: string
+          alignment_description: string
+          created_at: string | null
+          data_source: string | null
+          id: string
+          indicator_code: string | null
+          sdg_goal: number
+          sdg_target: string
+        }
+        Insert: {
+          agenda_aspiration: number
+          agenda_goal: string
+          alignment_description: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          indicator_code?: string | null
+          sdg_goal: number
+          sdg_target: string
+        }
+        Update: {
+          agenda_aspiration?: number
+          agenda_goal?: string
+          alignment_description?: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          indicator_code?: string | null
+          sdg_goal?: number
+          sdg_target?: string
+        }
+        Relationships: []
+      }
       alphaearth_cache: {
         Row: {
           cache_key: string
@@ -618,6 +654,30 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          feature: string
+          id: string
+          plan: Database["public"]["Enums"]["plan_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature: string
+          id?: string
+          plan: Database["public"]["Enums"]["plan_type"]
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["plan_type"]
+        }
+        Relationships: []
+      }
       forum_post_likes: {
         Row: {
           created_at: string
@@ -912,8 +972,11 @@ export type Database = {
           esg_enabled: boolean | null
           esg_scenarios_limit: number | null
           esg_suppliers_limit: number | null
+          feature_flags: Json | null
           id: string
           name: string
+          plan_expires_at: string | null
+          plan_started_at: string | null
           plan_type: string
           primary_sector: string | null
           reporting_year: number | null
@@ -926,8 +989,11 @@ export type Database = {
           esg_enabled?: boolean | null
           esg_scenarios_limit?: number | null
           esg_suppliers_limit?: number | null
+          feature_flags?: Json | null
           id?: string
           name: string
+          plan_expires_at?: string | null
+          plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
           reporting_year?: number | null
@@ -940,8 +1006,11 @@ export type Database = {
           esg_enabled?: boolean | null
           esg_scenarios_limit?: number | null
           esg_suppliers_limit?: number | null
+          feature_flags?: Json | null
           id?: string
           name?: string
+          plan_expires_at?: string | null
+          plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
           reporting_year?: number | null
@@ -1269,9 +1338,22 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_feature: {
+        Args: { p_feature: string; p_user_id: string }
+        Returns: boolean
+      }
       check_webhook_processed: {
         Args: { p_event_id: string; p_provider: string }
         Returns: boolean
+      }
+      get_agenda2063_for_sdg: {
+        Args: { p_sdg_goal: number }
+        Returns: {
+          aspiration: number
+          data_source: string
+          description: string
+          goal: string
+        }[]
       }
       get_dashboard_stats: {
         Args: Record<PropertyKey, never>
@@ -1325,6 +1407,7 @@ export type Database = {
         | "platform_admin"
         | "change_maker"
         | "citizen_reporter"
+      plan_type: "free" | "lite" | "pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1462,6 +1545,7 @@ export const Constants = {
         "change_maker",
         "citizen_reporter",
       ],
+      plan_type: ["free", "lite", "pro"],
     },
   },
 } as const
