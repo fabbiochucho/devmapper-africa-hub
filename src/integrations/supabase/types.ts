@@ -95,6 +95,7 @@ export type Database = {
           event_type: string
           id: string
           ip_address: unknown | null
+          organization_id: string | null
           page_url: string | null
           referrer: string | null
           user_agent: string | null
@@ -106,6 +107,7 @@ export type Database = {
           event_type: string
           id?: string
           ip_address?: unknown | null
+          organization_id?: string | null
           page_url?: string | null
           referrer?: string | null
           user_agent?: string | null
@@ -117,12 +119,21 @@ export type Database = {
           event_type?: string
           id?: string
           ip_address?: unknown | null
+          organization_id?: string | null
           page_url?: string | null
           referrer?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
