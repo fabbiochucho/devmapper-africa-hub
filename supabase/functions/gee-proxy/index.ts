@@ -69,16 +69,7 @@ serve(async (req) => {
     // For now, return mock data until GEE service account is configured
     console.log('[GEE-PROXY] Cache miss, generating mock response');
     
-    const mockData = {
-      type: body.type,
-      bounds: body.bounds,
-      data: generateMockGEEData(body.type, body.bounds),
-      metadata: {
-        source: 'Google Earth Engine',
-        generated_at: new Date().toISOString(),
-        note: 'Mock data - Configure GEE_SERVICE_ACCOUNT for real data'
-      }
-    };
+    const mockData = generateMockGEEData(body.type, body.bounds);
 
     // Cache the response
     await supabaseClient
@@ -114,32 +105,44 @@ serve(async (req) => {
 });
 
 function generateMockGEEData(type: string, bounds: any) {
-  const resolution = 0.01; // ~1km resolution
+  const resolution = 0.1; // Coarser resolution for demo
   const data = [];
   
-  for (let lat = bounds.south; lat < bounds.north; lat += resolution) {
-    for (let lng = bounds.west; lng < bounds.east; lng += resolution) {
+  // Limit bounds to reasonable size
+  const latDiff = Math.min(bounds.north - bounds.south, 10);
+  const lngDiff = Math.min(bounds.east - bounds.west, 10);
+  
+  for (let lat = bounds.south; lat < bounds.south + latDiff; lat += resolution) {
+    for (let lng = bounds.west; lng < bounds.west + lngDiff; lng += resolution) {
       let value;
       switch (type) {
         case 'ndvi':
-          // NDVI ranges from -1 to 1, vegetation is typically 0.2 to 0.8
           value = 0.3 + Math.random() * 0.5;
           break;
         case 'water':
-          // Water mask: 0 = no water, 1 = water
           value = Math.random() > 0.8 ? 1 : 0;
           break;
         case 'urban':
-          // Urban density: 0 to 1
           value = Math.random() * 0.7;
           break;
         default:
           value = Math.random();
       }
       
-      data.push({ lat, lng, value });
+      if (value > 0.1) { // Only include non-zero values
+        data.push({ lat, lng, value });
+      }
     }
   }
   
-  return data.slice(0, 100); // Limit response size for demo
+  return {
+    type,
+    bounds,
+    data: data.slice(0, 500),
+    metadata: {
+      source: 'Google Earth Engine (Mock)',
+      generated_at: new Date().toISOString(),
+      note: 'Mock data - Configure GEE_SERVICE_ACCOUNT for real data'
+    }
+  };
 }

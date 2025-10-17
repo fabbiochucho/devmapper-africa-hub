@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Leaf, Droplets, Building, Flame } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import UpgradePrompt from '@/components/UpgradePrompt';
 
 interface GeoLayersProps {
   map: maplibregl.Map | null;
@@ -22,6 +24,7 @@ interface LayerState {
 }
 
 export default function GeoLayers({ map }: GeoLayersProps) {
+  const { canAccess, loading: featureLoading } = useFeatureAccess();
   const [layers, setLayers] = useState<LayerState>({
     ndvi: false,
     water: false,
@@ -29,6 +32,9 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     emissions: false
   });
   const [loading, setLoading] = useState<Partial<Record<LayerType, boolean>>>({});
+
+  const hasEarthIntel = canAccess('view_earth_intelligence');
+  const hasAdvancedIntel = canAccess('advanced_earth_intel');
 
   const toggleLayer = async (layerType: LayerType) => {
     if (!map) {
@@ -91,7 +97,14 @@ export default function GeoLayers({ map }: GeoLayersProps) {
         body: requestData
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[GeoLayers] Edge function error:', error);
+        throw new Error(error.message || 'Edge Function returned an error');
+      }
+
+      if (!data || !data.data) {
+        throw new Error('No data returned from Earth Intelligence service');
+      }
 
       // Add layer to map
       addLayerToMap(layerType, data);
@@ -218,6 +231,25 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     };
     return configs[layerType];
   };
+
+  if (featureLoading) {
+    return (
+      <Card className="absolute top-4 right-4 z-10 p-4 bg-background/95 backdrop-blur">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-muted rounded w-3/4"></div>
+          <div className="h-8 bg-muted rounded"></div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!hasEarthIntel) {
+    return (
+      <Card className="absolute top-4 right-4 z-10 p-4 bg-background/95 backdrop-blur max-w-sm">
+        <UpgradePrompt feature="Earth Intelligence Layers" requiredPlan="lite" inline />
+      </Card>
+    );
+  }
 
   return (
     <Card className="absolute top-4 right-4 z-10 p-4 bg-background/95 backdrop-blur">
