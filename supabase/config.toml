@@ -46,5 +46,11 @@ verify_jwt = true
 [functions.climatetrace-proxy]
 verify_jwt = true
 
+[functions.alphaearth-proxy]
+verify_jwt = true
+
+[functions.send-downgrade-email]
+verify_jwt = false
+
 [edge_runtime]
 policy = "oneshot"
