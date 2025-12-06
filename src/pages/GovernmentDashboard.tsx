@@ -4,49 +4,64 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { getGovernmentDashboardData, GovernmentDashboardData } from "@/data/mockGovernmentDashboard";
-import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2 } from "lucide-react";
 import { sdgGoalColors, sdgGoals } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-interface UserType {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  verified: boolean;
-  organization?: string;
-  country?: string;
-  country_code?: string;
+interface UserProfile {
+  full_name: string | null;
+  country: string | null;
+  organization: string | null;
 }
 
 const GovernmentDashboard = () => {
+    const { user: authUser, loading: authLoading } = useAuth();
     const [data, setData] = useState<GovernmentDashboardData | null>(null);
-    const [user, setUser] = useState<UserType | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
     
     useEffect(() => {
-        const userData = localStorage.getItem("user");
-        if (userData) {
+        const loadDashboardData = async () => {
             try {
-                const parsedUser = JSON.parse(userData);
-                setUser(parsedUser);
-                const userCountryCode = parsedUser.country_code || "DEFAULT";
-                const dashboardData = getGovernmentDashboardData(userCountryCode);
+                let countryCode = "DEFAULT";
+                
+                // Get user profile from Supabase if authenticated
+                if (authUser) {
+                    const { data: profileData } = await supabase
+                        .from('profiles')
+                        .select('full_name, country, organization')
+                        .eq('user_id', authUser.id)
+                        .single();
+                    
+                    if (profileData) {
+                        setProfile(profileData);
+                        // Map country name to code if available
+                        countryCode = profileData.country || "DEFAULT";
+                    }
+                }
+                
+                const dashboardData = getGovernmentDashboardData(countryCode);
                 setData(dashboardData);
-            } catch {
-                // Silent fail - load default data
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
                 const dashboardData = getGovernmentDashboardData("DEFAULT");
                 setData(dashboardData);
+            } finally {
+                setLoading(false);
             }
-        } else {
-             const dashboardData = getGovernmentDashboardData("DEFAULT");
-             setData(dashboardData);
-        }
-    }, []);
+        };
 
-    if (!data) {
+        if (!authLoading) {
+            loadDashboardData();
+        }
+    }, [authUser, authLoading]);
+
+    if (loading || authLoading || !data) {
         return (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
         )
     }
@@ -72,7 +87,7 @@ const GovernmentDashboard = () => {
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <LayoutDashboard className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-bold">Government Dashboard {user?.country && `- ${user.country}`}</h1>
+                <h1 className="text-3xl font-bold">Government Dashboard {profile?.country && `- ${profile.country}`}</h1>
             </div>
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
