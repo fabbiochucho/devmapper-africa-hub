@@ -94,7 +94,7 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           organization_id: string | null
           page_url: string | null
           referrer: string | null
@@ -106,7 +106,7 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           organization_id?: string | null
           page_url?: string | null
           referrer?: string | null
@@ -118,7 +118,7 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           organization_id?: string | null
           page_url?: string | null
           referrer?: string | null
@@ -1367,7 +1367,7 @@ export type Database = {
         }[]
       }
       get_dashboard_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           countries_count: number
           last_updated: string
