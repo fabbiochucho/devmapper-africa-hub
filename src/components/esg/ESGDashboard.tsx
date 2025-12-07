@@ -33,6 +33,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { getBenchmarkForOrg } from '@/lib/alphaearth';
 import ESGScenarioAnalysis from './ESGScenarioAnalysis';
+import ESGReportGenerator from './ESGReportGenerator';
+import ESGDataVerification from './ESGDataVerification';
+import SupplierCSVImporter from './SupplierCSVImporter';
 import ExportManager from '@/components/export/ExportManager';
 
 interface ESGIndicators {
@@ -314,13 +317,14 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="emissions">Emissions</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
-          <TabsTrigger value="export">Export</TabsTrigger>
+          <TabsTrigger value="verification">Verification</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -440,7 +444,14 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           />
         </TabsContent>
 
-        <TabsContent value="suppliers">
+        <TabsContent value="suppliers" className="space-y-6">
+          {/* CSV Importer */}
+          <SupplierCSVImporter 
+            organizationId={organizationId}
+            onImportComplete={() => loadESGData()}
+          />
+
+          {/* Supplier List */}
           <Card>
             <CardHeader>
               <CardTitle>Supplier Emissions</CardTitle>
@@ -465,7 +476,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  No suppliers added yet. Add suppliers to track Scope 3 emissions.
+                  No suppliers added yet. Use the importer above or add suppliers manually.
                 </p>
               )}
             </CardContent>
@@ -493,23 +504,25 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="export">
-          <Card>
-            <CardHeader>
-            <CardTitle>Export ESG Data</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ExportManager
-                organizationName={organization.name}
-                planType={organization.plan_type as 'free' | 'lite' | 'pro'}
-                availableData={[
-                  { type: 'esg_indicators', label: 'ESG Indicators', data: indicators },
-                  { type: 'esg_suppliers', label: 'Suppliers', data: suppliers },
-                  { type: 'esg_scenarios', label: 'Scenarios', data: scenarios }
-                ]}
-              />
-            </CardContent>
-          </Card>
+        <TabsContent value="verification">
+          <ESGDataVerification
+            organizationId={organizationId}
+            indicatorId={latestIndicators?.id}
+            currentStatus={(latestIndicators?.verification_status as 'unverified' | 'pending' | 'verified' | 'rejected') || 'unverified'}
+            onStatusChange={() => loadESGData()}
+          />
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <ESGReportGenerator
+            organizationName={organization.name}
+            organizationId={organizationId}
+            indicators={indicators}
+            suppliers={suppliers}
+            scenarios={scenarios}
+            benchmark={benchmark}
+            planType={organization.plan_type as 'free' | 'lite' | 'pro'}
+          />
         </TabsContent>
       </Tabs>
     </div>
