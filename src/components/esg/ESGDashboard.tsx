@@ -23,19 +23,17 @@ import {
   Leaf, 
   Factory, 
   Zap, 
-  Droplets, 
-  Trash2, 
   TrendingUp, 
   TrendingDown,
   Target,
-  FileText,
   Users,
-  Calendar,
   AlertTriangle,
   CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getBenchmarkForOrg } from '@/lib/alphaearth';
+import ESGScenarioAnalysis from './ESGScenarioAnalysis';
+import ExportManager from '@/components/export/ExportManager';
 
 interface ESGIndicators {
   id: string;
@@ -304,6 +302,17 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         </Card>
       </div>
 
+      {/* Export Manager in header */}
+      <ExportManager
+        organizationName={organization.name}
+        planType={organization.plan_type as 'free' | 'lite' | 'pro'}
+        availableData={[
+          { type: 'esg_indicators', label: 'ESG Indicators', data: indicators },
+          { type: 'esg_suppliers', label: 'Suppliers', data: suppliers },
+          { type: 'esg_scenarios', label: 'Scenarios', data: scenarios }
+        ]}
+      />
+
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -311,6 +320,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
+          <TabsTrigger value="export">Export</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -418,7 +428,89 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           </Card>
         </TabsContent>
 
-        {/* Other tabs would be implemented similarly */}
+        <TabsContent value="scenarios">
+          <ESGScenarioAnalysis 
+            organizationId={organizationId}
+            currentEmissions={{
+              scope1: latestIndicators?.carbon_scope1_tonnes || 0,
+              scope2: latestIndicators?.carbon_scope2_tonnes || 0,
+              scope3: latestIndicators?.carbon_scope3_tonnes || 0
+            }}
+            scenariosLimit={organization.esg_scenarios_limit || 0}
+          />
+        </TabsContent>
+
+        <TabsContent value="suppliers">
+          <Card>
+            <CardHeader>
+              <CardTitle>Supplier Emissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {suppliers.length > 0 ? (
+                <div className="space-y-4">
+                  {suppliers.map((supplier) => (
+                    <div key={supplier.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{supplier.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {supplier.sector} • {supplier.country_code}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">${(supplier.annual_spend || 0).toLocaleString()}</div>
+                        <div className="text-sm text-muted-foreground">Annual Spend</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">
+                  No suppliers added yet. Add suppliers to track Scope 3 emissions.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="emissions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Emissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={emissionsData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="scope1" name="Scope 1" fill="#ef4444" />
+                  <Bar dataKey="scope2" name="Scope 2" fill="#f97316" />
+                  <Bar dataKey="scope3" name="Scope 3" fill="#eab308" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="export">
+          <Card>
+            <CardHeader>
+            <CardTitle>Export ESG Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ExportManager
+                organizationName={organization.name}
+                planType={organization.plan_type as 'free' | 'lite' | 'pro'}
+                availableData={[
+                  { type: 'esg_indicators', label: 'ESG Indicators', data: indicators },
+                  { type: 'esg_suppliers', label: 'Suppliers', data: suppliers },
+                  { type: 'esg_scenarios', label: 'Scenarios', data: scenarios }
+                ]}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
