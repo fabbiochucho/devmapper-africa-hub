@@ -6,13 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -22,18 +25,65 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const validateInputs = (isSignUp: boolean): string | null => {
+    if (!email.trim()) return 'Email is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email format';
+    if (!password) return 'Password is required';
+    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (isSignUp && !fullName.trim()) return 'Full name is required';
+    return null;
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    
+    const validationError = validateInputs(false);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    
     setLoading(true);
-    await signIn(email, password);
+    const { error } = await signIn(email.trim(), password);
     setLoading(false);
+    
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials.');
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Please confirm your email before signing in. Check your inbox.');
+      } else {
+        setError(error.message);
+      }
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    
+    const validationError = validateInputs(true);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    
     setLoading(true);
-    await signUp(email, password, fullName);
+    const { error } = await signUp(email.trim(), password, fullName.trim());
     setLoading(false);
+    
+    if (error) {
+      if (error.message.includes('already registered')) {
+        setError('This email is already registered. Try signing in instead.');
+      } else {
+        setError(error.message);
+      }
+    } else {
+      setSuccessMessage('Account created! Please check your email to confirm your account before signing in.');
+    }
   };
 
   return (
@@ -59,11 +109,24 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue="signin" className="w-full" onValueChange={() => { setError(null); setSuccessMessage(null); }}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
+
+              {error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {successMessage && (
+                <Alert className="mt-4 border-green-500 bg-green-50 text-green-800">
+                  <AlertDescription>{successMessage}</AlertDescription>
+                </Alert>
+              )}
 
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
