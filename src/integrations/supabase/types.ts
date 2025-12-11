@@ -385,6 +385,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "corporate_targets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "test_accounts_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       esg_audit_logs: {
@@ -836,6 +843,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "fundraising_campaigns_change_maker_id_fkey"
+            columns: ["change_maker_id"]
+            isOneToOne: false
+            referencedRelation: "test_accounts_view"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       government_projects: {
@@ -906,6 +920,13 @@ export type Database = {
             columns: ["government_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "government_projects_government_id_fkey"
+            columns: ["government_id"]
+            isOneToOne: false
+            referencedRelation: "test_accounts_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1347,8 +1368,28 @@ export type Database = {
         }
         Relationships: []
       }
+      test_accounts_view: {
+        Row: {
+          countries: string[] | null
+          email: string | null
+          full_name: string | null
+          organizations: string[] | null
+          roles: Database["public"]["Enums"]["app_role"][] | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      assign_test_role: {
+        Args: {
+          p_country?: string
+          p_organization?: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: string
+      }
       can_access_feature: {
         Args: { p_feature: string; p_user_id: string }
         Returns: boolean
