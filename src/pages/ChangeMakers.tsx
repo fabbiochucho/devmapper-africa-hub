@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { mockChangeMakers, ChangeMaker } from "@/data/mockChangeMakers";
 import { sdgGoals } from "@/lib/constants";
 import ChangeMakerMap from "@/components/changemaker/ChangeMakerMap";
 import ChangeMakerAnalytics from "@/components/changemaker/ChangeMakerAnalytics";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const ChangeMakers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,15 +47,21 @@ const ChangeMakers = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Change Makers</h1>
-          <p className="text-muted-foreground">
-            Champions driving sustainable development across Africa
-          </p>
+    <>
+      <SEOHead
+        title="Change Makers - Dev Mapper"
+        description="Discover champions driving sustainable development across Africa. Connect with individuals, NGOs, and organizations making real impact on SDG goals."
+        keywords={['change makers', 'SDG champions', 'Africa sustainability', 'social impact', 'development', 'NGO']}
+      />
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Change Makers</h1>
+            <p className="text-muted-foreground">
+              Champions driving sustainable development across Africa
+            </p>
+          </div>
         </div>
-      </div>
 
       <Tabs defaultValue="list" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -113,74 +121,76 @@ const ChangeMakers = () => {
           {/* Change Makers Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredChangeMakers.map((maker) => (
-              <Card key={maker.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="text-center">
-                  <img
-                    src={maker.photo}
-                    alt={maker.name}
-                    className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
-                  />
-                  <CardTitle className="text-lg">{maker.name}</CardTitle>
-                  <div className="flex items-center justify-center gap-2">
-                    <Badge className={getTypeColor(maker.type)}>
-                      {maker.type.charAt(0).toUpperCase() + maker.type.slice(1)}
-                    </Badge>
-                    {maker.verified && (
-                      <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-center text-sm text-gray-500 mt-2">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {maker.location}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-600 line-clamp-2">{maker.bio}</p>
-                    
-                    <div className="flex flex-wrap gap-1 justify-center">
-                      {maker.sdg_goals.slice(0, 3).map((sdg) => (
-                        <Badge key={sdg} variant="secondary" className="text-xs">
-                          SDG {sdg}
-                        </Badge>
-                      ))}
-                      {maker.sdg_goals.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{maker.sdg_goals.length - 3}
-                        </Badge>
+              <Link key={maker.id} to={`/change-makers/${maker.id}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <CardHeader className="text-center">
+                    <img
+                      src={maker.photo}
+                      alt={maker.name}
+                      className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
+                    />
+                    <CardTitle className="text-lg">{maker.name}</CardTitle>
+                    <div className="flex items-center justify-center gap-2">
+                      <Badge className={getTypeColor(maker.type)}>
+                        {maker.type.charAt(0).toUpperCase() + maker.type.slice(1)}
+                      </Badge>
+                      {maker.verified && (
+                        <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
                       )}
                     </div>
+                    <div className="flex items-center justify-center text-sm text-gray-500 mt-2">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {maker.location}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600 line-clamp-2">{maker.bio}</p>
+                      
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {maker.sdg_goals.slice(0, 3).map((sdg) => (
+                          <Badge key={sdg} variant="secondary" className="text-xs">
+                            SDG {sdg}
+                          </Badge>
+                        ))}
+                        {maker.sdg_goals.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{maker.sdg_goals.length - 3}
+                          </Badge>
+                        )}
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="text-center">
-                        <div className="font-semibold text-green-600">
-                          {maker.impactMetrics.projectsCompleted}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="text-center">
+                          <div className="font-semibold text-green-600">
+                            {maker.impactMetrics.projectsCompleted}
+                          </div>
+                          <div className="text-gray-500">Projects</div>
                         </div>
-                        <div className="text-gray-500">Projects</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-semibold text-blue-600">
-                          {formatCurrency(maker.totalFunding)}
+                        <div className="text-center">
+                          <div className="font-semibold text-blue-600">
+                            {formatCurrency(maker.totalFunding)}
+                          </div>
+                          <div className="text-gray-500">Funded</div>
                         </div>
-                        <div className="text-gray-500">Funded</div>
                       </div>
-                    </div>
 
-                    <div className="text-center">
-                      <div className="font-semibold text-purple-600">
-                        {maker.impactMetrics.livesTouched.toLocaleString()}+
+                      <div className="text-center">
+                        <div className="font-semibold text-purple-600">
+                          {maker.impactMetrics.livesTouched.toLocaleString()}+
+                        </div>
+                        <div className="text-xs text-gray-500">Lives Touched</div>
                       </div>
-                      <div className="text-xs text-gray-500">Lives Touched</div>
-                    </div>
 
-                    <div className="text-center">
-                      <div className="text-xs text-gray-500">
-                        Verification Score: {maker.verification_score}%
+                      <div className="text-center">
+                        <div className="text-xs text-gray-500">
+                          Verification Score: {maker.verification_score}%
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 
@@ -204,6 +214,7 @@ const ChangeMakers = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 };
 

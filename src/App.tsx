@@ -29,6 +29,7 @@ import Contact from "./pages/Contact";
 import SubmitChangeMaker from "./pages/SubmitChangeMaker";
 import ChangeMakers from "./pages/ChangeMakers";
 import ChangeMakerAnalyticsPage from "./pages/ChangeMakerAnalyticsPage";
+import ChangeMakerDetail from "./pages/ChangeMakerDetail";
 import Fundraising from "./pages/Fundraising";
 import Auth from "./pages/Auth";
 import CorporateDashboard from "./pages/CorporateDashboard";
@@ -57,6 +58,7 @@ const App = () => (
                 <Route path="/submit-report" element={<SubmitReport />} />
                 <Route path="/submit-change-maker" element={<SubmitChangeMaker />} />
                 <Route path="/change-makers" element={<ChangeMakers />} />
+                <Route path="/change-makers/:id" element={<ChangeMakerDetail />} />
                 <Route path="/change-maker-analytics" element={<ChangeMakerAnalyticsPage />} />
                 <Route path="/fundraising" element={<Fundraising />} />
                 <Route path="/user-management" element={<UserManagement />} />
