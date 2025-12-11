@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2 } from "lucide-react";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, UserCog } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PartnerManagement from "@/components/admin/PartnerManagement";
+import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
@@ -209,11 +210,12 @@ export default function AdminDashboard() {
       </Card>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="users">User Verification</TabsTrigger>
           <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
           <TabsTrigger value="content">Content Moderation</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
+          <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
@@ -394,6 +396,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="partners">
           <PartnerManagement />
+        </TabsContent>
+
+        <TabsContent value="test-accounts">
+          <TestAccountManager />
         </TabsContent>
 
         <TabsContent value="reports">

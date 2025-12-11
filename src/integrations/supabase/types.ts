@@ -385,13 +385,6 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "corporate_targets_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "test_accounts_view"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       esg_audit_logs: {
@@ -843,13 +836,6 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "fundraising_campaigns_change_maker_id_fkey"
-            columns: ["change_maker_id"]
-            isOneToOne: false
-            referencedRelation: "test_accounts_view"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       government_projects: {
@@ -920,13 +906,6 @@ export type Database = {
             columns: ["government_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "government_projects_government_id_fkey"
-            columns: ["government_id"]
-            isOneToOne: false
-            referencedRelation: "test_accounts_view"
             referencedColumns: ["user_id"]
           },
         ]
@@ -1368,17 +1347,6 @@ export type Database = {
         }
         Relationships: []
       }
-      test_accounts_view: {
-        Row: {
-          countries: string[] | null
-          email: string | null
-          full_name: string | null
-          organizations: string[] | null
-          roles: Database["public"]["Enums"]["app_role"][] | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       assign_test_role: {
@@ -1416,6 +1384,17 @@ export type Database = {
           total_change_makers: number
           total_funds_raised: number
           total_reports: number
+        }[]
+      }
+      get_test_accounts: {
+        Args: never
+        Returns: {
+          countries: string[]
+          email: string
+          full_name: string
+          organizations: string[]
+          roles: Database["public"]["Enums"]["app_role"][]
+          user_id: string
         }[]
       }
       has_role: {
