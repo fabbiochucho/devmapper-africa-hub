@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { UserRole } from "@/contexts/UserRoleContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, MapPin, Users, Target } from "lucide-react";
+import { ArrowRight, Play, MapPin, Users, Target, CheckCircle } from "lucide-react";
 
 interface UserType {
   id: number;
@@ -39,15 +39,15 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
 
   return (
     <section className="relative min-h-[600px] flex items-center overflow-hidden">
-      {/* Enhanced gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-emerald-600 to-teal-700" />
+      {/* Enhanced gradient background using semantic tokens */}
+      <div className="absolute inset-0 bg-primary" />
       
       {/* Animated background patterns */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-20 left-20 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-emerald-300/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-20 left-20 w-64 h-64 bg-primary-foreground/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-primary-foreground/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
       </div>
       
@@ -63,20 +63,20 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-white/90 text-sm mb-6">
+            <div className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full text-primary-foreground/90 text-sm mb-6">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-foreground"></span>
               </span>
               Live tracking across 54 African nations
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 min-h-[120px] md:min-h-[144px]">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 min-h-[120px] md:min-h-[144px]">
               {typedTitle}
-              {!titleIsFinished && <span className="inline-block animate-pulse w-1 h-12 bg-white ml-1"></span>}
+              {!titleIsFinished && <span className="inline-block animate-pulse w-1 h-12 bg-primary-foreground ml-1"></span>}
             </h1>
             
-            <p className="text-xl text-white/90 mb-8 max-w-xl mx-auto lg:mx-0">
+            <p className="text-xl text-primary-foreground/90 mb-8 max-w-xl mx-auto lg:mx-0">
               DevMapper empowers communities to report, verify, and track development projects 
               aligned with the UN Sustainable Development Goals and AU Agenda 2063.
             </p>
@@ -85,7 +85,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
                   size="lg"
-                  className="bg-white text-primary hover:bg-white/90 font-semibold text-lg px-8 py-6 h-auto group"
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold text-lg px-8 py-6 h-auto group"
                   onClick={() => setShowAuthModal(true)}
                 >
                   Get Started Free
@@ -94,7 +94,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white text-white hover:bg-white/10 font-semibold text-lg px-8 py-6 h-auto"
+                  className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-lg px-8 py-6 h-auto"
                   asChild
                 >
                   <Link to="/about">
@@ -108,46 +108,44 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
 
           {/* Right content - Stats cards */}
           <div className="hidden lg:grid grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-colors">
+            <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/20 hover:bg-primary-foreground/15 transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <MapPin className="h-5 w-5 text-white" />
+                <div className="p-2 bg-primary-foreground/20 rounded-lg">
+                  <MapPin className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-white/80 text-sm font-medium">Projects Mapped</span>
+                <span className="text-primary-foreground/80 text-sm font-medium">Projects Mapped</span>
               </div>
-              <p className="text-3xl font-bold text-white">10,000+</p>
+              <p className="text-3xl font-bold text-primary-foreground">10,000+</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-colors">
+            <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/20 hover:bg-primary-foreground/15 transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Users className="h-5 w-5 text-white" />
+                <div className="p-2 bg-primary-foreground/20 rounded-lg">
+                  <Users className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-white/80 text-sm font-medium">Active Users</span>
+                <span className="text-primary-foreground/80 text-sm font-medium">Active Users</span>
               </div>
-              <p className="text-3xl font-bold text-white">5,000+</p>
+              <p className="text-3xl font-bold text-primary-foreground">5,000+</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-colors">
+            <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/20 hover:bg-primary-foreground/15 transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Target className="h-5 w-5 text-white" />
+                <div className="p-2 bg-primary-foreground/20 rounded-lg">
+                  <Target className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-white/80 text-sm font-medium">SDG Goals Tracked</span>
+                <span className="text-primary-foreground/80 text-sm font-medium">SDG Goals Tracked</span>
               </div>
-              <p className="text-3xl font-bold text-white">17</p>
+              <p className="text-3xl font-bold text-primary-foreground">17</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-colors">
+            <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/20 hover:bg-primary-foreground/15 transition-colors">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-emerald-400/30 rounded-lg">
-                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
+                <div className="p-2 bg-primary-foreground/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-white/80 text-sm font-medium">Verified Reports</span>
+                <span className="text-primary-foreground/80 text-sm font-medium">Verified Reports</span>
               </div>
-              <p className="text-3xl font-bold text-white">8,500+</p>
+              <p className="text-3xl font-bold text-primary-foreground">8,500+</p>
             </div>
           </div>
         </div>
