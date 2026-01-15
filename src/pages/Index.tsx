@@ -13,15 +13,15 @@ import SocialFeed from "@/components/landing/SocialFeed";
 import UnifiedDashboard from "@/components/UnifiedDashboard";
 import PartnersCarousel from "@/components/landing/PartnersCarousel";
 import PageFooter from "@/components/landing/PageFooter";
+import FeaturesGridSection from "@/components/landing/FeaturesGridSection";
+import FinalCTASection from "@/components/landing/FinalCTASection";
 import { useState } from "react";
 
 export default function Index() {
   const { user: authUser, loading } = useAuth();
   const { isAuthenticated, loading: roleLoading } = useUserRole();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [selectedMapProject, setSelectedMapProject] = useState<any | null>(null);
 
-  // Show loading state while authentication is being determined
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -33,14 +33,9 @@ export default function Index() {
     );
   }
 
-  // If user is authenticated, show the unified dashboard
   if (isAuthenticated && authUser) {
     return <UnifiedDashboard />;
   }
-
-  const handleProjectSelect = (project: any) => {
-    setSelectedMapProject(project?.id === selectedMapProject?.id ? null : project);
-  };
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
@@ -53,12 +48,14 @@ export default function Index() {
       <main>
         <HeroSection user={null} setShowAuthModal={setShowAuthModal} />
         <StatsSection />
+        <FeaturesGridSection />
         <ChangeMakersSection />
         <HowItWorksSection />
         <MapSection />
         <RecentProjects />
         <SocialFeed />
         <PartnersCarousel />
+        <FinalCTASection onGetStarted={() => setShowAuthModal(true)} />
       </main>
 
       <PageFooter />
