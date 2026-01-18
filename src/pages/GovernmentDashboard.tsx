@@ -1,14 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { getGovernmentDashboardData, GovernmentDashboardData } from "@/data/mockGovernmentDashboard";
-import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2 } from "lucide-react";
+import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert } from "lucide-react";
 import { sdgGoalColors, sdgGoals } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   full_name: string | null;
@@ -17,10 +18,11 @@ interface UserProfile {
 }
 
 const GovernmentDashboard = () => {
-    const { user: authUser, loading: authLoading } = useAuth();
+    const { user: authUser, loading: authLoading, hasRole } = useAuth();
     const [data, setData] = useState<GovernmentDashboardData | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     
     useEffect(() => {
         const loadDashboardData = async () => {
@@ -62,6 +64,29 @@ const GovernmentDashboard = () => {
         return (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+        )
+    }
+
+    // Role-based access control
+    if (!hasRole('government_official') && !hasRole('admin') && !hasRole('platform_admin')) {
+        return (
+          <div className="flex items-center justify-center h-full p-8">
+            <Card className="w-full max-w-md text-center">
+              <CardContent className="pt-6">
+                <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
+                <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+                <p className="text-muted-foreground mb-4">
+                  You need to be a Government Official to access this dashboard.
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  If you are a government official, please register with your official government email address (.gov domain).
+                </p>
+                <Button onClick={() => navigate('/auth')} variant="outline">
+                  Register as Government Official
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         )
     }

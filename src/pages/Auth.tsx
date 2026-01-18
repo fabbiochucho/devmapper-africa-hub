@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import RoleSelector from '@/components/auth/RoleSelector';
 import type { UserRole } from '@/contexts/UserRoleContext';
 import { supabase } from '@/integrations/supabase/client';
+import { validateEmailForRole } from '@/lib/emailDomainValidation';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -29,6 +30,13 @@ const Auth = () => {
   
   const { signIn, signUp, signInWithGoogle, signInWithGithub, resetPassword, updatePassword, user } = useAuth();
   const navigate = useNavigate();
+
+  // Validate that the selected role is valid for the entered email
+  const isRoleValid = useMemo(() => {
+    if (!email || !email.includes('@')) return true; // Don't validate until email is entered
+    const result = validateEmailForRole(email, selectedRole);
+    return result.valid;
+  }, [email, selectedRole]);
 
   useEffect(() => {
     if (user && mode !== 'reset') {
@@ -481,6 +489,9 @@ const Auth = () => {
                       placeholder="your.email@example.com"
                       required
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Your email domain determines available roles (e.g., .gov for government, .org for NGO)
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
@@ -494,9 +505,9 @@ const Auth = () => {
                     />
                   </div>
                   
-                  <RoleSelector value={selectedRole} onChange={setSelectedRole} />
+                  <RoleSelector value={selectedRole} onChange={setSelectedRole} email={email} />
                   
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading || !isRoleValid}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
                 </form>
