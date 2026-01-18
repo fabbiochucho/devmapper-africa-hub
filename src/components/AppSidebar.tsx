@@ -89,6 +89,12 @@ const getDashboardItems = (hasRole: (role: UserRole) => boolean, currentRole: Us
     items.push({ title: "NGO Dashboard", url: "/ngo-dashboard", icon: Users });
   }
   
+  if (hasRole('change_maker')) {
+    items.push({ title: "Change Maker Profile", url: "/submit-change-maker", icon: Heart });
+    items.push({ title: "Fundraising", url: "/fundraising", icon: Heart });
+    items.push({ title: "Impact Analytics", url: "/change-maker-analytics", icon: TrendingUp });
+  }
+  
   if (hasRole('admin') || hasRole('platform_admin')) {
     items.push({ title: "Admin Dashboard", url: "/admin-dashboard", icon: Shield });
     items.push({ title: "User Management", url: "/user-management", icon: Users });

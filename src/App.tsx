@@ -88,11 +88,11 @@ const App = () => (
                     <Route path="/esg" element={<ESG />} />
                     <Route path="/billing-upgrade" element={<BillingUpgrade />} />
                     <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
+                    <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
+                    <Route path="/ngo-dashboard" element={<NgoDashboard />} />
+                    <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
-                  <Route path="/ngo-dashboard" element={<NgoDashboard />} />
-                  <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

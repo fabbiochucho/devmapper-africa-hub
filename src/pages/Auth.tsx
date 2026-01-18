@@ -9,6 +9,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, AlertCircle, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import RoleSelector from '@/components/auth/RoleSelector';
+import type { UserRole } from '@/contexts/UserRoleContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -18,6 +21,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -81,18 +85,36 @@ const Auth = () => {
     }
     
     setLoading(true);
-    const { error } = await signUp(email.trim(), password, fullName.trim());
-    setLoading(false);
+    const { error: signUpError, data } = await signUp(email.trim(), password, fullName.trim());
     
-    if (error) {
-      if (error.message.includes('already registered')) {
+    if (signUpError) {
+      setLoading(false);
+      if (signUpError.message.includes('already registered')) {
         setError('This email is already registered. Try signing in instead.');
       } else {
-        setError(error.message);
+        setError(signUpError.message);
       }
-    } else {
-      setSuccessMessage('Account created! Please check your email to confirm your account before signing in.');
+      return;
     }
+    
+    // Assign the selected role after successful signup
+    if (data?.user && selectedRole !== 'citizen_reporter') {
+      try {
+        // The default citizen_reporter role is already assigned by the database trigger
+        // We need to update it to the selected role
+        await supabase
+          .from('user_roles')
+          .update({ role: selectedRole })
+          .eq('user_id', data.user.id)
+          .eq('role', 'citizen_reporter');
+      } catch (roleError) {
+        console.error('Error assigning role:', roleError);
+        // Don't fail signup if role assignment fails
+      }
+    }
+    
+    setLoading(false);
+    setSuccessMessage('Account created! Please check your email to confirm your account before signing in.');
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -471,6 +493,9 @@ const Auth = () => {
                       required
                     />
                   </div>
+                  
+                  <RoleSelector value={selectedRole} onChange={setSelectedRole} />
+                  
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
