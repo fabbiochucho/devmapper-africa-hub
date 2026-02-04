@@ -20,13 +20,21 @@ interface UserDashboardProps {
   user: UserType;
 }
 
+// Helper to get first name
+const getFirstName = (fullName: string) => {
+  if (!fullName) return 'User';
+  return fullName.split(' ')[0];
+};
+
 export default function UserDashboard({ user }: UserDashboardProps) {
+  const firstName = getFirstName(user.name);
+  
   return (
     <section className="py-16 bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h3 className="text-2xl font-bold text-foreground">Welcome back, {user.name}!</h3>
+            <h3 className="text-2xl font-bold text-foreground">Welcome back, {firstName}!</h3>
             <p className="text-muted-foreground">
               Role: {user.role} {user.organization && `• ${user.organization}`}
             </p>

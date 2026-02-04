@@ -90,6 +90,12 @@ const UnifiedDashboard = () => {
     );
   }
 
+  // Helper to get first name
+  const getFirstName = (fullName: string | null) => {
+    if (!fullName) return 'there';
+    return fullName.split(' ')[0];
+  };
+
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {
       'citizen_reporter': 'Citizen Reporter',
@@ -126,7 +132,7 @@ const UnifiedDashboard = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {getRoleIcon(currentRole)}
-            Welcome back, {profile?.full_name || 'User'}!
+            Welcome back, {getFirstName(profile?.full_name)}!
           </CardTitle>
         </CardHeader>
         <CardContent>
