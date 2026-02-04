@@ -1,19 +1,19 @@
-
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Heart, Target, DollarSign, Users, Calendar, MapPin, Share2, MessageCircle, Plus, Upload } from "lucide-react";
+import { Heart, Target, DollarSign, Users, Calendar, MapPin, Share2, MessageCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { DonationDialog } from "@/components/donation/DonationDialog";
 
 interface FundraisingCampaign {
   id: string;
@@ -57,12 +57,15 @@ const SDG_OPTIONS = [
 
 const Fundraising = () => {
   const { user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
   const [campaigns, setCampaigns] = useState<FundraisingCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterSDG, setFilterSDG] = useState<string>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDonationDialog, setShowDonationDialog] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<FundraisingCampaign | null>(null);
   
   // Campaign creation form state
   const [formData, setFormData] = useState({
@@ -79,7 +82,13 @@ const Fundraising = () => {
 
   useEffect(() => {
     fetchCampaigns();
-  }, []);
+    
+    // Check for donation success
+    const donationStatus = searchParams.get('donation');
+    if (donationStatus === 'success') {
+      toast.success('Thank you for your donation! Your contribution will make a real impact.');
+    }
+  }, [searchParams]);
 
   const fetchCampaigns = async () => {
     try {
@@ -209,16 +218,9 @@ const Fundraising = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const handleDonate = async (campaignId: string, amount: number) => {
-    if (!user) {
-      toast.error('Please sign in to donate');
-      return;
-    }
-    
-    // In a real implementation, this would integrate with Stripe
-    toast.success(`Thank you for your donation of $${amount}!`, {
-      description: "Your contribution will make a real impact.",
-    });
+  const handleDonate = (campaign: FundraisingCampaign) => {
+    setSelectedCampaign(campaign);
+    setShowDonationDialog(true);
   };
 
   const handleShare = (campaign: FundraisingCampaign) => {
@@ -539,10 +541,10 @@ const Fundraising = () => {
                 <div className="flex gap-2">
                   <Button 
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    onClick={() => handleDonate(campaign.id, 25)}
+                    onClick={() => handleDonate(campaign)}
                   >
                     <Heart className="w-4 h-4 mr-2" />
-                    Donate $25
+                    Donate
                   </Button>
                   <Button 
                     variant="outline" 
@@ -564,6 +566,14 @@ const Fundraising = () => {
           ))
         )}
       </div>
+
+      {/* Donation Dialog */}
+      <DonationDialog
+        campaign={selectedCampaign}
+        open={showDonationDialog}
+        onOpenChange={setShowDonationDialog}
+        onDonationComplete={fetchCampaigns}
+      />
     </div>
   );
 };
