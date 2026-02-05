@@ -1404,6 +1404,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
       log_audit_event: {
         Args: {
           p_action: string
