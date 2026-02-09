@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import RoleSelector from "./RoleSelector";
+import type { UserRole } from "@/contexts/UserRoleContext";
 
 interface SignUpFormProps {
   onAuthSuccess: () => void;
@@ -18,6 +20,7 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
   
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -28,17 +31,19 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
     },
   });
 
+  const watchedEmail = form.watch('email');
+
   const handleSignUp = async (values: SignUpFormValues) => {
     setIsLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: { full_name: values.name }
+          data: { full_name: values.name, selected_role: selectedRole }
         }
       });
 
@@ -51,6 +56,20 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           });
         }
       } else {
+        // Assign the selected role after sign-up
+        if (data?.user) {
+          setTimeout(async () => {
+            try {
+              await supabase.from('user_roles').insert([{
+                user_id: data.user!.id,
+                role: selectedRole,
+                is_active: true
+              }]);
+            } catch (roleError) {
+              console.error('Error assigning role:', roleError);
+            }
+          }, 1000);
+        }
         toast.success("Check your email to confirm your account!");
         onAuthSuccess();
       }
@@ -104,6 +123,12 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        <RoleSelector 
+          value={selectedRole} 
+          onChange={setSelectedRole} 
+          email={watchedEmail} 
         />
         
         <Button type="submit" className="w-full" disabled={isLoading}>

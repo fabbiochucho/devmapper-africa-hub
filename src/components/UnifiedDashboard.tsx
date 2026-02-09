@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useUserRole } from "@/contexts/UserRoleContext";
+import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, Building2, Target, Globe, TrendingUp, 
@@ -20,7 +21,7 @@ interface DashboardStats {
 }
 
 const UnifiedDashboard = () => {
-  const { currentRole, roles, hasRole } = useUserRole();
+  const { currentRole, roles, hasRole, setCurrentRole } = useUserRole();
   const { user, profile } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
     userReports: 0,
@@ -35,7 +36,6 @@ const UnifiedDashboard = () => {
       if (!user?.id) return;
       
       try {
-        // Fetch user's reports
         const { data: userReports, error: reportsError } = await supabase
           .from('reports')
           .select('*')
@@ -43,7 +43,6 @@ const UnifiedDashboard = () => {
 
         if (reportsError) throw reportsError;
 
-        // Fetch user's verifications
         const { data: userVerifications, error: verificationsError } = await supabase
           .from('verification_logs')
           .select('*')
@@ -51,7 +50,6 @@ const UnifiedDashboard = () => {
 
         if (verificationsError) throw verificationsError;
 
-        // Fetch total system stats
         const { data: allReports, error: allReportsError } = await supabase
           .from('reports')
           .select('cost');
@@ -90,7 +88,6 @@ const UnifiedDashboard = () => {
     );
   }
 
-  // Helper to get first name
   const getFirstName = (fullName: string | null) => {
     if (!fullName) return 'there';
     return fullName.split(' ')[0];
@@ -127,20 +124,37 @@ const UnifiedDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
+      {/* Welcome Header with Role Switcher on same line */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {getRoleIcon(currentRole)}
-            Welcome back, {getFirstName(profile?.full_name)}!
-          </CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <CardTitle className="flex items-center gap-2">
+              {getRoleIcon(currentRole)}
+              Welcome back, {getFirstName(profile?.full_name)}!
+            </CardTitle>
+            {roles.length > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Switch role:</span>
+                <Select value={currentRole} onValueChange={(val) => setCurrentRole(val as UserRole)}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((roleData) => (
+                      <SelectItem key={roleData.role} value={roleData.role}>
+                        {getRoleDisplayName(roleData.role)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {roles.length}
-              </div>
+              <div className="text-2xl font-bold text-primary">{roles.length}</div>
               <p className="text-muted-foreground text-sm">Active Roles</p>
             </div>
             <div className="text-center">
@@ -184,147 +198,70 @@ const UnifiedDashboard = () => {
               <CardContent>
                 {loading ? (
                   <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold animate-pulse">--</div>
-                      <p className="text-sm text-muted-foreground">Loading...</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold animate-pulse">--</div>
-                      <p className="text-sm text-muted-foreground">Loading...</p>
-                    </div>
+                    <div><div className="text-lg font-semibold animate-pulse">--</div><p className="text-sm text-muted-foreground">Loading...</p></div>
+                    <div><div className="text-lg font-semibold animate-pulse">--</div><p className="text-sm text-muted-foreground">Loading...</p></div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold text-green-600">{stats.userReports}</div>
-                      <p className="text-sm text-muted-foreground">Reports Submitted</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold text-blue-600">{stats.userVerifications}</div>
-                      <p className="text-sm text-muted-foreground">Verifications Made</p>
-                    </div>
+                    <div><div className="text-lg font-semibold text-green-600">{stats.userReports}</div><p className="text-sm text-muted-foreground">Reports Submitted</p></div>
+                    <div><div className="text-lg font-semibold text-blue-600">{stats.userVerifications}</div><p className="text-sm text-muted-foreground">Verifications Made</p></div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Role-specific features */}
+            {/* Role-specific features - same as before */}
             {hasRole('citizen_reporter') && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Citizen Reporter
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Citizen Reporter</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full" asChild>
-                    <a href="/submit-report">Submit New Report</a>
-                  </Button>
-                  <Button variant="outline" className="w-full" asChild>
-                    <a href="/analytics?tab=reports">View Your Reports</a>
-                  </Button>
+                  <Button className="w-full" asChild><a href="/submit-report">Submit New Report</a></Button>
+                  <Button variant="outline" className="w-full" asChild><a href="/analytics?tab=reports">View Your Reports</a></Button>
                 </CardContent>
               </Card>
             )}
 
-            {/* Government Official Features */}
             {hasRole('government_official') && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Government Dashboard
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" />Government Dashboard</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full" asChild>
-                    <a href="/government-dashboard">View Full Dashboard</a>
-                  </Button>
+                  <Button className="w-full" asChild><a href="/government-dashboard">View Full Dashboard</a></Button>
                   <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-semibold text-blue-600">{stats.totalProjects}</div>
-                      <p className="text-sm text-muted-foreground">Total Projects</p>
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold text-green-600">
-                        ${(stats.totalFunding / 1000000).toFixed(1)}M
-                      </div>
-                      <p className="text-sm text-muted-foreground">Total Funding</p>
-                    </div>
+                    <div><div className="text-lg font-semibold text-blue-600">{stats.totalProjects}</div><p className="text-sm text-muted-foreground">Total Projects</p></div>
+                    <div><div className="text-lg font-semibold text-green-600">${(stats.totalFunding / 1000000).toFixed(1)}M</div><p className="text-sm text-muted-foreground">Total Funding</p></div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Corporate Features */}
             {hasRole('company_representative') && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Corporate ESG Dashboard
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full" asChild>
-                    <a href="/corporate-dashboard">Manage ESG Targets</a>
-                  </Button>
-                </CardContent>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Corporate ESG Dashboard</CardTitle></CardHeader>
+                <CardContent className="space-y-4"><Button className="w-full" asChild><a href="/corporate-dashboard">Manage ESG Targets</a></Button></CardContent>
               </Card>
             )}
 
-            {/* NGO Features */}
             {hasRole('ngo_member') && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5" />
-                    NGO Dashboard
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full" asChild>
-                    <a href="/ngo-dashboard">View NGO Dashboard</a>
-                  </Button>
-                </CardContent>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Heart className="h-5 w-5" />NGO Dashboard</CardTitle></CardHeader>
+                <CardContent className="space-y-4"><Button className="w-full" asChild><a href="/ngo-dashboard">View NGO Dashboard</a></Button></CardContent>
               </Card>
             )}
 
-            {/* Change Maker Features */}
             {hasRole('change_maker') && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserCheck className="h-5 w-5" />
-                    Change Maker Profile
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full" asChild>
-                    <a href="/submit-change-maker">Update Profile</a>
-                  </Button>
-                </CardContent>
+                <CardHeader><CardTitle className="flex items-center gap-2"><UserCheck className="h-5 w-5" />Change Maker Profile</CardTitle></CardHeader>
+                <CardContent className="space-y-4"><Button className="w-full" asChild><a href="/submit-change-maker">Update Profile</a></Button></CardContent>
               </Card>
             )}
 
-            {/* Admin Features */}
             {(hasRole('admin') || hasRole('platform_admin')) && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Admin Controls
-                  </CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" />Admin Controls</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" asChild>
-                      <a href="/admin-dashboard">Admin Dashboard</a>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <a href="/user-management">User Management</a>
-                    </Button>
+                    <Button variant="outline" asChild><a href="/admin-dashboard">Admin Dashboard</a></Button>
+                    <Button variant="outline" asChild><a href="/user-management">User Management</a></Button>
                   </div>
                 </CardContent>
               </Card>
@@ -334,16 +271,10 @@ const UnifiedDashboard = () => {
 
         <TabsContent value="analytics">
           <Card>
-            <CardHeader>
-              <CardTitle>Analytics & Insights</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Analytics & Insights</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" asChild>
-                <a href="/analytics">View Full Analytics Dashboard</a>
-              </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <a href="/sdg-agenda2063">SDG-Agenda 2063 Alignment</a>
-              </Button>
+              <Button className="w-full" asChild><a href="/analytics">View Full Analytics Dashboard</a></Button>
+              <Button variant="outline" className="w-full" asChild><a href="/sdg-agenda2063">SDG-Agenda 2063 Alignment</a></Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -351,36 +282,19 @@ const UnifiedDashboard = () => {
         <TabsContent value="actions">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/submit-report">Submit Report</a>
-                </Button>
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/fundraising">Browse Campaigns</a>
-                </Button>
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/change-makers">Find Change Makers</a>
-                </Button>
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/forum">Join Discussion</a>
-                </Button>
+                <Button className="w-full" variant="outline" asChild><a href="/submit-report">Submit Report</a></Button>
+                <Button className="w-full" variant="outline" asChild><a href="/fundraising">Browse Campaigns</a></Button>
+                <Button className="w-full" variant="outline" asChild><a href="/change-makers">Find Change Makers</a></Button>
+                <Button className="w-full" variant="outline" asChild><a href="/forum">Join Discussion</a></Button>
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader>
-                <CardTitle>Community</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Community</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/messages">Messages</a>
-                </Button>
-                <Button className="w-full" variant="outline" asChild>
-                  <a href="/connect">Connect & Share</a>
-                </Button>
+                <Button className="w-full" variant="outline" asChild><a href="/messages">Messages</a></Button>
+                <Button className="w-full" variant="outline" asChild><a href="/connect">Connect & Share</a></Button>
               </CardContent>
             </Card>
           </div>
@@ -388,20 +302,14 @@ const UnifiedDashboard = () => {
 
         <TabsContent value="settings">
           <Card>
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Account Settings</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline" asChild>
-                <a href="/settings">Manage Profile & Preferences</a>
-              </Button>
+              <Button className="w-full" variant="outline" asChild><a href="/settings">Manage Profile & Preferences</a></Button>
               <div className="border rounded-lg p-4">
                 <h4 className="font-medium mb-2">Current Roles</h4>
                 <div className="flex flex-wrap gap-2">
                   {roles.map((roleData) => (
-                    <Badge key={roleData.role} variant="secondary">
-                      {getRoleDisplayName(roleData.role)}
-                    </Badge>
+                    <Badge key={roleData.role} variant="secondary">{getRoleDisplayName(roleData.role)}</Badge>
                   ))}
                 </div>
               </div>
