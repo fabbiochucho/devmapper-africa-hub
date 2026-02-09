@@ -6,15 +6,52 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, MapPin, Target, Search, Grid, Map, BarChart3 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Users, MapPin, Target, Search, Grid, Map, BarChart3, UserPlus } from "lucide-react";
 import { mockChangeMakers, ChangeMaker } from "@/data/mockChangeMakers";
 import { sdgGoals } from "@/lib/constants";
 import ChangeMakerMap from "@/components/changemaker/ChangeMakerMap";
 import ChangeMakerAnalytics from "@/components/changemaker/ChangeMakerAnalytics";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const ChangeMakers = () => {
+  const { user, profile } = useAuth();
+  const [showNominateDialog, setShowNominateDialog] = useState(false);
+  const [nomineeData, setNomineeData] = useState({ name: '', email: '', reason: '' });
+  const [nominating, setNominating] = useState(false);
+
+  const handleNominate = async () => {
+    if (!nomineeData.email || !nomineeData.name) {
+      toast.error('Please fill in name and email');
+      return;
+    }
+    setNominating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('nominate-changemaker', {
+        body: {
+          nominee_email: nomineeData.email,
+          nominee_name: nomineeData.name,
+          nominator_name: profile?.full_name || 'A community member',
+          reason: nomineeData.reason
+        }
+      });
+      if (error) throw error;
+      toast.success(data?.message || 'Nomination sent successfully!');
+      setShowNominateDialog(false);
+      setNomineeData({ name: '', email: '', reason: '' });
+    } catch (error: any) {
+      console.error('Nomination error:', error);
+      toast.error(error.message || 'Failed to send nomination');
+    } finally {
+      setNominating(false);
+    }
+  };
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterSDG, setFilterSDG] = useState<string>("all");
@@ -61,6 +98,57 @@ const ChangeMakers = () => {
               Champions driving sustainable development across Africa
             </p>
           </div>
+          {user && (
+            <Dialog open={showNominateDialog} onOpenChange={setShowNominateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Nominate Change Maker
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Nominate a Change Maker</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="nominee-name">Nominee Name *</Label>
+                    <Input
+                      id="nominee-name"
+                      value={nomineeData.name}
+                      onChange={(e) => setNomineeData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Full name of the nominee"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="nominee-email">Nominee Email *</Label>
+                    <Input
+                      id="nominee-email"
+                      type="email"
+                      value={nomineeData.email}
+                      onChange={(e) => setNomineeData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="nominee@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="nominee-reason">Reason for Nomination</Label>
+                    <Textarea
+                      id="nominee-reason"
+                      value={nomineeData.reason}
+                      onChange={(e) => setNomineeData(prev => ({ ...prev, reason: e.target.value }))}
+                      placeholder="Why should this person be recognized as a Change Maker?"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setShowNominateDialog(false)}>Cancel</Button>
+                    <Button onClick={handleNominate} disabled={nominating}>
+                      {nominating ? 'Sending...' : 'Send Nomination'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
       <Tabs defaultValue="list" className="w-full">
