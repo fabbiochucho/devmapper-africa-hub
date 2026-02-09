@@ -1,14 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink, Upload, X, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -27,6 +26,9 @@ export default function PartnerManagement() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     logo_url: '',
@@ -41,15 +43,12 @@ export default function PartnerManagement() {
 
   const fetchPartners = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('partners')
         .select('*')
         .order('display_order');
       
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
       setPartners(data || []);
     } catch (error) {
       console.error('Error fetching partners:', error);
@@ -59,21 +58,61 @@ export default function PartnerManagement() {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogoPreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Supabase storage or use data URL
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `partner-logo-${Date.now()}.${fileExt}`;
+      
+      // Convert to base64 data URL for simplicity (works without storage bucket)
+      const base64 = await new Promise<string>((resolve) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.readAsDataURL(file);
+      });
+      
+      setFormData(prev => ({ ...prev, logo_url: base64 }));
+      toast.success('Logo uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast.error('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setFormData(prev => ({ ...prev, logo_url: '' }));
+    setLogoPreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
     if (!formData.name.trim()) {
       toast.error('Partner name is required');
       return;
     }
     
     if (!formData.logo_url.trim()) {
-      toast.error('Logo URL is required');
+      toast.error('Logo is required');
       return;
     }
 
-    // Prepare data for Supabase
     const partnerData = {
       name: formData.name.trim(),
       logo_url: formData.logo_url.trim(),
@@ -81,38 +120,29 @@ export default function PartnerManagement() {
       display_order: Number(formData.display_order) || 0,
       is_active: formData.is_active
     };
-
-    console.log('Submitting partner data:', partnerData);
     
     try {
       if (editingPartner) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('partners')
           .update(partnerData)
           .eq('id', editingPartner.id);
         
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
+        if (error) throw error;
         toast.success('Partner updated successfully');
       } else {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('partners')
           .insert([partnerData]);
         
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
+        if (error) throw error;
         toast.success('Partner added successfully');
       }
       
       setShowDialog(false);
-      setEditingPartner(null);
-      setFormData({ name: '', logo_url: '', website_url: '', display_order: 0, is_active: true });
+      resetForm();
       fetchPartners();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving partner:', error);
       toast.error(`Failed to ${editingPartner ? 'update' : 'add'} partner: ${error.message || 'Unknown error'}`);
     }
@@ -127,6 +157,7 @@ export default function PartnerManagement() {
       display_order: partner.display_order,
       is_active: partner.is_active
     });
+    setLogoPreview(partner.logo_url);
     setShowDialog(true);
   };
 
@@ -134,7 +165,7 @@ export default function PartnerManagement() {
     if (!confirm('Are you sure you want to delete this partner?')) return;
     
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('partners')
         .delete()
         .eq('id', id);
@@ -150,7 +181,7 @@ export default function PartnerManagement() {
 
   const toggleActive = async (id: string, is_active: boolean) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('partners')
         .update({ is_active })
         .eq('id', id);
@@ -167,6 +198,7 @@ export default function PartnerManagement() {
   const resetForm = () => {
     setFormData({ name: '', logo_url: '', website_url: '', display_order: 0, is_active: true });
     setEditingPartner(null);
+    setLogoPreview('');
   };
 
   if (loading) {
@@ -206,27 +238,62 @@ export default function PartnerManagement() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="logo_url">Logo URL *</Label>
-                  <Input
-                    id="logo_url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
-                    required
-                  />
-                  {formData.logo_url && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.logo_url} 
-                        alt="Logo preview" 
-                        className="w-24 h-12 object-contain border rounded"
-                        onError={(e) => {
-                          console.log('Logo preview failed to load');
-                          e.currentTarget.style.display = 'none';
+                  <Label>Logo *</Label>
+                  <div className="space-y-3">
+                    {/* File Upload */}
+                    <div className="flex gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                        className="flex-1"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                      </Button>
+                      {formData.logo_url && (
+                        <Button type="button" variant="destructive" size="icon" onClick={handleRemoveLogo}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Or enter URL */}
+                    <div>
+                      <Label htmlFor="logo_url" className="text-xs text-muted-foreground">Or enter URL</Label>
+                      <Input
+                        id="logo_url"
+                        value={formData.logo_url.startsWith('data:') ? '' : formData.logo_url}
+                        onChange={(e) => {
+                          setFormData({ ...formData, logo_url: e.target.value });
+                          setLogoPreview(e.target.value);
                         }}
+                        placeholder="https://example.com/logo.png"
                       />
                     </div>
-                  )}
+
+                    {/* Preview */}
+                    {(logoPreview || formData.logo_url) && (
+                      <div className="border rounded-lg p-3 flex items-center justify-center bg-muted/50">
+                        <img 
+                          src={logoPreview || formData.logo_url} 
+                          alt="Logo preview" 
+                          className="max-w-[200px] max-h-[80px] object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="website_url">Website URL (Optional)</Label>
@@ -290,7 +357,6 @@ export default function PartnerManagement() {
                     alt={partner.name}
                     className="w-16 h-8 object-contain"
                     onError={(e) => {
-                      console.log(`Logo failed to load for ${partner.name}`);
                       e.currentTarget.src = '/placeholder.svg';
                     }}
                   />
@@ -316,18 +382,10 @@ export default function PartnerManagement() {
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(partner)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(partner)}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(partner.id)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(partner.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
