@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "contactUs": "Contact Us",
+    "signIn": "Sign In",
+    "logout": "Logout",
+    "devMapper": "Dev Mapper",
+    "africaSdgTracker": "Africa SDG Tracker"
+  },
+  "hero": {
+    "liveTracking": "Live tracking across 54 African nations",
+    "title": "Track Sustainable Development Across Africa",
+    "subtitle": "DevMapper empowers communities to report, verify, and track development projects aligned with the UN Sustainable Development Goals and AU Agenda 2063.",
+    "getStarted": "Get Started Free",
+    "watchDemo": "Watch Demo",
+    "projectsMapped": "Projects Mapped",
+    "activeUsers": "Active Users",
+    "sdgGoalsTracked": "SDG Goals Tracked",
+    "verifiedReports": "Verified Reports"
+  },
+  "features": {
+    "badge": "Platform Features",
+    "title": "Everything You Need to Track Impact",
+    "subtitle": "A comprehensive platform designed for communities, organizations, and governments to monitor and celebrate sustainable development.",
+    "interactiveMapping": "Interactive Mapping",
+    "interactiveMappingDesc": "Visualize development projects across Africa with real-time geospatial data and filtering.",
+    "communityVerification": "Community Verification",
+    "communityVerificationDesc": "Crowdsourced verification ensures data accuracy through local community validation.",
+    "realTimeAnalytics": "Real-time Analytics",
+    "realTimeAnalyticsDesc": "Track SDG progress with comprehensive dashboards, charts, and exportable reports.",
+    "sdgAgenda": "SDG & Agenda 2063",
+    "sdgAgendaDesc": "Align projects with UN SDGs and African Union Agenda 2063 goals automatically.",
+    "esgReporting": "ESG Reporting",
+    "esgReportingDesc": "Comprehensive ESG metrics tracking for corporations with scenario analysis tools.",
+    "partnerNetwork": "Partner Network",
+    "partnerNetworkDesc": "Connect with NGOs, governments, and corporations working toward shared goals."
+  },
+  "whyNow": {
+    "badge": "The Moment is Now",
+    "title": "Why Development Tracking Matters",
+    "titleHighlight": "Right Now",
+    "subtitle": "Unprecedented convergence of urgency, opportunity, and technology creates the perfect moment for community-driven development tracking in Africa.",
+    "deadline": "2030 Deadline Approaching",
+    "deadlineDesc": "With only 5 years until the UN SDG deadline, tracking progress has never been more critical. Every project counted brings us closer to achieving global development goals.",
+    "deadlineStat": "5 Years",
+    "deadlineStatLabel": "Until SDG 2030",
+    "momentum": "Africa's Development Momentum",
+    "momentumDesc": "Africa is experiencing unprecedented economic growth and infrastructure development. Capturing this momentum through proper tracking ensures sustainable, equitable progress.",
+    "momentumStat": "$2.5T",
+    "momentumStatLabel": "Projected GDP by 2030",
+    "digital": "Digital Transformation Era",
+    "digitalDesc": "Mobile penetration across Africa has reached new heights, enabling community-driven data collection at scale. Technology is finally meeting the moment.",
+    "digitalStat": "600M+",
+    "digitalStatLabel": "Mobile Users in Africa",
+    "esg": "Global ESG Investment Surge",
+    "esgDesc": "International investors increasingly require ESG-compliant project data. DevMapper bridges the gap between African development and global impact investment standards.",
+    "esgStat": "$50T+",
+    "esgStatLabel": "Global ESG Assets by 2025"
+  },
+  "howItWorks": {
+    "title": "How DevMapper Works",
+    "subtitle": "Our platform connects communities, governments, and organizations to create transparency in development projects.",
+    "reportTitle": "Report Projects",
+    "reportDesc": "Citizens can report development projects in their communities with location data and photos.",
+    "verifyTitle": "Community Verification",
+    "verifyDesc": "Multiple community members verify project details to ensure accuracy and prevent misinformation.",
+    "trackTitle": "Track Progress",
+    "trackDesc": "Monitor project progress against SDG targets with real-time analytics and impact measurements."
+  },
+  "map": {
+    "title": "Explore Projects with Earth Intelligence",
+    "subtitle": "Visually track projects with real-time Earth observation data including vegetation, water, urban development, and emissions."
+  },
+  "impact": {
+    "title": "Our Impact in Numbers",
+    "subtitle": "Real data from real communities driving sustainable development across Africa.",
+    "africanCountries": "African Countries",
+    "africanCountriesDesc": "Coverage across the entire continent",
+    "activeChangeMakers": "Active Change Makers",
+    "activeChangeMakersDesc": "Community members driving impact",
+    "verifiedProjects": "Verified Projects",
+    "verifiedProjectsDesc": "Community-verified development initiatives",
+    "fundsTracked": "Funds Tracked",
+    "fundsTrackedDesc": "Development investment monitored",
+    "partnerOrgs": "Partner Organizations",
+    "partnerOrgsDesc": "NGOs, governments, and corporates",
+    "sdgGoalsMapped": "SDG Goals Mapped",
+    "sdgGoalsMappedDesc": "Full UN SDG framework coverage"
+  },
+  "cta": {
+    "title": "Ready to Map Development in Your Community?",
+    "subtitle": "Join thousands of change makers, NGOs, and governments tracking sustainable development across Africa aligned with UN SDGs and AU Agenda 2063.",
+    "getStarted": "Get Started Free",
+    "scheduleDemo": "Schedule a Demo",
+    "noCreditCard": "No credit card required • Free forever for individual reporters"
+  },
+  "footer": {
+    "tagline": "Empowering communities to track sustainable development across Africa.",
+    "platform": "Platform",
+    "reportProjects": "Report Projects",
+    "verifyData": "Verify Data",
+    "trackProgress": "Track Progress",
+    "analytics": "Analytics",
+    "community": "Community",
+    "guidelines": "Guidelines",
+    "support": "Support",
+    "training": "Training",
+    "resources": "Resources",
+    "connect": "Connect",
+    "telegramBot": "Telegram Bot",
+    "mobileApp": "Mobile App",
+    "apiAccess": "API Access",
+    "partnerships": "Partnerships",
+    "copyright": "© 2025 DevMapper. Built for sustainable development in Africa."
+  },
+  "dashboard": {
+    "welcomeBack": "Welcome back, {{name}}!",
+    "role": "Role"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  }
+}
