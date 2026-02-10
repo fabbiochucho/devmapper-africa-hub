@@ -12,11 +12,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import PageFooter from "./landing/PageFooter";
 import { Badge } from "./ui/badge";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Layout = () => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const { currentRole, setCurrentRole } = useUserRole();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await signOut();
@@ -76,10 +79,11 @@ const Layout = () => {
               </Link>
 
               <div className="flex items-center gap-3">
+                <LanguageSwitcher />
                 <Button variant="outline" size="sm" asChild className="hidden sm:flex">
                   <Link to="/contact">
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Contact Us
+                    {t('nav.contactUs')}
                   </Link>
                 </Button>
 
@@ -93,14 +97,14 @@ const Layout = () => {
                     </span>
                     <Button variant="outline" size="sm" onClick={handleLogout}>
                       <LogOut className="w-4 h-4 mr-1" />
-                      <span className="hidden sm:inline">Logout</span>
+                      <span className="hidden sm:inline">{t('nav.logout')}</span>
                     </Button>
                   </>
                 )}
 
                 {!user && (
                   <Button size="sm" asChild>
-                    <Link to="/auth">Sign In</Link>
+                    <Link to="/auth">{t('nav.signIn')}</Link>
                   </Button>
                 )}
               </div>

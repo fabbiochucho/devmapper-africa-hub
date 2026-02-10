@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "contactUs": "Contacte-nos",
+    "signIn": "Entrar",
+    "logout": "Sair",
+    "devMapper": "Dev Mapper",
+    "africaSdgTracker": "Rastreador ODS África"
+  },
+  "hero": {
+    "liveTracking": "Rastreamento ao vivo em 54 nações africanas",
+    "title": "Rastrear o Desenvolvimento Sustentável em África",
+    "subtitle": "O DevMapper capacita comunidades para reportar, verificar e rastrear projetos de desenvolvimento alinhados com os ODS das Nações Unidas e a Agenda 2063 da UA.",
+    "getStarted": "Começar gratuitamente",
+    "watchDemo": "Ver demonstração",
+    "projectsMapped": "Projetos mapeados",
+    "activeUsers": "Utilizadores ativos",
+    "sdgGoalsTracked": "Objetivos ODS rastreados",
+    "verifiedReports": "Relatórios verificados"
+  },
+  "features": {
+    "badge": "Funcionalidades da plataforma",
+    "title": "Tudo o que precisa para rastrear o impacto",
+    "subtitle": "Uma plataforma abrangente concebida para comunidades, organizações e governos monitorizarem o desenvolvimento sustentável.",
+    "interactiveMapping": "Mapeamento interativo",
+    "interactiveMappingDesc": "Visualize projetos de desenvolvimento em África com dados geoespaciais em tempo real.",
+    "communityVerification": "Verificação comunitária",
+    "communityVerificationDesc": "A verificação colaborativa garante a precisão dos dados através da validação local.",
+    "realTimeAnalytics": "Análises em tempo real",
+    "realTimeAnalyticsDesc": "Acompanhe o progresso dos ODS com painéis abrangentes e relatórios exportáveis.",
+    "sdgAgenda": "ODS & Agenda 2063",
+    "sdgAgendaDesc": "Alinhe projetos automaticamente com os ODS e os objetivos da Agenda 2063 da UA.",
+    "esgReporting": "Relatórios ESG",
+    "esgReportingDesc": "Rastreamento abrangente de métricas ESG para empresas com ferramentas de análise de cenários.",
+    "partnerNetwork": "Rede de parceiros",
+    "partnerNetworkDesc": "Conecte-se com ONGs, governos e empresas que trabalham para objetivos comuns."
+  },
+  "whyNow": {
+    "badge": "O momento é agora",
+    "title": "Por que o rastreamento do desenvolvimento é importante",
+    "titleHighlight": "Agora",
+    "subtitle": "Uma convergência sem precedentes de urgência, oportunidade e tecnologia cria o momento perfeito para o rastreamento comunitário do desenvolvimento em África.",
+    "deadline": "Prazo 2030 a aproximar-se",
+    "deadlineDesc": "Com apenas 5 anos até o prazo dos ODS, o rastreamento do progresso nunca foi tão crítico.",
+    "deadlineStat": "5 anos",
+    "deadlineStatLabel": "Até aos ODS 2030",
+    "momentum": "O impulso de desenvolvimento de África",
+    "momentumDesc": "A África está a experienciar um crescimento económico sem precedentes. Capturar esse impulso garante progresso sustentável.",
+    "momentumStat": "$2,5T",
+    "momentumStatLabel": "PIB projetado até 2030",
+    "digital": "Era da transformação digital",
+    "digitalDesc": "A penetração móvel em África atingiu novos patamares, permitindo a recolha de dados comunitária em escala.",
+    "digitalStat": "600M+",
+    "digitalStatLabel": "Utilizadores móveis em África",
+    "esg": "Aumento global do investimento ESG",
+    "esgDesc": "Os investidores internacionais exigem cada vez mais dados compatíveis com ESG.",
+    "esgStat": "$50T+",
+    "esgStatLabel": "Ativos ESG globais até 2025"
+  },
+  "howItWorks": {
+    "title": "Como funciona o DevMapper",
+    "subtitle": "A nossa plataforma conecta comunidades, governos e organizações para criar transparência em projetos de desenvolvimento.",
+    "reportTitle": "Reportar projetos",
+    "reportDesc": "Os cidadãos podem reportar projetos de desenvolvimento nas suas comunidades com dados de localização e fotos.",
+    "verifyTitle": "Verificação comunitária",
+    "verifyDesc": "Vários membros da comunidade verificam os detalhes do projeto para garantir a precisão.",
+    "trackTitle": "Acompanhar progresso",
+    "trackDesc": "Monitorize o progresso do projeto em relação às metas dos ODS com análises em tempo real."
+  },
+  "map": {
+    "title": "Explore projetos com inteligência terrestre",
+    "subtitle": "Acompanhe visualmente projetos com dados de observação terrestre em tempo real."
+  },
+  "impact": {
+    "title": "O nosso impacto em números",
+    "subtitle": "Dados reais de comunidades reais a impulsionar o desenvolvimento sustentável em África.",
+    "africanCountries": "Países africanos",
+    "africanCountriesDesc": "Cobertura em todo o continente",
+    "activeChangeMakers": "Agentes de mudança ativos",
+    "activeChangeMakersDesc": "Membros da comunidade a impulsionar o impacto",
+    "verifiedProjects": "Projetos verificados",
+    "verifiedProjectsDesc": "Iniciativas de desenvolvimento verificadas pela comunidade",
+    "fundsTracked": "Fundos rastreados",
+    "fundsTrackedDesc": "Investimento de desenvolvimento monitorizado",
+    "partnerOrgs": "Organizações parceiras",
+    "partnerOrgsDesc": "ONGs, governos e empresas",
+    "sdgGoalsMapped": "Objetivos ODS mapeados",
+    "sdgGoalsMappedDesc": "Cobertura completa do quadro ODS das Nações Unidas"
+  },
+  "cta": {
+    "title": "Pronto para mapear o desenvolvimento na sua comunidade?",
+    "subtitle": "Junte-se a milhares de agentes de mudança, ONGs e governos que rastreiam o desenvolvimento sustentável em África.",
+    "getStarted": "Começar gratuitamente",
+    "scheduleDemo": "Agendar uma demonstração",
+    "noCreditCard": "Sem cartão de crédito necessário • Gratuito para sempre para repórteres individuais"
+  },
+  "footer": {
+    "tagline": "Capacitando comunidades para rastrear o desenvolvimento sustentável em África.",
+    "platform": "Plataforma",
+    "reportProjects": "Reportar projetos",
+    "verifyData": "Verificar dados",
+    "trackProgress": "Acompanhar progresso",
+    "analytics": "Análises",
+    "community": "Comunidade",
+    "guidelines": "Diretrizes",
+    "support": "Suporte",
+    "training": "Formação",
+    "resources": "Recursos",
+    "connect": "Conectar",
+    "telegramBot": "Bot Telegram",
+    "mobileApp": "Aplicação móvel",
+    "apiAccess": "Acesso API",
+    "partnerships": "Parcerias",
+    "copyright": "© 2025 DevMapper. Construído para o desenvolvimento sustentável em África."
+  },
+  "dashboard": {
+    "welcomeBack": "Bem-vindo de volta, {{name}}!",
+    "role": "Função"
+  },
+  "languageSwitcher": {
+    "label": "Idioma"
+  }
+}

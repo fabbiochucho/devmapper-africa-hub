@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "contactUs": "Wasiliana nasi",
+    "signIn": "Ingia",
+    "logout": "Toka",
+    "devMapper": "Dev Mapper",
+    "africaSdgTracker": "Mfuatiliaji wa SDG Afrika"
+  },
+  "hero": {
+    "liveTracking": "Ufuatiliaji wa moja kwa moja katika mataifa 54 ya Afrika",
+    "title": "Fuatilia Maendeleo Endelevu Barani Afrika",
+    "subtitle": "DevMapper inawezesha jamii kuripoti, kuthibitisha, na kufuatilia miradi ya maendeleo inayolingana na Malengo ya Maendeleo Endelevu ya UN na Ajenda 2063 ya AU.",
+    "getStarted": "Anza bure",
+    "watchDemo": "Tazama onyesho",
+    "projectsMapped": "Miradi iliyochorwa",
+    "activeUsers": "Watumiaji hai",
+    "sdgGoalsTracked": "Malengo ya SDG yanayofuatiliwa",
+    "verifiedReports": "Ripoti zilizothibitishwa"
+  },
+  "features": {
+    "badge": "Vipengele vya Jukwaa",
+    "title": "Kila kitu unachohitaji kufuatilia athari",
+    "subtitle": "Jukwaa kamili lililobuniwa kwa jamii, mashirika, na serikali kufuatilia maendeleo endelevu.",
+    "interactiveMapping": "Uchoraji wa ramani shirikishi",
+    "interactiveMappingDesc": "Tazama miradi ya maendeleo barani Afrika na data ya kijiografia ya wakati halisi.",
+    "communityVerification": "Uthibitishaji wa jamii",
+    "communityVerificationDesc": "Uthibitishaji wa umma unahakikisha usahihi wa data kupitia uthibitishaji wa ndani.",
+    "realTimeAnalytics": "Uchambuzi wa wakati halisi",
+    "realTimeAnalyticsDesc": "Fuatilia maendeleo ya SDG na dashibodi kamili na ripoti zinazoweza kusafirishwa.",
+    "sdgAgenda": "SDG na Ajenda 2063",
+    "sdgAgendaDesc": "Linganisha miradi na SDG za UN na malengo ya Ajenda 2063 ya AU kiotomatiki.",
+    "esgReporting": "Ripoti za ESG",
+    "esgReportingDesc": "Ufuatiliaji kamili wa vipimo vya ESG kwa mashirika na zana za uchambuzi wa hali.",
+    "partnerNetwork": "Mtandao wa washirika",
+    "partnerNetworkDesc": "Ungana na NGO, serikali, na makampuni yanayofanya kazi kuelekea malengo ya pamoja."
+  },
+  "whyNow": {
+    "badge": "Wakati ni sasa",
+    "title": "Kwa nini ufuatiliaji wa maendeleo ni muhimu",
+    "titleHighlight": "Sasa hivi",
+    "subtitle": "Mkutano wa kipekee wa dharura, fursa, na teknolojia unaunda wakati bora wa ufuatiliaji wa maendeleo unaongozwa na jamii barani Afrika.",
+    "deadline": "Muda wa 2030 unakaribia",
+    "deadlineDesc": "Kwa miaka 5 tu kabla ya muda wa SDG, kufuatilia maendeleo hakujawahi kuwa muhimu zaidi.",
+    "deadlineStat": "Miaka 5",
+    "deadlineStatLabel": "Hadi SDG 2030",
+    "momentum": "Kasi ya maendeleo ya Afrika",
+    "momentumDesc": "Afrika inakabiliwa na ukuaji wa kiuchumi usio na kifani. Kukamata kasi hii kunahakikisha maendeleo endelevu.",
+    "momentumStat": "$2.5T",
+    "momentumStatLabel": "GDP inayokadiriwa kufikia 2030",
+    "digital": "Enzi ya mabadiliko ya kidijitali",
+    "digitalDesc": "Matumizi ya simu za mkononi barani Afrika yamefikia viwango vipya, kuwezesha ukusanyaji wa data ya jamii kwa kiwango kikubwa.",
+    "digitalStat": "600M+",
+    "digitalStatLabel": "Watumiaji wa simu barani Afrika",
+    "esg": "Ongezeko la uwekezaji wa ESG duniani",
+    "esgDesc": "Wawekezaji wa kimataifa wanahitaji data inayolingana na ESG zaidi na zaidi.",
+    "esgStat": "$50T+",
+    "esgStatLabel": "Mali za ESG duniani kufikia 2025"
+  },
+  "howItWorks": {
+    "title": "DevMapper inavyofanya kazi",
+    "subtitle": "Jukwaa letu linaungana jamii, serikali, na mashirika kuunda uwazi katika miradi ya maendeleo.",
+    "reportTitle": "Ripoti miradi",
+    "reportDesc": "Raia wanaweza kuripoti miradi ya maendeleo katika jamii zao na data ya eneo na picha.",
+    "verifyTitle": "Uthibitishaji wa jamii",
+    "verifyDesc": "Wanachama kadhaa wa jamii wanathibitisha maelezo ya mradi kuhakikisha usahihi.",
+    "trackTitle": "Fuatilia maendeleo",
+    "trackDesc": "Fuatilia maendeleo ya mradi dhidi ya malengo ya SDG na uchambuzi wa wakati halisi."
+  },
+  "map": {
+    "title": "Chunguza miradi na akili ya dunia",
+    "subtitle": "Fuatilia miradi kwa kuona na data ya uchunguzi wa dunia wa wakati halisi."
+  },
+  "impact": {
+    "title": "Athari yetu kwa nambari",
+    "subtitle": "Data halisi kutoka kwa jamii halisi zinazoendeleza maendeleo endelevu barani Afrika.",
+    "africanCountries": "Nchi za Afrika",
+    "africanCountriesDesc": "Chanjo katika bara zima",
+    "activeChangeMakers": "Waanzilishi wa mabadiliko hai",
+    "activeChangeMakersDesc": "Wanachama wa jamii wanaoendeleza athari",
+    "verifiedProjects": "Miradi iliyothibitishwa",
+    "verifiedProjectsDesc": "Miradi ya maendeleo iliyothibitishwa na jamii",
+    "fundsTracked": "Fedha zilizofuatiliwa",
+    "fundsTrackedDesc": "Uwekezaji wa maendeleo unaofuatiliwa",
+    "partnerOrgs": "Mashirika washirika",
+    "partnerOrgsDesc": "NGO, serikali, na makampuni",
+    "sdgGoalsMapped": "Malengo ya SDG yaliyochorwa",
+    "sdgGoalsMappedDesc": "Chanjo kamili ya mfumo wa SDG wa UN"
+  },
+  "cta": {
+    "title": "Uko tayari kuchora maendeleo katika jamii yako?",
+    "subtitle": "Jiunge na maelfu ya waanzilishi wa mabadiliko, NGO, na serikali zinazofuatilia maendeleo endelevu barani Afrika.",
+    "getStarted": "Anza bure",
+    "scheduleDemo": "Panga onyesho",
+    "noCreditCard": "Hakuna kadi ya mkopo inayohitajika • Bure milele kwa waripoti binafsi"
+  },
+  "footer": {
+    "tagline": "Kuwezesha jamii kufuatilia maendeleo endelevu barani Afrika.",
+    "platform": "Jukwaa",
+    "reportProjects": "Ripoti miradi",
+    "verifyData": "Thibitisha data",
+    "trackProgress": "Fuatilia maendeleo",
+    "analytics": "Uchambuzi",
+    "community": "Jamii",
+    "guidelines": "Miongozo",
+    "support": "Msaada",
+    "training": "Mafunzo",
+    "resources": "Rasilimali",
+    "connect": "Ungana",
+    "telegramBot": "Bot ya Telegram",
+    "mobileApp": "Programu ya simu",
+    "apiAccess": "Ufikiaji wa API",
+    "partnerships": "Ushirikiano",
+    "copyright": "© 2025 DevMapper. Iliyojengwa kwa maendeleo endelevu barani Afrika."
+  },
+  "dashboard": {
+    "welcomeBack": "Karibu tena, {{name}}!",
+    "role": "Jukumu"
+  },
+  "languageSwitcher": {
+    "label": "Lugha"
+  }
+}

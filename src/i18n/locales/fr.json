@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "contactUs": "Contactez-nous",
+    "signIn": "Se connecter",
+    "logout": "Déconnexion",
+    "devMapper": "Dev Mapper",
+    "africaSdgTracker": "Suivi ODD Afrique"
+  },
+  "hero": {
+    "liveTracking": "Suivi en direct dans 54 nations africaines",
+    "title": "Suivre le développement durable à travers l'Afrique",
+    "subtitle": "DevMapper permet aux communautés de signaler, vérifier et suivre les projets de développement alignés sur les ODD des Nations Unies et l'Agenda 2063 de l'UA.",
+    "getStarted": "Commencer gratuitement",
+    "watchDemo": "Voir la démo",
+    "projectsMapped": "Projets cartographiés",
+    "activeUsers": "Utilisateurs actifs",
+    "sdgGoalsTracked": "Objectifs ODD suivis",
+    "verifiedReports": "Rapports vérifiés"
+  },
+  "features": {
+    "badge": "Fonctionnalités de la plateforme",
+    "title": "Tout ce dont vous avez besoin pour suivre l'impact",
+    "subtitle": "Une plateforme complète conçue pour les communautés, les organisations et les gouvernements pour surveiller et célébrer le développement durable.",
+    "interactiveMapping": "Cartographie interactive",
+    "interactiveMappingDesc": "Visualisez les projets de développement à travers l'Afrique avec des données géospatiales en temps réel.",
+    "communityVerification": "Vérification communautaire",
+    "communityVerificationDesc": "La vérification participative assure la précision des données grâce à la validation locale.",
+    "realTimeAnalytics": "Analyses en temps réel",
+    "realTimeAnalyticsDesc": "Suivez les progrès des ODD avec des tableaux de bord complets et des rapports exportables.",
+    "sdgAgenda": "ODD & Agenda 2063",
+    "sdgAgendaDesc": "Alignez automatiquement les projets avec les ODD et les objectifs de l'Agenda 2063 de l'UA.",
+    "esgReporting": "Rapports ESG",
+    "esgReportingDesc": "Suivi complet des métriques ESG pour les entreprises avec des outils d'analyse de scénarios.",
+    "partnerNetwork": "Réseau de partenaires",
+    "partnerNetworkDesc": "Connectez-vous avec des ONG, gouvernements et entreprises travaillant vers des objectifs communs."
+  },
+  "whyNow": {
+    "badge": "Le moment est maintenant",
+    "title": "Pourquoi le suivi du développement est important",
+    "titleHighlight": "Maintenant",
+    "subtitle": "Une convergence sans précédent d'urgence, d'opportunité et de technologie crée le moment parfait pour le suivi communautaire du développement en Afrique.",
+    "deadline": "Échéance 2030 approchante",
+    "deadlineDesc": "Avec seulement 5 ans avant l'échéance des ODD, le suivi des progrès n'a jamais été aussi critique.",
+    "deadlineStat": "5 ans",
+    "deadlineStatLabel": "Jusqu'aux ODD 2030",
+    "momentum": "L'élan de développement de l'Afrique",
+    "momentumDesc": "L'Afrique connaît une croissance économique sans précédent. Capturer cet élan assure un progrès durable.",
+    "momentumStat": "2,5T$",
+    "momentumStatLabel": "PIB projeté d'ici 2030",
+    "digital": "Ère de transformation numérique",
+    "digitalDesc": "La pénétration mobile en Afrique a atteint de nouveaux sommets, permettant la collecte de données communautaire à grande échelle.",
+    "digitalStat": "600M+",
+    "digitalStatLabel": "Utilisateurs mobiles en Afrique",
+    "esg": "Essor mondial des investissements ESG",
+    "esgDesc": "Les investisseurs internationaux exigent de plus en plus des données conformes aux normes ESG.",
+    "esgStat": "50T$+",
+    "esgStatLabel": "Actifs ESG mondiaux d'ici 2025"
+  },
+  "howItWorks": {
+    "title": "Comment fonctionne DevMapper",
+    "subtitle": "Notre plateforme connecte les communautés, les gouvernements et les organisations pour créer la transparence dans les projets de développement.",
+    "reportTitle": "Signaler des projets",
+    "reportDesc": "Les citoyens peuvent signaler des projets de développement dans leurs communautés avec des données de localisation et des photos.",
+    "verifyTitle": "Vérification communautaire",
+    "verifyDesc": "Plusieurs membres de la communauté vérifient les détails du projet pour assurer la précision.",
+    "trackTitle": "Suivre les progrès",
+    "trackDesc": "Surveillez les progrès des projets par rapport aux cibles ODD avec des analyses en temps réel."
+  },
+  "map": {
+    "title": "Explorez les projets avec l'intelligence terrestre",
+    "subtitle": "Suivez visuellement les projets avec des données d'observation terrestre en temps réel."
+  },
+  "impact": {
+    "title": "Notre impact en chiffres",
+    "subtitle": "Des données réelles de communautés réelles qui stimulent le développement durable à travers l'Afrique.",
+    "africanCountries": "Pays africains",
+    "africanCountriesDesc": "Couverture sur tout le continent",
+    "activeChangeMakers": "Acteurs du changement actifs",
+    "activeChangeMakersDesc": "Membres de la communauté qui stimulent l'impact",
+    "verifiedProjects": "Projets vérifiés",
+    "verifiedProjectsDesc": "Initiatives de développement vérifiées par la communauté",
+    "fundsTracked": "Fonds suivis",
+    "fundsTrackedDesc": "Investissement de développement surveillé",
+    "partnerOrgs": "Organisations partenaires",
+    "partnerOrgsDesc": "ONG, gouvernements et entreprises",
+    "sdgGoalsMapped": "Objectifs ODD cartographiés",
+    "sdgGoalsMappedDesc": "Couverture complète du cadre ODD des Nations Unies"
+  },
+  "cta": {
+    "title": "Prêt à cartographier le développement dans votre communauté ?",
+    "subtitle": "Rejoignez des milliers d'acteurs du changement, d'ONG et de gouvernements qui suivent le développement durable à travers l'Afrique.",
+    "getStarted": "Commencer gratuitement",
+    "scheduleDemo": "Planifier une démo",
+    "noCreditCard": "Pas de carte de crédit requise • Gratuit pour toujours pour les reporters individuels"
+  },
+  "footer": {
+    "tagline": "Donner aux communautés les moyens de suivre le développement durable à travers l'Afrique.",
+    "platform": "Plateforme",
+    "reportProjects": "Signaler des projets",
+    "verifyData": "Vérifier les données",
+    "trackProgress": "Suivre les progrès",
+    "analytics": "Analyses",
+    "community": "Communauté",
+    "guidelines": "Directives",
+    "support": "Support",
+    "training": "Formation",
+    "resources": "Ressources",
+    "connect": "Se connecter",
+    "telegramBot": "Bot Telegram",
+    "mobileApp": "Application mobile",
+    "apiAccess": "Accès API",
+    "partnerships": "Partenariats",
+    "copyright": "© 2025 DevMapper. Construit pour le développement durable en Afrique."
+  },
+  "dashboard": {
+    "welcomeBack": "Bon retour, {{name}} !",
+    "role": "Rôle"
+  },
+  "languageSwitcher": {
+    "label": "Langue"
+  }
+}
