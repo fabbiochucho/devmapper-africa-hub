@@ -54,7 +54,7 @@ export default function SdgCarousel() {
                         <div>
                             <h4 className="font-semibold mb-2">Key Targets:</h4>
                             <div className="flex flex-wrap gap-1">
-                                {sdg.targets.slice(0, 3).map(target => (
+                                {(Array.isArray(sdg.targets) ? sdg.targets : []).slice(0, 3).map(target => (
                                     <Badge key={target} variant="secondary" className="bg-white/20 text-white border-none">{target}</Badge>
                                 ))}
                             </div>
