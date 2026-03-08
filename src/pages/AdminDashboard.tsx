@@ -217,6 +217,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="content">Content Moderation</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
+          <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
