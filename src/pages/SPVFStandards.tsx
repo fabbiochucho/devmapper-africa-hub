@@ -14,7 +14,7 @@ import {
   RATING_THRESHOLDS,
   EVIDENCE_TYPE_WEIGHTS,
 } from '@/lib/spvf-engine';
-import SEOHead from '@/components/seo/SEOHead';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const SPVFStandards = () => {
   return (
