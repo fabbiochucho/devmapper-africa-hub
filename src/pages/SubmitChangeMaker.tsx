@@ -79,13 +79,6 @@ const SubmitChangeMaker = () => {
             website: "",
             socialMedia: { linkedin: "", twitter: "", facebook: "", instagram: "" },
           });
-            photo: existing.image_url || undefined,
-            members: [],
-            email: "",
-            phone: "",
-            website: "",
-            socialMedia: { linkedin: "", twitter: "", facebook: "", instagram: "" },
-          });
         }
       } catch (err) {
         console.error('Error loading profile:', err);
