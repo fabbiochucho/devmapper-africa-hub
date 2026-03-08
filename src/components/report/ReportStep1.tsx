@@ -57,12 +57,19 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
 
   React.useEffect(() => {
     const performGeocoding = async () => {
-      // Only auto-fill location if user hasn't typed in it manually and we have coordinates
       if (lat !== undefined && lng !== undefined && !dirtyFields.location) {
         const geocodeResult = await reverseGeocode(lat, lng);
         if (geocodeResult) {
-          setValue('location', geocodeResult.country, { shouldValidate: true });
-          toast.success(`Location auto-detected as ${geocodeResult.country}.`);
+          // Map ISO-2 code from geocoder to our country list
+          const matched = findCountryByCode2(geocodeResult.country_code);
+          if (matched) {
+            setValue('location', matched.name, { shouldValidate: true });
+            setValue('country_code', matched.code, { shouldValidate: true });
+            toast.success(`Location auto-detected as ${matched.name}.`);
+          } else {
+            setValue('location', geocodeResult.country, { shouldValidate: true });
+            toast.success(`Location auto-detected as ${geocodeResult.country}.`);
+          }
         }
       }
     };
