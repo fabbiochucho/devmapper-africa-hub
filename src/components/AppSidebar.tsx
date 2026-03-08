@@ -115,6 +115,8 @@ const getResourceItems = (hasRole: (role: UserRole) => boolean) => {
     { title: "Guidelines", url: "/guidelines", icon: BookOpen },
     { title: "SDG Overview", url: "/sdg-overview", icon: Target },
     { title: "SDG-Agenda 2063", url: "/sdg-agenda2063", icon: Globe },
+    { title: "DSPM Methodology", url: "/dspm-methodology", icon: BookOpen },
+    { title: "SPVF Standards", url: "/spvf-standards", icon: Target },
   ];
   
   // Training more relevant for certain roles
