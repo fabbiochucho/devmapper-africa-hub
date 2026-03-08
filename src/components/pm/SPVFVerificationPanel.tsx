@@ -245,11 +245,12 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
       </Card>
 
       <Tabs defaultValue="stages">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="stages">7-Stage Workflow</TabsTrigger>
           <TabsTrigger value="scorecard">SIS Scorecard</TabsTrigger>
           <TabsTrigger value="evidence">Evidence</TabsTrigger>
           <TabsTrigger value="certification">Certification</TabsTrigger>
+          <TabsTrigger value="ledger">Audit Trail</TabsTrigger>
         </TabsList>
 
         {/* TAB 1: 7-Stage Verification Workflow */}
