@@ -5,6 +5,7 @@ import { useTypewriter } from "@/hooks/useTypewriter";
 import { Link } from "react-router-dom";
 import { ArrowRight, Play, MapPin, Users, Target, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 interface UserType {
   id: number;
@@ -21,9 +22,15 @@ interface HeroSectionProps {
   setShowAuthModal: (show: boolean) => void;
 }
 
+function formatNumber(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k+`;
+  return n > 0 ? `${n.toLocaleString()}+` : '0';
+}
+
 export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps) {
   const { t } = useTranslation();
   const [typewriterKey, setTypewriterKey] = useState(0);
+  const { data: stats } = useDashboardStats();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,6 +44,13 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
     50,
     typewriterKey
   );
+
+  const heroStats = [
+    { icon: MapPin, label: t('hero.projectsMapped'), value: stats ? formatNumber(stats.total_reports) : "—" },
+    { icon: Users, label: t('hero.activeUsers'), value: stats ? formatNumber(stats.total_change_makers) : "—" },
+    { icon: Target, label: t('hero.sdgGoalsTracked'), value: "17" },
+    { icon: CheckCircle, label: t('hero.verifiedReports'), value: stats ? formatNumber(stats.total_reports) : "—" },
+  ];
 
   return (
     <section className="relative min-h-[600px] flex items-center overflow-hidden">
@@ -101,12 +115,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
           </div>
 
           <div className="hidden lg:grid grid-cols-2 gap-4">
-            {[
-              { icon: MapPin, label: t('hero.projectsMapped'), value: "10,000+" },
-              { icon: Users, label: t('hero.activeUsers'), value: "5,000+" },
-              { icon: Target, label: t('hero.sdgGoalsTracked'), value: "17" },
-              { icon: CheckCircle, label: t('hero.verifiedReports'), value: "8,500+" },
-            ].map((stat, i) => (
+            {heroStats.map((stat, i) => (
               <div key={i} className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/20 hover:bg-primary-foreground/15 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 bg-primary-foreground/20 rounded-lg">

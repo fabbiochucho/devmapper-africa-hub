@@ -12,6 +12,7 @@ import {
   BarChart3, Heart, UserCheck, MapPin, Award,
   Calendar, Briefcase, Shield
 } from "lucide-react";
+import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 
 interface DashboardStats {
   userReports: number;
@@ -317,6 +318,7 @@ const UnifiedDashboard = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      <ProductWalkthrough />
     </div>
   );
 };
