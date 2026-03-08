@@ -47,7 +47,7 @@ export function useFeatureAccess() {
       await loadFeaturesForPlan(effectivePlan as PlanType);
     } catch (error) {
       console.error('Error fetching feature access:', error);
-      await loadFeaturesForPlan('free');
+      await loadFeaturesForPlan('lite');
     } finally {
       setLoading(false);
     }

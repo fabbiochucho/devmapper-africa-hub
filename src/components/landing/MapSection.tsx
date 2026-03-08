@@ -16,7 +16,7 @@ export default function MapSection() {
                 {t('map.subtitle')}
               </p>
             </div>
-            <EnhancedProjectMap />
+            <EnhancedProjectMap showGeoLayers={false} />
           </div>
           <div>
             <SdgDistributionChart />
