@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,8 @@ import { signUpSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import RoleSelector from "./RoleSelector";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
+import { checkPasswordBreached } from "@/lib/passwordSecurity";
 import type { UserRole } from "@/contexts/UserRoleContext";
 
 interface SignUpFormProps {
@@ -21,6 +23,8 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
+  const [isBreached, setIsBreached] = useState(false);
+  const [passwordValue, setPasswordValue] = useState('');
   
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -33,9 +37,44 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
   const watchedEmail = form.watch('email');
 
+  // Debounced breach check
+  const breachTimeout = React.useRef<ReturnType<typeof setTimeout>>();
+  const handlePasswordChange = useCallback((value: string) => {
+    setPasswordValue(value);
+    setIsBreached(false);
+    if (breachTimeout.current) clearTimeout(breachTimeout.current);
+    if (value.length >= 8) {
+      breachTimeout.current = setTimeout(async () => {
+        const breached = await checkPasswordBreached(value);
+        setIsBreached(breached);
+      }, 600);
+    }
+  }, []);
+
   const handleSignUp = async (values: SignUpFormValues) => {
+    // Final breach check before submit
+    if (isBreached) {
+      form.setError("password", {
+        type: "manual",
+        message: "This password has been found in a data breach. Please choose a different one.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Run one more check at submit time
+      const breached = await checkPasswordBreached(values.password);
+      if (breached) {
+        setIsBreached(true);
+        form.setError("password", {
+          type: "manual",
+          message: "This password has been found in a data breach. Please choose a different one.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { error, data } = await supabase.auth.signUp({
@@ -56,7 +95,6 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           });
         }
       } else {
-        // Assign the selected role after sign-up
         if (data?.user) {
           setTimeout(async () => {
             try {
@@ -118,8 +156,17 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handlePasswordChange(e.target.value);
+                  }}
+                />
               </FormControl>
+              <PasswordStrengthMeter password={passwordValue} isBreached={isBreached} />
               <FormMessage />
             </FormItem>
           )}
@@ -131,7 +178,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full" disabled={isLoading || isBreached}>
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
