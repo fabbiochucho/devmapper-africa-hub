@@ -1069,12 +1069,17 @@ export type Database = {
           esg_suppliers_limit: number | null
           feature_flags: Json | null
           id: string
+          monthly_addition: number | null
           name: string
           plan_expires_at: string | null
           plan_started_at: string | null
           plan_type: string
           primary_sector: string | null
+          project_cap: number | null
+          project_quota_remaining: number | null
           reporting_year: number | null
+          rollover_allowed: boolean | null
+          scholarship_override: string | null
           updated_at: string
         }
         Insert: {
@@ -1086,12 +1091,17 @@ export type Database = {
           esg_suppliers_limit?: number | null
           feature_flags?: Json | null
           id?: string
+          monthly_addition?: number | null
           name: string
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
+          project_cap?: number | null
+          project_quota_remaining?: number | null
           reporting_year?: number | null
+          rollover_allowed?: boolean | null
+          scholarship_override?: string | null
           updated_at?: string
         }
         Update: {
@@ -1103,12 +1113,17 @@ export type Database = {
           esg_suppliers_limit?: number | null
           feature_flags?: Json | null
           id?: string
+          monthly_addition?: number | null
           name?: string
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
+          project_cap?: number | null
+          project_quota_remaining?: number | null
           reporting_year?: number | null
+          rollover_allowed?: boolean | null
+          scholarship_override?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1143,6 +1158,30 @@ export type Database = {
           name?: string
           updated_at?: string
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      plan_features: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          feature_key: string
+          id: string
+          plan: string
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature_key: string
+          id?: string
+          plan: string
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature_key?: string
+          id?: string
+          plan?: string
         }
         Relationships: []
       }
@@ -1250,6 +1289,71 @@ export type Database = {
           verification_count?: number | null
         }
         Relationships: []
+      }
+      scholarships: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          country: string | null
+          created_at: string
+          duration_months: number | null
+          expires_at: string | null
+          id: string
+          justification: string
+          org_id: string | null
+          organization_name: string | null
+          requested_plan: string
+          role: string | null
+          status: string
+          updated_at: string
+          use_case: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          country?: string | null
+          created_at?: string
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          justification: string
+          org_id?: string | null
+          organization_name?: string | null
+          requested_plan?: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          country?: string | null
+          created_at?: string
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          justification?: string
+          org_id?: string | null
+          organization_name?: string | null
+          requested_plan?: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scholarships_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sdg_agenda2063_alignment: {
         Row: {
@@ -1446,6 +1550,7 @@ export type Database = {
         Args: { p_feature: string; p_user_id: string }
         Returns: boolean
       }
+      check_project_quota: { Args: { p_org_id: string }; Returns: boolean }
       check_webhook_processed: {
         Args: { p_event_id: string; p_provider: string }
         Returns: boolean
@@ -1470,6 +1575,7 @@ export type Database = {
           total_reports: number
         }[]
       }
+      get_effective_plan: { Args: { p_org_id: string }; Returns: string }
       get_test_accounts: {
         Args: never
         Returns: {
@@ -1512,6 +1618,7 @@ export type Database = {
         }
         Returns: string
       }
+      reset_monthly_quotas: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role:
@@ -1523,7 +1630,7 @@ export type Database = {
         | "platform_admin"
         | "change_maker"
         | "citizen_reporter"
-      plan_type: "free" | "lite" | "pro"
+      plan_type: "free" | "lite" | "pro" | "advanced" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1661,7 +1768,7 @@ export const Constants = {
         "change_maker",
         "citizen_reporter",
       ],
-      plan_type: ["free", "lite", "pro"],
+      plan_type: ["free", "lite", "pro", "advanced", "enterprise"],
     },
   },
 } as const
