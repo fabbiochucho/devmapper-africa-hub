@@ -211,6 +211,54 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Handle Paystack subscription payments
+    const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
+    if (provider === 'paystack' && PAYSTACK_SECRET) {
+      const tx_ref = `sub_${organizationId}_${Date.now()}`;
+      const paystackPayload = {
+        email: user.email,
+        amount: amount * 100, // Paystack uses kobo/cents
+        currency: 'NGN',
+        reference: tx_ref,
+        callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
+        metadata: {
+          organization_id: organizationId,
+          plan_type: planType,
+          interval,
+          payment_type: 'subscription',
+        },
+      };
+
+      const response = await fetch('https://api.paystack.co/transaction/initialize', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${PAYSTACK_SECRET}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paystackPayload),
+      });
+
+      const paystackData = await response.json();
+
+      if (paystackData.status && paystackData.data?.authorization_url) {
+        await supabase.from('billing_events').insert([{
+          organization_id: organizationId,
+          event_type: 'payment_initiated',
+          old_plan: org.plan_type,
+          new_plan: planType,
+          provider: 'paystack',
+          amount,
+          currency: 'NGN',
+          external_id: tx_ref,
+        }]);
+
+        return new Response(
+          JSON.stringify({ success: true, url: paystackData.data.authorization_url }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    }
+
     // Fallback to mock payment for development
     const paymentUrl = provider === 'flutterwave' 
       ? `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`

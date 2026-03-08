@@ -125,6 +125,7 @@ const getResourceItems = (hasRole: (role: UserRole) => boolean) => {
 
 // Support items
 const supportItems = [
+  { title: "Pricing", url: "/pricing", icon: CreditCard },
   { title: "Support", url: "/support", icon: HelpCircle },
   { title: "About", url: "/about", icon: Info },
   { title: "Contact", url: "/contact", icon: Phone },
