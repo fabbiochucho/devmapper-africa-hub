@@ -56,6 +56,7 @@ const getAnalyticsItems = (hasRole: (role: UserRole) => boolean) => {
   
   if (hasRole('change_maker') || hasRole('admin') || hasRole('platform_admin')) {
     items.push({ title: "Change Maker Analytics", url: "/change-maker-analytics", icon: TrendingUp });
+    items.push({ title: "My Analytics", url: "/my-analytics", icon: User });
   }
   
   if (hasRole('company_representative') || hasRole('admin') || hasRole('platform_admin')) {
