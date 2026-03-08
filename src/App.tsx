@@ -50,6 +50,7 @@ const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
 const ProjectManagement = lazy(() => import("./pages/ProjectManagement"));
 const SdgOverview = lazy(() => import("./pages/SdgOverview"));
 const BulkUpload = lazy(() => import("./pages/BulkUpload"));
+const SPVFStandards = lazy(() => import("./pages/SPVFStandards"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +91,7 @@ const App = () => (
                     <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
                     <Route path="/sdg-overview" element={<SdgOverview />} />
                     <Route path="/connect" element={<Connect />} />
+                    <Route path="/spvf-standards" element={<SPVFStandards />} />
                     {/* Protected routes */}
                     <Route path="/analytics" element={<P><Analytics /></P>} />
                     <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
