@@ -91,6 +91,7 @@ const App = () => (
                     <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
                     <Route path="/sdg-overview" element={<SdgOverview />} />
                     <Route path="/connect" element={<Connect />} />
+                    <Route path="/spvf-standards" element={<SPVFStandards />} />
                     {/* Protected routes */}
                     <Route path="/analytics" element={<P><Analytics /></P>} />
                     <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
