@@ -74,7 +74,6 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <Sonner />
         <AuthProvider>
           <UserRoleProvider>
             <BrowserRouter>
@@ -132,6 +131,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <Sonner />
             </BrowserRouter>
           </UserRoleProvider>
         </AuthProvider>
