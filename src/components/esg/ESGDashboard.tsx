@@ -495,24 +495,11 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         </TabsContent>
 
         <TabsContent value="emissions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={emissionsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="scope1" name="Scope 1" fill="#ef4444" />
-                  <Bar dataKey="scope2" name="Scope 2" fill="#f97316" />
-                  <Bar dataKey="scope3" name="Scope 3" fill="#eab308" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <EmissionsManager
+            organizationId={organizationId}
+            indicators={indicators}
+            onDataChange={loadESGData}
+          />
         </TabsContent>
 
         <TabsContent value="verification">
