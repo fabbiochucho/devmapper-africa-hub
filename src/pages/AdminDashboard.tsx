@@ -408,6 +408,7 @@ export default function AdminDashboard() {
           <ScholarshipManager />
         </TabsContent>
 
+        <TabsContent value="reports">
           <Card>
             <CardHeader>
               <CardTitle>System Reports</CardTitle>
