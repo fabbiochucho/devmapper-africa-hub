@@ -74,6 +74,7 @@ const submissionItems = [
   { title: "Project Management", url: "/project-management", icon: ListTodo },
   { title: "Project Analytics", url: "/project-analytics", icon: TrendingUp },
   { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
+  { title: "Apply for Certification", url: "/apply-certification", icon: Shield },
 ];
 
 // Role-specific dashboard items
