@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Shield, Upload, Award, CheckCircle2, AlertTriangle, ArrowRight, FileText, Globe } from 'lucide-react';
+import { Shield, Upload, Award, CheckCircle2, AlertTriangle, ArrowRight, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { appendToLedger } from '@/lib/verification-ledger';
@@ -45,7 +45,6 @@ const ApplyCertification = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form
   const [selectedReport, setSelectedReport] = useState('');
   const [requestedTier, setRequestedTier] = useState('bronze');
   const [projectDescription, setProjectDescription] = useState('');
@@ -64,10 +63,10 @@ const ApplyCertification = () => {
     setLoading(true);
     const [reportsRes, appsRes] = await Promise.all([
       supabase.from('reports').select('id, title, sdg_goal, project_status, country_code').eq('user_id', user!.id).order('submitted_at', { ascending: false }),
-      supabase.from('certification_applications').select('report_id').eq('applicant_id', user!.id),
+      (supabase as any).from('certification_applications').select('report_id').eq('applicant_id', user!.id),
     ]);
     if (reportsRes.data) setReports(reportsRes.data);
-    if (appsRes.data) setExistingApps(appsRes.data.map(a => a.report_id));
+    if (appsRes.data) setExistingApps((appsRes.data as any[]).map((a: any) => a.report_id));
     setLoading(false);
   };
 
@@ -77,7 +76,7 @@ const ApplyCertification = () => {
     if (!user || !selectedReport || !agreed) return;
     setSubmitting(true);
 
-    const { data, error } = await supabase.from('certification_applications').insert({
+    const { data, error } = await (supabase as any).from('certification_applications').insert({
       report_id: selectedReport,
       applicant_id: user.id,
       requested_tier: requestedTier,
@@ -96,7 +95,6 @@ const ApplyCertification = () => {
       return;
     }
 
-    // Record in immutable verification ledger
     await appendToLedger(selectedReport, 'application_submitted', {
       application_id: data.id,
       requested_tier: requestedTier,
@@ -132,7 +130,6 @@ const ApplyCertification = () => {
         description="Submit your SDG project for verification and certification through DevMapper's 8-step SPVF process."
       />
       <div className="container max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
         <div className="text-center space-y-3">
           <Shield className="h-12 w-12 mx-auto text-primary" />
           <h1 className="text-3xl font-bold tracking-tight">Apply for SDG Certification</h1>
@@ -142,7 +139,6 @@ const ApplyCertification = () => {
           </p>
         </div>
 
-        {/* Process overview */}
         <Alert>
           <FileText className="h-4 w-4" />
           <AlertTitle>What happens after submission?</AlertTitle>
@@ -155,7 +151,6 @@ const ApplyCertification = () => {
           </AlertDescription>
         </Alert>
 
-        {/* Application form */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -164,7 +159,6 @@ const ApplyCertification = () => {
             <CardDescription>Select a project and provide details for the verification team.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Project Selection */}
             <div className="space-y-2">
               <Label>Select Project *</Label>
               {eligibleReports.length === 0 ? (
@@ -188,7 +182,6 @@ const ApplyCertification = () => {
               )}
             </div>
 
-            {/* Requested Tier */}
             <div className="space-y-2">
               <Label>Requested Certification Tier *</Label>
               <Select value={requestedTier} onValueChange={setRequestedTier}>
@@ -209,7 +202,6 @@ const ApplyCertification = () => {
 
             <Separator />
 
-            {/* SDG Goals */}
             <div className="space-y-2">
               <Label>SDG Goals Targeted *</Label>
               <div className="flex flex-wrap gap-2">
@@ -229,7 +221,6 @@ const ApplyCertification = () => {
               )}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <Label>Project Description *</Label>
               <Textarea
@@ -240,7 +231,6 @@ const ApplyCertification = () => {
               />
             </div>
 
-            {/* Expected Outcomes */}
             <div className="space-y-2">
               <Label>Expected Outcomes</Label>
               <Textarea
@@ -252,7 +242,6 @@ const ApplyCertification = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Budget */}
               <div className="space-y-2">
                 <Label>Project Budget (USD)</Label>
                 <Input
@@ -262,8 +251,6 @@ const ApplyCertification = () => {
                   onChange={e => setBudgetUsd(e.target.value)}
                 />
               </div>
-
-              {/* Geographic Scope */}
               <div className="space-y-2">
                 <Label>Geographic Scope</Label>
                 <Select value={geographicScope} onValueChange={setGeographicScope}>
@@ -278,7 +265,6 @@ const ApplyCertification = () => {
               </div>
             </div>
 
-            {/* Evidence Summary */}
             <div className="space-y-2">
               <Label>Evidence Summary</Label>
               <Textarea
@@ -291,7 +277,6 @@ const ApplyCertification = () => {
 
             <Separator />
 
-            {/* Terms */}
             <div className="flex items-start gap-3">
               <Checkbox
                 id="terms"
@@ -305,7 +290,6 @@ const ApplyCertification = () => {
               </label>
             </div>
 
-            {/* Submit */}
             <Button
               className="w-full"
               size="lg"
@@ -323,7 +307,6 @@ const ApplyCertification = () => {
           </CardContent>
         </Card>
 
-        {/* Existing applications */}
         {existingApps.length > 0 && (
           <Card>
             <CardHeader>
@@ -345,34 +328,21 @@ function ExistingApplicationsList({ userId }: { userId: string }) {
   const [apps, setApps] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase
+    (supabase as any)
       .from('certification_applications')
       .select('id, report_id, requested_tier, status, submitted_at')
       .eq('applicant_id', userId)
       .order('submitted_at', { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         if (data) setApps(data);
       });
   }, [userId]);
-
-  const statusColors: Record<string, string> = {
-    submitted: 'bg-blue-500',
-    under_review: 'bg-yellow-500',
-    evidence_collection: 'bg-orange-500',
-    ai_verification: 'bg-purple-500',
-    human_verification: 'bg-amber-500',
-    scoring: 'bg-red-500',
-    governance_review: 'bg-indigo-500',
-    approved: 'bg-emerald-500',
-    rejected: 'bg-destructive',
-    withdrawn: 'bg-muted-foreground',
-  };
 
   if (apps.length === 0) return <p className="text-sm text-muted-foreground">No applications found.</p>;
 
   return (
     <div className="space-y-2">
-      {apps.map(app => (
+      {apps.map((app: any) => (
         <div key={app.id} className="flex items-center justify-between border rounded-lg p-3">
           <div>
             <p className="text-sm font-medium">Application #{app.id.slice(0, 8)}</p>
@@ -382,9 +352,7 @@ function ExistingApplicationsList({ userId }: { userId: string }) {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="capitalize">{app.requested_tier}</Badge>
-            <Badge className="text-white capitalize" style={{
-              backgroundColor: `var(--${statusColors[app.status]?.replace('bg-', '') || 'muted-foreground'})`
-            }}>
+            <Badge variant="secondary" className="capitalize">
               {app.status.replace(/_/g, ' ')}
             </Badge>
           </div>
