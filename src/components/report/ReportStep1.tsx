@@ -243,7 +243,14 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Country</FormLabel>
-               <Select onValueChange={field.onChange} value={field.value}>
+               <Select onValueChange={(val) => {
+                 field.onChange(val);
+                 // Auto-set country_code from selected country name
+                 const found = countries.find(c => c.name === val);
+                 if (found) {
+                   setValue('country_code', found.code);
+                 }
+               }} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a country" />
