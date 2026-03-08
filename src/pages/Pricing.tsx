@@ -438,62 +438,79 @@ const Pricing = () => {
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-3">SDG Certification Services</h2>
           <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-8">
-            Earn credibility with verified SDG impact. DevMapper issues globally-recognized certifications under the <strong>SDG-PVS 1000</strong> standard.
+            Earn credibility with verified SDG impact. DevMapper issues globally-recognized certifications under the <strong>SDG-PVS 1000</strong> standard, benchmarked against Gold Standard, Verra, and MSCI.
           </p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
-              <CardHeader className="text-center">
-                <Shield className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <CardTitle className="text-lg">Self-Assessment</CardTitle>
-                <p className="text-2xl font-bold mt-2">Free</p>
+              <CardHeader className="text-center pb-2">
+                <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center" style={{ backgroundColor: 'hsl(30, 60%, 50%)' }}>
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-lg mt-2">Bronze</CardTitle>
+                <p className="font-mono text-xs text-muted-foreground">SIS 50–64</p>
               </CardHeader>
-              <CardContent className="text-sm space-y-2 text-muted-foreground">
-                <p>• Access SPVF 7-stage workflow</p>
-                <p>• Self-reported evidence upload</p>
-                <p>• Automated SIS scoring</p>
-                <p>• No certificate issued</p>
-                <p className="text-xs pt-2 italic">Included in all plans</p>
-              </CardContent>
-            </Card>
-            <Card className="ring-2 ring-primary relative">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Most Popular</Badge>
-              <CardHeader className="text-center">
-                <Award className="w-8 h-8 mx-auto text-amber-500 mb-2" />
-                <CardTitle className="text-lg">Standard Certification</CardTitle>
-                <p className="text-2xl font-bold mt-2">$299<span className="text-sm font-normal text-muted-foreground">/project</span></p>
-              </CardHeader>
-              <CardContent className="text-sm space-y-2 text-muted-foreground">
-                <p>• Full 7-stage verification</p>
-                <p>• Independent verifier review</p>
-                <p>• Digital SDG certificate</p>
-                <p>• Public verification page</p>
-                <p>• Valid for 2 years</p>
-                <p>• Bronze / Silver / Gold ratings</p>
-                <Button className="w-full mt-4" onClick={() => navigate('/contact')}>
-                  Request Certification
+              <CardContent className="text-center space-y-2">
+                <p className="text-xl font-bold">$500 – $1,500</p>
+                <p className="text-xs text-muted-foreground">Small-scale, output verification, field visit sampling, basic compliance</p>
+                <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => navigate('/contact')}>
+                  Request
                 </Button>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="text-center">
-                <Crown className="w-8 h-8 mx-auto text-purple-500 mb-2" />
-                <CardTitle className="text-lg">Platinum Certification</CardTitle>
-                <p className="text-2xl font-bold mt-2">$999<span className="text-sm font-normal text-muted-foreground">/project</span></p>
+              <CardHeader className="text-center pb-2">
+                <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center" style={{ backgroundColor: 'hsl(0, 0%, 65%)' }}>
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-lg mt-2">Silver</CardTitle>
+                <p className="font-mono text-xs text-muted-foreground">SIS 65–79</p>
               </CardHeader>
-              <CardContent className="text-sm space-y-2 text-muted-foreground">
-                <p>• Everything in Standard</p>
-                <p>• On-site verification audit</p>
-                <p>• Satellite/geospatial validation</p>
-                <p>• Platinum-eligible rating</p>
-                <p>• Priority processing (14 days)</p>
-                <p>• Certification badge & API embed</p>
-                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/contact')}>
-                  Request Platinum Review
+              <CardContent className="text-center space-y-2">
+                <p className="text-xl font-bold">$1,500 – $5,000</p>
+                <p className="text-xs text-muted-foreground">Outcome verification, independent auditing, community consultation</p>
+                <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => navigate('/contact')}>
+                  Request
+                </Button>
+              </CardContent>
+            </Card>
+            <Card className="ring-2 ring-primary relative">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Most Popular</Badge>
+              <CardHeader className="text-center pb-2">
+                <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center" style={{ backgroundColor: 'hsl(45, 93%, 47%)' }}>
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-lg mt-2">Gold</CardTitle>
+                <p className="font-mono text-xs text-muted-foreground">SIS 80–89</p>
+              </CardHeader>
+              <CardContent className="text-center space-y-2">
+                <p className="text-xl font-bold">$5,000 – $15,000</p>
+                <p className="text-xs text-muted-foreground">High impact, cross-sector, full SDG alignment, multi-stakeholder verification</p>
+                <Button size="sm" className="w-full mt-2" onClick={() => navigate('/contact')}>
+                  Request Gold
+                </Button>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center pb-2">
+                <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center bg-primary">
+                  <Award className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-lg mt-2">Platinum</CardTitle>
+                <p className="font-mono text-xs text-muted-foreground">SIS 90–100</p>
+              </CardHeader>
+              <CardContent className="text-center space-y-2">
+                <p className="text-xl font-bold">$15,000 – $50,000</p>
+                <p className="text-xs text-muted-foreground">Multi-country, full AI/ML + satellite verification, government & DFI approval</p>
+                <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => navigate('/contact')}>
+                  Request Platinum
                 </Button>
               </CardContent>
             </Card>
           </div>
           <div className="text-center mt-6 space-x-4">
+            <Button variant="link" onClick={() => navigate('/certification-workflow')}>
+              View Certification Workflow →
+            </Button>
             <Button variant="link" onClick={() => navigate('/spvf-standards')}>
               View SPVF Standards →
             </Button>

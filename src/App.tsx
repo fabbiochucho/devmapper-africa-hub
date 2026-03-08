@@ -100,6 +100,9 @@ const App = () => (
                     <Route path="/dspm-methodology" element={<DSPMMethodology />} />
                     <Route path="/verify/:certNumber" element={<VerifyCertificate />} />
                     <Route path="/verify" element={<VerifyCertificate />} />
+                    <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
+                    <Route path="/certification-workflow" element={<CertificationWorkflow />} />
+                    <Route path="/platform-overview" element={<PlatformOverview />} />
                     {/* Protected routes */}
                     <Route path="/analytics" element={<P><Analytics /></P>} />
                     <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
