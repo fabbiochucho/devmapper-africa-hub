@@ -52,5 +52,8 @@ verify_jwt = true
 [functions.send-downgrade-email]
 verify_jwt = false
 
+[functions.paystack-webhook]
+verify_jwt = false
+
 [edge_runtime]
 policy = "oneshot"
