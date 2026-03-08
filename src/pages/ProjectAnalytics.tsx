@@ -113,7 +113,7 @@ const ProjectAnalytics = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Completed</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-green-600">{analytics.completedProjects}</div></CardContent>
+          <CardContent><div className="text-2xl font-bold text-primary">{analytics.completedProjects}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Verified</CardTitle></CardHeader>
