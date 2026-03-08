@@ -18,7 +18,7 @@ interface EnhancedProjectMapProps {
   showGeoLayers?: boolean;
 }
 
-export default function EnhancedProjectMap() {
+export default function EnhancedProjectMap({ showGeoLayers = true }: EnhancedProjectMapProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [map, setMap] = useState<maplibregl.Map | null>(null);
   const [loading, setLoading] = useState(true);
