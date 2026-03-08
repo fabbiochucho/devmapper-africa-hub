@@ -112,11 +112,14 @@ const getDashboardItems = (hasRole: (role: UserRole) => boolean, currentRole: Us
 // Resource items - contextual based on role
 const getResourceItems = (hasRole: (role: UserRole) => boolean) => {
   const items = [
-    { title: "Guidelines", url: "/guidelines", icon: BookOpen },
+    { title: "Platform Overview", url: "/platform-overview", icon: Globe },
+    { title: "SDG Indicator Registry", url: "/sdg-indicators", icon: Target },
+    { title: "Certification Workflow", url: "/certification-workflow", icon: Shield },
+    { title: "SPVF Standards", url: "/spvf-standards", icon: Target },
+    { title: "DSPM Methodology", url: "/dspm-methodology", icon: BookOpen },
     { title: "SDG Overview", url: "/sdg-overview", icon: Target },
     { title: "SDG-Agenda 2063", url: "/sdg-agenda2063", icon: Globe },
-    { title: "DSPM Methodology", url: "/dspm-methodology", icon: BookOpen },
-    { title: "SPVF Standards", url: "/spvf-standards", icon: Target },
+    { title: "Guidelines", url: "/guidelines", icon: BookOpen },
   ];
   
   // Training more relevant for certain roles
