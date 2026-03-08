@@ -1,0 +1,24 @@
+{
+  "name": "DevMapper Africa",
+  "short_name": "DevMapper",
+  "description": "Track SDG & ESG metrics across Africa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#16a34a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en"
+}

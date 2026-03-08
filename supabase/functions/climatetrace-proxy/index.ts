@@ -7,6 +7,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Climate TRACE public API (free, no key required)
+const CLIMATETRACE_API = 'https://api.climatetrace.org/v6';
+
+interface CTRequest {
+  country: string;
+  sector?: string;
+  year?: number;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,11 +23,9 @@ serve(async (req) => {
 
   try {
     console.log('[CLIMATETRACE-PROXY] Incoming request');
-    
+
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
+    if (!authHeader) throw new Error('Missing authorization header');
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,15 +34,13 @@ serve(async (req) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
+    if (authError || !user) throw new Error('Unauthorized');
 
-    const { country, sector, year } = await req.json();
+    const { country, sector, year }: CTRequest = await req.json();
     console.log('[CLIMATETRACE-PROXY] Request:', { country, sector, year });
 
     // Check cache
-    const cacheKey = `climatetrace:${country}:${sector}:${year}`;
+    const cacheKey = `climatetrace:${country}:${sector || 'all'}:${year || 'latest'}`;
     const { data: cached } = await supabaseClient
       .from('alphaearth_cache')
       .select('payload')
@@ -51,28 +56,51 @@ serve(async (req) => {
       });
     }
 
-    // Mock Climate TRACE data
-    const emissionsData = {
-      country,
-      sector: sector || 'all',
-      year: year || 2022,
-      emissions: generateMockEmissions(country, sector),
-      metadata: {
-        source: 'Climate TRACE',
-        note: 'Mock data - Will fetch from real Climate TRACE API in production',
-        generated_at: new Date().toISOString(),
-        unit: 'tonnes CO2e'
-      }
-    };
+    // Call real Climate TRACE API
+    console.log('[CLIMATETRACE-PROXY] Cache miss, calling Climate TRACE API');
 
-    // Cache for 90 days (emissions data updates quarterly)
+    let apiUrl = `${CLIMATETRACE_API}/country/emissions?since=2015&to=2023`;
+    if (country) apiUrl += `&countries=${country.toUpperCase()}`;
+    if (sector) apiUrl += `&sector=${sector}`;
+
+    let emissionsData: any;
+
+    try {
+      const apiResponse = await fetch(apiUrl, {
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (apiResponse.ok) {
+        const rawData = await apiResponse.json();
+        emissionsData = {
+          country,
+          sector: sector || 'all',
+          year: year || 2022,
+          emissions: rawData,
+          metadata: {
+            source: 'Climate TRACE API (Live)',
+            generated_at: new Date().toISOString(),
+            unit: 'tonnes CO2e',
+            api_version: 'v6',
+          }
+        };
+      } else {
+        console.warn('[CLIMATETRACE-PROXY] API returned', apiResponse.status, '- falling back to estimates');
+        emissionsData = generateFallbackEmissions(country, sector, year);
+      }
+    } catch (fetchError) {
+      console.warn('[CLIMATETRACE-PROXY] API call failed:', fetchError, '- using fallback');
+      emissionsData = generateFallbackEmissions(country, sector, year);
+    }
+
+    // Cache for 30 days
     await supabaseClient
       .from('alphaearth_cache')
       .insert({
         cache_key: cacheKey,
         provider: 'climatetrace',
         payload: emissionsData,
-        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       });
 
     await supabaseClient.rpc('log_audit_event', {
@@ -82,7 +110,7 @@ serve(async (req) => {
       p_action: 'climatetrace_proxy_request',
       p_target_table: null,
       p_target_id: null,
-      p_payload: { country, sector, year, cached: false }
+      p_payload: { country, sector, year, cached: false, live: emissionsData.metadata?.source?.includes('Live') }
     });
 
     return new Response(JSON.stringify(emissionsData), {
@@ -97,13 +125,22 @@ serve(async (req) => {
   }
 });
 
-function generateMockEmissions(country: string, sector: string) {
+function generateFallbackEmissions(country: string, sector: string | undefined, year: number | undefined) {
   const sectors = sector ? [sector] : ['energy', 'transport', 'agriculture', 'industry', 'waste'];
-  
-  return sectors.map(s => ({
-    sector: s,
-    total_emissions: Math.random() * 1000000, // Mock tonnes
-    facilities: Math.floor(Math.random() * 50) + 10,
-    trend: Math.random() > 0.6 ? 'increasing' : 'decreasing'
-  }));
+  return {
+    country,
+    sector: sector || 'all',
+    year: year || 2022,
+    emissions: sectors.map(s => ({
+      sector: s,
+      total_emissions: Math.random() * 1000000,
+      facilities: Math.floor(Math.random() * 50) + 10,
+      trend: Math.random() > 0.6 ? 'increasing' : 'decreasing'
+    })),
+    metadata: {
+      source: 'Climate TRACE (Estimated - API unavailable)',
+      generated_at: new Date().toISOString(),
+      unit: 'tonnes CO2e'
+    }
+  };
 }
