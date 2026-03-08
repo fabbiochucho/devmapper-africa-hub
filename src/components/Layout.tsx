@@ -7,7 +7,7 @@ import { Report } from "@/data/mockReports";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft, LogOut, MessageCircle } from "lucide-react";
-import UserRoleSwitcher from "./UserRoleSwitcher";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import PageFooter from "./landing/PageFooter";
@@ -114,10 +114,7 @@ const Layout = () => {
 
         {/* Main Content Area with Sidebar */}
         <div className="flex flex-1">
-          <div className="flex flex-col">
-            <AppSidebar />
-            {user && <UserRoleSwitcher />}
-          </div>
+          <AppSidebar />
           <SidebarInset className="flex-1 flex flex-col">
             <main className="p-4 flex-1 flex flex-col">
               <header className="flex justify-between items-center mb-4 gap-4 shrink-0">
