@@ -85,6 +85,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          context_id: string | null
+          context_type: string
+          created_at: string
+          id: string
+          messages: Json
+          metadata: Json | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       alphaearth_cache: {
         Row: {
           cache_key: string
@@ -421,6 +457,69 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      country_intelligence: {
+        Row: {
+          carbon_market_maturity: string | null
+          central_bank_name: string | null
+          climate_disclosure_status: string | null
+          country_code: string
+          country_name: string
+          created_at: string
+          currency_code: string
+          digital_reporting_maturity: string | null
+          enforcement_intensity_index: number | null
+          environmental_agency_name: string | null
+          esg_regulatory_status: string | null
+          iso2_code: string
+          legal_system_type: string | null
+          ngo_regulation_score: number | null
+          official_languages: Json
+          regional_blocs: Json | null
+          stock_exchange_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          carbon_market_maturity?: string | null
+          central_bank_name?: string | null
+          climate_disclosure_status?: string | null
+          country_code: string
+          country_name: string
+          created_at?: string
+          currency_code?: string
+          digital_reporting_maturity?: string | null
+          enforcement_intensity_index?: number | null
+          environmental_agency_name?: string | null
+          esg_regulatory_status?: string | null
+          iso2_code: string
+          legal_system_type?: string | null
+          ngo_regulation_score?: number | null
+          official_languages?: Json
+          regional_blocs?: Json | null
+          stock_exchange_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carbon_market_maturity?: string | null
+          central_bank_name?: string | null
+          climate_disclosure_status?: string | null
+          country_code?: string
+          country_name?: string
+          created_at?: string
+          currency_code?: string
+          digital_reporting_maturity?: string | null
+          enforcement_intensity_index?: number | null
+          environmental_agency_name?: string | null
+          esg_regulatory_status?: string | null
+          iso2_code?: string
+          legal_system_type?: string | null
+          ngo_regulation_score?: number | null
+          official_languages?: Json
+          regional_blocs?: Json | null
+          stock_exchange_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       entity_locations: {
         Row: {
@@ -1318,6 +1417,208 @@ export type Database = {
           },
         ]
       }
+      project_tasks: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          parent_task_id: string | null
+          priority: string
+          report_id: string
+          sort_order: number | null
+          start_date: string | null
+          status: string
+          tags: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          parent_task_id?: string | null
+          priority?: string
+          report_id: string
+          sort_order?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          parent_task_id?: string | null
+          priority?: string
+          report_id?: string
+          sort_order?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regulatory_exposure_profiles: {
+        Row: {
+          actor_type: string
+          compliance_score: number | null
+          country_code: string
+          created_at: string
+          exposure_categories: Json
+          id: string
+          last_assessed_at: string | null
+          mandatory_frameworks: Json | null
+          reporting_frequency: string | null
+          risk_level: string | null
+          sector_code: string | null
+          updated_at: string
+          user_id: string
+          voluntary_frameworks: Json | null
+        }
+        Insert: {
+          actor_type: string
+          compliance_score?: number | null
+          country_code: string
+          created_at?: string
+          exposure_categories?: Json
+          id?: string
+          last_assessed_at?: string | null
+          mandatory_frameworks?: Json | null
+          reporting_frequency?: string | null
+          risk_level?: string | null
+          sector_code?: string | null
+          updated_at?: string
+          user_id: string
+          voluntary_frameworks?: Json | null
+        }
+        Update: {
+          actor_type?: string
+          compliance_score?: number | null
+          country_code?: string
+          created_at?: string
+          exposure_categories?: Json
+          id?: string
+          last_assessed_at?: string | null
+          mandatory_frameworks?: Json | null
+          reporting_frequency?: string | null
+          risk_level?: string | null
+          sector_code?: string | null
+          updated_at?: string
+          user_id?: string
+          voluntary_frameworks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_exposure_profiles_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_intelligence"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      regulatory_frameworks: {
+        Row: {
+          applicable_entity_types: Json
+          category: string
+          country_code: string
+          created_at: string
+          effective_date: string | null
+          enforcement_risk: string | null
+          id: string
+          mandatory: boolean
+          name: string
+          regulator_name: string | null
+          reporting_frequency: string | null
+          rule_tree: Json | null
+          source_url: string | null
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          applicable_entity_types?: Json
+          category: string
+          country_code: string
+          created_at?: string
+          effective_date?: string | null
+          enforcement_risk?: string | null
+          id?: string
+          mandatory?: boolean
+          name: string
+          regulator_name?: string | null
+          reporting_frequency?: string | null
+          rule_tree?: Json | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          applicable_entity_types?: Json
+          category?: string
+          country_code?: string
+          created_at?: string
+          effective_date?: string | null
+          enforcement_risk?: string | null
+          id?: string
+          mandatory?: boolean
+          name?: string
+          regulator_name?: string | null
+          reporting_frequency?: string | null
+          rule_tree?: Json | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_frameworks_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_intelligence"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
       reports: {
         Row: {
           beneficiaries: number | null
@@ -1493,6 +1794,86 @@ export type Database = {
           sdg_target?: string
         }
         Relationships: []
+      }
+      task_activity: {
+        Row: {
+          activity_type: string
+          content: string | null
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activity_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_dependencies: {
+        Row: {
+          created_at: string
+          dependency_type: string
+          depends_on_task_id: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          dependency_type?: string
+          depends_on_task_id: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          dependency_type?: string
+          depends_on_task_id?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_depends_on_task_id_fkey"
+            columns: ["depends_on_task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
