@@ -34,8 +34,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { getBenchmarkForOrg } from '@/lib/alphaearth';
 import ESGScenarioAnalysis from './ESGScenarioAnalysis';
 import ESGReportGenerator from './ESGReportGenerator';
+import ESGReportDialog from './ESGReportDialog';
 import ESGDataVerification from './ESGDataVerification';
 import SupplierCSVImporter from './SupplierCSVImporter';
+import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 
 interface ESGIndicators {
