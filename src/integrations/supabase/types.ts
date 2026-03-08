@@ -2105,6 +2105,57 @@ export type Database = {
         }
         Relationships: []
       }
+      sdg_indicators: {
+        Row: {
+          created_at: string
+          frequency: string | null
+          id: string
+          indicator_code: string
+          indicator_name: string
+          is_active: boolean
+          level: string | null
+          measurement_type: string
+          sdg_id: number
+          sector: string | null
+          source: string | null
+          target_id: string
+          unit: string
+          verification_requirement: string | null
+        }
+        Insert: {
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          indicator_code: string
+          indicator_name: string
+          is_active?: boolean
+          level?: string | null
+          measurement_type?: string
+          sdg_id: number
+          sector?: string | null
+          source?: string | null
+          target_id: string
+          unit?: string
+          verification_requirement?: string | null
+        }
+        Update: {
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          indicator_code?: string
+          indicator_name?: string
+          is_active?: boolean
+          level?: string | null
+          measurement_type?: string
+          sdg_id?: number
+          sector?: string | null
+          source?: string | null
+          target_id?: string
+          unit?: string
+          verification_requirement?: string | null
+        }
+        Relationships: []
+      }
       task_activity: {
         Row: {
           activity_type: string
