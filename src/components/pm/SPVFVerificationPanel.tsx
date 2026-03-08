@@ -136,6 +136,8 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
         outcome_achievement_score: scoreForm.outcomeAchievementScore,
         sustainability_score: scoreForm.sustainabilityScore,
         community_validation_score: scoreForm.communityValidationScore,
+        total_sis: sisResult.totalSIS,
+        certification_rating: sisResult.rating,
         scored_by: user.id,
         scored_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -146,6 +148,35 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
       toast.error('Failed to save scores');
     } else {
       toast.success(`SDG Impact Score saved: ${sisResult.totalSIS} (${sisResult.ratingLabel})`);
+      fetchAll();
+    }
+  };
+
+  const issueCertification = async () => {
+    if (!user || sisResult.totalSIS < 60) {
+      toast.error('Minimum SIS of 60 required for certification');
+      return;
+    }
+    const certNumber = `DM-${sisResult.rating.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 2);
+
+    const { error } = await supabase.from('project_certifications').insert({
+      report_id: reportId,
+      rating: sisResult.rating,
+      certificate_number: certNumber,
+      certification_body: 'DevMapper SPVF Authority',
+      certified_by: user.id,
+      status: 'active',
+      issued_at: new Date().toISOString(),
+      expires_at: expiresAt.toISOString(),
+      score_id: scores?.id || null,
+    });
+
+    if (error) {
+      toast.error('Failed to issue certification');
+    } else {
+      toast.success(`Certificate ${certNumber} issued — ${sisResult.ratingLabel}`);
       fetchAll();
     }
   };
