@@ -1230,13 +1230,105 @@ export type Database = {
         }
         Relationships: []
       }
+      project_affiliations: {
+        Row: {
+          created_at: string
+          id: string
+          organization_name: string | null
+          relationship_type: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_name?: string | null
+          relationship_type: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_name?: string | null
+          relationship_type?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_affiliations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_milestones: {
+        Row: {
+          completion_percentage: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          evidence_url: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completion_percentage?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completion_percentage?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_milestones_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           beneficiaries: number | null
+          contractor: string | null
           cost: number | null
+          cost_currency: string | null
           country_code: string | null
           description: string
+          end_date: string | null
           evidence_url: string | null
+          funder: string | null
           id: string
           is_verified: boolean | null
           lat: number | null
@@ -1244,18 +1336,25 @@ export type Database = {
           location: string | null
           project_status: string
           sdg_goal: number
+          sponsor: string | null
+          start_date: string | null
           submitted_at: string
           title: string
           updated_at: string
+          usd_exchange_rate: number | null
           user_id: string | null
           verification_count: number | null
         }
         Insert: {
           beneficiaries?: number | null
+          contractor?: string | null
           cost?: number | null
+          cost_currency?: string | null
           country_code?: string | null
           description: string
+          end_date?: string | null
           evidence_url?: string | null
+          funder?: string | null
           id?: string
           is_verified?: boolean | null
           lat?: number | null
@@ -1263,18 +1362,25 @@ export type Database = {
           location?: string | null
           project_status?: string
           sdg_goal: number
+          sponsor?: string | null
+          start_date?: string | null
           submitted_at?: string
           title: string
           updated_at?: string
+          usd_exchange_rate?: number | null
           user_id?: string | null
           verification_count?: number | null
         }
         Update: {
           beneficiaries?: number | null
+          contractor?: string | null
           cost?: number | null
+          cost_currency?: string | null
           country_code?: string | null
           description?: string
+          end_date?: string | null
           evidence_url?: string | null
+          funder?: string | null
           id?: string
           is_verified?: boolean | null
           lat?: number | null
@@ -1282,9 +1388,12 @@ export type Database = {
           location?: string | null
           project_status?: string
           sdg_goal?: number
+          sponsor?: string | null
+          start_date?: string | null
           submitted_at?: string
           title?: string
           updated_at?: string
+          usd_exchange_rate?: number | null
           user_id?: string | null
           verification_count?: number | null
         }
@@ -1592,6 +1701,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_affiliated_with_report: {
+        Args: { _report_id: string; _user_id: string }
         Returns: boolean
       }
       is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
