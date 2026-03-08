@@ -19,15 +19,16 @@ import { toast } from "@/components/ui/sonner";
 import { reportSchema } from "@/lib/reportSchema";
 import ReportStep1 from '@/components/report/ReportStep1';
 import ReportStep2 from '@/components/report/ReportStep2';
-import { mockReports, Report } from '@/data/mockReports';
-import { useUserRole } from '@/contexts/UserRoleContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
   const [sdgTargets, setSdgTargets] = React.useState<string[]>([]);
   type ReportFormValues = z.infer<typeof reportSchema>;
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
@@ -56,67 +57,83 @@ const SubmitReport = () => {
 
   React.useEffect(() => {
     if (sdgGoal) {
-      // In a real app, you'd fetch this. For now, we'll mock it like in your example.
       const mockTargets = [`${sdgGoal}.1`, `${sdgGoal}.2`, `${sdgGoal}.a`, `${sdgGoal}.b`, `${sdgGoal}.c`];
       setSdgTargets(mockTargets);
-      form.setValue('sdg_target', ''); // Reset target when goal changes
+      form.setValue('sdg_target', '');
     } else {
       setSdgTargets([]);
     }
   }, [sdgGoal, form]);
 
-  function onSubmit(values: ReportFormValues) {
-    console.log("Form Submitted:", values);
-
+  async function onSubmit(values: ReportFormValues) {
     if (!user) {
       toast.error("You must be logged in to submit a report.");
       return;
     }
 
-    const newReport: Report = {
-      id: `REP-${String(mockReports.length + 1).padStart(3, '0')}`,
-      title: values.title,
-      description: values.description,
-      sdg_goal: values.sdg_goal,
-      sdg_target: values.sdg_target,
-      project_status: values.project_status as Report['project_status'],
-      location: values.location,
-      submitted_by: user.id.toString(),
-      submitted_at: new Date().toISOString(),
-      lat: values.lat,
-      lng: values.lng,
-      validations: 0,
-      verifications: [],
-      cost: values.cost,
-      costCurrency: values.costCurrency,
-      usd_exchange_rate: values.usd_exchange_rate,
-      startDate: values.startDate?.toISOString(),
-      endDate: values.endDate?.toISOString(),
-      sponsor: values.sponsor,
-      funder: values.funder,
-      contractor: values.contractor,
-      official: user.role === 'Government Official' || user.role === 'Platform Admin',
-    };
-    
-    if (values.photos) {
-      console.log("Photos to upload:", values.photos);
-    }
-    
-    if (values.exchangeRateMode === 'auto' && values.startDate) {
-      const year = values.startDate.getFullYear();
-      console.log(`TODO: Automatically fetch exchange rate for currency ${values.costCurrency} for the year ${year}.`);
-    } else if (values.cost && values.costCurrency && values.costCurrency !== 'USD' && values.usd_exchange_rate) {
-      const usdAmount = values.cost / values.usd_exchange_rate;
-      console.log(`Converted USD amount: ${usdAmount.toFixed(2)}`);
-    }
+    try {
+      // Insert report into Supabase
+      const { data: report, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          title: values.title,
+          description: values.description,
+          sdg_goal: parseInt(values.sdg_goal),
+          project_status: values.project_status || 'planned',
+          location: values.location,
+          user_id: user.id,
+          lat: values.lat || null,
+          lng: values.lng || null,
+          cost: values.cost || null,
+          cost_currency: values.costCurrency || 'USD',
+          usd_exchange_rate: values.usd_exchange_rate || null,
+          start_date: values.startDate?.toISOString().split('T')[0] || null,
+          end_date: values.endDate?.toISOString().split('T')[0] || null,
+          sponsor: values.sponsor || null,
+          funder: values.funder || null,
+          contractor: values.contractor || null,
+          beneficiaries: null,
+        })
+        .select('id')
+        .single();
 
-    mockReports.push(newReport);
+      if (reportError) throw reportError;
 
-    toast.success("Report submitted successfully!", {
-      description: "Your report has been received and will be reviewed.",
-    });
-    form.reset();
-    setStep(1);
+      // Create owner affiliation
+      if (report) {
+        await supabase.from('project_affiliations').insert({
+          report_id: report.id,
+          user_id: user.id,
+          relationship_type: 'owner',
+        });
+      }
+
+      // Upload photos to storage if provided
+      if (values.photos && report) {
+        const files = Array.from(values.photos as FileList);
+        for (const file of files) {
+          const filePath = `${user.id}/${report.id}/${file.name}`;
+          await supabase.storage.from('project-files').upload(filePath, file);
+        }
+      }
+
+      // Handle exchange rate logging
+      if (values.exchangeRateMode === 'auto' && values.startDate) {
+        console.log(`TODO: Auto-fetch exchange rate for ${values.costCurrency} in ${values.startDate.getFullYear()}`);
+      }
+
+      toast.success("Report submitted successfully!", {
+        description: "Your report has been saved. You can now track progress via milestones.",
+      });
+      form.reset();
+      setStep(1);
+      navigate('/my-projects');
+    } catch (error: any) {
+      console.error("Submit error:", error);
+      toast.error("Failed to submit report", {
+        description: error.message || "Please try again.",
+      });
+    }
   }
 
   const nextStep = async () => {
