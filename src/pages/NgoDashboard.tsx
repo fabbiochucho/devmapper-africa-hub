@@ -359,6 +359,9 @@ const NgoDashboard = () => {
         </Card>
       </div>
 
+      {/* Multi-location Manager */}
+      <EntityLocationsManager entityType="ngo" />
+
       {/* Projects List */}
       <Tabs defaultValue="all" className="w-full">
         <TabsList>

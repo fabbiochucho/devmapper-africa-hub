@@ -297,6 +297,9 @@ const CorporateDashboard = () => {
         </Card>
       </div>
 
+      {/* Multi-location Manager */}
+      <EntityLocationsManager entityType="company" />
+
       {/* Targets List */}
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
