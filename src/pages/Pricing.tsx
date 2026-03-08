@@ -434,6 +434,75 @@ const Pricing = () => {
           </Button>
         </div>
 
+        {/* SDG Certification Services */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-3">SDG Certification Services</h2>
+          <p className="text-center text-muted-foreground max-w-2xl mx-auto mb-8">
+            Earn credibility with verified SDG impact. DevMapper issues globally-recognized certifications under the <strong>SDG-PVS 1000</strong> standard.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="text-center">
+                <Shield className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <CardTitle className="text-lg">Self-Assessment</CardTitle>
+                <p className="text-2xl font-bold mt-2">Free</p>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2 text-muted-foreground">
+                <p>• Access SPVF 7-stage workflow</p>
+                <p>• Self-reported evidence upload</p>
+                <p>• Automated SIS scoring</p>
+                <p>• No certificate issued</p>
+                <p className="text-xs pt-2 italic">Included in all plans</p>
+              </CardContent>
+            </Card>
+            <Card className="ring-2 ring-primary relative">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Most Popular</Badge>
+              <CardHeader className="text-center">
+                <Award className="w-8 h-8 mx-auto text-amber-500 mb-2" />
+                <CardTitle className="text-lg">Standard Certification</CardTitle>
+                <p className="text-2xl font-bold mt-2">$299<span className="text-sm font-normal text-muted-foreground">/project</span></p>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2 text-muted-foreground">
+                <p>• Full 7-stage verification</p>
+                <p>• Independent verifier review</p>
+                <p>• Digital SDG certificate</p>
+                <p>• Public verification page</p>
+                <p>• Valid for 2 years</p>
+                <p>• Bronze / Silver / Gold ratings</p>
+                <Button className="w-full mt-4" onClick={() => navigate('/contact')}>
+                  Request Certification
+                </Button>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="text-center">
+                <Crown className="w-8 h-8 mx-auto text-purple-500 mb-2" />
+                <CardTitle className="text-lg">Platinum Certification</CardTitle>
+                <p className="text-2xl font-bold mt-2">$999<span className="text-sm font-normal text-muted-foreground">/project</span></p>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2 text-muted-foreground">
+                <p>• Everything in Standard</p>
+                <p>• On-site verification audit</p>
+                <p>• Satellite/geospatial validation</p>
+                <p>• Platinum-eligible rating</p>
+                <p>• Priority processing (14 days)</p>
+                <p>• Certification badge & API embed</p>
+                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/contact')}>
+                  Request Platinum Review
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="text-center mt-6 space-x-4">
+            <Button variant="link" onClick={() => navigate('/spvf-standards')}>
+              View SPVF Standards →
+            </Button>
+            <Button variant="link" onClick={() => navigate('/verify')}>
+              Verify a Certificate →
+            </Button>
+          </div>
+        </div>
+
         {/* Feature Comparison Table */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">Detailed Feature Comparison</h2>

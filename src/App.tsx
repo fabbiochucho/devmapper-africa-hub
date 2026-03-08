@@ -95,6 +95,8 @@ const App = () => (
                     <Route path="/connect" element={<Connect />} />
                     <Route path="/spvf-standards" element={<SPVFStandards />} />
                     <Route path="/dspm-methodology" element={<DSPMMethodology />} />
+                    <Route path="/verify/:certNumber" element={<VerifyCertificate />} />
+                    <Route path="/verify" element={<VerifyCertificate />} />
                     {/* Protected routes */}
                     <Route path="/analytics" element={<P><Analytics /></P>} />
                     <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
