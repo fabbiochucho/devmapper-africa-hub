@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, CheckCircle, XCircle, Ban } from "lucide-react";
+import { MoreVertical, CheckCircle, XCircle, Ban, Pencil } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -17,7 +17,7 @@ interface UserProfile {
 
 interface UserTableProps {
   users: UserProfile[];
-  onUserAction: (userId: string, action: "block" | "verify" | "delete") => void;
+  onUserAction: (userId: string, action: "block" | "verify" | "delete" | "edit") => void;
 }
 
 const UserTable = ({ users, onUserAction }: UserTableProps) => {
@@ -62,17 +62,19 @@ const UserTable = ({ users, onUserAction }: UserTableProps) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {!user.is_verified && (
-                      <DropdownMenuItem onClick={() => onUserAction(user.id, "verify")}>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Verify
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onClick={() => onUserAction(user.id, "edit")}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Info
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onUserAction(user.id, "verify")}>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      {user.is_verified ? "Review Verification" : "Verify"}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onUserAction(user.id, "block")}>
                       <Ban className="w-4 h-4 mr-2" />
                       Block
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => onUserAction(user.id, "delete")}
                       className="text-destructive"
                     >
