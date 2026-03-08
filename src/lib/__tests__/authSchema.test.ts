@@ -32,7 +32,7 @@ describe("signUpSchema", () => {
     const result = signUpSchema.safeParse({
       name: "John Doe",
       email: "john@example.com",
-      password: "password123",
+      password: "Password123",
       role: "Citizen Reporter",
     });
     expect(result.success).toBe(true);
