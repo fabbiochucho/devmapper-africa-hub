@@ -44,6 +44,8 @@ const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage")
 const ChangeMakerMyAnalytics = lazy(() => import("./pages/ChangeMakerMyAnalytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Scholarship = lazy(() => import("./pages/Scholarship"));
+const MyProjects = lazy(() => import("./pages/MyProjects"));
+const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +99,8 @@ const App = () => (
                     <Route path="/my-analytics" element={<ChangeMakerMyAnalytics />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/scholarship" element={<Scholarship />} />
+                    <Route path="/my-projects" element={<MyProjects />} />
+                    <Route path="/project-analytics" element={<ProjectAnalytics />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
