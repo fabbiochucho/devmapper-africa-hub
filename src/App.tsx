@@ -53,6 +53,9 @@ const BulkUpload = lazy(() => import("./pages/BulkUpload"));
 const SPVFStandards = lazy(() => import("./pages/SPVFStandards"));
 const DSPMMethodology = lazy(() => import("./pages/DSPMMethodology"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
+const SDGIndicatorRegistry = lazy(() => import("./pages/SDGIndicatorRegistry"));
+const CertificationWorkflow = lazy(() => import("./pages/CertificationWorkflow"));
+const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
