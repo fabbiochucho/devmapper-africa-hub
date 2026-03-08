@@ -82,6 +82,7 @@ const SubmitReport = () => {
           sdg_goal: parseInt(values.sdg_goal),
           project_status: values.project_status || 'planned',
           location: values.location,
+          country_code: values.country_code || null,
           user_id: user.id,
           lat: values.lat || null,
           lng: values.lng || null,
