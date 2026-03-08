@@ -82,6 +82,7 @@ const Layout = () => {
 
               <div className="flex items-center gap-3">
                 <LanguageSwitcher />
+                {user && <NotificationBell />}
                 <Button variant="outline" size="sm" asChild className="hidden sm:flex">
                   <Link to="/contact">
                     <MessageCircle className="w-4 h-4 mr-2" />
