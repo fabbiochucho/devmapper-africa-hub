@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PartnerManagement from "@/components/admin/PartnerManagement";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
+import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
@@ -216,6 +217,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="content">Content Moderation</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
+          <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
@@ -400,6 +402,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="test-accounts">
           <TestAccountManager />
+        </TabsContent>
+
+        <TabsContent value="fellowships">
+          <ScholarshipManager />
         </TabsContent>
 
         <TabsContent value="reports">

@@ -42,6 +42,8 @@ const ESG = lazy(() => import("./pages/ESG"));
 const BillingUpgrade = lazy(() => import("./pages/BillingUpgrade"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage"));
 const ChangeMakerMyAnalytics = lazy(() => import("./pages/ChangeMakerMyAnalytics"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Scholarship = lazy(() => import("./pages/Scholarship"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,6 +95,8 @@ const App = () => (
                     <Route path="/ngo-dashboard" element={<NgoDashboard />} />
                     <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
                     <Route path="/my-analytics" element={<ChangeMakerMyAnalytics />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/scholarship" element={<Scholarship />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
