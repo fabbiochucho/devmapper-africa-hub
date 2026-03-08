@@ -49,12 +49,19 @@ describe("UnifiedDashboard", () => {
 
   it("shows sign-in prompt when user is not authenticated", async () => {
     render(<UnifiedDashboard />, { wrapper: Wrapper });
-    expect(await screen.findByText(/sign in/i)).toBeInTheDocument();
+    expect(await screen.findByText("Please sign in to access your dashboard")).toBeInTheDocument();
   });
 
   it("contains a link to /auth for unauthenticated users", async () => {
     render(<UnifiedDashboard />, { wrapper: Wrapper });
-    const link = await screen.findByRole("link", { name: /sign in/i });
+    const link = await screen.findByRole("link", { name: "Sign In" });
     expect(link).toHaveAttribute("href", "/auth");
+  });
+
+  it("does not show role-specific cards when unauthenticated", async () => {
+    render(<UnifiedDashboard />, { wrapper: Wrapper });
+    await screen.findByText("Please sign in to access your dashboard");
+    expect(screen.queryByText(/welcome back/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/citizen reporter/i)).not.toBeInTheDocument();
   });
 });
