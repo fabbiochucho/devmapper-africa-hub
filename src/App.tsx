@@ -56,6 +56,7 @@ const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const SDGIndicatorRegistry = lazy(() => import("./pages/SDGIndicatorRegistry"));
 const CertificationWorkflow = lazy(() => import("./pages/CertificationWorkflow"));
 const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
+const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
