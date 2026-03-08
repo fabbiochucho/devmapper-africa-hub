@@ -10,7 +10,7 @@ interface PaymentRequest {
   // Organization payment
   organizationId?: string;
   provider?: 'flutterwave' | 'paystack';
-  planType?: 'lite' | 'pro';
+  planType?: 'lite' | 'pro' | 'advanced' | 'enterprise';
   interval?: 'monthly' | 'yearly';
   // Donation payment
   payment_type?: 'subscription' | 'donation';
