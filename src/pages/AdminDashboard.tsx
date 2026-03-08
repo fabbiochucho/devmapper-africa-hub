@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PartnerManagement from "@/components/admin/PartnerManagement";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
+import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
