@@ -18,7 +18,7 @@ import UpgradePrompt from "@/components/UpgradePrompt";
 import AICopilot from "@/components/ai/AICopilot";
 import ProjectWorkspace from "@/components/pm/ProjectWorkspace";
 import ProgressUpdateForm from "@/components/pm/ProgressUpdateForm";
-import VerificationPanel from "@/components/pm/VerificationPanel";
+import SPVFVerificationPanel from "@/components/pm/SPVFVerificationPanel";
 import BudgetTracker from "@/components/pm/BudgetTracker";
 import ImpactIndicators from "@/components/pm/ImpactIndicators";
 import {
