@@ -47,6 +47,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setProfile(profileData as UserProfile | null);
       setUserRoles(rolesData?.map(r => r.role) || []);
+
+      // Auto-create organization if none exists (needed for quotas/billing)
+      const { data: existingOrg } = await supabase
+        .from('organizations')
+        .select('id')
+        .eq('created_by', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingOrg) {
+        const name = profileData?.full_name
+          ? `${profileData.full_name}'s Organization`
+          : 'My Organization';
+        await supabase.from('organizations').insert([{ name, created_by: userId }]);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
