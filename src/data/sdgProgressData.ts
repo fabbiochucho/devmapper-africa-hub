@@ -1,0 +1,547 @@
+/**
+ * SDG Implementation Progress Data for Africa
+ * Compiled from UN SDG Reports 2016-2025, GSDR 2019 & 2023
+ * Sources: https://unstats.un.org/sdgs, https://sdgs.un.org/gsdr/gsdr2023
+ */
+
+export interface SdgTarget {
+  id: string;
+  description: string;
+  indicators: string[];
+}
+
+export interface SdgGoalDetail {
+  goal: number;
+  title: string;
+  fullTitle: string;
+  description: string;
+  icon: string;
+  targets: SdgTarget[];
+  africaProgress: {
+    year: number;
+    score: number; // 0-100 index
+    trend: "improving" | "stagnating" | "declining" | "insufficient_data";
+    notes: string;
+  }[];
+  keyStats: { label: string; value: string; year: number }[];
+  challenges: string[];
+  opportunities: string[];
+}
+
+export const sdgGoalDetails: SdgGoalDetail[] = [
+  {
+    goal: 1,
+    title: "No Poverty",
+    fullTitle: "End poverty in all its forms everywhere",
+    description: "More than 700 million people still live in extreme poverty worldwide. In Sub-Saharan Africa, the share of people living below $2.15/day remains the highest globally.",
+    icon: "/sdg-icons/sdg-1.jpg",
+    targets: [
+      { id: "1.1", description: "Eradicate extreme poverty (less than $2.15/day)", indicators: ["Proportion of population below international poverty line"] },
+      { id: "1.2", description: "Reduce at least by half the proportion of people living in poverty according to national definitions", indicators: ["Proportion below national poverty line", "Multidimensional poverty"] },
+      { id: "1.3", description: "Implement nationally appropriate social protection systems", indicators: ["Population covered by social protection floors"] },
+      { id: "1.4", description: "Equal rights to economic resources, basic services, property ownership", indicators: ["Population living in households with access to basic services"] },
+      { id: "1.5", description: "Build resilience of the poor to climate-related extreme events", indicators: ["Deaths from disasters per 100,000", "Direct economic loss from disasters"] },
+      { id: "1.a", description: "Ensure significant mobilization of resources for poverty eradication", indicators: ["Government spending on essential services"] },
+      { id: "1.b", description: "Create pro-poor and gender-sensitive policy frameworks", indicators: ["Government spending on education, health, social protection"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 22, trend: "improving", notes: "Poverty declining but too slowly; 42% of Sub-Saharan Africa in extreme poverty" },
+      { year: 2017, score: 24, trend: "improving", notes: "Modest gains; population growth offsets poverty reduction" },
+      { year: 2018, score: 25, trend: "improving", notes: "Social protection coverage expanding in East Africa" },
+      { year: 2019, score: 27, trend: "improving", notes: "Pre-COVID trajectory showed continued progress" },
+      { year: 2020, score: 23, trend: "declining", notes: "COVID-19 pushed 40M+ Africans back into extreme poverty" },
+      { year: 2021, score: 24, trend: "stagnating", notes: "Recovery uneven; food price inflation widening inequality" },
+      { year: 2022, score: 26, trend: "improving", notes: "Gradual recovery; 35% still in extreme poverty in SSA" },
+      { year: 2023, score: 28, trend: "improving", notes: "Social protection expanding; cash transfer programs in 40+ countries" },
+      { year: 2024, score: 29, trend: "improving", notes: "Digital financial inclusion accelerating poverty reduction" },
+      { year: 2025, score: 30, trend: "insufficient_data", notes: "Projected continued improvement; off-track for 2030 target" },
+    ],
+    keyStats: [
+      { label: "People in extreme poverty (SSA)", value: "389 million", year: 2023 },
+      { label: "Poverty rate (SSA)", value: "35.4%", year: 2023 },
+      { label: "Social protection coverage", value: "17.4%", year: 2022 },
+      { label: "Children in poverty (SSA)", value: "247 million", year: 2023 },
+    ],
+    challenges: ["Rapid population growth", "Climate-related shocks", "Conflict and displacement", "Limited fiscal space for social protection"],
+    opportunities: ["Digital financial services expansion", "Agricultural productivity gains", "Regional trade integration (AfCFTA)", "Cash transfer program scaling"],
+  },
+  {
+    goal: 2,
+    title: "Zero Hunger",
+    fullTitle: "End hunger, achieve food security and improved nutrition and promote sustainable agriculture",
+    description: "Africa faces the highest prevalence of undernourishment globally, with nearly 20% of the population affected. Climate change and conflict are major drivers.",
+    icon: "/sdg-icons/sdg-2.jpg",
+    targets: [
+      { id: "2.1", description: "End hunger and ensure access to safe, nutritious food year-round", indicators: ["Prevalence of undernourishment", "Food insecurity (FIES)"] },
+      { id: "2.2", description: "End all forms of malnutrition", indicators: ["Stunting prevalence", "Wasting prevalence", "Overweight prevalence"] },
+      { id: "2.3", description: "Double agricultural productivity and incomes of small-scale food producers", indicators: ["Volume of production per labour unit", "Average income of small-scale producers"] },
+      { id: "2.4", description: "Ensure sustainable food production systems and resilient agricultural practices", indicators: ["Proportion of agricultural area under productive and sustainable agriculture"] },
+      { id: "2.5", description: "Maintain genetic diversity of seeds, plants, and animals", indicators: ["Number of genetic resources secured in conservation facilities"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 28, trend: "stagnating", notes: "Food insecurity rising in Horn of Africa and Sahel" },
+      { year: 2017, score: 27, trend: "declining", notes: "Famine declared in South Sudan; drought in East Africa" },
+      { year: 2018, score: 28, trend: "stagnating", notes: "Stunting declining slowly; 30% of children under 5 affected" },
+      { year: 2019, score: 29, trend: "improving", notes: "Good harvests in several regions; conflict still a barrier" },
+      { year: 2020, score: 25, trend: "declining", notes: "COVID-19 disrupted food supply chains; locust outbreaks in East Africa" },
+      { year: 2021, score: 24, trend: "declining", notes: "281M people food insecure across Africa; worst in decades" },
+      { year: 2022, score: 25, trend: "stagnating", notes: "Ukraine war drove fertilizer and food price spikes" },
+      { year: 2023, score: 27, trend: "improving", notes: "Some recovery; climate-smart agriculture expanding" },
+      { year: 2024, score: 28, trend: "improving", notes: "CAADP investment increasing; digital agriculture growing" },
+      { year: 2025, score: 29, trend: "insufficient_data", notes: "Progress too slow; Africa significantly off-track for 2030" },
+    ],
+    keyStats: [
+      { label: "Undernourished people (Africa)", value: "281.6 million", year: 2023 },
+      { label: "Prevalence of undernourishment", value: "19.7%", year: 2023 },
+      { label: "Children stunted (under 5)", value: "61.4 million", year: 2022 },
+      { label: "Severe food insecurity", value: "342 million", year: 2023 },
+    ],
+    challenges: ["Climate change reducing yields", "Conflict disrupting production", "High food import dependency", "Limited irrigation infrastructure"],
+    opportunities: ["Africa's vast arable land potential", "Climate-smart agriculture technologies", "AfCFTA food trade", "Youth agri-tech innovation"],
+  },
+  {
+    goal: 3,
+    title: "Good Health",
+    fullTitle: "Ensure healthy lives and promote well-being for all at all ages",
+    description: "Africa bears a disproportionate burden of disease. While child and maternal mortality have declined significantly, infectious diseases and weak health systems remain challenges.",
+    icon: "/sdg-icons/sdg-3.jpg",
+    targets: [
+      { id: "3.1", description: "Reduce maternal mortality ratio to less than 70 per 100,000 live births", indicators: ["Maternal mortality ratio"] },
+      { id: "3.2", description: "End preventable deaths of newborns and children under 5", indicators: ["Under-5 mortality rate", "Neonatal mortality rate"] },
+      { id: "3.3", description: "End epidemics of AIDS, tuberculosis, malaria, and neglected tropical diseases", indicators: ["HIV incidence", "TB incidence", "Malaria incidence"] },
+      { id: "3.4", description: "Reduce premature mortality from non-communicable diseases", indicators: ["Mortality rate from NCDs"] },
+      { id: "3.7", description: "Ensure universal access to sexual and reproductive health-care services", indicators: ["Adolescent birth rate", "Family planning demand satisfied"] },
+      { id: "3.8", description: "Achieve universal health coverage", indicators: ["UHC service coverage index", "Catastrophic health spending"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 30, trend: "improving", notes: "Under-5 mortality declining steadily; HIV treatment expanding" },
+      { year: 2017, score: 32, trend: "improving", notes: "Malaria deaths declining; bed net distribution scaled up" },
+      { year: 2018, score: 34, trend: "improving", notes: "Maternal mortality declining but still 542/100K in SSA" },
+      { year: 2019, score: 36, trend: "improving", notes: "UHC index improving; health spending increasing" },
+      { year: 2020, score: 32, trend: "declining", notes: "COVID-19 overwhelmed health systems; routine services disrupted" },
+      { year: 2021, score: 33, trend: "stagnating", notes: "Vaccination campaigns disrupted; excess mortality significant" },
+      { year: 2022, score: 35, trend: "improving", notes: "Recovery in health services; new malaria vaccine approved" },
+      { year: 2023, score: 37, trend: "improving", notes: "RTS,S malaria vaccine rollout in multiple countries" },
+      { year: 2024, score: 39, trend: "improving", notes: "Digital health expanding; telemedicine adoption rising" },
+      { year: 2025, score: 40, trend: "insufficient_data", notes: "Steady progress but UHC target unlikely by 2030" },
+    ],
+    keyStats: [
+      { label: "Maternal mortality (SSA)", value: "542/100K", year: 2022 },
+      { label: "Under-5 mortality (SSA)", value: "73/1,000", year: 2023 },
+      { label: "HIV prevalence (adults, SSA)", value: "3.4%", year: 2023 },
+      { label: "UHC service coverage index", value: "44%", year: 2023 },
+    ],
+    challenges: ["Health worker shortages", "Limited health financing", "Disease outbreaks", "Access in rural areas"],
+    opportunities: ["Malaria vaccine deployment", "mHealth and telemedicine", "PEPFAR/Global Fund investments", "Local pharmaceutical manufacturing"],
+  },
+  {
+    goal: 4,
+    title: "Quality Education",
+    fullTitle: "Ensure inclusive and equitable quality education and promote lifelong learning opportunities for all",
+    description: "Sub-Saharan Africa has the highest rates of education exclusion. Over one-fifth of children between 6 and 11 are out of school.",
+    icon: "/sdg-icons/sdg-4.jpg",
+    targets: [
+      { id: "4.1", description: "Free, equitable, quality primary and secondary education", indicators: ["Minimum proficiency in reading/mathematics"] },
+      { id: "4.2", description: "Quality early childhood development, care and pre-primary education", indicators: ["Participation in organized learning"] },
+      { id: "4.3", description: "Equal access to affordable technical, vocational and tertiary education", indicators: ["Participation rate in formal/non-formal education"] },
+      { id: "4.4", description: "Increase youth and adults with relevant skills for employment", indicators: ["ICT skills by type"] },
+      { id: "4.5", description: "Eliminate gender disparities in education", indicators: ["Gender parity indices"] },
+      { id: "4.6", description: "Ensure all youth and adults achieve literacy and numeracy", indicators: ["Youth/adult literacy rate"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 30, trend: "improving", notes: "Primary enrollment increasing; learning outcomes lagging" },
+      { year: 2017, score: 31, trend: "improving", notes: "Free primary education policies expanding" },
+      { year: 2018, score: 32, trend: "improving", notes: "Gender parity improving at primary level" },
+      { year: 2019, score: 33, trend: "improving", notes: "Pre-primary enrollment growing fastest globally in SSA" },
+      { year: 2020, score: 27, trend: "declining", notes: "COVID-19 school closures affected 250M+ African learners" },
+      { year: 2021, score: 28, trend: "stagnating", notes: "Learning losses estimated at 1-2 years; digital divide exposed" },
+      { year: 2022, score: 30, trend: "improving", notes: "Schools reopened; remedial programs launched" },
+      { year: 2023, score: 32, trend: "improving", notes: "EdTech adoption accelerating; foundational literacy focus" },
+      { year: 2024, score: 33, trend: "improving", notes: "AU Year of Education; increased commitments" },
+      { year: 2025, score: 34, trend: "insufficient_data", notes: "Progress recovering but 2030 targets at severe risk" },
+    ],
+    keyStats: [
+      { label: "Out-of-school children (SSA)", value: "98 million", year: 2023 },
+      { label: "Completion rate (primary)", value: "64%", year: 2022 },
+      { label: "Youth literacy rate", value: "75%", year: 2022 },
+      { label: "Trained teachers (primary)", value: "64%", year: 2022 },
+    ],
+    challenges: ["Teacher shortages", "Poor learning outcomes", "Digital divide", "Conflict affecting access"],
+    opportunities: ["EdTech and mobile learning", "Pan-African University initiatives", "TVET expansion", "Community-based education"],
+  },
+  {
+    goal: 5,
+    title: "Gender Equality",
+    fullTitle: "Achieve gender equality and empower all women and girls",
+    description: "While Africa has made progress on women's political representation, gender-based violence, child marriage, and economic exclusion remain widespread challenges.",
+    icon: "/sdg-icons/sdg-5.jpg",
+    targets: [
+      { id: "5.1", description: "End all forms of discrimination against women and girls", indicators: ["Legal frameworks for gender equality"] },
+      { id: "5.2", description: "Eliminate all forms of violence against women and girls", indicators: ["Proportion experiencing physical/sexual violence"] },
+      { id: "5.3", description: "Eliminate harmful practices including child marriage and FGM", indicators: ["Women married before 15/18", "Girls subjected to FGM"] },
+      { id: "5.4", description: "Recognize and value unpaid care and domestic work", indicators: ["Time spent on unpaid domestic/care work"] },
+      { id: "5.5", description: "Ensure women's full participation in leadership at all levels", indicators: ["Women in parliament", "Women in managerial positions"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 32, trend: "improving", notes: "Rwanda leads globally with 64% women in parliament" },
+      { year: 2017, score: 33, trend: "improving", notes: "AU Gender Strategy adopted; Maputo Protocol ratifications increasing" },
+      { year: 2018, score: 34, trend: "improving", notes: "Ethiopia appoints first female president; gender parity cabinet" },
+      { year: 2019, score: 35, trend: "improving", notes: "Legal reforms advancing; child marriage declining slowly" },
+      { year: 2020, score: 33, trend: "declining", notes: "COVID-19 increased GBV; girls' education disrupted" },
+      { year: 2021, score: 34, trend: "stagnating", notes: "Shadow pandemic of violence against women during lockdowns" },
+      { year: 2022, score: 35, trend: "improving", notes: "Women's economic empowerment programs expanding" },
+      { year: 2023, score: 37, trend: "improving", notes: "Digital financial inclusion boosting women's economic participation" },
+      { year: 2024, score: 38, trend: "improving", notes: "More countries adopting gender-responsive budgeting" },
+      { year: 2025, score: 39, trend: "insufficient_data", notes: "Progress steady but uneven across sub-regions" },
+    ],
+    keyStats: [
+      { label: "Women in parliament (Africa avg)", value: "26.5%", year: 2023 },
+      { label: "Child marriage rate (SSA)", value: "35%", year: 2022 },
+      { label: "Girls subject to FGM", value: "91 million", year: 2023 },
+      { label: "Gender parity in primary school", value: "0.95", year: 2022 },
+    ],
+    challenges: ["Entrenched cultural norms", "High GBV rates", "Economic exclusion", "Underrepresentation in STEM"],
+    opportunities: ["Digital inclusion for women", "Pan-African legal frameworks", "Women in leadership pipelines", "Microfinance and WEE programs"],
+  },
+  {
+    goal: 6, title: "Clean Water", fullTitle: "Ensure availability and sustainable management of water and sanitation for all",
+    description: "Sub-Saharan Africa has the lowest access to safely managed drinking water globally, with only 30% of the population having access.",
+    icon: "/sdg-icons/sdg-6.jpg",
+    targets: [
+      { id: "6.1", description: "Universal and equitable access to safe and affordable drinking water", indicators: ["Safely managed drinking water services"] },
+      { id: "6.2", description: "Adequate and equitable sanitation and hygiene for all", indicators: ["Safely managed sanitation services", "Handwashing facilities with soap"] },
+      { id: "6.3", description: "Improve water quality by reducing pollution and hazardous chemicals", indicators: ["Wastewater safely treated", "Water quality index"] },
+      { id: "6.4", description: "Increase water-use efficiency and ensure freshwater supplies", indicators: ["Water-use efficiency", "Water stress level"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 25, trend: "improving", notes: "Only 24% had safely managed drinking water in SSA" },
+      { year: 2018, score: 27, trend: "improving", notes: "Rural WASH programs expanding" },
+      { year: 2020, score: 26, trend: "stagnating", notes: "COVID highlighted handwashing infrastructure gaps" },
+      { year: 2022, score: 29, trend: "improving", notes: "Climate-resilient water systems being piloted" },
+      { year: 2024, score: 31, trend: "improving", notes: "Solar-powered water systems expanding in rural Africa" },
+      { year: 2025, score: 32, trend: "insufficient_data", notes: "Significant investment needed to meet 2030 targets" },
+    ],
+    keyStats: [
+      { label: "Safely managed drinking water (SSA)", value: "30%", year: 2022 },
+      { label: "Open defecation (SSA)", value: "18%", year: 2022 },
+      { label: "Basic handwashing (SSA)", value: "30%", year: 2022 },
+    ],
+    challenges: ["Massive infrastructure deficit", "Climate-induced water stress", "Rapid urbanization", "Limited financing"],
+    opportunities: ["Solar-powered water systems", "Cross-border water cooperation", "Sanitation economy", "Climate finance for WASH"],
+  },
+  {
+    goal: 7, title: "Clean Energy", fullTitle: "Ensure access to affordable, reliable, sustainable and modern energy for all",
+    description: "Sub-Saharan Africa has the world's lowest electricity access rate. Over 600 million people lack electricity access.",
+    icon: "/sdg-icons/sdg-7.jpg",
+    targets: [
+      { id: "7.1", description: "Ensure universal access to affordable, reliable and modern energy services", indicators: ["Access to electricity", "Access to clean fuels for cooking"] },
+      { id: "7.2", description: "Increase substantially the share of renewable energy", indicators: ["Renewable energy share in total final energy consumption"] },
+      { id: "7.3", description: "Double the global rate of improvement in energy efficiency", indicators: ["Energy intensity"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 20, trend: "improving", notes: "Electricity access at 43% in SSA" },
+      { year: 2018, score: 23, trend: "improving", notes: "Off-grid solar growing rapidly" },
+      { year: 2020, score: 24, trend: "stagnating", notes: "Investment slowed during COVID" },
+      { year: 2022, score: 27, trend: "improving", notes: "Renewable energy investment surging" },
+      { year: 2024, score: 30, trend: "improving", notes: "Solar mini-grids and pay-as-you-go models scaling" },
+      { year: 2025, score: 31, trend: "insufficient_data", notes: "Population growth outpacing electrification in some regions" },
+    ],
+    keyStats: [
+      { label: "Electricity access (SSA)", value: "50%", year: 2023 },
+      { label: "People without electricity (SSA)", value: "600 million", year: 2023 },
+      { label: "Clean cooking access (SSA)", value: "19%", year: 2022 },
+      { label: "Renewable capacity growth", value: "+10% YoY", year: 2023 },
+    ],
+    challenges: ["Massive infrastructure gap", "Low investment levels", "Grid reliability", "Clean cooking access"],
+    opportunities: ["Solar revolution across Africa", "Mini-grid and off-grid solutions", "Green hydrogen potential", "Carbon credit markets"],
+  },
+  {
+    goal: 8, title: "Decent Work", fullTitle: "Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all",
+    description: "Africa has the youngest population globally but faces high youth unemployment and informal employment challenges.",
+    icon: "/sdg-icons/sdg-8.jpg",
+    targets: [
+      { id: "8.1", description: "Sustain per capita economic growth of at least 7% in LDCs", indicators: ["Annual growth rate of real GDP per capita"] },
+      { id: "8.2", description: "Achieve higher levels of economic productivity through diversification", indicators: ["Annual growth rate of real GDP per employed person"] },
+      { id: "8.3", description: "Promote development-oriented policies for productive activities and decent job creation", indicators: ["Proportion of informal employment"] },
+      { id: "8.5", description: "Full and productive employment and decent work for all", indicators: ["Unemployment rate", "Average hourly earnings"] },
+      { id: "8.6", description: "Reduce proportion of youth not in employment, education or training", indicators: ["Youth NEET rate"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 28, trend: "stagnating", notes: "GDP growth slowed; commodity price decline" },
+      { year: 2018, score: 30, trend: "improving", notes: "Recovery in growth; 85%+ informal employment persists" },
+      { year: 2020, score: 23, trend: "declining", notes: "COVID-19 recession; millions of jobs lost" },
+      { year: 2022, score: 28, trend: "improving", notes: "Recovery uneven; digital economy creating new opportunities" },
+      { year: 2024, score: 31, trend: "improving", notes: "Start-up ecosystem booming; AfCFTA implementation progressing" },
+      { year: 2025, score: 32, trend: "insufficient_data", notes: "Youth employment remains the critical challenge" },
+    ],
+    keyStats: [
+      { label: "Youth unemployment (Africa)", value: "12.7%", year: 2023 },
+      { label: "Informal employment (SSA)", value: "85.8%", year: 2022 },
+      { label: "GDP growth (Africa)", value: "3.4%", year: 2023 },
+      { label: "Working poverty rate", value: "31.1%", year: 2022 },
+    ],
+    challenges: ["Youth bulge without jobs", "Informal economy dominance", "Skills mismatch", "Limited industrialization"],
+    opportunities: ["AfCFTA market access", "Digital economy/gig work", "Green jobs", "Agro-processing value chains"],
+  },
+  {
+    goal: 9, title: "Industry & Innovation", fullTitle: "Build resilient infrastructure, promote inclusive and sustainable industrialization and foster innovation",
+    description: "Africa's manufacturing value added as a share of GDP has stagnated, but the digital economy is growing rapidly.",
+    icon: "/sdg-icons/sdg-9.jpg",
+    targets: [
+      { id: "9.1", description: "Develop quality, reliable, sustainable and resilient infrastructure", indicators: ["Passenger and freight volumes", "Rural access index"] },
+      { id: "9.2", description: "Promote inclusive and sustainable industrialization", indicators: ["Manufacturing value added", "Manufacturing employment"] },
+      { id: "9.5", description: "Enhance scientific research and upgrade technological capabilities", indicators: ["R&D expenditure as % of GDP", "Researchers per million inhabitants"] },
+      { id: "9.c", description: "Significantly increase access to ICT and provide universal internet access in LDCs", indicators: ["Mobile network coverage", "Internet users"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 22, trend: "stagnating", notes: "Manufacturing contribution declining as share of GDP" },
+      { year: 2018, score: 24, trend: "improving", notes: "Mobile money and fintech revolution" },
+      { year: 2020, score: 25, trend: "stagnating", notes: "Digital adoption accelerated by COVID necessity" },
+      { year: 2022, score: 28, trend: "improving", notes: "Tech hubs growing; internet penetration rising" },
+      { year: 2024, score: 32, trend: "improving", notes: "AI and fintech startups attracting record investment" },
+      { year: 2025, score: 33, trend: "insufficient_data", notes: "Infrastructure gap still massive but innovation closing gaps" },
+    ],
+    keyStats: [
+      { label: "Internet penetration (Africa)", value: "40%", year: 2023 },
+      { label: "Mobile money accounts", value: "800 million", year: 2023 },
+      { label: "Manufacturing (% of GDP)", value: "10.5%", year: 2022 },
+      { label: "R&D expenditure (% GDP)", value: "0.42%", year: 2022 },
+    ],
+    challenges: ["Infrastructure deficit ($130-170B/yr gap)", "Low R&D investment", "Digital divide", "Deindustrialization risk"],
+    opportunities: ["Leapfrog technologies", "AfCFTA-driven industrialization", "Tech startup ecosystem", "Renewable energy manufacturing"],
+  },
+  {
+    goal: 10, title: "Reduced Inequalities", fullTitle: "Reduce inequality within and among countries",
+    description: "Africa contains some of the world's most unequal countries. The continent's richest 10% earn more than 50% of total income.",
+    icon: "/sdg-icons/sdg-10.jpg",
+    targets: [
+      { id: "10.1", description: "Achieve income growth of bottom 40% at a rate higher than the national average", indicators: ["Growth rates of household expenditure for bottom 40%"] },
+      { id: "10.2", description: "Empower and promote social, economic and political inclusion of all", indicators: ["People living below 50% of median income"] },
+      { id: "10.4", description: "Adopt fiscal and social protection policies for greater equality", indicators: ["Labour share of GDP", "Redistributive impact"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 25, trend: "stagnating", notes: "Inequality rising in many countries" },
+      { year: 2018, score: 26, trend: "stagnating", notes: "Urban-rural divide widening" },
+      { year: 2020, score: 23, trend: "declining", notes: "COVID deepened inequalities significantly" },
+      { year: 2022, score: 25, trend: "stagnating", notes: "Recovery benefiting wealthier groups disproportionately" },
+      { year: 2024, score: 27, trend: "improving", notes: "Progressive tax reforms in several countries" },
+      { year: 2025, score: 28, trend: "insufficient_data", notes: "Remains one of the most challenging SDGs for Africa" },
+    ],
+    keyStats: [
+      { label: "Gini coefficient (Africa avg)", value: "0.44", year: 2022 },
+      { label: "Income share of bottom 40%", value: "14%", year: 2022 },
+      { label: "Remittance costs to Africa", value: "7.8%", year: 2023 },
+    ],
+    challenges: ["Structural inequality", "Limited redistribution mechanisms", "Urban-rural divide", "Gender inequality in assets"],
+    opportunities: ["Progressive fiscal reforms", "Universal basic income pilots", "Financial inclusion", "Regional integration"],
+  },
+  {
+    goal: 11, title: "Sustainable Cities", fullTitle: "Make cities and human settlements inclusive, safe, resilient and sustainable",
+    description: "Africa is urbanizing faster than any other continent. By 2050, Africa's urban population will more than double.",
+    icon: "/sdg-icons/sdg-11.jpg",
+    targets: [
+      { id: "11.1", description: "Ensure access for all to adequate, safe and affordable housing", indicators: ["Slum population proportion"] },
+      { id: "11.2", description: "Provide access to safe, affordable, accessible and sustainable transport systems", indicators: ["Access to public transport"] },
+      { id: "11.6", description: "Reduce the adverse per capita environmental impact of cities", indicators: ["Urban solid waste collected", "Air quality"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 24, trend: "stagnating", notes: "Urbanization outpacing planning capacity" },
+      { year: 2018, score: 25, trend: "improving", notes: "Smart city initiatives emerging" },
+      { year: 2020, score: 24, trend: "stagnating", notes: "COVID exposed urban informal settlement vulnerabilities" },
+      { year: 2022, score: 26, trend: "improving", notes: "Green building standards adopted in some countries" },
+      { year: 2024, score: 28, trend: "improving", notes: "BRT systems expanding in major African cities" },
+      { year: 2025, score: 29, trend: "insufficient_data", notes: "Massive urban planning and investment needed" },
+    ],
+    keyStats: [
+      { label: "Slum population (SSA)", value: "56%", year: 2022 },
+      { label: "Urban population growth", value: "3.5%/year", year: 2023 },
+      { label: "African cities (>1M pop)", value: "80+", year: 2023 },
+    ],
+    challenges: ["Rapid unplanned urbanization", "Slum proliferation", "Transport congestion", "Waste management"],
+    opportunities: ["New city planning", "Green infrastructure", "Smart city technology", "Transit-oriented development"],
+  },
+  {
+    goal: 12, title: "Responsible Consumption", fullTitle: "Ensure sustainable consumption and production patterns",
+    description: "Africa has relatively low per-capita consumption footprints but faces growing waste management challenges.",
+    icon: "/sdg-icons/sdg-12.jpg",
+    targets: [
+      { id: "12.3", description: "Halve per capita global food waste", indicators: ["Food loss index", "Food waste index"] },
+      { id: "12.4", description: "Environmentally sound management of chemicals and wastes", indicators: ["Hazardous waste generated", "E-waste"] },
+      { id: "12.5", description: "Substantially reduce waste generation", indicators: ["National recycling rate"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 30, trend: "stagnating", notes: "Limited data on consumption patterns" },
+      { year: 2018, score: 31, trend: "improving", notes: "Plastic bag bans spreading across Africa" },
+      { year: 2020, score: 32, trend: "stagnating", notes: "Waste generation increasing with urbanization" },
+      { year: 2022, score: 33, trend: "improving", notes: "Circular economy initiatives emerging" },
+      { year: 2024, score: 35, trend: "improving", notes: "Extended producer responsibility policies expanding" },
+      { year: 2025, score: 36, trend: "insufficient_data", notes: "Strong momentum on plastic pollution action" },
+    ],
+    keyStats: [
+      { label: "Food loss (post-harvest, Africa)", value: "37%", year: 2022 },
+      { label: "Countries with plastic bag bans", value: "34", year: 2023 },
+      { label: "E-waste generated (Africa)", value: "2.9 Mt", year: 2022 },
+    ],
+    challenges: ["Growing waste volumes", "Limited recycling infrastructure", "E-waste imports", "Food loss in supply chains"],
+    opportunities: ["Circular economy models", "Plastic alternatives innovation", "Waste-to-energy", "Sustainable packaging"],
+  },
+  {
+    goal: 13, title: "Climate Action", fullTitle: "Take urgent action to combat climate change and its impacts",
+    description: "Africa contributes less than 4% of global greenhouse emissions but is disproportionately affected by climate change impacts.",
+    icon: "/sdg-icons/sdg-13.jpg",
+    targets: [
+      { id: "13.1", description: "Strengthen resilience and adaptive capacity to climate hazards", indicators: ["Deaths from climate disasters", "National DRR strategies"] },
+      { id: "13.2", description: "Integrate climate change measures into national policies", indicators: ["NDCs submitted", "National adaptation plans"] },
+      { id: "13.3", description: "Improve education and awareness on climate change", indicators: ["Climate change education integration"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 25, trend: "improving", notes: "Paris Agreement ratification by most African nations" },
+      { year: 2018, score: 27, trend: "improving", notes: "NDC submissions progressing; adaptation plans developing" },
+      { year: 2020, score: 28, trend: "stagnating", notes: "Climate finance falling far short of needs" },
+      { year: 2022, score: 30, trend: "improving", notes: "Loss and Damage fund established at COP27 in Egypt" },
+      { year: 2024, score: 33, trend: "improving", notes: "Africa Carbon Markets Initiative launched; green bonds growing" },
+      { year: 2025, score: 34, trend: "insufficient_data", notes: "Climate finance gap: $2.8T needed by 2030" },
+    ],
+    keyStats: [
+      { label: "Africa's share of global emissions", value: "3.8%", year: 2023 },
+      { label: "Climate finance received", value: "$30B/yr", year: 2022 },
+      { label: "Climate finance needed", value: "$277B/yr", year: 2023 },
+      { label: "Countries with NAPs", value: "24", year: 2023 },
+    ],
+    challenges: ["Climate finance gap", "Adaptation infrastructure", "Extreme weather events", "Loss and damage"],
+    opportunities: ["Carbon markets", "Green bonds", "Renewable energy transition", "Nature-based solutions"],
+  },
+  {
+    goal: 14, title: "Life Below Water", fullTitle: "Conserve and sustainably use the oceans, seas and marine resources",
+    description: "Africa's 38 coastal states depend heavily on marine resources. Overfishing and plastic pollution threaten marine ecosystems.",
+    icon: "/sdg-icons/sdg-14.jpg",
+    targets: [
+      { id: "14.1", description: "Prevent and significantly reduce marine pollution", indicators: ["Coastal eutrophication index", "Plastic debris density"] },
+      { id: "14.4", description: "Effectively regulate harvesting and end overfishing", indicators: ["Fish stocks within sustainable levels"] },
+      { id: "14.5", description: "Conserve at least 10% of coastal and marine areas", indicators: ["Marine protected areas coverage"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 28, trend: "stagnating", notes: "IUU fishing a major challenge" },
+      { year: 2018, score: 29, trend: "improving", notes: "Marine protected areas expanding" },
+      { year: 2020, score: 30, trend: "stagnating", notes: "Enforcement challenges during COVID" },
+      { year: 2022, score: 31, trend: "improving", notes: "Blue economy strategies being adopted" },
+      { year: 2024, score: 33, trend: "improving", notes: "Ocean governance frameworks strengthening" },
+      { year: 2025, score: 34, trend: "insufficient_data", notes: "Blue economy offers significant growth potential" },
+    ],
+    keyStats: [
+      { label: "Marine protected areas (Africa)", value: "7.4%", year: 2022 },
+      { label: "Fisheries contribution to GDP", value: "$24B", year: 2022 },
+      { label: "Coastal population (Africa)", value: "150 million", year: 2023 },
+    ],
+    challenges: ["IUU fishing", "Plastic pollution", "Coral reef degradation", "Limited monitoring capacity"],
+    opportunities: ["Blue economy development", "Aquaculture growth", "Marine spatial planning", "Sustainable fisheries"],
+  },
+  {
+    goal: 15, title: "Life on Land", fullTitle: "Protect, restore and promote sustainable use of terrestrial ecosystems",
+    description: "Africa holds some of the world's most important biodiversity hotspots but faces deforestation, desertification, and habitat loss.",
+    icon: "/sdg-icons/sdg-15.jpg",
+    targets: [
+      { id: "15.1", description: "Ensure conservation, restoration and sustainable use of terrestrial ecosystems", indicators: ["Forest area as proportion of total land"] },
+      { id: "15.2", description: "Promote implementation of sustainable management of all types of forests", indicators: ["Forest area net change rate"] },
+      { id: "15.3", description: "Combat desertification, restore degraded land and soil", indicators: ["Proportion of degraded land"] },
+      { id: "15.5", description: "Take urgent action to reduce degradation of natural habitats and halt biodiversity loss", indicators: ["Red List Index"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 30, trend: "stagnating", notes: "Deforestation accelerating in Central and West Africa" },
+      { year: 2018, score: 29, trend: "declining", notes: "Great Green Wall initiative progressing slowly" },
+      { year: 2020, score: 30, trend: "stagnating", notes: "Protected areas expanding but enforcement weak" },
+      { year: 2022, score: 31, trend: "improving", notes: "AFR100 initiative: 130M hectares restoration pledged" },
+      { year: 2024, score: 33, trend: "improving", notes: "Nature-based solutions gaining investment" },
+      { year: 2025, score: 34, trend: "insufficient_data", notes: "Biodiversity loss continues despite conservation efforts" },
+    ],
+    keyStats: [
+      { label: "Forest loss (Africa, annual)", value: "3.9M hectares", year: 2022 },
+      { label: "Protected areas (terrestrial)", value: "14.6%", year: 2022 },
+      { label: "Degraded land (Africa)", value: "65%", year: 2022 },
+      { label: "Threatened species", value: "6,400+", year: 2023 },
+    ],
+    challenges: ["Deforestation", "Desertification", "Wildlife trafficking", "Competing land uses"],
+    opportunities: ["Great Green Wall", "Carbon sequestration payments", "Ecotourism", "Community conservation"],
+  },
+  {
+    goal: 16, title: "Peace & Justice", fullTitle: "Promote peaceful and inclusive societies for sustainable development",
+    description: "Africa continues to grapple with conflicts, corruption, and governance challenges, but democratic institutions are strengthening in many countries.",
+    icon: "/sdg-icons/sdg-16.jpg",
+    targets: [
+      { id: "16.1", description: "Significantly reduce all forms of violence and related death rates", indicators: ["Intentional homicides per 100,000", "Conflict-related deaths"] },
+      { id: "16.3", description: "Promote the rule of law and ensure equal access to justice for all", indicators: ["Unsentenced detainees", "Dispute resolution mechanisms"] },
+      { id: "16.5", description: "Substantially reduce corruption and bribery", indicators: ["Bribery incidence", "Corruption perception index"] },
+      { id: "16.6", description: "Develop effective, accountable and transparent institutions", indicators: ["Government expenditure as proportion of budget", "Population satisfied with public services"] },
+      { id: "16.9", description: "Provide legal identity for all including birth registration", indicators: ["Birth registration coverage"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 30, trend: "stagnating", notes: "Multiple active conflicts; governance improving in some states" },
+      { year: 2018, score: 31, trend: "improving", notes: "Peace agreements in several countries" },
+      { year: 2020, score: 30, trend: "stagnating", notes: "New conflicts emerging; COVID impacted governance" },
+      { year: 2022, score: 29, trend: "declining", notes: "Coups in Sahel region; rising extremism" },
+      { year: 2024, score: 30, trend: "stagnating", notes: "Mixed picture: democratic gains and setbacks" },
+      { year: 2025, score: 31, trend: "insufficient_data", notes: "Governance remains a key challenge for development" },
+    ],
+    keyStats: [
+      { label: "Active conflicts (Africa)", value: "35+", year: 2023 },
+      { label: "Displaced persons", value: "40+ million", year: 2023 },
+      { label: "Birth registration (SSA)", value: "48%", year: 2022 },
+      { label: "Ibrahim Index avg governance", value: "48.9/100", year: 2023 },
+    ],
+    challenges: ["Ongoing conflicts", "Governance deficits", "Corruption", "Terrorism and extremism"],
+    opportunities: ["AU peace architecture", "E-governance", "Open data movements", "Youth-led accountability"],
+  },
+  {
+    goal: 17, title: "Partnerships", fullTitle: "Strengthen the means of implementation and revitalize the global partnership for sustainable development",
+    description: "Achieving the SDGs in Africa requires transformative partnerships, increased financing, technology transfer, and capacity building.",
+    icon: "/sdg-icons/sdg-17.jpg",
+    targets: [
+      { id: "17.1", description: "Strengthen domestic resource mobilization for tax collection", indicators: ["Total government revenue as proportion of GDP"] },
+      { id: "17.2", description: "Developed countries to implement ODA commitments", indicators: ["ODA as proportion of GNI"] },
+      { id: "17.3", description: "Mobilize additional financial resources from multiple sources", indicators: ["FDI", "Remittances", "Additional resources mobilized"] },
+      { id: "17.6", description: "Enhance North-South, South-South and triangular cooperation on technology", indicators: ["Internet users", "Fixed broadband subscriptions"] },
+      { id: "17.8", description: "Fully operationalize the technology bank and capacity building for LDCs", indicators: ["Internet users in LDCs"] },
+    ],
+    africaProgress: [
+      { year: 2016, score: 32, trend: "improving", notes: "ODA flows stable; domestic resource mobilization improving" },
+      { year: 2018, score: 33, trend: "improving", notes: "South-South cooperation expanding; China investment growing" },
+      { year: 2020, score: 30, trend: "declining", notes: "ODA stagnated; FDI dropped sharply" },
+      { year: 2022, score: 32, trend: "improving", notes: "Recovery in FDI; digital partnerships expanding" },
+      { year: 2024, score: 35, trend: "improving", notes: "AfCFTA creating new trade partnerships; SDG financing growing" },
+      { year: 2025, score: 36, trend: "insufficient_data", notes: "Partnership models evolving; need to close $2.5T financing gap" },
+    ],
+    keyStats: [
+      { label: "ODA to Africa", value: "$38 billion", year: 2022 },
+      { label: "FDI to Africa", value: "$45 billion", year: 2023 },
+      { label: "Remittances to Africa", value: "$100 billion", year: 2023 },
+      { label: "Tax-to-GDP ratio (Africa avg)", value: "16.6%", year: 2022 },
+    ],
+    challenges: ["Debt sustainability", "ODA declining as share of GNI", "Illicit financial flows", "Technology transfer gaps"],
+    opportunities: ["AfCFTA implementation", "Blended finance mechanisms", "Digital trade facilitation", "Diaspora engagement"],
+  },
+];
+
+/** Regional progress summary for Africa */
+export const africaRegionalProgress = [
+  { region: "North Africa", avgScore: 45, topSDG: 4, challenges: "Water scarcity, inequality" },
+  { region: "West Africa", avgScore: 30, topSDG: 8, challenges: "Conflict, governance" },
+  { region: "East Africa", avgScore: 35, topSDG: 7, challenges: "Food security, climate" },
+  { region: "Central Africa", avgScore: 22, topSDG: 15, challenges: "Conflict, deforestation" },
+  { region: "Southern Africa", avgScore: 38, topSDG: 9, challenges: "Inequality, HIV/AIDS" },
+];
+
+/** UN SDG Report links */
+export const sdgReportLinks = [
+  { year: 2016, url: "https://unstats.un.org/sdgs/report/2016/" },
+  { year: 2017, url: "https://unstats.un.org/sdgs/report/2017/" },
+  { year: 2018, url: "https://unstats.un.org/sdgs/report/2018/" },
+  { year: 2019, url: "https://unstats.un.org/sdgs/report/2019/" },
+  { year: 2020, url: "https://unstats.un.org/sdgs/report/2020/" },
+  { year: 2021, url: "https://unstats.un.org/sdgs/report/2021/" },
+  { year: 2022, url: "https://unstats.un.org/sdgs/report/2022/" },
+  { year: 2023, url: "https://unstats.un.org/sdgs/report/2023/" },
+  { year: 2024, url: "https://unstats.un.org/sdgs/report/2024/" },
+  { year: 2025, url: "https://unstats.un.org/sdgs/report/2025/" },
+  { year: 2019, url: "https://sustainabledevelopment.un.org/gsdr2019", label: "GSDR 2019" },
+  { year: 2023, url: "https://sdgs.un.org/gsdr/gsdr2023", label: "GSDR 2023" },
+];

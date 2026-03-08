@@ -112,6 +112,7 @@ const getDashboardItems = (hasRole: (role: UserRole) => boolean, currentRole: Us
 const getResourceItems = (hasRole: (role: UserRole) => boolean) => {
   const items = [
     { title: "Guidelines", url: "/guidelines", icon: BookOpen },
+    { title: "SDG Overview", url: "/sdg-overview", icon: Target },
     { title: "SDG-Agenda 2063", url: "/sdg-agenda2063", icon: Globe },
   ];
   

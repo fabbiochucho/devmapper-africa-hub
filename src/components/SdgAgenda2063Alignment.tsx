@@ -197,15 +197,16 @@ export default function SdgAgenda2063Alignment() {
               return (
                 <div
                   key={sdg}
-                  className="relative aspect-square rounded-lg flex flex-col items-center justify-center text-white text-xs cursor-pointer hover:scale-110 transition-transform"
-                  style={{
-                    backgroundColor: SDG_COLORS[sdg],
-                    opacity: 0.3 + intensity * 0.7,
-                  }}
+                  className="relative rounded-lg cursor-pointer hover:scale-110 transition-transform"
                   title={`SDG ${sdg}: ${alignCount} alignments, ${projCount} projects`}
                   onClick={() => setFilterSDG(sdg.toString())}
                 >
-                  <span className="font-bold text-sm">{sdg}</span>
+                  <img
+                    src={`/sdg-icons/sdg-${sdg}.jpg`}
+                    alt={`SDG ${sdg}: ${SDG_NAMES[sdg]}`}
+                    className="w-full aspect-square rounded-lg object-cover"
+                    style={{ opacity: 0.3 + intensity * 0.7 }}
+                  />
                   {projCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-foreground text-background rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
                       {projCount}

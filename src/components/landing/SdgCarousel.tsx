@@ -1,6 +1,6 @@
 import React from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { sdgGoals, sdgGoalColors } from "@/lib/constants";
+import { sdgGoals } from "@/lib/constants";
 import Autoplay from "embla-carousel-autoplay";
 import { Link } from "react-router-dom";
 
@@ -17,27 +17,24 @@ export default function SdgCarousel() {
         className="w-full"
       >
         <CarouselContent className="-ml-2">
-          {sdgGoals.map((sdg) => {
-            const color = sdgGoalColors[sdg.value];
-            return (
-              <CarouselItem key={sdg.value} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-[12.5%]">
-                <Link
-                  to={`/analytics?tab=sdg&goal=${sdg.value}`}
-                  className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-accent/50 transition-colors group"
-                >
-                  <div
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                  >
-                    {sdg.value}
-                  </div>
-                  <span className="text-xs text-center font-medium text-foreground leading-tight line-clamp-2 max-w-[80px]">
-                    {sdg.title}
-                  </span>
-                </Link>
-              </CarouselItem>
-            );
-          })}
+          {sdgGoals.map((sdg) => (
+            <CarouselItem key={sdg.value} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-[12.5%]">
+              <Link
+                to={`/sdg-overview?goal=${sdg.value}`}
+                className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-accent/50 transition-colors group"
+              >
+                <img
+                  src={`/sdg-icons/sdg-${sdg.value}.jpg`}
+                  alt={`SDG ${sdg.value}: ${sdg.title}`}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg shadow-md group-hover:scale-110 transition-transform object-cover"
+                  loading="lazy"
+                />
+                <span className="text-xs text-center font-medium text-foreground leading-tight line-clamp-2 max-w-[80px]">
+                  {sdg.title}
+                </span>
+              </Link>
+            </CarouselItem>
+          ))}
         </CarouselContent>
         <CarouselPrevious className="-left-10" />
         <CarouselNext className="-right-10" />

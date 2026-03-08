@@ -48,6 +48,7 @@ const Scholarship = lazy(() => import("./pages/Scholarship"));
 const MyProjects = lazy(() => import("./pages/MyProjects"));
 const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
 const ProjectManagement = lazy(() => import("./pages/ProjectManagement"));
+const SdgOverview = lazy(() => import("./pages/SdgOverview"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,6 +87,7 @@ const App = () => (
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
+                    <Route path="/sdg-overview" element={<SdgOverview />} />
                     <Route path="/connect" element={<Connect />} />
                     {/* Protected routes */}
                     <Route path="/analytics" element={<P><Analytics /></P>} />
