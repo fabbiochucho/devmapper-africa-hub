@@ -3,7 +3,7 @@ import {
   BarChart3, TrendingUp, FileText, UserPlus, Target, 
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
-  ChevronRight, User, Briefcase
+  ChevronRight, User, Briefcase, ListTodo
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
