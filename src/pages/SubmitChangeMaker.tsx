@@ -20,6 +20,31 @@ const SubmitChangeMaker = () => {
   const [loading, setLoading] = React.useState(true);
   const [existingProfileId, setExistingProfileId] = React.useState<string | null>(null);
   const { user } = useAuth();
+  const { hasRole } = useUserRole();
+  const navigate = useNavigate();
+
+  // CitizenReporter ≠ ChangeMaker: require change_maker role
+  if (user && !hasRole('change_maker') && !hasRole('admin') && !hasRole('platform_admin')) {
+    return (
+      <div className="flex items-center justify-center h-full p-8">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-6">
+            <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
+            <h2 className="text-xl font-bold mb-2">Change Maker Role Required</h2>
+            <p className="text-muted-foreground mb-4">
+              You need the Change Maker role to create a profile. Being a Citizen Reporter does not grant Change Maker access.
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              You can add the Change Maker role from your Settings page, or get nominated by another user.
+            </p>
+            <Button onClick={() => navigate('/settings')} variant="outline">
+              Go to Settings
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   type ChangeMakerFormValues = z.infer<typeof changeMakerSchema>;
 
   const form = useForm<ChangeMakerFormValues>({
