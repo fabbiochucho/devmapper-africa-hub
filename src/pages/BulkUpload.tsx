@@ -288,8 +288,8 @@ const BulkUpload = () => {
 
           {errors.length === 0 && (
             <Alert>
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-700">All {parsedRows.length} rows passed validation</AlertTitle>
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <AlertTitle className="text-primary">All {parsedRows.length} rows passed validation</AlertTitle>
               <AlertDescription>Ready to upload to DevMapper.</AlertDescription>
             </Alert>
           )}
