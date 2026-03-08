@@ -50,6 +50,7 @@ const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
 const ProjectManagement = lazy(() => import("./pages/ProjectManagement"));
 const SdgOverview = lazy(() => import("./pages/SdgOverview"));
 const BulkUpload = lazy(() => import("./pages/BulkUpload"));
+const SPVFStandards = lazy(() => import("./pages/SPVFStandards"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
