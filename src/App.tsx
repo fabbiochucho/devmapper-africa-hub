@@ -42,6 +42,8 @@ const ESG = lazy(() => import("./pages/ESG"));
 const BillingUpgrade = lazy(() => import("./pages/BillingUpgrade"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage"));
 const ChangeMakerMyAnalytics = lazy(() => import("./pages/ChangeMakerMyAnalytics"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Scholarship = lazy(() => import("./pages/Scholarship"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
