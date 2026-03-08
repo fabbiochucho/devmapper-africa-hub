@@ -92,6 +92,7 @@ const App = () => (
                     <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
                     <Route path="/ngo-dashboard" element={<NgoDashboard />} />
                     <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
+                    <Route path="/my-analytics" element={<ChangeMakerMyAnalytics />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
