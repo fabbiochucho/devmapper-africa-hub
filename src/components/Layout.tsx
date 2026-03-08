@@ -149,6 +149,7 @@ const Layout = () => {
             <PageFooter />
           </SidebarInset>
         </div>
+        <PWAInstallPrompt />
       </div>
     </SidebarProvider>
   );
