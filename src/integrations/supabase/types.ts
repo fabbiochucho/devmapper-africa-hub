@@ -838,6 +838,62 @@ export type Database = {
           },
         ]
       }
+      evidence_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          evidence_type: string
+          file_url: string | null
+          id: string
+          report_id: string
+          title: string
+          updated_at: string
+          uploaded_by: string
+          verification_stage: string | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          evidence_type: string
+          file_url?: string | null
+          id?: string
+          report_id: string
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          verification_stage?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_url?: string | null
+          id?: string
+          report_id?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          verification_stage?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_items_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_flags: {
         Row: {
           created_at: string | null
@@ -1413,6 +1469,69 @@ export type Database = {
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_certifications: {
+        Row: {
+          certificate_number: string | null
+          certification_body: string | null
+          certified_by: string | null
+          certified_by_name: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          notes: string | null
+          rating: string
+          report_id: string
+          score_id: string | null
+          status: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          certification_body?: string | null
+          certified_by?: string | null
+          certified_by_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          rating: string
+          report_id: string
+          score_id?: string | null
+          status?: string
+        }
+        Update: {
+          certificate_number?: string | null
+          certification_body?: string | null
+          certified_by?: string | null
+          certified_by_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          rating?: string
+          report_id?: string
+          score_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_certifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_certifications_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "verification_scores"
             referencedColumns: ["id"]
           },
         ]
@@ -2127,6 +2246,115 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "verification_logs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_scores: {
+        Row: {
+          certification_rating: string | null
+          community_validation_score: number | null
+          created_at: string
+          evidence_strength_score: number | null
+          id: string
+          implementation_integrity_score: number | null
+          outcome_achievement_score: number | null
+          output_delivery_score: number | null
+          report_id: string
+          scored_at: string | null
+          scored_by: string | null
+          sdg_alignment_score: number | null
+          sustainability_score: number | null
+          total_sis: number | null
+          updated_at: string
+        }
+        Insert: {
+          certification_rating?: string | null
+          community_validation_score?: number | null
+          created_at?: string
+          evidence_strength_score?: number | null
+          id?: string
+          implementation_integrity_score?: number | null
+          outcome_achievement_score?: number | null
+          output_delivery_score?: number | null
+          report_id: string
+          scored_at?: string | null
+          scored_by?: string | null
+          sdg_alignment_score?: number | null
+          sustainability_score?: number | null
+          total_sis?: number | null
+          updated_at?: string
+        }
+        Update: {
+          certification_rating?: string | null
+          community_validation_score?: number | null
+          created_at?: string
+          evidence_strength_score?: number | null
+          id?: string
+          implementation_integrity_score?: number | null
+          outcome_achievement_score?: number | null
+          output_delivery_score?: number | null
+          report_id?: string
+          scored_at?: string | null
+          scored_by?: string | null
+          sdg_alignment_score?: number | null
+          sustainability_score?: number | null
+          total_sis?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_scores_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_workflow_stages: {
+        Row: {
+          assigned_verifier: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          report_id: string
+          stage: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          report_id: string
+          stage: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          report_id?: string
+          stage?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_workflow_stages_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "reports"
