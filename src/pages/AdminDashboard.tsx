@@ -404,7 +404,10 @@ export default function AdminDashboard() {
           <TestAccountManager />
         </TabsContent>
 
-        <TabsContent value="reports">
+        <TabsContent value="fellowships">
+          <ScholarshipManager />
+        </TabsContent>
+
           <Card>
             <CardHeader>
               <CardTitle>System Reports</CardTitle>
