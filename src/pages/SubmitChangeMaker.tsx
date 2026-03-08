@@ -11,7 +11,9 @@ import ChangeMakerStep1 from '@/components/changemaker/ChangeMakerStep1';
 import ChangeMakerStep2 from '@/components/changemaker/ChangeMakerStep2';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
+import { useUserRole } from '@/contexts/UserRoleContext';
+import { useNavigate } from 'react-router-dom';
 
 const SubmitChangeMaker = () => {
   const [step, setStep] = React.useState(1);
