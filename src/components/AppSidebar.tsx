@@ -69,6 +69,8 @@ const getAnalyticsItems = (hasRole: (role: UserRole) => boolean) => {
 // Submission items
 const submissionItems = [
   { title: "Submit Report", url: "/submit-report", icon: FileText },
+  { title: "My Projects", url: "/my-projects", icon: Target },
+  { title: "Project Analytics", url: "/project-analytics", icon: TrendingUp },
   { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
 ];
 
