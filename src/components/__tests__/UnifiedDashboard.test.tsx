@@ -5,14 +5,6 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import React from "react";
 
-// Mock supabase before importing components
-const mockSelect = vi.fn().mockReturnValue({
-  eq: vi.fn().mockReturnValue({
-    eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-  }),
-});
-const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
@@ -21,11 +13,16 @@ vi.mock("@/integrations/supabase/client", () => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       }),
     },
-    from: mockFrom,
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }),
+    }),
   },
 }));
 
-// Must import after mocks
 import UnifiedDashboard from "@/components/UnifiedDashboard";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserRoleProvider } from "@/contexts/UserRoleContext";
@@ -52,14 +49,11 @@ describe("UnifiedDashboard", () => {
 
   it("shows sign-in prompt when user is not authenticated", async () => {
     render(<UnifiedDashboard />, { wrapper: Wrapper });
-
-    // Wait for auth loading to complete — should show sign-in prompt
     expect(await screen.findByText(/sign in/i)).toBeInTheDocument();
   });
 
   it("contains a link to /auth for unauthenticated users", async () => {
     render(<UnifiedDashboard />, { wrapper: Wrapper });
-
     const link = await screen.findByRole("link", { name: /sign in/i });
     expect(link).toHaveAttribute("href", "/auth");
   });
