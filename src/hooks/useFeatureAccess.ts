@@ -23,7 +23,9 @@ export function useFeatureAccess() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        await loadFeaturesForPlan('free');
+        // Per DevMapper protocol, default tier is 'lite' for all users
+        setUserPlan('lite');
+        await loadFeaturesForPlan('lite');
         return;
       }
 
