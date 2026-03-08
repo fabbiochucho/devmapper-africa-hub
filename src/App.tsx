@@ -10,6 +10,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageSkeleton } from "./components/ui/loading-skeleton";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Lazy load heavy pages for better performance
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -50,11 +51,15 @@ const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 2,
     },
   },
 });
+
+const P = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
 
 const App = () => (
   <ErrorBoundary>
@@ -68,39 +73,41 @@ const App = () => (
                 <Routes>
                   <Route element={<Layout />}>
                     <Route path="/" element={<Index />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/corporate-targets" element={<CorporateTargets />} />
-                    <Route path="/government-dashboard" element={<GovernmentDashboard />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/submit-report" element={<SubmitReport />} />
-                    <Route path="/submit-change-maker" element={<SubmitChangeMaker />} />
+                    {/* Public routes */}
+                    <Route path="/search" element={<SearchPage />} />
                     <Route path="/change-makers" element={<ChangeMakers />} />
                     <Route path="/change-makers/:id" element={<ChangeMakerDetail />} />
-                    <Route path="/change-maker-analytics" element={<ChangeMakerAnalyticsPage />} />
                     <Route path="/fundraising" element={<Fundraising />} />
-                    <Route path="/user-management" element={<UserManagement />} />
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                    <Route path="/forum" element={<Forum />} />
-                    <Route path="/messages" element={<Messages />} />
                     <Route path="/guidelines" element={<Guidelines />} />
                     <Route path="/support" element={<Support />} />
-                    <Route path="/training" element={<Training />} />
                     <Route path="/resources" element={<Resources />} />
-                    <Route path="/connect" element={<Connect />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
-                    <Route path="/esg" element={<ESG />} />
-                    <Route path="/billing-upgrade" element={<BillingUpgrade />} />
-                    <Route path="/advanced-analytics" element={<AdvancedAnalyticsPage />} />
-                    <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
-                    <Route path="/ngo-dashboard" element={<NgoDashboard />} />
-                    <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
-                    <Route path="/my-analytics" element={<ChangeMakerMyAnalytics />} />
                     <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/scholarship" element={<Scholarship />} />
-                    <Route path="/my-projects" element={<MyProjects />} />
-                    <Route path="/project-analytics" element={<ProjectAnalytics />} />
+                    <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
+                    <Route path="/connect" element={<Connect />} />
+                    {/* Protected routes */}
+                    <Route path="/analytics" element={<P><Analytics /></P>} />
+                    <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
+                    <Route path="/government-dashboard" element={<P><GovernmentDashboard /></P>} />
+                    <Route path="/settings" element={<P><Settings /></P>} />
+                    <Route path="/submit-report" element={<P><SubmitReport /></P>} />
+                    <Route path="/submit-change-maker" element={<P><SubmitChangeMaker /></P>} />
+                    <Route path="/change-maker-analytics" element={<P><ChangeMakerAnalyticsPage /></P>} />
+                    <Route path="/user-management" element={<P><UserManagement /></P>} />
+                    <Route path="/admin-dashboard" element={<P><AdminDashboard /></P>} />
+                    <Route path="/forum" element={<P><Forum /></P>} />
+                    <Route path="/messages" element={<P><Messages /></P>} />
+                    <Route path="/training" element={<P><Training /></P>} />
+                    <Route path="/esg" element={<P><ESG /></P>} />
+                    <Route path="/billing-upgrade" element={<P><BillingUpgrade /></P>} />
+                    <Route path="/advanced-analytics" element={<P><AdvancedAnalyticsPage /></P>} />
+                    <Route path="/corporate-dashboard" element={<P><CorporateDashboard /></P>} />
+                    <Route path="/ngo-dashboard" element={<P><NgoDashboard /></P>} />
+                    <Route path="/my-analytics" element={<P><ChangeMakerMyAnalytics /></P>} />
+                    <Route path="/scholarship" element={<P><Scholarship /></P>} />
+                    <Route path="/my-projects" element={<P><MyProjects /></P>} />
+                    <Route path="/project-analytics" element={<P><ProjectAnalytics /></P>} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />

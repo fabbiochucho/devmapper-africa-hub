@@ -13,6 +13,7 @@ import {
   Calendar, Briefcase, Shield
 } from "lucide-react";
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
+import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";
 
 interface DashboardStats {
   userReports: number;
@@ -319,6 +320,7 @@ const UnifiedDashboard = () => {
         </TabsContent>
       </Tabs>
       <ProductWalkthrough />
+      <ProfileCompletionPrompt />
     </div>
   );
 };

@@ -8,6 +8,7 @@ export const reportSchema = z.object({
   sdg_target: z.string().optional(),
   project_status: z.string({ required_error: "Please select a project status." }),
   location: z.string().min(3, { message: "Location must be at least 3 characters." }),
+  country_code: z.string().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
   cost: z.coerce.number().optional(),
