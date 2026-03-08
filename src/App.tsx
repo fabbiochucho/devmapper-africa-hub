@@ -56,6 +56,7 @@ const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const SDGIndicatorRegistry = lazy(() => import("./pages/SDGIndicatorRegistry"));
 const CertificationWorkflow = lazy(() => import("./pages/CertificationWorkflow"));
 const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
+const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -126,6 +127,7 @@ const App = () => (
                     <Route path="/project-analytics" element={<P><ProjectAnalytics /></P>} />
                     <Route path="/project-management" element={<P><ProjectManagement /></P>} />
                     <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
+                    <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />

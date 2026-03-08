@@ -344,6 +344,84 @@ export type Database = {
           },
         ]
       }
+      certification_applications: {
+        Row: {
+          applicant_id: string
+          budget_usd: number | null
+          created_at: string
+          evidence_summary: string | null
+          expected_outcomes: string | null
+          geographic_scope: string | null
+          id: string
+          organization_id: string | null
+          project_description: string | null
+          report_id: string
+          requested_tier: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          sdg_goals: number[]
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          budget_usd?: number | null
+          created_at?: string
+          evidence_summary?: string | null
+          expected_outcomes?: string | null
+          geographic_scope?: string | null
+          id?: string
+          organization_id?: string | null
+          project_description?: string | null
+          report_id: string
+          requested_tier?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          sdg_goals?: number[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          budget_usd?: number | null
+          created_at?: string
+          evidence_summary?: string | null
+          expected_outcomes?: string | null
+          geographic_scope?: string | null
+          id?: string
+          organization_id?: string | null
+          project_description?: string | null
+          report_id?: string
+          requested_tier?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          sdg_goals?: number[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certification_applications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certification_applications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_makers: {
         Row: {
           country_code: string | null
@@ -2268,6 +2346,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verification_ledger: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entry_hash: string
+          event_type: string
+          id: string
+          payload: Json
+          prev_hash: string | null
+          report_id: string | null
+          sequence_number: number
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entry_hash: string
+          event_type: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          report_id?: string | null
+          sequence_number: number
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entry_hash?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          report_id?: string | null
+          sequence_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_ledger_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       verification_logs: {
         Row: {

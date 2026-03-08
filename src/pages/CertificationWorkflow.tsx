@@ -319,7 +319,8 @@ const CertificationWorkflow = () => {
 
         {/* CTAs */}
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/spvf-standards"><Button>View SPVF Standards</Button></Link>
+          <Link to="/apply-certification"><Button size="lg">Apply for Certification</Button></Link>
+          <Link to="/spvf-standards"><Button variant="outline">View SPVF Standards</Button></Link>
           <Link to="/verify"><Button variant="outline">Verify a Certificate</Button></Link>
           <Link to="/pricing"><Button variant="outline">View Pricing</Button></Link>
           <Link to="/sdg-indicators"><Button variant="outline">SDG Indicator Registry</Button></Link>
