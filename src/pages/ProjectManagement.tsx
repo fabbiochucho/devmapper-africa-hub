@@ -16,9 +16,15 @@ import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { toast } from "@/components/ui/sonner";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import AICopilot from "@/components/ai/AICopilot";
+import ProjectWorkspace from "@/components/pm/ProjectWorkspace";
+import ProgressUpdateForm from "@/components/pm/ProgressUpdateForm";
+import VerificationPanel from "@/components/pm/VerificationPanel";
+import BudgetTracker from "@/components/pm/BudgetTracker";
+import ImpactIndicators from "@/components/pm/ImpactIndicators";
 import {
   Plus, ListTodo, LayoutGrid, Calendar, CheckCircle2, Clock,
-  AlertTriangle, ArrowUpDown, Lock, Users, BarChart3, Bot
+  AlertTriangle, ArrowUpDown, Lock, Users, BarChart3, Bot,
+  FolderOpen, Shield, DollarSign, Activity, FileText
 } from "lucide-react";
 
 interface ProjectTask {
@@ -40,7 +46,18 @@ interface ProjectTask {
   created_at: string;
 }
 
-interface Report { id: string; title: string; }
+interface Report {
+  id: string;
+  title: string;
+  description: string;
+  location: string | null;
+  sdg_goal: number;
+  project_status: string;
+  beneficiaries: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  user_id: string | null;
+}
 
 const priorityColors: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
@@ -59,7 +76,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 
 export default function ProjectManagement() {
   const { user } = useAuth();
-  const { userPlan, canAccess } = useFeatureAccess();
+  const { userPlan } = useFeatureAccess();
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get("project");
 
@@ -69,34 +86,46 @@ export default function ProjectManagement() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("board");
+  const [activeTab, setActiveTab] = useState("workspace");
   const [showAI, setShowAI] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState("medium");
   const [newDueDate, setNewDueDate] = useState("");
+  const [newStartDate, setNewStartDate] = useState("");
   const [newAssignee, setNewAssignee] = useState("");
   const [newEstHours, setNewEstHours] = useState("");
 
   // Feature tier gates
   const hasGantt = userPlan !== "free";
   const hasAssignment = userPlan !== "free";
-  const hasResourceAlloc = userPlan === "pro" || userPlan === "advanced" || userPlan === "enterprise";
-  const hasAICopilot = userPlan === "pro" || userPlan === "advanced" || userPlan === "enterprise";
+  const hasResourceAlloc = ["pro", "advanced", "enterprise"].includes(userPlan);
+  const hasAICopilot = ["pro", "advanced", "enterprise"].includes(userPlan);
 
   useEffect(() => { if (user) fetchProjects(); }, [user]);
   useEffect(() => { if (selectedProject) fetchTasks(); }, [selectedProject]);
 
   const fetchProjects = async () => {
-    const { data } = await supabase
-      .from("reports").select("id, title")
-      .eq("user_id", user!.id)
-      .order("submitted_at", { ascending: false });
-    if (data) {
-      setProjects(data);
-      if (!selectedProject && data.length > 0) setSelectedProject(data[0].id);
-    }
+    // Fetch user's own projects AND projects they're affiliated with
+    const [ownResult, affResult] = await Promise.all([
+      supabase.from("reports").select("id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id")
+        .eq("user_id", user!.id).order("submitted_at", { ascending: false }),
+      supabase.from("project_affiliations").select("report_id, reports(id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id)")
+        .eq("user_id", user!.id),
+    ]);
+
+    const projectMap = new Map<string, Report>();
+    ownResult.data?.forEach(r => projectMap.set(r.id, r as Report));
+    affResult.data?.forEach((a: any) => {
+      if (a.reports && !projectMap.has(a.reports.id)) {
+        projectMap.set(a.reports.id, a.reports as Report);
+      }
+    });
+
+    const allProjects = Array.from(projectMap.values());
+    setProjects(allProjects);
+    if (!selectedProject && allProjects.length > 0) setSelectedProject(allProjects[0].id);
     setLoading(false);
   };
 
@@ -115,6 +144,7 @@ export default function ProjectManagement() {
       title: newTitle,
       description: newDescription || null,
       priority: newPriority,
+      start_date: newStartDate || null,
       due_date: newDueDate || null,
       assigned_to: hasAssignment && newAssignee ? newAssignee : null,
       estimated_hours: newEstHours ? parseFloat(newEstHours) : null,
@@ -124,19 +154,22 @@ export default function ProjectManagement() {
     else {
       toast.success("Task created");
       setNewTitle(""); setNewDescription(""); setNewPriority("medium");
-      setNewDueDate(""); setNewAssignee(""); setNewEstHours("");
+      setNewDueDate(""); setNewStartDate(""); setNewAssignee(""); setNewEstHours("");
       setDialogOpen(false);
       fetchTasks();
     }
   };
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
-    const updates: any = { status: newStatus };
+    const updates: Record<string, any> = { status: newStatus };
     if (newStatus === "done") updates.completed_at = new Date().toISOString();
     else updates.completed_at = null;
     const { error } = await supabase.from("project_tasks").update(updates).eq("id", taskId);
     if (!error) fetchTasks();
   };
+
+  const selectedReport = projects.find(p => p.id === selectedProject);
+  const isOwner = selectedReport?.user_id === user?.id;
 
   const filteredTasks = filterStatus === "all" ? tasks : tasks.filter(t => t.status === filterStatus);
   const tasksByStatus = {
@@ -148,11 +181,9 @@ export default function ProjectManagement() {
   };
   const completionPercent = tasks.length > 0
     ? Math.round((tasks.filter(t => t.status === "done").length / tasks.length) * 100) : 0;
-
   const totalEstHours = tasks.reduce((s, t) => s + (t.estimated_hours || 0), 0);
   const totalActHours = tasks.reduce((s, t) => s + (t.actual_hours || 0), 0);
 
-  // Gantt data
   const ganttTasks = useMemo(() =>
     tasks.filter(t => t.start_date || t.due_date).sort((a, b) =>
       (a.start_date || a.due_date || "").localeCompare(b.start_date || b.due_date || "")
@@ -165,7 +196,7 @@ export default function ProjectManagement() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">Project Management</h1>
-          <p className="text-muted-foreground">Manage tasks, timelines, and team assignments</p>
+          <p className="text-muted-foreground">Full lifecycle management — plan, implement, monitor, verify</p>
         </div>
         <div className="flex gap-2">
           {hasAICopilot && (
@@ -195,16 +226,18 @@ export default function ProjectManagement() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Due Date</Label><Input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} /></div>
+                  <div><Label>Start Date</Label><Input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)} /></div>
                 </div>
-                {hasAssignment && (
-                  <div><Label>Assign To (User ID)</Label><Input value={newAssignee} onChange={e => setNewAssignee(e.target.value)} placeholder="User ID" /></div>
-                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div><Label>Due Date</Label><Input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} /></div>
+                  {hasAssignment ? (
+                    <div><Label>Assign To (User ID)</Label><Input value={newAssignee} onChange={e => setNewAssignee(e.target.value)} placeholder="User ID" /></div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />Upgrade to Lite+ for assignments</div>
+                  )}
+                </div>
                 {hasResourceAlloc && (
                   <div><Label>Estimated Hours</Label><Input type="number" value={newEstHours} onChange={e => setNewEstHours(e.target.value)} placeholder="0" /></div>
-                )}
-                {!hasAssignment && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />Upgrade to Lite+ for task assignment</div>
                 )}
                 <Button onClick={createTask} className="w-full">Create Task</Button>
               </div>
@@ -260,15 +293,29 @@ export default function ProjectManagement() {
         )}
       </div>
 
-      {/* Task Views */}
+      {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="workspace"><FolderOpen className="mr-1 h-4 w-4" />Workspace</TabsTrigger>
           <TabsTrigger value="board"><LayoutGrid className="mr-1 h-4 w-4" />Board</TabsTrigger>
           <TabsTrigger value="list"><ListTodo className="mr-1 h-4 w-4" />List</TabsTrigger>
           <TabsTrigger value="gantt" disabled={!hasGantt}>
             <Calendar className="mr-1 h-4 w-4" />Gantt {!hasGantt && <Lock className="ml-1 h-3 w-3" />}
           </TabsTrigger>
+          <TabsTrigger value="budget"><DollarSign className="mr-1 h-4 w-4" />Budget</TabsTrigger>
+          <TabsTrigger value="indicators"><Activity className="mr-1 h-4 w-4" />Impact</TabsTrigger>
+          <TabsTrigger value="updates"><FileText className="mr-1 h-4 w-4" />Updates</TabsTrigger>
+          <TabsTrigger value="verification"><Shield className="mr-1 h-4 w-4" />Verification</TabsTrigger>
         </TabsList>
+
+        {/* Project Workspace */}
+        <TabsContent value="workspace">
+          {selectedProject && selectedReport ? (
+            <ProjectWorkspace reportId={selectedProject} report={selectedReport} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project to view its workspace.</CardContent></Card>
+          )}
+        </TabsContent>
 
         {/* Kanban Board */}
         <TabsContent value="board">
@@ -359,7 +406,7 @@ export default function ProjectManagement() {
           </Card>
         </TabsContent>
 
-        {/* Gantt Chart View */}
+        {/* Gantt Chart */}
         <TabsContent value="gantt">
           {!hasGantt ? (
             <UpgradePrompt feature="gantt_chart" requiredPlan="lite" />
@@ -379,14 +426,12 @@ export default function ProjectManagement() {
                       const minDate = new Date(Math.min(...allDates.map(d => new Date(d).getTime())));
                       const maxDate = new Date(Math.max(...allDates.map(d => new Date(d).getTime())));
                       const totalDays = Math.max(Math.ceil((maxDate.getTime() - minDate.getTime()) / 86400000), 1);
-
                       return ganttTasks.map(task => {
                         const start = new Date(task.start_date || task.due_date!);
                         const end = new Date(task.due_date || task.start_date!);
                         const leftPct = ((start.getTime() - minDate.getTime()) / 86400000 / totalDays) * 100;
                         const widthPct = Math.max(((end.getTime() - start.getTime()) / 86400000 / totalDays) * 100, 2);
                         const isDone = task.status === "done";
-
                         return (
                           <div key={task.id} className="flex items-center gap-3 h-8">
                             <div className="w-40 text-sm truncate font-medium shrink-0">{task.title}</div>
@@ -407,7 +452,91 @@ export default function ProjectManagement() {
             </Card>
           )}
         </TabsContent>
+
+        {/* Budget */}
+        <TabsContent value="budget">
+          {selectedProject ? (
+            <BudgetTracker reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* Impact Indicators */}
+        <TabsContent value="indicators">
+          {selectedProject ? (
+            <ImpactIndicators reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* Progress Updates */}
+        <TabsContent value="updates">
+          {selectedProject ? (
+            <div className="space-y-4">
+              {isOwner && <ProgressUpdateForm reportId={selectedProject} onCreated={fetchTasks} />}
+              <UpdatesList reportId={selectedProject} />
+            </div>
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* Verification */}
+        <TabsContent value="verification">
+          {selectedProject ? (
+            <VerificationPanel reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+// Sub-component for updates list
+function UpdatesList({ reportId }: { reportId: string }) {
+  const [updates, setUpdates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("project_updates").select("*").eq("report_id", reportId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { if (data) setUpdates(data); setLoading(false); });
+  }, [reportId]);
+
+  if (loading) return <div className="text-center py-4 text-muted-foreground">Loading updates...</div>;
+
+  if (updates.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+          <p className="text-muted-foreground">No progress updates yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold">Progress Timeline</h3>
+      {updates.map((u: any) => (
+        <Card key={u.id}>
+          <CardContent className="p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <Badge variant="outline">{u.progress_percent}% progress</Badge>
+              <span className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</span>
+            </div>
+            <p className="text-sm">{u.update_text}</p>
+            {u.evidence_url && (
+              <a href={u.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View evidence</a>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

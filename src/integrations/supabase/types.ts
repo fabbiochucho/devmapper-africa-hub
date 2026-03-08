@@ -1364,6 +1364,112 @@ export type Database = {
           },
         ]
       }
+      project_budgets: {
+        Row: {
+          budget_allocated: number | null
+          budget_spent: number | null
+          created_at: string
+          created_by: string
+          currency: string
+          donor_organization: string | null
+          funding_source: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          transparency_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          created_at?: string
+          created_by: string
+          currency?: string
+          donor_organization?: string | null
+          funding_source?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          donor_organization?: string | null
+          funding_source?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_budgets_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_indicators: {
+        Row: {
+          agenda2063_aspiration: string | null
+          baseline_value: number | null
+          created_at: string
+          created_by: string
+          current_value: number | null
+          id: string
+          indicator_name: string
+          report_id: string
+          sdg_goal: number | null
+          target_value: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          agenda2063_aspiration?: string | null
+          baseline_value?: number | null
+          created_at?: string
+          created_by: string
+          current_value?: number | null
+          id?: string
+          indicator_name: string
+          report_id: string
+          sdg_goal?: number | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agenda2063_aspiration?: string | null
+          baseline_value?: number | null
+          created_at?: string
+          created_by?: string
+          current_value?: number | null
+          id?: string
+          indicator_name?: string
+          report_id?: string
+          sdg_goal?: number | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_indicators_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_milestones: {
         Row: {
           completion_percentage: number
@@ -1488,6 +1594,91 @@ export type Database = {
           },
           {
             foreignKeyName: "project_tasks_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_updates: {
+        Row: {
+          created_at: string
+          created_by: string
+          evidence_url: string | null
+          id: string
+          photos: Json | null
+          progress_percent: number | null
+          report_id: string
+          update_text: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          evidence_url?: string | null
+          id?: string
+          photos?: Json | null
+          progress_percent?: number | null
+          report_id: string
+          update_text: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          evidence_url?: string | null
+          id?: string
+          photos?: Json | null
+          progress_percent?: number | null
+          report_id?: string
+          update_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_updates_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_verifications: {
+        Row: {
+          comments: string | null
+          created_at: string
+          evidence_url: string | null
+          id: string
+          report_id: string
+          status: string
+          verification_level: string
+          verified_at: string | null
+          verifier_id: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          report_id: string
+          status?: string
+          verification_level?: string
+          verified_at?: string | null
+          verifier_id: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          report_id?: string
+          status?: string
+          verification_level?: string
+          verified_at?: string | null
+          verifier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_verifications_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "reports"
