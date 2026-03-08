@@ -354,11 +354,11 @@ const BulkUpload = () => {
         <>
           <Card>
             <CardContent className="pt-6 text-center space-y-4">
-              <CheckCircle2 className="w-12 h-12 mx-auto text-green-600" />
+              <CheckCircle2 className="w-12 h-12 mx-auto text-primary" />
               <h2 className="text-2xl font-bold">Upload Complete</h2>
               <div className="flex justify-center gap-8">
                 <div>
-                  <p className="text-3xl font-bold text-green-600">{results.success}</p>
+                  <p className="text-3xl font-bold text-primary">{results.success}</p>
                   <p className="text-sm text-muted-foreground">Successful</p>
                 </div>
                 {results.failed > 0 && (
