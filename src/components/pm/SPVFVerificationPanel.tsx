@@ -30,6 +30,7 @@ import {
   type CertificationRating,
   type VerificationStageKey,
 } from '@/lib/spvf-engine';
+import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
 
 interface SPVFVerificationPanelProps {
   reportId: string;
