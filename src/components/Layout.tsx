@@ -7,7 +7,7 @@ import { Report } from "@/data/mockReports";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft, LogOut, MessageCircle } from "lucide-react";
-import UserRoleSwitcher from "./UserRoleSwitcher";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import PageFooter from "./landing/PageFooter";
