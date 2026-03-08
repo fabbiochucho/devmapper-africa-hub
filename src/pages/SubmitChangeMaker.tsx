@@ -126,7 +126,7 @@ const SubmitChangeMaker = () => {
       title: values.name,
       description: values.description,
       impact_description: values.bio,
-      sdg_goals: values.sdg_goals,
+      sdg_goals: values.sdg_goals.map(Number),
       location: values.location,
       country_code: values.location.split(', ').pop()?.substring(0, 3).toUpperCase() || 'UNK',
       image_url: values.photo || null,
