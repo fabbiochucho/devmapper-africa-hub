@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint
@@ -16,7 +20,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --prefer-offline
       - run: npm run lint
 
   typecheck:
@@ -28,7 +32,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --prefer-offline
       - run: npx tsc --noEmit
 
   test:
@@ -40,14 +44,41 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
-      - run: npx vitest run --reporter=verbose
+      - run: npm ci --prefer-offline
+      - run: npx vitest run --reporter=verbose --coverage
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
+          retention-days: 14
+
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --prefer-offline
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Run Playwright tests
+        run: npx playwright test --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:4173
+          CI: true
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
 
   build:
     name: Build
@@ -59,13 +90,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --prefer-offline
       - run: npm run build
+      - name: Check bundle size
+        run: |
+          echo "=== Bundle Size Report ==="
+          du -sh dist/
+          du -sh dist/assets/*.js | sort -rh | head -10
+          echo "=========================="
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
+          retention-days: 7
 
   security:
     name: Security Audit
@@ -76,5 +114,5 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
-      - run: npm audit --audit-level=critical || true
+      - run: npm ci --prefer-offline
+      - run: npm audit --audit-level=high || true
