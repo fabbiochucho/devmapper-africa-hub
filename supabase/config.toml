@@ -55,5 +55,11 @@ verify_jwt = false
 [functions.paystack-webhook]
 verify_jwt = false
 
+[functions.exchange-rates]
+verify_jwt = false
+
+[functions.validate-report]
+verify_jwt = true
+
 [edge_runtime]
 policy = "oneshot"

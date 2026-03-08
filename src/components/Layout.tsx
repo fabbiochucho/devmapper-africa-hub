@@ -7,6 +7,8 @@ import { Report } from "@/data/mockReports";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft, LogOut, MessageCircle } from "lucide-react";
+import NotificationBell from "./notifications/NotificationBell";
+import PWAInstallPrompt from "./pwa/PWAInstallPrompt";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -80,6 +82,7 @@ const Layout = () => {
 
               <div className="flex items-center gap-3">
                 <LanguageSwitcher />
+                {user && <NotificationBell />}
                 <Button variant="outline" size="sm" asChild className="hidden sm:flex">
                   <Link to="/contact">
                     <MessageCircle className="w-4 h-4 mr-2" />
@@ -146,6 +149,7 @@ const Layout = () => {
             <PageFooter />
           </SidebarInset>
         </div>
+        <PWAInstallPrompt />
       </div>
     </SidebarProvider>
   );
