@@ -230,7 +230,16 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             Environmental, Social & Governance tracking for {organization.name}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <ESGReportDialog
+            organizationName={organization.name}
+            organizationId={organizationId}
+            indicators={indicators}
+            suppliers={suppliers}
+            scenarios={scenarios}
+            benchmark={benchmark}
+            planType={organization.plan_type as 'free' | 'lite' | 'pro'}
+          />
           <Badge variant={organization.plan_type === 'pro' ? 'default' : 'secondary'}>
             {organization.plan_type} Plan
           </Badge>
