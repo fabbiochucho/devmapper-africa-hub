@@ -36,6 +36,7 @@ const SubmitReport = () => {
       title: "",
       description: "",
       location: "",
+      country_code: "",
       sdg_goal: "",
       sdg_target: "",
       project_status: "",
