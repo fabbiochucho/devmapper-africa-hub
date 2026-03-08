@@ -9,12 +9,14 @@ import { toast } from "@/components/ui/sonner";
 import { changeMakerSchema } from "@/lib/changeMakerSchema";
 import ChangeMakerStep1 from '@/components/changemaker/ChangeMakerStep1';
 import ChangeMakerStep2 from '@/components/changemaker/ChangeMakerStep2';
-import { mockChangeMakers, ChangeMaker } from '@/data/mockChangeMakers';
-import { useUserRole } from '@/contexts/UserRoleContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 const SubmitChangeMaker = () => {
   const [step, setStep] = React.useState(1);
+  const [loading, setLoading] = React.useState(true);
+  const [existingProfileId, setExistingProfileId] = React.useState<string | null>(null);
   const { user } = useAuth();
   type ChangeMakerFormValues = z.infer<typeof changeMakerSchema>;
 
@@ -44,6 +46,50 @@ const SubmitChangeMaker = () => {
     mode: 'onChange',
   });
 
+  // Load existing profile if user already has one
+  React.useEffect(() => {
+    const loadExistingProfile = async () => {
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: existing, error } = await supabase
+          .from('change_makers')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (existing) {
+          setExistingProfileId(existing.id);
+          form.reset({
+            type: 'individual' as any,
+            name: existing.title || "",
+            bio: existing.impact_description || "",
+            description: existing.description || "",
+            sdg_goals: existing.sdg_goals || [],
+            location: existing.location || "",
+            photo: existing.image_url || undefined,
+            members: [],
+            email: "",
+            phone: "",
+            website: "",
+            socialMedia: { linkedin: "", twitter: "", facebook: "", instagram: "" },
+          });
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExistingProfile();
+  }, [user?.id]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "members"
@@ -54,109 +100,86 @@ const SubmitChangeMaker = () => {
   React.useEffect(() => {
     if (changeMakerType === 'group' && fields.length === 0) {
       append({
-        name: "",
-        role: "",
-        bio: "",
-        email: "",
+        name: "", role: "", bio: "", email: "",
         photo: undefined,
-        socialMedia: {
-          linkedin: "",
-          twitter: "",
-          facebook: "",
-        },
+        socialMedia: { linkedin: "", twitter: "", facebook: "" },
       });
     } else if (changeMakerType !== 'group') {
-      // Clear members for non-group types
-      while (fields.length > 0) {
-        remove(0);
-      }
+      while (fields.length > 0) { remove(0); }
     }
   }, [changeMakerType, fields.length, append, remove]);
 
-  function onSubmit(values: ChangeMakerFormValues) {
-    console.log("Form Submitted:", values);
-
+  async function onSubmit(values: ChangeMakerFormValues) {
     if (!user) {
-      toast.error("You must be logged in to submit a change maker.");
+      toast.error("You must be logged in.");
       return;
     }
 
-    // Filter out incomplete members and ensure all required fields are present
-    const validMembers = (values.members || []).filter(member => 
-      member.name && member.role && member.bio && member.email
-    ).map(member => ({
-      name: member.name!,
-      role: member.role!,
-      bio: member.bio!,
-      email: member.email!,
-      photo: member.photo,
-      socialMedia: member.socialMedia || {
-        linkedin: "",
-        twitter: "",
-        facebook: "",
-      }
-    }));
-
-    const newChangeMaker: ChangeMaker = {
-      id: `CM-${String(mockChangeMakers.length + 1).padStart(3, '0')}`,
-      type: values.type,
-      name: values.name,
-      bio: values.bio,
+    const profileData = {
+      title: values.name,
       description: values.description,
+      impact_description: values.bio,
       sdg_goals: values.sdg_goals,
       location: values.location,
       country_code: values.location.split(', ').pop()?.substring(0, 3).toUpperCase() || 'UNK',
-      lat: values.lat,
-      lng: values.lng,
-      photo: values.photo || "/placeholder.svg",
-      members: validMembers,
-      email: values.email,
-      phone: values.phone,
-      website: values.website,
-      socialMedia: values.socialMedia,
-      projects: [],
-      totalFunding: 0,
-      impactMetrics: {
-        livesTouched: 0,
-        communitiesServed: 0,
-        projectsCompleted: 0
-      },
-      verifications: [],
-      verification_score: 0,
-      submitted_by: user.id.toString(),
-      submitted_at: new Date().toISOString(),
-      verified: false,
+      image_url: values.photo || null,
+      user_id: user.id,
     };
 
-    mockChangeMakers.push(newChangeMaker);
+    try {
+      if (existingProfileId) {
+        // UPDATE existing profile
+        const { error } = await supabase
+          .from('change_makers')
+          .update(profileData)
+          .eq('id', existingProfileId);
 
-    toast.success("Change Maker submitted successfully!", {
-      description: "Your submission has been received and will be reviewed.",
-    });
-    form.reset();
-    setStep(1);
+        if (error) throw error;
+        toast.success("Change Maker profile updated successfully!");
+      } else {
+        // INSERT new profile
+        const { data, error } = await supabase
+          .from('change_makers')
+          .insert([profileData])
+          .select()
+          .single();
+
+        if (error) throw error;
+        setExistingProfileId(data.id);
+        toast.success("Change Maker profile created successfully!");
+      }
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
+      toast.error(error.message || 'Failed to save profile');
+    }
   }
 
   const nextStep = async () => {
     const fieldsToValidate: (keyof ChangeMakerFormValues)[] = ['type', 'name', 'bio', 'description', 'sdg_goals', 'location', 'email'];
     const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      setStep(2);
-    }
+    if (isValid) setStep(2);
   };
 
-  const prevStep = () => {
-    setStep(1);
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-start pt-8">
       <Card className="w-full max-w-3xl">
         <CardHeader>
-          <CardTitle>Submit a Change Maker (Step {step} of 2)</CardTitle>
+          <CardTitle>
+            {existingProfileId ? "Update Your Change Maker Profile" : "Submit a Change Maker"} (Step {step} of 2)
+          </CardTitle>
           <CardDescription>
             {step === 1 
-              ? "Provide basic information about the change maker."
+              ? existingProfileId 
+                ? "Update your Change Maker profile information."
+                : "Provide basic information about the change maker."
               : "Add additional details, contact information, and team members (if applicable)."
             }
           </CardDescription>
@@ -176,7 +199,7 @@ const SubmitChangeMaker = () => {
             </CardContent>
             <CardFooter className="flex justify-between">
               {step > 1 && (
-                <Button type="button" variant="outline" onClick={prevStep}>
+                <Button type="button" variant="outline" onClick={() => setStep(1)}>
                   Back
                 </Button>
               )}
@@ -187,7 +210,7 @@ const SubmitChangeMaker = () => {
               )}
               {step === 2 && (
                 <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Submitting..." : "Submit Change Maker"}
+                  {form.formState.isSubmitting ? "Saving..." : existingProfileId ? "Update Profile" : "Submit Change Maker"}
                 </Button>
               )}
             </CardFooter>
