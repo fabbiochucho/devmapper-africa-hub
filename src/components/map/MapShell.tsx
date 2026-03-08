@@ -149,17 +149,20 @@ export default function MapShell({
         }
       });
 
-      map.current.addLayer({
-        id: 'markers-count',
-        type: 'symbol',
-        source: 'markers',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Bold'],
-          'text-size': 12
-        }
-      });
+      // Cluster count labels - only add if style has glyphs configured
+      if (map.current.getStyle()?.glyphs) {
+        map.current.addLayer({
+          id: 'markers-count',
+          type: 'symbol',
+          source: 'markers',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['Open Sans Bold'],
+            'text-size': 12
+          }
+        });
+      }
     }
 
     // Add unclustered points
