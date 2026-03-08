@@ -99,6 +99,8 @@ const App = () => (
                     <Route path="/my-analytics" element={<ChangeMakerMyAnalytics />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/scholarship" element={<Scholarship />} />
+                    <Route path="/my-projects" element={<MyProjects />} />
+                    <Route path="/project-analytics" element={<ProjectAnalytics />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
