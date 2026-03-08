@@ -14,7 +14,11 @@ interface Project {
   project_status: string;
 }
 
-export default function EnhancedProjectMap() {
+interface EnhancedProjectMapProps {
+  showGeoLayers?: boolean;
+}
+
+export default function EnhancedProjectMap({ showGeoLayers = true }: EnhancedProjectMapProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [map, setMap] = useState<maplibregl.Map | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +65,7 @@ export default function EnhancedProjectMap() {
         markers={markers}
         enableClusters={true}
       />
-      {map && <GeoLayers map={map} />}
+      {showGeoLayers && map && <GeoLayers map={map} />}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

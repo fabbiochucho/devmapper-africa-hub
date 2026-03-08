@@ -23,7 +23,9 @@ export function useFeatureAccess() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        await loadFeaturesForPlan('free');
+        // Per DevMapper protocol, default tier is 'lite' for all users
+        setUserPlan('lite');
+        await loadFeaturesForPlan('lite');
         return;
       }
 
@@ -36,7 +38,8 @@ export function useFeatureAccess() {
 
       const org = membership?.organizations as any;
       // Effective plan considers scholarship override
-      const effectivePlan = org?.scholarship_override || org?.plan_type || 'free';
+      // Per DevMapper protocol, default tier is 'lite' when no org plan is set
+      const effectivePlan = org?.scholarship_override || org?.plan_type || 'lite';
       setUserPlan(effectivePlan as PlanType);
       setQuotaRemaining(org?.project_quota_remaining ?? null);
       setProjectCap(org?.project_cap ?? null);
@@ -44,7 +47,7 @@ export function useFeatureAccess() {
       await loadFeaturesForPlan(effectivePlan as PlanType);
     } catch (error) {
       console.error('Error fetching feature access:', error);
-      await loadFeaturesForPlan('free');
+      await loadFeaturesForPlan('lite');
     } finally {
       setLoading(false);
     }

@@ -209,8 +209,8 @@ export function DonationDialog({ campaign, open, onOpenChange, onDonationComplet
             <div className="mt-2">
               <Label htmlFor="custom-amount">Or enter custom amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {campaign.currency === 'USD' ? '$' : campaign.currency === 'EUR' ? '€' : '£'}
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  {campaign.currency}
                 </span>
                 <Input
                   id="custom-amount"
@@ -218,7 +218,7 @@ export function DonationDialog({ campaign, open, onOpenChange, onDonationComplet
                   min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pl-8"
+                  className="pl-12"
                   placeholder="Enter amount"
                 />
               </div>
