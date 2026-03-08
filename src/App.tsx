@@ -109,6 +109,7 @@ const App = () => (
                     <Route path="/scholarship" element={<P><Scholarship /></P>} />
                     <Route path="/my-projects" element={<P><MyProjects /></P>} />
                     <Route path="/project-analytics" element={<P><ProjectAnalytics /></P>} />
+                    <Route path="/project-management" element={<P><ProjectManagement /></P>} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
