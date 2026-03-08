@@ -318,6 +318,7 @@ const UnifiedDashboard = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      <ProductWalkthrough />
     </div>
   );
 };
