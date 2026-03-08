@@ -309,7 +309,7 @@ export function AppSidebar() {
       {/* Footer with Settings & Billing */}
       <SidebarFooter>
         <SidebarMenu>
-          {isAuthenticated && (hasRole('company_representative') || hasRole('admin')) && (
+          {isAuthenticated && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <NavLink to="/billing-upgrade" className={getNavCls}>

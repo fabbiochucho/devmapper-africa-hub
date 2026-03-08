@@ -320,6 +320,7 @@ const UnifiedDashboard = () => {
         </TabsContent>
       </Tabs>
       <ProductWalkthrough />
+      <ProfileCompletionPrompt />
     </div>
   );
 };
