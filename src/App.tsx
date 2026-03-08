@@ -47,6 +47,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Scholarship = lazy(() => import("./pages/Scholarship"));
 const MyProjects = lazy(() => import("./pages/MyProjects"));
 const ProjectAnalytics = lazy(() => import("./pages/ProjectAnalytics"));
+const ProjectManagement = lazy(() => import("./pages/ProjectManagement"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
