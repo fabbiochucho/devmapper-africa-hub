@@ -7,7 +7,7 @@ import { Search, Target, ClipboardList, Handshake, Rocket, BarChart3, Award, Boo
 import { DSPM_PHASES, DSPM_COMPETENCIES, IMPACT_MEASUREMENT_LEVELS, FRAMEWORK_ALIGNMENTS, DISM_DIMENSION_DETAILS, DISM_RATING_CONFIG, VERIFICATION_LEVELS, IMPACT_CATEGORIES, type DISMRating } from '@/lib/dism-engine';
 import { getIndicatorLibraryStats } from '@/data/sdgIndicatorLibrary';
 import { getTaxonomyStats } from '@/data/sdgTaxonomy';
-import SEOHead from '@/components/seo/SEOHead';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const PHASE_ICONS: Record<number, React.ReactNode> = {
   1: <Search className="h-5 w-5" />, 2: <Target className="h-5 w-5" />,
