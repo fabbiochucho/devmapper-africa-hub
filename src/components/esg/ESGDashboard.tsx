@@ -34,8 +34,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { getBenchmarkForOrg } from '@/lib/alphaearth';
 import ESGScenarioAnalysis from './ESGScenarioAnalysis';
 import ESGReportGenerator from './ESGReportGenerator';
+import ESGReportDialog from './ESGReportDialog';
 import ESGDataVerification from './ESGDataVerification';
 import SupplierCSVImporter from './SupplierCSVImporter';
+import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 
 interface ESGIndicators {
@@ -228,7 +230,16 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             Environmental, Social & Governance tracking for {organization.name}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <ESGReportDialog
+            organizationName={organization.name}
+            organizationId={organizationId}
+            indicators={indicators}
+            suppliers={suppliers}
+            scenarios={scenarios}
+            benchmark={benchmark}
+            planType={organization.plan_type as 'free' | 'lite' | 'pro'}
+          />
           <Badge variant={organization.plan_type === 'pro' ? 'default' : 'secondary'}>
             {organization.plan_type} Plan
           </Badge>
@@ -484,24 +495,11 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         </TabsContent>
 
         <TabsContent value="emissions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={emissionsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="scope1" name="Scope 1" fill="#ef4444" />
-                  <Bar dataKey="scope2" name="Scope 2" fill="#f97316" />
-                  <Bar dataKey="scope3" name="Scope 3" fill="#eab308" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <EmissionsManager
+            organizationId={organizationId}
+            indicators={indicators}
+            onDataChange={loadESGData}
+          />
         </TabsContent>
 
         <TabsContent value="verification">
