@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_areas: {
+        Row: {
+          country_code: string
+          created_at: string
+          id: string
+          level: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          id?: string
+          level: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          level?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_areas_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agenda2063_links: {
         Row: {
           agenda_aspiration: number
@@ -386,6 +421,45 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      entity_locations: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string
+          country_code: string | null
+          created_at: string
+          entity_type: string
+          id: string
+          is_headquarters: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country: string
+          country_code?: string | null
+          created_at?: string
+          entity_type: string
+          id?: string
+          is_headquarters?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string
+          country_code?: string | null
+          created_at?: string
+          entity_type?: string
+          id?: string
+          is_headquarters?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       esg_audit_logs: {
         Row: {
@@ -840,6 +914,7 @@ export type Database = {
       }
       government_projects: {
         Row: {
+          admin_area_id: string | null
           beneficiaries: number | null
           budget: number | null
           created_at: string
@@ -858,6 +933,7 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          admin_area_id?: string | null
           beneficiaries?: number | null
           budget?: number | null
           created_at?: string
@@ -876,6 +952,7 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          admin_area_id?: string | null
           beneficiaries?: number | null
           budget?: number | null
           created_at?: string
@@ -894,6 +971,13 @@ export type Database = {
           visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "government_projects_admin_area_id_fkey"
+            columns: ["admin_area_id"]
+            isOneToOne: false
+            referencedRelation: "admin_areas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "government_projects_government_id_fkey"
             columns: ["government_id"]
