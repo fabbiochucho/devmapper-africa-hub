@@ -136,6 +136,8 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
         outcome_achievement_score: scoreForm.outcomeAchievementScore,
         sustainability_score: scoreForm.sustainabilityScore,
         community_validation_score: scoreForm.communityValidationScore,
+        total_sis: sisResult.totalSIS,
+        certification_rating: sisResult.rating,
         scored_by: user.id,
         scored_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -146,6 +148,35 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
       toast.error('Failed to save scores');
     } else {
       toast.success(`SDG Impact Score saved: ${sisResult.totalSIS} (${sisResult.ratingLabel})`);
+      fetchAll();
+    }
+  };
+
+  const issueCertification = async () => {
+    if (!user || sisResult.totalSIS < 60) {
+      toast.error('Minimum SIS of 60 required for certification');
+      return;
+    }
+    const certNumber = `DM-${sisResult.rating.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 2);
+
+    const { error } = await supabase.from('project_certifications').insert({
+      report_id: reportId,
+      rating: sisResult.rating,
+      certificate_number: certNumber,
+      certification_body: 'DevMapper SPVF Authority',
+      certified_by: user.id,
+      status: 'active',
+      issued_at: new Date().toISOString(),
+      expires_at: expiresAt.toISOString(),
+      score_id: scores?.id || null,
+    });
+
+    if (error) {
+      toast.error('Failed to issue certification');
+    } else {
+      toast.success(`Certificate ${certNumber} issued — ${sisResult.ratingLabel}`);
       fetchAll();
     }
   };
@@ -474,7 +505,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-semibold">{RATING_CONFIG[cert.rating as CertificationRating]?.label || cert.rating}</p>
-                            <p className="text-xs text-muted-foreground">Certificate: {cert.certificate_number || 'N/A'}</p>
+                            <p className="text-xs font-mono text-muted-foreground">Certificate: {cert.certificate_number || 'N/A'}</p>
                             {cert.certification_body && (
                               <p className="text-xs text-muted-foreground">Issued by: {cert.certification_body}</p>
                             )}
@@ -482,6 +513,14 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
                               Issued: {new Date(cert.issued_at).toLocaleDateString()}
                               {cert.expires_at && ` • Expires: ${new Date(cert.expires_at).toLocaleDateString()}`}
                             </p>
+                            <a
+                              href={`/verify/${cert.certificate_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary underline mt-1 inline-block"
+                            >
+                              Public verification link →
+                            </a>
                           </div>
                           <Badge variant={cert.status === 'active' ? 'default' : 'destructive'}>
                             {cert.status}
@@ -492,12 +531,17 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-8 space-y-4">
                   <Award className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">No certification issued yet.</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground">
                     Complete all 7 verification stages and achieve a minimum SIS of 60 to qualify.
                   </p>
+                  {isVerifier && sisResult.totalSIS >= 60 && (
+                    <Button onClick={issueCertification} className="mt-4">
+                      <Award className="mr-2 h-4 w-4" /> Issue SDG Certification
+                    </Button>
+                  )}
                 </div>
               )}
 
