@@ -41,6 +41,7 @@ const SdgAgenda2063Alignment = lazy(() => import("./components/SdgAgenda2063Alig
 const ESG = lazy(() => import("./pages/ESG"));
 const BillingUpgrade = lazy(() => import("./pages/BillingUpgrade"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage"));
+const ChangeMakerMyAnalytics = lazy(() => import("./pages/ChangeMakerMyAnalytics"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
