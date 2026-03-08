@@ -486,7 +486,7 @@ export default function ProjectManagement() {
         {/* Verification */}
         <TabsContent value="verification">
           {selectedProject ? (
-            <VerificationPanel reportId={selectedProject} isOwner={isOwner} />
+            <SPVFVerificationPanel reportId={selectedProject} isOwner={isOwner} />
           ) : (
             <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
           )}
