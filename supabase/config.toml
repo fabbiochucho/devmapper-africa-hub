@@ -61,5 +61,11 @@ verify_jwt = false
 [functions.validate-report]
 verify_jwt = true
 
+[functions.ai-copilot]
+verify_jwt = false
+
+[functions.rule-engine]
+verify_jwt = true
+
 [edge_runtime]
 policy = "oneshot"
