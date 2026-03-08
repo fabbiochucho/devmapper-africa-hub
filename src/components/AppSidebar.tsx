@@ -3,7 +3,7 @@ import {
   BarChart3, TrendingUp, FileText, UserPlus, Target, 
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
-  ChevronRight, User, Briefcase
+  ChevronRight, User, Briefcase, ListTodo
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,6 +70,7 @@ const getAnalyticsItems = (hasRole: (role: UserRole) => boolean) => {
 const submissionItems = [
   { title: "Submit Report", url: "/submit-report", icon: FileText },
   { title: "My Projects", url: "/my-projects", icon: Target },
+  { title: "Project Management", url: "/project-management", icon: ListTodo },
   { title: "Project Analytics", url: "/project-analytics", icon: TrendingUp },
   { title: "Submit Change Maker", url: "/submit-change-maker", icon: UserPlus },
 ];
