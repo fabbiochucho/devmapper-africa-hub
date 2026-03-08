@@ -11,13 +11,18 @@ import ChangeMakerStep1 from '@/components/changemaker/ChangeMakerStep1';
 import ChangeMakerStep2 from '@/components/changemaker/ChangeMakerStep2';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
+import { useUserRole } from '@/contexts/UserRoleContext';
+import { useNavigate } from 'react-router-dom';
 
 const SubmitChangeMaker = () => {
   const [step, setStep] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
   const [existingProfileId, setExistingProfileId] = React.useState<string | null>(null);
   const { user } = useAuth();
+  const { hasRole } = useUserRole();
+  const navigate = useNavigate();
+  const isAllowed = !user || hasRole('change_maker') || hasRole('admin') || hasRole('platform_admin');
   type ChangeMakerFormValues = z.infer<typeof changeMakerSchema>;
 
   const form = useForm<ChangeMakerFormValues>({
@@ -159,6 +164,29 @@ const SubmitChangeMaker = () => {
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) setStep(2);
   };
+
+  // CitizenReporter ≠ ChangeMaker: require change_maker role
+  if (!isAllowed) {
+    return (
+      <div className="flex items-center justify-center h-full p-8">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-6">
+            <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
+            <h2 className="text-xl font-bold mb-2">Change Maker Role Required</h2>
+            <p className="text-muted-foreground mb-4">
+              You need the Change Maker role to create a profile. Being a Citizen Reporter does not grant Change Maker access.
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              You can add the Change Maker role from your Settings page, or get nominated by another user.
+            </p>
+            <Button onClick={() => navigate('/settings')} variant="outline">
+              Go to Settings
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
