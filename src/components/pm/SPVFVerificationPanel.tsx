@@ -564,6 +564,11 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* TAB 5: Audit Trail */}
+        <TabsContent value="ledger">
+          <VerificationLedgerView reportId={reportId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
