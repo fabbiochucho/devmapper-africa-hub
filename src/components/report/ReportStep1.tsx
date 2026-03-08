@@ -27,7 +27,7 @@ import ExifReader from "exif-reader";
 import { Buffer } from 'buffer';
 import { reportSchema } from '@/lib/reportSchema';
 import { reverseGeocode } from '@/lib/geocode';
-import { getCountries, Country } from '@/data/countries';
+import { getCountries, Country, findCountryByCode2 } from '@/data/countries';
 
 type ReportFormValues = z.infer<typeof reportSchema>;
 
