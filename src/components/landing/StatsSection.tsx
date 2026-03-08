@@ -1,25 +1,33 @@
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+
+function formatCurrency(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n}`;
+}
 
 export default function StatsSection() {
+  const { data: stats, isLoading } = useDashboardStats();
+
+  const items = [
+    { value: stats?.total_reports?.toLocaleString() ?? "—", label: "Projects Tracked", color: "text-primary" },
+    { value: stats?.countries_count?.toString() ?? "—", label: "African Countries", color: "text-green-600" },
+    { value: stats ? formatCurrency(stats.total_funds_raised) : "—", label: "Total Investment", color: "text-purple-600" },
+    { value: stats?.total_campaigns?.toString() ?? "—", label: "Active Campaigns", color: "text-orange-600" },
+  ];
+
   return (
     <section className="py-12 bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary mb-2">1,247</div>
-            <div className="text-muted-foreground">Projects Tracked</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">12</div>
-            <div className="text-muted-foreground">African Countries</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">$45.6M</div>
-            <div className="text-muted-foreground">Total Investment</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">89%</div>
-            <div className="text-muted-foreground">Verification Rate</div>
-          </div>
+          {items.map((item, i) => (
+            <div key={i} className="text-center">
+              <div className={`text-3xl font-bold mb-2 ${item.color}`}>
+                {isLoading ? <span className="animate-pulse">...</span> : item.value}
+              </div>
+              <div className="text-muted-foreground">{item.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

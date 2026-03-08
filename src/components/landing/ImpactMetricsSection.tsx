@@ -1,16 +1,24 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Users, Globe2, CheckCircle, DollarSign, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M+`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}k+`;
+  return n > 0 ? n.toLocaleString() : '0';
+}
 
 export default function ImpactMetricsSection() {
   const { t } = useTranslation();
+  const { data: stats } = useDashboardStats();
 
   const metrics = [
-    { icon: Globe2, value: "54", label: t('impact.africanCountries'), description: t('impact.africanCountriesDesc') },
-    { icon: Users, value: "5,000+", label: t('impact.activeChangeMakers'), description: t('impact.activeChangeMakersDesc') },
-    { icon: CheckCircle, value: "8,500+", label: t('impact.verifiedProjects'), description: t('impact.verifiedProjectsDesc') },
-    { icon: DollarSign, value: "$2.5M+", label: t('impact.fundsTracked'), description: t('impact.fundsTrackedDesc') },
-    { icon: Building2, value: "150+", label: t('impact.partnerOrgs'), description: t('impact.partnerOrgsDesc') },
+    { icon: Globe2, value: stats ? String(stats.countries_count || 0) : "—", label: t('impact.africanCountries'), description: t('impact.africanCountriesDesc') },
+    { icon: Users, value: stats ? fmt(stats.total_change_makers) : "—", label: t('impact.activeChangeMakers'), description: t('impact.activeChangeMakersDesc') },
+    { icon: CheckCircle, value: stats ? fmt(stats.total_reports) : "—", label: t('impact.verifiedProjects'), description: t('impact.verifiedProjectsDesc') },
+    { icon: DollarSign, value: stats ? `$${fmt(stats.total_funds_raised)}` : "—", label: t('impact.fundsTracked'), description: t('impact.fundsTrackedDesc') },
+    { icon: Building2, value: stats ? fmt(stats.total_campaigns) : "—", label: t('impact.partnerOrgs'), description: t('impact.partnerOrgsDesc') },
     { icon: TrendingUp, value: "17", label: t('impact.sdgGoalsMapped'), description: t('impact.sdgGoalsMappedDesc') },
   ];
 
