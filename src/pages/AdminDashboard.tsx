@@ -207,10 +207,12 @@ export default function AdminDashboard() {
         <TabsList className="flex-wrap">
           <TabsTrigger value="users">User Verification</TabsTrigger>
           <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
+          <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
           <TabsTrigger value="content">Flagged Content {flaggedReports.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{flaggedReports.length}</Badge>}</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
           <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
+          <TabsTrigger value="audit">Audit Log</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
