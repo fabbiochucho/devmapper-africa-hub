@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import PartnerManagement from "@/components/admin/PartnerManagement";
+import BroadcastManager from "@/components/admin/BroadcastManager";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
@@ -42,6 +43,45 @@ interface FundraisingCampaign {
   created_at: string;
   created_by: string;
   public_profiles?: { full_name: string | null } | null;
+}
+
+// Inline Audit Log Viewer
+function AuditLogViewer() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logLoading, setLogLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
+      .then(({ data }) => { setLogs(data || []); setLogLoading(false); });
+  }, []);
+
+  if (logLoading) return <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Audit Log</CardTitle></CardHeader>
+      <CardContent>
+        {logs.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No audit logs recorded yet.</p>
+        ) : (
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {logs.map((log: any) => (
+              <div key={log.id} className="p-3 border rounded-lg text-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <Badge variant="outline">{log.action}</Badge>
+                  <span className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {log.actor_type} • {log.target_table || 'system'}
+                  {log.target_id && ` • ${log.target_id.slice(0, 8)}…`}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function AdminDashboard() {
@@ -206,10 +246,12 @@ export default function AdminDashboard() {
         <TabsList className="flex-wrap">
           <TabsTrigger value="users">User Verification</TabsTrigger>
           <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
+          <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
           <TabsTrigger value="content">Flagged Content {flaggedReports.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{flaggedReports.length}</Badge>}</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
           <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
+          <TabsTrigger value="audit">Audit Log</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
@@ -292,9 +334,14 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="broadcasts"><BroadcastManager /></TabsContent>
         <TabsContent value="partners"><PartnerManagement /></TabsContent>
         <TabsContent value="test-accounts"><TestAccountManager /></TabsContent>
         <TabsContent value="fellowships"><ScholarshipManager /></TabsContent>
+
+        <TabsContent value="audit">
+          <AuditLogViewer />
+        </TabsContent>
 
         <TabsContent value="reports">
           <Card>

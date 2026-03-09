@@ -91,6 +91,7 @@ const Fundraising = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<FundraisingCampaign | null>(null);
   const [creating, setCreating] = useState(false);
   
+  const [userReports, setUserReports] = useState<{ id: string; title: string }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -100,10 +101,20 @@ const Fundraising = () => {
     location: '',
     category: 'nano' as 'nano' | 'micro' | 'small',
     deadline: '',
-    image_url: ''
+    image_url: '',
+    report_id: '' as string,
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Fetch user's reports for campaign linking
+  useEffect(() => {
+    if (user) {
+      supabase.from('reports').select('id, title').eq('user_id', user.id).order('submitted_at', { ascending: false }).then(({ data }) => {
+        if (data) setUserReports(data);
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchCampaigns();
@@ -220,21 +231,25 @@ const Fundraising = () => {
     else category = 'small';
 
     try {
+      const insertData: any = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        target_amount: amount,
+        currency: formData.currency,
+        sdg_goals: formData.sdg_goals,
+        location: formData.location.trim(),
+        category,
+        deadline: formData.deadline,
+        image_url: formData.image_url || '/placeholder.svg',
+        created_by: user.id,
+        change_maker_id: user.id,
+      };
+      if (formData.report_id) {
+        insertData.report_id = formData.report_id;
+      }
       const { error } = await supabase
         .from('fundraising_campaigns')
-        .insert([{
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          target_amount: amount,
-          currency: formData.currency,
-          sdg_goals: formData.sdg_goals,
-          location: formData.location.trim(),
-          category,
-          deadline: formData.deadline,
-          image_url: formData.image_url || '/placeholder.svg',
-          created_by: user.id,
-          change_maker_id: user.id
-        }]);
+        .insert([insertData]);
 
       if (error) throw error;
       
@@ -253,7 +268,7 @@ const Fundraising = () => {
   const resetForm = () => {
     setFormData({
       title: '', description: '', target_amount: '', currency: 'USD',
-      sdg_goals: [], location: '', category: 'nano', deadline: '', image_url: ''
+      sdg_goals: [], location: '', category: 'nano', deadline: '', image_url: '', report_id: '',
     });
     setFormErrors({});
   };
@@ -482,6 +497,22 @@ const Fundraising = () => {
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
+
+                {userReports.length > 0 && (
+                  <div className="md:col-span-2">
+                    <Label>Link to Project (optional)</Label>
+                    <Select value={formData.report_id || "none"} onValueChange={(v) => setFormData({ ...formData, report_id: v === "none" ? "" : v })}>
+                      <SelectTrigger><SelectValue placeholder="Select a project to link" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No linked project</SelectItem>
+                        {userReports.map(r => (
+                          <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">Link this campaign to one of your projects for transparency</p>
+                  </div>
+                )}
 
                 <div className="md:col-span-2">
                   <Label>SDG Goals * (select 1–5)</Label>

@@ -14,6 +14,7 @@ import { Plus, Target, TrendingUp, Calendar, Users, Save, X, Bot } from 'lucide-
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import EntityLocationsManager from '@/components/locations/EntityLocationsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -136,6 +137,7 @@ const TargetCard = ({ target, showEdit, onStartEdit, editingId, editCurrentValue
 
 const CorporateDashboard = () => {
   const { user, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [targets, setTargets] = useState<CorporateTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -457,6 +459,16 @@ const CorporateDashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Quick link to PM workspace */}
+      <Card>
+        <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">
+          <p className="text-sm text-muted-foreground">
+            Use <strong>Project Management</strong> for full lifecycle tracking, milestones, and verification.
+          </p>
+          <Button variant="outline" onClick={() => navigate('/my-projects')}>Go to Project Management</Button>
+        </CardContent>
+      </Card>
 
       {/* Compliance Assessment */}
       <ComplianceAssessment actorType="corporate" countryCode={user?.user_metadata?.country} />

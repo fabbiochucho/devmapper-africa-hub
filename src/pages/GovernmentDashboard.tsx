@@ -31,6 +31,9 @@ type GovProject = {
   admin_area_id: string | null;
   location: string | null;
   created_at: string;
+  start_date: string | null;
+  end_date: string | null;
+  beneficiaries: number | null;
 };
 
 type SdgProgressRow = { goal: number; projects: number; budget: number; progress: number };
@@ -43,6 +46,10 @@ const GovernmentDashboard = () => {
   const [areasById, setAreasById] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingProject, setEditingProject] = useState<GovProject | null>(null);
+  const [editSpent, setEditSpent] = useState('');
+  const [editStatus, setEditStatus] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -57,7 +64,7 @@ const GovernmentDashboard = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("government_projects")
-        .select("id, title, budget, spent_amount, currency, status, sdg_goals, admin_area_id, location, created_at")
+        .select("id, title, budget, spent_amount, currency, status, sdg_goals, admin_area_id, location, created_at, start_date, end_date, beneficiaries")
         .eq("government_id", authUser.id)
         .order("created_at", { ascending: false })
         .limit(500);
@@ -370,7 +377,90 @@ const GovernmentDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Compliance Assessment */}
+      {/* Project List with Inline Edit */}
+      <Card>
+        <CardHeader><CardTitle>All Projects</CardTitle></CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Budget</TableHead>
+                <TableHead className="text-right">Spent</TableHead>
+                <TableHead className="text-right">Beneficiaries</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map(p => (
+                <TableRow key={p.id}>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{p.title}</p>
+                      <p className="text-xs text-muted-foreground">{p.location || 'No location'}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {editingProject?.id === p.id ? (
+                      <Select value={editStatus} onValueChange={setEditStatus}>
+                        <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="planning">Planning</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="on-hold">On Hold</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge variant="outline">{p.status}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">{formatCurrency(p.budget || 0)}</TableCell>
+                  <TableCell className="text-right">
+                    {editingProject?.id === p.id ? (
+                      <Input type="number" value={editSpent} onChange={e => setEditSpent(e.target.value)} className="w-24 h-8" />
+                    ) : (
+                      formatCurrency(p.spent_amount || 0)
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">{p.beneficiaries?.toLocaleString() || '—'}</TableCell>
+                  <TableCell>
+                    {editingProject?.id === p.id ? (
+                      <div className="flex gap-1">
+                        <Button size="sm" disabled={savingEdit} onClick={async () => {
+                          setSavingEdit(true);
+                          try {
+                            const { error } = await supabase.from('government_projects')
+                              .update({ spent_amount: editSpent ? parseFloat(editSpent) : null, status: editStatus })
+                              .eq('id', p.id);
+                            if (error) throw error;
+                            toast.success('Project updated');
+                            setEditingProject(null);
+                            loadProjects();
+                          } catch { toast.error('Failed to update'); }
+                          finally { setSavingEdit(false); }
+                        }}>Save</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingProject(null)}>Cancel</Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setEditingProject(p);
+                        setEditSpent(String(p.spent_amount || 0));
+                        setEditStatus(p.status);
+                      }}>Edit</Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {projects.length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No projects yet.</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       <ComplianceAssessment actorType="government" />
 
       {/* AI Copilot */}

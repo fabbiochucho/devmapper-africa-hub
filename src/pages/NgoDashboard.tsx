@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot } from 'lucide-react';
+import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot, ExternalLink } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
@@ -62,14 +62,17 @@ const NgoDashboard = () => {
   const renderProjectCard = (p: typeof ownProjects[0]) => {
     const cfg = statusConfig[p.project_status] || statusConfig.planned;
     return (
-      <Card key={p.id}>
+      <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/my-projects?project=${p.id}`)}>
         <CardHeader>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <CardTitle className="text-base truncate">{p.title}</CardTitle>
               <CardDescription className="line-clamp-2 mt-1">{p.description}</CardDescription>
             </div>
-            <Badge variant={cfg.variant} className="shrink-0">{cfg.label}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={cfg.variant} className="shrink-0">{cfg.label}</Badge>
+              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
