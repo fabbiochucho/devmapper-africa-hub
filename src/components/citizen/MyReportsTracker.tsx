@@ -60,23 +60,23 @@ export default function MyReportsTracker() {
     const fetchReports = async () => {
       const { data, error } = await supabase
         .from('reports')
-        .select(`
-          id, title, description, sdg_goal, project_status, location,
-          issue_type, issue_severity, escalation_status, submitted_at
-        `)
+        .select('id, title, description, sdg_goal, project_status, location, submitted_at')
         .eq('user_id', user.id)
         .order('submitted_at', { ascending: false });
 
       if (!error && data) {
         // Fetch verification and feedback counts
         const enrichedReports = await Promise.all(
-          data.map(async (report) => {
+          data.map(async (report: any) => {
             const [verifications, feedback] = await Promise.all([
               supabase.from('project_verifications').select('id', { count: 'exact' }).eq('report_id', report.id),
               supabase.from('citizen_project_feedback').select('id', { count: 'exact' }).eq('report_id', report.id),
             ]);
             return {
               ...report,
+              issue_type: null, // Will be available after migration
+              issue_severity: null,
+              escalation_status: 'none',
               verification_count: verifications.count || 0,
               feedback_count: feedback.count || 0,
             };
