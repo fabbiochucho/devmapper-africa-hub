@@ -80,6 +80,8 @@ const ForumPost: React.FC<ForumPostProps> = ({
 
   const categoryStyle = categoryConfig[post.category] || { bg: 'bg-muted', text: 'text-muted-foreground' };
 
+  const categoryClass = categoryConfig[post.category] ?? 'bg-muted text-muted-foreground';
+
   const handleLike = () => onLike?.(post.id);
   const handleShare = () => onShare?.(post.id);
   const handleDelete = () => onDelete?.(post.id);
