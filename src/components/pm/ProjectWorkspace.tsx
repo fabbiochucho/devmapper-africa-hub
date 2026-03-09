@@ -19,6 +19,7 @@ import StakeholderAffiliation from "./StakeholderAffiliation";
 import KanbanBoard from "./KanbanBoard";
 import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
+import ProcurementTracker from "./ProcurementTracker";
 import { toast } from "sonner";
 
 interface ProjectWorkspaceProps {

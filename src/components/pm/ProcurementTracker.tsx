@@ -251,11 +251,11 @@ export default function ProcurementTracker({ reportId, isOwner }: ProcurementTra
               <p className="text-xs text-muted-foreground">Total Contract Value</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{activeContracts}</div>
+              <div className="text-2xl font-bold text-primary">{activeContracts}</div>
               <p className="text-xs text-muted-foreground">Active Contracts</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{completedContracts}</div>
+              <div className="text-2xl font-bold text-foreground/60">{completedContracts}</div>
               <p className="text-xs text-muted-foreground">Completed</p>
             </div>
           </div>
