@@ -32,6 +32,7 @@ const UnifiedDashboard = () => {
     totalFunding: 0
   });
   const [loading, setLoading] = useState(true);
+  const [activity, setActivity] = useState<Array<{ id: string; type: string; title: string; ts: string }>>([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
