@@ -191,6 +191,21 @@ const NgoDashboard = () => {
             <div className="space-y-3">{filterByStatus('completed').map(renderProjectCard)}</div>
           )}
         </TabsContent>
+
+        <TabsContent value="affiliated" className="space-y-4 mt-4">
+          {affiliatedProjects.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">No affiliated projects. Projects where you're a partner, sponsor, or funder will appear here.</p>
+          ) : (
+            <div className="space-y-3">
+              {affiliatedProjects.map(p => (
+                <div key={p.id}>
+                  <Badge variant="outline" className="mb-1 text-xs">{p.relationship_type}</Badge>
+                  {renderProjectCard(p)}
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* NGO Verification Notifications Panel */}
