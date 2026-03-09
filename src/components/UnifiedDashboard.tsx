@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 interface DashboardStats {
   userReports: number;
