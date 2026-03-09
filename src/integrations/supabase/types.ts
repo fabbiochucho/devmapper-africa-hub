@@ -2218,6 +2218,50 @@ export type Database = {
           },
         ]
       }
+      report_flags: {
+        Row: {
+          created_at: string
+          details: string | null
+          flagged_by: string
+          id: string
+          reason: string
+          report_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          flagged_by: string
+          id?: string
+          reason: string
+          report_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          flagged_by?: string
+          id?: string
+          reason?: string
+          report_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_flags_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           beneficiaries: number | null

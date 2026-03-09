@@ -11,11 +11,12 @@ import {
 } from 'recharts';
 import {
   Share2, Copy, ExternalLink, Users, DollarSign, Target, TrendingUp,
-  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3, Plus
+  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3, Plus, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import SocialShareButton from '@/components/social/SocialShareButton';
+import { useNavigate } from 'react-router-dom';
 
 const SDG_COLORS = [
   '#E5243B', '#DDA63A', '#4C9F38', '#C5192D', '#FF3A21', '#26BDE2',
@@ -25,6 +26,7 @@ const SDG_COLORS = [
 
 const ChangeMakerMyAnalytics = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
@@ -51,14 +53,10 @@ const ChangeMakerMyAnalytics = () => {
       setReports(reportsRes.data || []);
       setCampaigns(campaignsRes.data || []);
 
-      // Load donations for user's campaigns
       if (campaignsRes.data && campaignsRes.data.length > 0) {
         const ids = campaignsRes.data.map(c => c.id);
         const { data: donationData } = await supabase
-          .from('campaign_donations')
-          .select('*')
-          .in('campaign_id', ids)
-          .eq('status', 'completed');
+          .from('campaign_donations').select('*').in('campaign_id', ids).eq('status', 'completed');
         setDonations(donationData || []);
       }
     } catch (err) {
@@ -68,19 +66,8 @@ const ChangeMakerMyAnalytics = () => {
     }
   };
 
-  const shareUrl = `${window.location.origin}/change-makers/${profile?.id || ''}`;
-
-  const copyShareLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    toast.success('Share link copied!');
-  };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   if (!user) {
@@ -93,6 +80,29 @@ const ChangeMakerMyAnalytics = () => {
     );
   }
 
+  // Handle missing change_maker profile
+  if (!profile) {
+    return (
+      <div className="max-w-lg mx-auto py-16 text-center space-y-4">
+        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
+        <h2 className="text-2xl font-bold">Create Your Change Maker Profile</h2>
+        <p className="text-muted-foreground">
+          You haven't set up your Change Maker profile yet. Create one to start tracking your impact, launching campaigns, and sharing your analytics.
+        </p>
+        <Button onClick={() => navigate('/submit-change-maker')} className="gap-2">
+          <Plus className="w-4 h-4" />Create Profile
+        </Button>
+      </div>
+    );
+  }
+
+  const shareUrl = `${window.location.origin}/change-makers/${profile?.id || ''}`;
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    toast.success('Share link copied!');
+  };
+
   // Compute analytics
   const totalReports = reports.length;
   const verifiedReports = reports.filter(r => r.is_verified).length;
@@ -103,32 +113,22 @@ const ChangeMakerMyAnalytics = () => {
 
   // SDG distribution
   const sdgCounts: Record<number, number> = {};
-  reports.forEach(r => {
-    sdgCounts[r.sdg_goal] = (sdgCounts[r.sdg_goal] || 0) + 1;
-  });
+  reports.forEach(r => { sdgCounts[r.sdg_goal] = (sdgCounts[r.sdg_goal] || 0) + 1; });
   const sdgData = Object.entries(sdgCounts).map(([sdg, count]) => ({
-    sdg: `SDG ${sdg}`,
-    count,
-    fill: SDG_COLORS[parseInt(sdg) - 1] || '#666',
+    sdg: `SDG ${sdg}`, count, fill: SDG_COLORS[parseInt(sdg) - 1] || '#666',
   })).sort((a, b) => b.count - a.count);
 
   // Reports by status
   const statusCounts: Record<string, number> = {};
-  reports.forEach(r => {
-    statusCounts[r.project_status] = (statusCounts[r.project_status] || 0) + 1;
-  });
+  reports.forEach(r => { statusCounts[r.project_status] = (statusCounts[r.project_status] || 0) + 1; });
   const statusData = Object.entries(statusCounts).map(([status, count]) => ({
-    name: status.charAt(0).toUpperCase() + status.slice(1),
-    value: count,
+    name: status.charAt(0).toUpperCase() + status.slice(1), value: count,
   }));
-
   const STATUS_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'];
 
   // Country distribution
   const countryCounts: Record<string, number> = {};
-  reports.forEach(r => {
-    if (r.country_code) countryCounts[r.country_code] = (countryCounts[r.country_code] || 0) + 1;
-  });
+  reports.forEach(r => { if (r.country_code) countryCounts[r.country_code] = (countryCounts[r.country_code] || 0) + 1; });
   const countryData = Object.entries(countryCounts).map(([code, count]) => ({ country: code, count }));
 
   return (
@@ -151,41 +151,26 @@ const ChangeMakerMyAnalytics = () => {
                 My Impact Analytics
                 {profile?.is_verified && <CheckCircle className="w-5 h-5 text-green-500" />}
               </h1>
-              <p className="text-muted-foreground">
-                {userProfile?.full_name || user.email} • {userProfile?.country || 'Africa'}
-              </p>
+              <p className="text-muted-foreground">{userProfile?.full_name || user.email} • {userProfile?.country || 'Africa'}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {profile && (
-              <Button size="sm" className="gap-2" asChild>
-                <a href={`/fundraising?create=1&sdgs=${encodeURIComponent((profile?.sdg_goals || []).join(','))}`}> 
-                  <Plus className="w-4 h-4" />
-                  New Campaign
-                </a>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-2">
-              <Copy className="w-4 h-4" />
-              Copy Link
+            <Button size="sm" className="gap-2" asChild>
+              <a href={`/fundraising?create=1&sdgs=${encodeURIComponent((profile?.sdg_goals || []).join(','))}`}>
+                <Plus className="w-4 h-4" />New Campaign
+              </a>
             </Button>
-            {profile && (
-              <SocialShareButton
-                title={`${userProfile?.full_name}'s Impact on DevMapper`}
-                description={`${totalReports} projects, ${totalBeneficiaries.toLocaleString()} beneficiaries, ${verifiedReports} verified`}
-                url={shareUrl}
-                data={{ totalReports, totalBeneficiaries, verifiedReports }}
-                type="analytics"
-              />
-            )}
-            {profile && (
-              <Button variant="outline" size="sm" asChild className="gap-2">
-                <a href={`/change-makers/${profile.id}`} target="_blank">
-                  <ExternalLink className="w-4 h-4" />
-                  Public Profile
-                </a>
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-2"><Copy className="w-4 h-4" />Copy Link</Button>
+            <SocialShareButton
+              title={`${userProfile?.full_name}'s Impact on DevMapper`}
+              description={`${totalReports} projects, ${totalBeneficiaries.toLocaleString()} beneficiaries, ${verifiedReports} verified`}
+              url={shareUrl}
+              data={{ totalReports, totalBeneficiaries, verifiedReports }}
+              type="analytics"
+            />
+            <Button variant="outline" size="sm" asChild className="gap-2">
+              <a href={`/change-makers/${profile.id}`} target="_blank"><ExternalLink className="w-4 h-4" />Public Profile</a>
+            </Button>
           </div>
         </div>
 
@@ -210,7 +195,6 @@ const ChangeMakerMyAnalytics = () => {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* SDG Distribution */}
           <Card>
             <CardHeader><CardTitle className="text-base">SDG Focus Areas</CardTitle></CardHeader>
             <CardContent>
@@ -221,18 +205,13 @@ const ChangeMakerMyAnalytics = () => {
                     <XAxis dataKey="sdg" fontSize={11} />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" name="Projects">
-                      {sdgData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
-                    </Bar>
+                    <Bar dataKey="count" name="Projects">{sdgData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-12">No projects yet</p>
-              )}
+              ) : <p className="text-center text-muted-foreground py-12">No projects yet</p>}
             </CardContent>
           </Card>
 
-          {/* Project Status */}
           <Card>
             <CardHeader><CardTitle className="text-base">Project Status Distribution</CardTitle></CardHeader>
             <CardContent>
@@ -246,23 +225,17 @@ const ChangeMakerMyAnalytics = () => {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-12">No data</p>
-              )}
+              ) : <p className="text-center text-muted-foreground py-12">No data</p>}
             </CardContent>
           </Card>
 
-          {/* Countries */}
           {countryData.length > 0 && (
             <Card>
               <CardHeader><CardTitle className="text-base">Countries of Impact</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={countryData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="country" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="country" /><YAxis /><Tooltip />
                     <Bar dataKey="count" fill="hsl(var(--primary))" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -270,7 +243,6 @@ const ChangeMakerMyAnalytics = () => {
             </Card>
           )}
 
-          {/* Fundraising */}
           {campaigns.length > 0 && (
             <Card>
               <CardHeader><CardTitle className="text-base">Fundraising Campaigns</CardTitle></CardHeader>
@@ -300,28 +272,18 @@ const ChangeMakerMyAnalytics = () => {
           )}
         </div>
 
-        {/* Shareable Mini-Website Card */}
+        {/* Share card */}
         <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
           <CardContent className="flex flex-col md:flex-row items-center gap-4 py-6">
             <Globe className="w-10 h-10 text-primary shrink-0" />
             <div className="flex-1 text-center md:text-left">
               <h3 className="font-semibold">Share Your Impact</h3>
-              <p className="text-sm text-muted-foreground">
-                Share your public analytics page with donors, partners, and the community.
-              </p>
+              <p className="text-sm text-muted-foreground">Share your public analytics page with donors, partners, and the community.</p>
               <code className="text-xs bg-muted px-2 py-1 rounded mt-1 inline-block break-all">{shareUrl}</code>
             </div>
             <div className="flex gap-2">
-              <Button onClick={copyShareLink} variant="outline" size="sm" className="gap-2">
-                <Copy className="w-4 h-4" /> Copy
-              </Button>
-              {profile && (
-                <Button asChild size="sm" className="gap-2">
-                  <a href={`/change-makers/${profile.id}`} target="_blank">
-                    <ExternalLink className="w-4 h-4" /> View
-                  </a>
-                </Button>
-              )}
+              <Button onClick={copyShareLink} variant="outline" size="sm" className="gap-2"><Copy className="w-4 h-4" /> Copy</Button>
+              <Button asChild size="sm" className="gap-2"><a href={`/change-makers/${profile.id}`} target="_blank"><ExternalLink className="w-4 h-4" /> View</a></Button>
             </div>
           </CardContent>
         </Card>
