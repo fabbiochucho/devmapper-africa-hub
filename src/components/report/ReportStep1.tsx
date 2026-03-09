@@ -242,6 +242,87 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
         )}
       />
 
+      {/* Issue Taxonomy — PRD V6 */}
+      <div className="space-y-4 rounded-lg border p-4">
+        <Label className="font-semibold">Issue Classification (Optional)</Label>
+        <p className="text-xs text-muted-foreground">If this is an issue report, classify it below.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={control}
+            name="issue_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Issue Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="infrastructure_damage">Infrastructure Damage</SelectItem>
+                    <SelectItem value="environmental_concern">Environmental Concern</SelectItem>
+                    <SelectItem value="budget_misuse">Budget Misuse</SelectItem>
+                    <SelectItem value="quality_deficiency">Quality Deficiency</SelectItem>
+                    <SelectItem value="safety_hazard">Safety Hazard</SelectItem>
+                    <SelectItem value="community_complaint">Community Complaint</SelectItem>
+                    <SelectItem value="regulatory_violation">Regulatory Violation</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="issue_severity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Severity</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Low" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="evidence_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Evidence Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="photograph">Photograph</SelectItem>
+                    <SelectItem value="document">Document</SelectItem>
+                    <SelectItem value="testimony">Testimony</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="official_record">Official Record</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+
       <div className="space-y-4 rounded-lg border p-4">
         <Label className="font-semibold">Project Location</Label>
         <FormField
