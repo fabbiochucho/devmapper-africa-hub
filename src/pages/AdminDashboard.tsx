@@ -45,6 +45,45 @@ interface FundraisingCampaign {
   public_profiles?: { full_name: string | null } | null;
 }
 
+// Inline Audit Log Viewer
+function AuditLogViewer() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logLoading, setLogLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(50)
+      .then(({ data }) => { setLogs(data || []); setLogLoading(false); });
+  }, []);
+
+  if (logLoading) return <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Audit Log</CardTitle></CardHeader>
+      <CardContent>
+        {logs.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No audit logs recorded yet.</p>
+        ) : (
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {logs.map((log: any) => (
+              <div key={log.id} className="p-3 border rounded-lg text-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <Badge variant="outline">{log.action}</Badge>
+                  <span className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {log.actor_type} • {log.target_table || 'system'}
+                  {log.target_id && ` • ${log.target_id.slice(0, 8)}…`}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminDashboard() {
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
