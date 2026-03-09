@@ -14,6 +14,7 @@ import { User, Shield, Bell, LogOut, Save, CreditCard, Briefcase } from "lucide-
 import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
+import NotificationPreferences from "@/components/settings/NotificationPreferences";
 
 const Settings = () => {
   const { user, profile, signOut, updateProfile, updatePassword } = useAuth();
