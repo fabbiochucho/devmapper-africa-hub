@@ -2,19 +2,19 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, FileText, Shield, Sparkles, History } from "lucide-react";
+import { Bot, Send, Loader2, FileText, Shield, Sparkles, Leaf, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import AICopilotQuickActions from "./AICopilotQuickActions";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-type CopilotContext = "general" | "compliance" | "report_draft";
+type CopilotContext = "general" | "compliance" | "report_draft" | "carbon";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-copilot`;
 
@@ -22,6 +22,7 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
   { value: "general", label: "General", icon: <Sparkles className="h-3 w-3" /> },
   { value: "compliance", label: "Compliance", icon: <Shield className="h-3 w-3" /> },
   { value: "report_draft", label: "Report Draft", icon: <FileText className="h-3 w-3" /> },
+  { value: "carbon", label: "Carbon", icon: <Leaf className="h-3 w-3" /> },
 ];
 
 export default function AICopilot({ projectData }: { projectData?: any }) {
