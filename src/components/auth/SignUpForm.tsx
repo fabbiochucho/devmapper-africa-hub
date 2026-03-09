@@ -196,18 +196,24 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        <div className="flex justify-center">
-          <HCaptcha
-            onVerify={(token) => setCaptchaToken(token)}
-            onExpire={() => setCaptchaToken(null)}
-            onError={() => {
-              setCaptchaToken(null);
-              toast.error("CAPTCHA verification failed. Please try again.");
-            }}
-          />
-        </div>
+        {import.meta.env.VITE_HCAPTCHA_SITE_KEY && (
+          <div className="flex justify-center">
+            <HCaptcha
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => {
+                setCaptchaToken(null);
+                toast.error("CAPTCHA verification failed. Please try again.");
+              }}
+            />
+          </div>
+        )}
 
-        <Button type="submit" className="w-full" disabled={isLoading || isBreached || !captchaToken}>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading || isBreached || (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !captchaToken)}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>

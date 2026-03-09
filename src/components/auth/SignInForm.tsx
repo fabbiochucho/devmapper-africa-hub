@@ -91,17 +91,23 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
             </FormItem>
           )}
         />
-        <div className="flex justify-center">
-          <HCaptcha
-            onVerify={(token) => setCaptchaToken(token)}
-            onExpire={() => setCaptchaToken(null)}
-            onError={() => {
-              setCaptchaToken(null);
-              toast.error("CAPTCHA verification failed. Please try again.");
-            }}
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
+        {import.meta.env.VITE_HCAPTCHA_SITE_KEY && (
+          <div className="flex justify-center">
+            <HCaptcha
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => {
+                setCaptchaToken(null);
+                toast.error("CAPTCHA verification failed. Please try again.");
+              }}
+            />
+          </div>
+        )}
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading || (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !captchaToken)}
+        >
           <LogIn className="mr-2 h-4 w-4" /> {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
