@@ -316,7 +316,11 @@ export default function AdminDashboard() {
                   <div key={campaign.id} className="border rounded-lg p-4">
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                       <div className="space-y-2">
-                        <div><h3 className="font-semibold">{campaign.title}</h3><p className="text-sm text-muted-foreground">By: {campaign.public_profiles?.full_name || 'Anonymous'}</p></div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{campaign.title}</h3>
+                          {(campaign as any).is_verified && <Badge variant="default" className="text-xs">✔ Verified</Badge>}
+                        </div>
+                        <p className="text-sm text-muted-foreground">By: {campaign.public_profiles?.full_name || 'Anonymous'}</p>
                         <div className="flex items-center gap-2">
                           <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
                           <span className="text-sm text-muted-foreground">{campaign.currency} {campaign.raised_amount.toLocaleString()} / {campaign.target_amount.toLocaleString()}</span>
@@ -324,8 +328,10 @@ export default function AdminDashboard() {
                         <p className="text-xs text-muted-foreground">Created: {new Date(campaign.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button size="sm" variant="outline"><TrendingUp className="w-4 h-4" /></Button>
-                        <Button size="sm" variant="outline"><DollarSign className="w-4 h-4" /></Button>
+                        <Button size="sm" variant={(campaign as any).is_verified ? "outline" : "default"}
+                          onClick={() => handleCampaignVerification(campaign.id, !(campaign as any).is_verified)}>
+                          <CheckCircle className="mr-1 h-4 w-4" />{(campaign as any).is_verified ? 'Unverify' : 'Verify'}
+                        </Button>
                       </div>
                     </div>
                   </div>
