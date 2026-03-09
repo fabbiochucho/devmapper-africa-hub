@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, FileText, Shield, Sparkles } from "lucide-react";
+import { Bot, Send, Loader2, FileText, Shield, Sparkles, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
 interface Message {
@@ -29,21 +30,70 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState<CopilotContext>("general");
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Load most recent conversation on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("ai_conversations")
+      .select("id, messages, context_type")
+      .eq("user_id", user.id)
+      .eq("context_type", context)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data?.[0]) {
+          setConversationId(data[0].id);
+          const saved = data[0].messages as any[];
+          if (Array.isArray(saved) && saved.length > 0) {
+            setMessages(saved.map((m: any) => ({ role: m.role, content: m.content })));
+          }
+        }
+      });
+  }, [user, context]);
+
+  // Persist conversation to ai_conversations table
+  const persistConversation = useCallback(async (msgs: Message[]) => {
+    if (!user || msgs.length === 0) return;
+    const payload = {
+      user_id: user.id,
+      context_type: context,
+      context_id: projectData?.id || null,
+      messages: msgs as any,
+      title: msgs[0]?.content?.slice(0, 80) || "Untitled",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (conversationId) {
+      await supabase
+        .from("ai_conversations")
+        .update({ messages: msgs as any, updated_at: new Date().toISOString() })
+        .eq("id", conversationId);
+    } else {
+      const { data } = await supabase
+        .from("ai_conversations")
+        .insert([payload])
+        .select("id")
+        .single();
+      if (data) setConversationId(data.id);
+    }
+  }, [user, context, conversationId, projectData]);
+
   const send = async () => {
     if (!input.trim() || loading) return;
     const userMsg: Message = { role: "user", content: input.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
     let assistantSoFar = "";
-    const allMessages = [...messages, userMsg];
 
     try {
       const resp = await fetch(CHAT_URL, {
@@ -53,7 +103,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: allMessages,
+          messages: updatedMessages,
           context,
           projectData,
         }),
@@ -107,12 +157,22 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
           }
         }
       }
+
+      // Persist after full response
+      const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantSoFar }];
+      setMessages(finalMessages);
+      persistConversation(finalMessages);
     } catch (e) {
       console.error(e);
       toast.error("Failed to get AI response");
     } finally {
       setLoading(false);
     }
+  };
+
+  const newConversation = () => {
+    setMessages([]);
+    setConversationId(null);
   };
 
   return (
@@ -124,6 +184,9 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
             AI Copilot
           </CardTitle>
           <div className="flex gap-1">
+            <Button size="sm" variant="ghost" onClick={newConversation} className="h-7 text-xs gap-1">
+              <History className="h-3 w-3" />New
+            </Button>
             {contextOptions.map(opt => (
               <Button
                 key={opt.value}

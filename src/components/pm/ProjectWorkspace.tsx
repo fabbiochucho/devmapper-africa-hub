@@ -3,33 +3,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2 } from "lucide-react";
+import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Plus, Eye, EyeOff } from "lucide-react";
 import AddMilestoneDialog from "./AddMilestoneDialog";
 import SubmitVerificationDialog from "./SubmitVerificationDialog";
 import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
 import ProjectLifecycleManager from "./ProjectLifecycleManager";
 import StakeholderAffiliation from "./StakeholderAffiliation";
+import KanbanBoard from "./KanbanBoard";
 import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
+import { toast } from "sonner";
 
 interface ProjectWorkspaceProps {
   reportId: string;
   report: any;
 }
 
+// PRD V7: 7-stage lifecycle
 const LIFECYCLE_STEPS = [
+  { key: "idea", label: "Idea / Proposal" },
   { key: "planning", label: "Planning" },
-  { key: "approved", label: "Approved" },
-  { key: "active", label: "Active" },
-  { key: "delayed", label: "Delayed" },
-  { key: "completed", label: "Completed" },
+  { key: "funded", label: "Funding Secured" },
+  { key: "implementation", label: "Implementation" },
+  { key: "monitoring", label: "Monitoring" },
+  { key: "completed", label: "Completion" },
   { key: "verified", label: "Verified" },
 ];
 
 const STATUS_ORDER: Record<string, number> = {
-  planning: 0, approved: 1, active: 2, delayed: 2, completed: 3, "on-hold": 2, cancelled: -1, verified: 4,
+  idea: 0, planning: 1, funded: 2, implementation: 3, monitoring: 4, delayed: 3, "on-hold": 3, cancelled: -1, completed: 5, verified: 6,
 };
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
@@ -39,7 +48,12 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
   const [budgets, setBudgets] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
   const [indicators, setIndicators] = useState<any[]>([]);
-  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "planning");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "idea");
+  const [visibility, setVisibility] = useState(report?.visibility || "public");
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState("medium");
 
   const isOwner = user?.id === report?.user_id;
 
@@ -51,14 +65,44 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       supabase.from("project_budgets").select("*").eq("report_id", reportId),
       supabase.from("project_updates").select("*").eq("report_id", reportId).order("created_at", { ascending: false }).limit(5),
       supabase.from("project_indicators").select("*").eq("report_id", reportId),
-    ]).then(([m, v, b, u, ind]) => {
+      supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at"),
+    ]).then(([m, v, b, u, ind, t]) => {
       if (m.data) setMilestones(m.data);
       if (v.data) setVerifications(v.data);
       if (b.data) setBudgets(b.data);
       if (u.data) setUpdates(u.data);
       if (ind.data) setIndicators(ind.data);
+      if (t.data) setTasks(t.data);
     });
   }, [reportId]);
+
+  const addTask = async () => {
+    if (!newTaskTitle.trim() || !user) return;
+    const { error } = await supabase.from("project_tasks").insert({
+      report_id: reportId,
+      title: newTaskTitle.trim(),
+      priority: newTaskPriority,
+      created_by: user.id,
+    } as any);
+    if (error) { toast.error("Failed to add task"); return; }
+    toast.success("Task added");
+    setNewTaskTitle("");
+    setAddTaskOpen(false);
+    const { data } = await supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at");
+    if (data) setTasks(data);
+  };
+
+  const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
+    await supabase.from("project_tasks").update({ status: newStatus } as any).eq("id", taskId);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+  };
+
+  const toggleVisibility = async () => {
+    const newVis = visibility === "public" ? "private" : "public";
+    await supabase.from("reports").update({ visibility: newVis } as any).eq("id", reportId);
+    setVisibility(newVis);
+    toast.success(`Project is now ${newVis}`);
+  };
 
   if (!report) return null;
 
@@ -103,7 +147,13 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge className="text-sm">{report.project_status}</Badge>
+              <Badge className="text-sm">{currentStatus}</Badge>
+              {isOwner && (
+                <Button variant="ghost" size="sm" onClick={toggleVisibility} className="gap-1 text-xs">
+                  {visibility === "public" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  {visibility === "public" ? "Public" : "Private"}
+                </Button>
+              )}
               {report.beneficiaries && (
                 <span className="text-sm text-muted-foreground"><Users className="inline h-3 w-3 mr-1" />{report.beneficiaries.toLocaleString()} beneficiaries</span>
               )}
@@ -122,6 +172,52 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
             isOwner={isOwner}
             onStatusChange={setCurrentStatus}
           />
+        </CardContent>
+      </Card>
+
+      {/* Task Management — PRD V7 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Tasks ({tasks.length})</CardTitle>
+            {isOwner && (
+              <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" />Add Task</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Add Task</DialogTitle></DialogHeader>
+                  <div className="space-y-3">
+                    <div><Label>Title</Label><Input value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Task title..." /></div>
+                    <div>
+                      <Label>Priority</Label>
+                      <Select value={newTaskPriority} onValueChange={setNewTaskPriority}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={addTask} disabled={!newTaskTitle.trim()}>Add Task</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {tasks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tasks yet. Add tasks to track project work.</p>
+          ) : (
+            <KanbanBoard
+              tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: t.tags || [] }))}
+              onStatusChange={handleTaskStatusChange}
+              hasAssignment={false}
+            />
+          )}
         </CardContent>
       </Card>
 

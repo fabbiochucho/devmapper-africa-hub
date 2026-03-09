@@ -2429,6 +2429,7 @@ export type Database = {
           usd_exchange_rate: number | null
           user_id: string | null
           verification_count: number | null
+          visibility: string
         }
         Insert: {
           beneficiaries?: number | null
@@ -2455,6 +2456,7 @@ export type Database = {
           usd_exchange_rate?: number | null
           user_id?: string | null
           verification_count?: number | null
+          visibility?: string
         }
         Update: {
           beneficiaries?: number | null
@@ -2481,6 +2483,7 @@ export type Database = {
           usd_exchange_rate?: number | null
           user_id?: string | null
           verification_count?: number | null
+          visibility?: string
         }
         Relationships: []
       }
