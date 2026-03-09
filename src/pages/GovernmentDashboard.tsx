@@ -46,6 +46,10 @@ const GovernmentDashboard = () => {
   const [areasById, setAreasById] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingProject, setEditingProject] = useState<GovProject | null>(null);
+  const [editSpent, setEditSpent] = useState('');
+  const [editStatus, setEditStatus] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
