@@ -133,14 +133,19 @@ const GovernmentDashboard = () => {
 
   const sdgGoalMap = new Map(sdgGoals.map(g => [Number(g.value), g.label.replace(/Goal \d+: /, "")]));
 
+  const filteredProjects = useMemo(() => {
+    if (regionFilter === 'all') return projects;
+    return projects.filter(p => p.admin_area_id === regionFilter);
+  }, [projects, regionFilter]);
+
   const overview = useMemo(() => {
-    const totalProjects = projects.length;
-    const totalBudget = projects.reduce((s, p) => s + (p.budget || 0), 0);
-    const pendingReview = projects.filter(p => p.status === "planning").length;
-    const completed = projects.filter(p => p.status === "completed").length;
+    const totalProjects = filteredProjects.length;
+    const totalBudget = filteredProjects.reduce((s, p) => s + (p.budget || 0), 0);
+    const pendingReview = filteredProjects.filter(p => p.status === "planning").length;
+    const completed = filteredProjects.filter(p => p.status === "completed").length;
     const completionRate = totalProjects > 0 ? Math.round((completed / totalProjects) * 100) : 0;
     return { totalProjects, totalBudget, pendingReview, completionRate };
-  }, [projects]);
+  }, [filteredProjects]);
 
   const sdgProgress: SdgProgressRow[] = useMemo(() => {
     const map = new Map<number, { projects: number; budget: number; completed: number }>();
