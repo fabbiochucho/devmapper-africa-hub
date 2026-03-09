@@ -324,8 +324,11 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
         </Card>
       )}
 
-      {/* DISM Impact Scorecard */}
-      <ImpactScorecard readOnly />
+      {/* DISM Impact Scorecard — live scoring, persisted to Supabase */}
+      <ImpactScorecard reportId={reportId} readOnly={!isOwner} />
+
+      {/* Procurement & Contract Tracking */}
+      <ProcurementTracker reportId={reportId} isOwner={isOwner} />
 
       {/* Stakeholder Affiliation */}
       <StakeholderAffiliation reportId={reportId} isOwner={isOwner} />
