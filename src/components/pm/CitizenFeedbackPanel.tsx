@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { MessageSquare, Camera, AlertTriangle, Star, ThumbsUp } from 'lucide-react';
+import { MessageSquare, Camera, AlertTriangle, Star, ThumbsUp, Upload, Loader2 } from 'lucide-react';
 
 interface CitizenFeedbackPanelProps {
   reportId: string;
