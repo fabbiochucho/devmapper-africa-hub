@@ -55,7 +55,9 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   }, []);
 
   const handleSignUp = async (values: SignUpFormValues) => {
-    if (!captchaToken) {
+    // Only require captcha if the site key is configured
+    const captchaEnabled = !!import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+    if (captchaEnabled && !captchaToken) {
       toast.error("Please complete the CAPTCHA verification");
       return;
     }
@@ -85,14 +87,19 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
       const redirectUrl = `${window.location.origin}/`;
       
+      const signUpOptions: any = {
+        emailRedirectTo: redirectUrl,
+        data: { full_name: values.name, selected_role: selectedRole },
+      };
+      
+      if (captchaToken) {
+        signUpOptions.captchaToken = captchaToken;
+      }
+      
       const { error, data } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: { full_name: values.name, selected_role: selectedRole },
-          captchaToken,
-        }
+        options: signUpOptions,
       });
 
       if (error) {
