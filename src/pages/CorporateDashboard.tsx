@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Target, TrendingUp, Calendar, Users, Save, X, Bot } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
+import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
 import EntityLocationsManager from '@/components/locations/EntityLocationsManager';
 import { supabase } from '@/integrations/supabase/client';
