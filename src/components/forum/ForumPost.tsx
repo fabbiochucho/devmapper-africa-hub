@@ -109,7 +109,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{post.author.name}</span>
                 {post.author.verified && (
-                  <Badge className="bg-green-500/10 text-green-700 text-xs px-1 py-0 border-0">✓ Verified</Badge>
+                  <Badge className="bg-primary/10 text-primary text-xs px-1 py-0 border-0">✓ Verified</Badge>
                 )}
                 <Badge variant="outline" className="text-xs">{post.author.role}</Badge>
               </div>
