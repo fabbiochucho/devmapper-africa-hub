@@ -34,6 +34,14 @@ const UnifiedDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState<Array<{ id: string; type: string; title: string; ts: string }>>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Auto-trigger onboarding wizard for new users with incomplete profiles
+  useEffect(() => {
+    if (profile && !profile.full_name && !profile.country) {
+      setShowOnboarding(true);
+    }
+  }, [profile]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
