@@ -90,7 +90,8 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
         password: values.password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: { full_name: values.name, selected_role: selectedRole }
+          data: { full_name: values.name, selected_role: selectedRole },
+          captchaToken,
         }
       });
 
