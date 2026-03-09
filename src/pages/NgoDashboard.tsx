@@ -32,6 +32,11 @@ const NgoDashboard = () => {
     return projects.filter(p => p.user_id === user.id);
   }, [projects, user]);
 
+  const affiliatedProjects = useMemo(() => {
+    if (!user) return [];
+    return projects.filter(p => p.user_id !== user.id && p.relationship_type);
+  }, [projects, user]);
+
   const totals = useMemo(() => {
     const totalBudget = ownProjects.reduce((sum, p) => sum + (p.cost || 0), 0);
     const totalBeneficiaries = ownProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0);
