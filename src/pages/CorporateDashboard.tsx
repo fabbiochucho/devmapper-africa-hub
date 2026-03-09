@@ -458,6 +458,16 @@ const CorporateDashboard = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Quick link to PM workspace */}
+      <Card>
+        <CardContent className="flex items-center justify-between gap-4 flex-wrap pt-6">
+          <p className="text-sm text-muted-foreground">
+            Use <strong>Project Management</strong> for full lifecycle tracking, milestones, and verification.
+          </p>
+          <Button variant="outline" onClick={() => navigate('/my-projects')}>Go to Project Management</Button>
+        </CardContent>
+      </Card>
+
       {/* Compliance Assessment */}
       <ComplianceAssessment actorType="corporate" countryCode={user?.user_metadata?.country} />
 
