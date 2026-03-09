@@ -55,6 +55,11 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   }, []);
 
   const handleSignUp = async (values: SignUpFormValues) => {
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
+
     // Final breach check before submit
     if (isBreached) {
       form.setError("password", {
