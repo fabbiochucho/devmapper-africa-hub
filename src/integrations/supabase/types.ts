@@ -1351,6 +1351,7 @@ export type Database = {
           is_verified: boolean
           location: string
           raised_amount: number
+          report_id: string | null
           sdg_goals: number[]
           status: string
           target_amount: number
@@ -1370,6 +1371,7 @@ export type Database = {
           is_verified?: boolean
           location: string
           raised_amount?: number
+          report_id?: string | null
           sdg_goals: number[]
           status?: string
           target_amount: number
@@ -1389,6 +1391,7 @@ export type Database = {
           is_verified?: boolean
           location?: string
           raised_amount?: number
+          report_id?: string | null
           sdg_goals?: number[]
           status?: string
           target_amount?: number
@@ -1409,6 +1412,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fundraising_campaigns_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1523,6 +1533,42 @@ export type Database = {
           push_notifications?: boolean | null
           sms_notifications?: boolean | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
