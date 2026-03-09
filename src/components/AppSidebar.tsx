@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { 
   Home, Search, Users, Heart, Inbox, MessageSquare, 
   BarChart3, TrendingUp, FileText, UserPlus, Target, 
@@ -8,6 +8,7 @@ import {
   FolderOpen, Layers
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { prefetchRoute } from "@/lib/route-prefetch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Badge } from "@/components/ui/badge";
@@ -168,6 +169,9 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "hover:bg-muted/50";
 
+  // Prefetch on hover for instant navigation
+  const handlePrefetch = useCallback((url: string) => () => prefetchRoute(url), []);
+
   const quickActions = getQuickActions(hasRole, isAuthenticated);
   const primaryDashboard = getPrimaryDashboard(hasRole);
   const submissionItems = getSubmissionItems(hasRole);
@@ -196,7 +200,12 @@ export function AppSidebar() {
               {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
+                    <NavLink 
+                      to={item.url} 
+                      end={item.url === "/"} 
+                      className={getNavCls}
+                      onMouseEnter={handlePrefetch(item.url)}
+                    >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span className="ml-2">{item.title}</span>}
                     </NavLink>
@@ -256,7 +265,7 @@ export function AppSidebar() {
                 {primaryDashboard.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls}>
+                      <NavLink to={item.url} className={getNavCls} onMouseEnter={handlePrefetch(item.url)}>
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span className="ml-2">{item.title}</span>}
                       </NavLink>
@@ -277,7 +286,7 @@ export function AppSidebar() {
                 {submissionItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavCls}>
+                      <NavLink to={item.url} className={getNavCls} onMouseEnter={handlePrefetch(item.url)}>
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span className="ml-2">{item.title}</span>}
                       </NavLink>
