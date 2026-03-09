@@ -267,26 +267,58 @@ const Forum = () => {
     }
   };
 
-  const handleReply = (postId: string) => {
-    console.log('Reply to post:', postId);
-    // This would typically open a reply dialog or navigate to the post detail page
+  const handleReply = async (postId: string, content: string) => {
+    if (!user) { toast.error('Please sign in to reply'); return; }
+    try {
+      // Increment replies_count
+      await supabase
+        .from('forum_posts')
+        .update({ replies_count: (posts.find(p => p.id === postId)?.replies || 0) + 1 })
+        .eq('id', postId);
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, replies: p.replies + 1 } : p
+      ));
+      toast.success('Reply posted!');
+    } catch (err) {
+      toast.error('Failed to post reply');
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6 max-w-6xl">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
+  const handleDelete = async (postId: string) => {
+    if (!isAdmin) return;
+    try {
+      const { error } = await supabase.from('forum_posts').delete().eq('id', postId);
+      if (error) throw error;
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('Post deleted');
+    } catch (err) {
+      toast.error('Failed to delete post');
+    }
+  };
 
+  const handlePin = async (postId: string) => {
+    if (!isAdmin) return;
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    try {
+      const { error } = await supabase
+        .from('forum_posts')
+        .update({ is_pinned: !post.isPinned })
+        .eq('id', postId);
+      if (error) throw error;
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, isPinned: !p.isPinned } : p
+      ));
+      toast.success(post.isPinned ? 'Post unpinned' : 'Post pinned');
+    } catch (err) {
+      toast.error('Failed to update pin status');
+    }
+  };
 
   const handleShare = (postId: string) => {
     const url = `${window.location.origin}/forum/post/${postId}`;
     navigator.clipboard.writeText(url);
-    toast.success("Post link copied to clipboard!");
+    toast.success('Post link copied to clipboard!');
   };
 
   return (
