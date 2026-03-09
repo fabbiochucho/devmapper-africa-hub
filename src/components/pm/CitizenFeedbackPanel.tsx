@@ -323,6 +323,34 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
                     <Camera className="h-3 w-3" />View photo
                   </a>
                 )}
+                {/* Voting buttons */}
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    onClick={() => handleVote(fb.id, 'up')}
+                    className={`flex items-center gap-1 text-xs rounded-full px-2 py-0.5 transition-colors ${
+                      fb.userVote === 'up'
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-primary hover:bg-muted'
+                    }`}
+                  >
+                    <ThumbsUp className="h-3 w-3" />
+                    <span>{fb.upvotes}</span>
+                  </button>
+                  <button
+                    onClick={() => handleVote(fb.id, 'down')}
+                    className={`flex items-center gap-1 text-xs rounded-full px-2 py-0.5 transition-colors ${
+                      fb.userVote === 'down'
+                        ? 'bg-destructive/10 text-destructive font-medium'
+                        : 'text-muted-foreground hover:text-destructive hover:bg-muted'
+                    }`}
+                  >
+                    <ThumbsDown className="h-3 w-3" />
+                    <span>{fb.downvotes}</span>
+                  </button>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {fb.upvotes - fb.downvotes > 0 ? '+' : ''}{fb.upvotes - fb.downvotes} net
+                  </span>
+                </div>
               </div>
             ))}
           </div>

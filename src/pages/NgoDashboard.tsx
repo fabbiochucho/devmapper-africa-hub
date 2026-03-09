@@ -226,6 +226,80 @@ const NgoDashboard = () => {
   );
 };
 
+// Sub-component: shows recent verification-related notifications for NGO
+function VerificationNotificationsPanel({ userId }: { userId: string }) {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .in('type', ['success', 'warning'])
+      .order('created_at', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        setNotifications(data || []);
+        setLoading(false);
+      });
+  }, [userId]);
+
+  const markRead = async (id: string) => {
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Bell className="h-4 w-4 text-primary" />
+          Verification Notifications
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="text-[10px] ml-1">{unreadCount} new</Badge>
+          )}
+        </CardTitle>
+        <CardDescription>Updates on project verifications you've submitted or received.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        ) : notifications.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No verification notifications yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {notifications.map(n => (
+              <div
+                key={n.id}
+                className={`flex items-start gap-3 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                  n.is_read ? 'bg-muted/20' : 'bg-primary/5 border border-primary/10'
+                }`}
+                onClick={() => !n.is_read && markRead(n.id)}
+              >
+                <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${n.is_read ? 'bg-muted-foreground/30' : 'bg-primary'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className={`font-medium truncate ${n.is_read ? 'text-muted-foreground' : 'text-foreground'}`}>{n.title}</p>
+                  {n.message && <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>}
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.created_at).toLocaleDateString()}</p>
+                </div>
+                {n.link && (
+                  <Button variant="ghost" size="sm" className="shrink-0 h-6 text-xs" onClick={(e) => { e.stopPropagation(); window.location.href = n.link; }}>
+                    View
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // Sub-component: allows NGOs to verify public projects
 function PublicProjectVerifier({ userId }: { userId: string }) {
   const [publicProjects, setPublicProjects] = useState<any[]>([]);

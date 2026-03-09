@@ -55,6 +55,10 @@ export default function Index() {
       <SdgCarousel />
       <FeaturesGridSection />
 
+      <Suspense fallback={<SectionFallback />}>
+        <DemoVideoSection />
+      </Suspense>
+
       {/* Below-the-fold: lazy loaded */}
       <Suspense fallback={<SectionFallback />}>
         <WhyNowSection />

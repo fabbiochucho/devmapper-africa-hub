@@ -381,6 +381,9 @@ const GovernmentDashboard = () => {
         </Card>
       </div>
 
+      {/* Regional SDG Heatmap — PRD V7 */}
+      <GovernmentSdgHeatmap projects={filteredProjects} areasById={areasById} />
+
       <Card>
         <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
         <CardContent>
