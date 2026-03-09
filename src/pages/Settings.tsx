@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Shield, Bell, LogOut, Save, CreditCard } from "lucide-react";
+import { User, Shield, Bell, LogOut, Save, CreditCard, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
