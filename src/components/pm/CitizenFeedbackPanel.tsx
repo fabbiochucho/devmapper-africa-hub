@@ -157,8 +157,36 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
             </div>
 
             <div>
-              <Label>Photo URL (optional)</Label>
-              <Input value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} placeholder="https://..." />
+              <Label>Photo Evidence</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user) return;
+                  setUploading(true);
+                  const ext = file.name.split('.').pop();
+                  const path = `feedback/${user.id}/${Date.now()}.${ext}`;
+                  const { error } = await supabase.storage.from('project-files').upload(path, file);
+                  if (error) {
+                    toast.error('Upload failed');
+                  } else {
+                    const { data: urlData } = supabase.storage.from('project-files').getPublicUrl(path);
+                    setPhotoUrl(urlData.publicUrl);
+                    toast.success('Photo uploaded');
+                  }
+                  setUploading(false);
+                }}
+              />
+              <div className="flex gap-2 items-center">
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Upload className="h-4 w-4 mr-1" />}
+                  {uploading ? 'Uploading...' : 'Upload Photo'}
+                </Button>
+                {photoUrl && <span className="text-xs text-primary truncate max-w-[200px]">✓ Photo attached</span>}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
