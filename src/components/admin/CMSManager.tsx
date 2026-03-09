@@ -24,8 +24,8 @@ interface CMSSection {
   id: string;
   page_key: string;
   section_key: string;
-  title: string;
-  content: Record<string, any>;
+  title: string | null;
+  content: any;
   display_order: number;
   is_visible: boolean;
 }

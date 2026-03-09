@@ -17,7 +17,7 @@ interface Broadcast {
   recipient_type: string;
   priority: string;
   created_at: string;
-  is_read_by: string[];
+  is_read_by: any;
 }
 
 const RECIPIENT_TYPES = [

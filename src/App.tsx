@@ -129,6 +129,7 @@ const App = () => (
                     <Route path="/project-management" element={<P><ProjectManagement /></P>} />
                     <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
                     <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
+                    <Route path="/admin-crm" element={<P><AdminCRM /></P>} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="*" element={<NotFound />} />
