@@ -10,14 +10,14 @@ interface FeatureGateProps {
   showPrompt?: boolean;
 }
 
-export default function FeatureGate({ 
-  feature, 
+export default function FeatureGate({
+  feature,
   requiredPlan = 'lite',
-  children, 
+  children,
   fallback,
-  showPrompt = true 
+  showPrompt = true
 }: FeatureGateProps) {
-  const { canAccess, loading } = useFeatureAccess();
+  const { canAccess, loading, isAdmin } = useFeatureAccess();
 
   if (loading) {
     return (
@@ -27,12 +27,13 @@ export default function FeatureGate({
     );
   }
 
-  if (!canAccess(feature)) {
-    if (showPrompt) {
-      return <UpgradePrompt feature={feature} requiredPlan={requiredPlan} />;
-    }
-    return fallback || null;
+  // Admins always bypass feature gates
+  if (isAdmin || canAccess(feature)) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  if (showPrompt) {
+    return <UpgradePrompt feature={feature} requiredPlan={requiredPlan} />;
+  }
+  return fallback ? <>{fallback}</> : null;
 }
