@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { User, Building2, Users, Briefcase, Heart, MapPin, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
-import { countries } from "@/data/countries";
+import { africanCountries } from "@/data/countries";
 
 interface OnboardingWizardProps {
   open: boolean;
