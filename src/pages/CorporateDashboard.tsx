@@ -14,6 +14,7 @@ import { Plus, Target, TrendingUp, Calendar, Users, Save, X, Bot } from 'lucide-
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import EntityLocationsManager from '@/components/locations/EntityLocationsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
