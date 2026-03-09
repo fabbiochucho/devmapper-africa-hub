@@ -509,6 +509,62 @@ export type Database = {
         }
         Relationships: []
       }
+      citizen_project_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          feedback_type: string
+          id: string
+          is_issue_report: boolean
+          issue_severity: string | null
+          photo_url: string | null
+          progress_estimate: number | null
+          rating: number | null
+          report_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          is_issue_report?: boolean
+          issue_severity?: string | null
+          photo_url?: string | null
+          progress_estimate?: number | null
+          rating?: number | null
+          report_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          is_issue_report?: boolean
+          issue_severity?: string | null
+          photo_url?: string | null
+          progress_estimate?: number | null
+          rating?: number | null
+          report_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "citizen_project_feedback_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_content: {
         Row: {
           content: Json
@@ -1506,6 +1562,7 @@ export type Database = {
       organizations: {
         Row: {
           alphaearth_api_calls_limit: number | null
+          compliance_tier: string | null
           created_at: string
           created_by: string
           esg_enabled: boolean | null
@@ -1513,21 +1570,29 @@ export type Database = {
           esg_suppliers_limit: number | null
           feature_flags: Json | null
           id: string
+          incorporation_country: string | null
           monthly_addition: number | null
           name: string
+          operating_countries: string[] | null
+          ownership_structure: string | null
           plan_expires_at: string | null
           plan_started_at: string | null
           plan_type: string
           primary_sector: string | null
           project_cap: number | null
           project_quota_remaining: number | null
+          registration_id: string | null
+          regulatory_exposure: Json | null
           reporting_year: number | null
+          revenue_band: string | null
           rollover_allowed: boolean | null
           scholarship_override: string | null
+          sector_code: string | null
           updated_at: string
         }
         Insert: {
           alphaearth_api_calls_limit?: number | null
+          compliance_tier?: string | null
           created_at?: string
           created_by: string
           esg_enabled?: boolean | null
@@ -1535,21 +1600,29 @@ export type Database = {
           esg_suppliers_limit?: number | null
           feature_flags?: Json | null
           id?: string
+          incorporation_country?: string | null
           monthly_addition?: number | null
           name: string
+          operating_countries?: string[] | null
+          ownership_structure?: string | null
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
           project_cap?: number | null
           project_quota_remaining?: number | null
+          registration_id?: string | null
+          regulatory_exposure?: Json | null
           reporting_year?: number | null
+          revenue_band?: string | null
           rollover_allowed?: boolean | null
           scholarship_override?: string | null
+          sector_code?: string | null
           updated_at?: string
         }
         Update: {
           alphaearth_api_calls_limit?: number | null
+          compliance_tier?: string | null
           created_at?: string
           created_by?: string
           esg_enabled?: boolean | null
@@ -1557,17 +1630,24 @@ export type Database = {
           esg_suppliers_limit?: number | null
           feature_flags?: Json | null
           id?: string
+          incorporation_country?: string | null
           monthly_addition?: number | null
           name?: string
+          operating_countries?: string[] | null
+          ownership_structure?: string | null
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: string
           primary_sector?: string | null
           project_cap?: number | null
           project_quota_remaining?: number | null
+          registration_id?: string | null
+          regulatory_exposure?: Json | null
           reporting_year?: number | null
+          revenue_band?: string | null
           rollover_allowed?: boolean | null
           scholarship_override?: string | null
+          sector_code?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1638,11 +1718,16 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          impact_area: string | null
           is_verified: boolean
+          legal_capacity: string | null
           organization: string | null
           phone: string | null
+          regulatory_exposure: Json | null
+          sector_classification: string | null
           updated_at: string
           user_id: string
+          verification_tier: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1652,11 +1737,16 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          impact_area?: string | null
           is_verified?: boolean
+          legal_capacity?: string | null
           organization?: string | null
           phone?: string | null
+          regulatory_exposure?: Json | null
+          sector_classification?: string | null
           updated_at?: string
           user_id: string
+          verification_tier?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1666,11 +1756,16 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          impact_area?: string | null
           is_verified?: boolean
+          legal_capacity?: string | null
           organization?: string | null
           phone?: string | null
+          regulatory_exposure?: Json | null
+          sector_classification?: string | null
           updated_at?: string
           user_id?: string
+          verification_tier?: string | null
         }
         Relationships: []
       }

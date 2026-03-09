@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus } from "lucide-react";
+import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot } from "lucide-react";
+import AICopilot from '@/components/ai/AICopilot';
 import { sdgGoalColors, sdgGoals } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -117,25 +118,6 @@ const GovernmentDashboard = () => {
     }
   };
 
-  if (!authLoading && !loading && (!hasRole("government_official") && !hasRole("admin") && !hasRole("platform_admin"))) {
-    return (
-      <div className="flex items-center justify-center h-full p-8">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-            <p className="text-muted-foreground mb-4">You need to be a Government Official to access this dashboard.</p>
-            <Button onClick={() => navigate("/auth")} variant="outline">Register as Government Official</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (loading || authLoading) {
-    return <div className="flex items-center justify-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
-  }
-
   const sdgGoalMap = new Map(sdgGoals.map(g => [Number(g.value), g.label.replace(/Goal \d+: /, "")]));
 
   const overview = useMemo(() => {
@@ -190,6 +172,25 @@ const GovernmentDashboard = () => {
       default: return <ListChecks className="h-5 w-5 text-muted-foreground" />;
     }
   };
+
+  if (!authLoading && !loading && (!hasRole("government_official") && !hasRole("admin") && !hasRole("platform_admin"))) {
+    return (
+      <div className="flex items-center justify-center h-full p-8">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-6">
+            <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
+            <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-4">You need to be a Government Official to access this dashboard.</p>
+            <Button onClick={() => navigate("/auth")} variant="outline">Register as Government Official</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading || authLoading) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -349,6 +350,9 @@ const GovernmentDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Copilot */}
+      <AICopilot projectData={{ context: 'government_oversight', projectCount: projects.length }} />
     </div>
   );
 };
