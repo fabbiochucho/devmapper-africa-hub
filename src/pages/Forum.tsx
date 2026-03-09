@@ -10,6 +10,7 @@ import ForumPost from '@/components/forum/ForumPost';
 import CreatePostDialog from '@/components/forum/CreatePostDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
 
 interface ForumPostData {
