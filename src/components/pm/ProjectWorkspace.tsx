@@ -48,7 +48,12 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
   const [budgets, setBudgets] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
   const [indicators, setIndicators] = useState<any[]>([]);
-  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "planning");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "idea");
+  const [visibility, setVisibility] = useState(report?.visibility || "public");
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState("medium");
 
   const isOwner = user?.id === report?.user_id;
 
