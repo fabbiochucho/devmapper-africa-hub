@@ -1,14 +1,16 @@
-
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate, Link, createSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import SearchInterface from "./search/SearchInterface";
 import { Report } from "@/data/mockReports";
 import { Organization } from "@/data/mockOrganizations";
 import { Button } from "./ui/button";
-import { Home, ArrowLeft, LogOut, MessageCircle } from "lucide-react";
-import NotificationBell from "./notifications/NotificationBell";
+import { Home, ArrowLeft, LogOut, MessageCircle, Search } from "lucide-react";
 import PWAInstallPrompt from "./pwa/PWAInstallPrompt";
+import MobileBottomNav from "./navigation/MobileBottomNav";
+import NotificationCenter from "./notifications/NotificationCenter";
+import GlobalSearch from "./search/GlobalSearch";
+import OnboardingWizard from "./onboarding/OnboardingWizard";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -16,12 +18,60 @@ import PageFooter from "./landing/PageFooter";
 import { Badge } from "./ui/badge";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
 
 const Layout = () => {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, session } = useAuth();
   const { currentRole, setCurrentRole } = useUserRole();
   const { t } = useTranslation();
+  
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!session?.user) return;
+      
+      // Check if profile is incomplete
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name, country")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      // Check if user has any roles
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("is_active", true);
+
+      const needsOnboarding = !profileData?.full_name || !profileData?.country || !roles?.length;
+      
+      // Only show once per session
+      const onboardingShown = sessionStorage.getItem("onboarding_shown");
+      if (needsOnboarding && !onboardingShown) {
+        setShowOnboarding(true);
+        sessionStorage.setItem("onboarding_shown", "true");
+      }
+    };
+
+    checkOnboarding();
+  }, [session?.user]);
+
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -39,24 +89,21 @@ const Layout = () => {
     });
   };
 
-  const handleUserSelect = (user: { id: string; full_name: string | null; avatar_url: string | null }) => {
-    console.log("Selected user:", user);
-  };
-
-  const handleOrganizationSelect = (org: Organization) => {
-    console.log("Selected organization:", org);
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    window.location.reload(); // Refresh to load new profile data
   };
 
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {
-      'citizen_reporter': 'Citizen Reporter',
-      'ngo_member': 'NGO Member',
-      'government_official': 'Government Official',
-      'company_representative': 'Corporate Rep',
+      'citizen_reporter': 'Citizen',
+      'ngo_member': 'NGO',
+      'government_official': 'Gov',
+      'company_representative': 'Corp',
       'country_admin': 'Country Admin',
       'platform_admin': 'Platform Admin',
       'change_maker': 'Change Maker',
-      'admin': 'Administrator'
+      'admin': 'Admin'
     };
     return roleMap[role] || role;
   };
@@ -67,23 +114,39 @@ const Layout = () => {
         {/* Top Header Bar */}
         <header className="bg-card shadow-sm border-b z-10">
           <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
+            <div className="flex justify-between items-center h-14">
               <Link to="/" className="flex items-center">
                 <img 
                   src="/lovable-uploads/06a46dda-ed52-44ed-8f8e-2edb1752ffa6.png" 
                   alt="Dev Mapper Logo" 
-                  className="w-12 h-12 mr-3"
+                  className="w-10 h-10 mr-2"
                 />
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">Dev Mapper</h1>
-                  <p className="text-xs text-muted-foreground font-medium">Africa SDG Tracker</p>
+                <div className="hidden sm:block">
+                  <h1 className="text-lg font-bold text-foreground">Dev Mapper</h1>
+                  <p className="text-[10px] text-muted-foreground">Africa SDG Tracker</p>
                 </div>
               </Link>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {/* Global Search Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSearchOpen(true)}
+                  className="hidden sm:flex gap-2"
+                >
+                  <Search className="w-4 h-4" />
+                  <span className="text-muted-foreground">Search...</span>
+                  <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </Button>
+
                 <LanguageSwitcher />
-                {user && <NotificationBell />}
-                <Button variant="outline" size="sm" asChild className="hidden sm:flex">
+                
+                {user && <NotificationCenter />}
+                
+                <Button variant="outline" size="sm" asChild className="hidden lg:flex">
                   <Link to="/contact">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     {t('nav.contactUs')}
@@ -92,15 +155,15 @@ const Layout = () => {
 
                 {user && (
                   <>
-                    <Badge variant="secondary" className="hidden md:flex">
+                    <Badge variant="secondary" className="hidden md:flex text-xs">
                       {getRoleDisplayName(currentRole)}
                     </Badge>
-                    <span className="text-sm text-muted-foreground hidden md:block">
-                      {profile?.full_name || user.email}
+                    <span className="text-xs text-muted-foreground hidden lg:block max-w-24 truncate">
+                      {profile?.full_name || user.email?.split('@')[0]}
                     </span>
                     <Button variant="outline" size="sm" onClick={handleLogout}>
-                      <LogOut className="w-4 h-4 mr-1" />
-                      <span className="hidden sm:inline">{t('nav.logout')}</span>
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden sm:inline ml-1">{t('nav.logout')}</span>
                     </Button>
                   </>
                 )}
@@ -119,8 +182,8 @@ const Layout = () => {
         <div className="flex flex-1">
           <AppSidebar />
           <SidebarInset className="flex-1 flex flex-col">
-            <main className="p-4 flex-1 flex flex-col">
-              <header className="flex justify-between items-center mb-4 gap-4 shrink-0">
+            <main className="p-4 flex-1 flex flex-col pb-20 md:pb-4">
+              <header className="flex justify-between items-center mb-4 gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger />
                   <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
@@ -132,23 +195,39 @@ const Layout = () => {
                     </Link>
                   </Button>
                 </div>
-                <div className="flex-grow max-w-lg ml-auto">
-                  <SearchInterface 
-                    onProjectSelect={handleProjectSelect}
-                    onUserSelect={handleUserSelect}
-                    onOrganizationSelect={handleOrganizationSelect}
-                  />
-                </div>
+                {/* Mobile search button */}
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="h-8 w-8 sm:hidden"
+                  onClick={() => setSearchOpen(true)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
               </header>
               <div className="flex-grow overflow-auto">
                 <Outlet />
               </div>
             </main>
 
-            {/* Footer */}
-            <PageFooter />
+            {/* Footer - Hidden on mobile */}
+            <div className="hidden md:block">
+              <PageFooter />
+            </div>
           </SidebarInset>
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
+        
+        {/* Global Search Dialog */}
+        <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+        
+        {/* Onboarding Wizard */}
+        {showOnboarding && (
+          <OnboardingWizard open={showOnboarding} onComplete={handleOnboardingComplete} />
+        )}
+
         <PWAInstallPrompt />
       </div>
     </SidebarProvider>
