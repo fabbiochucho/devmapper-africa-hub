@@ -18,9 +18,20 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate: require service-role key or shared secret
+    const authHeader = req.headers.get('Authorization');
+    const expectedServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (token !== expectedServiceKey) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const supabase = createClient(supabaseUrl, expectedServiceKey);
 
     // Get users with email notifications enabled
     const { data: notifPrefs } = await supabase
@@ -49,10 +60,9 @@ serve(async (req) => {
     }
 
     const digests: { user_id: string; email: string; digest: any }[] = [];
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Last 24 hours
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     for (const profile of profiles as DigestUser[]) {
-      // Gather unread broadcasts
       const { data: broadcasts } = await supabase
         .from('admin_broadcasts')
         .select('subject, message, priority, created_at')
@@ -60,7 +70,6 @@ serve(async (req) => {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      // Gather unread messages
       const { data: participations } = await supabase
         .from('conversation_participants')
         .select('conversation_id')
@@ -78,7 +87,6 @@ serve(async (req) => {
         unreadMessages = count || 0;
       }
 
-      // Gather verification updates on user's reports
       const { data: verificationUpdates } = await supabase
         .from('verification_logs')
         .select('report_id, action, created_at')
@@ -119,18 +127,16 @@ serve(async (req) => {
       );
     }
 
-    // Note: Actual email sending would integrate with a mail service (Resend, etc.)
-    // For now, we log the digest data for future email integration
+    // Return only count — no user IDs
     return new Response(JSON.stringify({
       message: `Generated ${digests.length} email digests`,
       digests_count: digests.length,
-      user_ids: digests.map(d => d.user_id),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Email digest error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
