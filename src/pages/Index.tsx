@@ -7,6 +7,7 @@ import { useState } from "react";
 import HeroSection from "@/components/landing/HeroSection";
 import SdgCarousel from "@/components/landing/SdgCarousel";
 import FeaturesGridSection from "@/components/landing/FeaturesGridSection";
+const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
 
 // Lazy load below-fold sections for faster initial paint
 const WhyNowSection = lazy(() => import("@/components/landing/WhyNowSection"));
