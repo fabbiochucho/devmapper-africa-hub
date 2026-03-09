@@ -473,6 +473,68 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          id: string
+          is_pinned: boolean
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          group_name: string | null
+          id: string
+          is_group: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          group_name?: string | null
+          id?: string
+          is_group?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          group_name?: string | null
+          id?: string
+          is_group?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       corporate_targets: {
         Row: {
           company_id: string
@@ -598,6 +660,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          message_type: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message_type?: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message_type?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       entity_locations: {
         Row: {
