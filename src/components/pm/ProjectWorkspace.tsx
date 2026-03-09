@@ -19,6 +19,7 @@ import StakeholderAffiliation from "./StakeholderAffiliation";
 import KanbanBoard from "./KanbanBoard";
 import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
+import ProcurementTracker from "./ProcurementTracker";
 import { toast } from "sonner";
 
 interface ProjectWorkspaceProps {
@@ -323,8 +324,11 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
         </Card>
       )}
 
-      {/* DISM Impact Scorecard */}
-      <ImpactScorecard readOnly />
+      {/* DISM Impact Scorecard — live scoring, persisted to Supabase */}
+      <ImpactScorecard reportId={reportId} readOnly={!isOwner} />
+
+      {/* Procurement & Contract Tracking */}
+      <ProcurementTracker reportId={reportId} isOwner={isOwner} />
 
       {/* Stakeholder Affiliation */}
       <StakeholderAffiliation reportId={reportId} isOwner={isOwner} />

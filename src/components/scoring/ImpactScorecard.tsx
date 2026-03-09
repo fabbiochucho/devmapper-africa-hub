@@ -1,12 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { DISM_DIMENSION_DETAILS, DISM_RATING_CONFIG, computeFullDISM, type DISMDimensions, type DISMResult } from '@/lib/dism-engine';
-import { Award } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Award, Save } from 'lucide-react';
 
 interface ImpactScorecardProps {
+  reportId?: string;
   initialDimensions?: Partial<DISMDimensions>;
   readOnly?: boolean;
 }
@@ -16,29 +21,105 @@ const DEFAULT_DIMS: DISMDimensions = {
   sustainability: 0, evidenceVerification: 0, governanceEthics: 0, innovationReplicability: 0,
 };
 
-export default function ImpactScorecard({ initialDimensions, readOnly = false }: ImpactScorecardProps) {
+export default function ImpactScorecard({ reportId, initialDimensions, readOnly = false }: ImpactScorecardProps) {
+  const { user } = useAuth();
   const [dimensions, setDimensions] = useState<DISMDimensions>({ ...DEFAULT_DIMS, ...initialDimensions });
+  const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (reportId) fetchExistingScore();
+  }, [reportId]);
+
+  const fetchExistingScore = async () => {
+    if (!reportId) return;
+    const { data } = await supabase
+      .from('project_dism_scores')
+      .select('*')
+      .eq('report_id', reportId)
+      .single();
+    
+    if (data) {
+      setDimensions({
+        sdgAlignment: data.sdg_alignment,
+        impactScale: data.impact_scale,
+        impactDepth: data.impact_depth,
+        outcomeEffectiveness: data.outcome_effectiveness,
+        sustainability: data.sustainability,
+        evidenceVerification: data.evidence_verification,
+        governanceEthics: data.governance_ethics,
+        innovationReplicability: data.innovation_replicability,
+      });
+    }
+  };
+
+  const saveScore = async () => {
+    if (!reportId || !user) return;
+    setSaving(true);
+    
+    const { error } = await supabase
+      .from('project_dism_scores')
+      .upsert({
+        report_id: reportId,
+        sdg_alignment: dimensions.sdgAlignment,
+        impact_scale: dimensions.impactScale,
+        impact_depth: dimensions.impactDepth,
+        outcome_effectiveness: dimensions.outcomeEffectiveness,
+        sustainability: dimensions.sustainability,
+        evidence_verification: dimensions.evidenceVerification,
+        governance_ethics: dimensions.governanceEthics,
+        innovation_replicability: dimensions.innovationReplicability,
+        scored_by: user.id,
+      });
+
+    if (error) toast.error('Failed to save DISM score');
+    else {
+      toast.success('DISM score saved successfully');
+      setHasChanges(false);
+    }
+    setSaving(false);
+  };
 
   const result: DISMResult = useMemo(() => computeFullDISM(dimensions), [dimensions]);
 
   const handleChange = (key: keyof DISMDimensions, value: number[]) => {
     if (readOnly) return;
     setDimensions(prev => ({ ...prev, [key]: value[0] }));
+    setHasChanges(true);
   };
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4" /> DISM Impact Scorecard</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="h-4 w-4" /> DISM Impact Scorecard
+          </CardTitle>
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-bold" style={{ color: result.ratingColor }}>{result.totalScore}</div>
+            <div className="text-3xl font-bold" style={{ color: result.ratingColor }}>
+              {result.totalScore}
+            </div>
             <div className="text-right">
-              <Badge style={{ backgroundColor: result.ratingColor, color: '#fff' }}>{result.rating}</Badge>
+              <Badge style={{ backgroundColor: result.ratingColor, color: '#fff' }}>
+                {result.rating}
+              </Badge>
               <p className="text-xs text-muted-foreground mt-0.5">{result.impactCategory}</p>
             </div>
           </div>
         </div>
+        {!readOnly && reportId && (
+          <div className="flex justify-end">
+            <Button 
+              onClick={saveScore} 
+              disabled={!hasChanges || saving} 
+              size="sm"
+              variant="outline"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {saving ? 'Saving...' : 'Save Score'}
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {(Object.entries(DISM_DIMENSION_DETAILS) as [keyof DISMDimensions, typeof DISM_DIMENSION_DETAILS[keyof DISMDimensions]][]).map(([key, dim]) => (

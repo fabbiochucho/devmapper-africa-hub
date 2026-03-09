@@ -24,9 +24,11 @@ import ImpactIndicators from "@/components/pm/ImpactIndicators";
 import {
   Plus, ListTodo, LayoutGrid, Calendar, CheckCircle2, Clock,
   AlertTriangle, ArrowUpDown, Lock, Users, BarChart3, Bot,
-  FolderOpen, Shield, DollarSign, Activity, FileText
+  FolderOpen, Shield, DollarSign, Activity, FileText, Building2, Award
 } from "lucide-react";
 import KanbanBoard from "@/components/pm/KanbanBoard";
+import ProcurementTracker from "@/components/pm/ProcurementTracker";
+import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 
 interface ProjectTask {
   id: string;
@@ -70,8 +72,8 @@ const priorityColors: Record<string, string> = {
 const statusIcons: Record<string, React.ReactNode> = {
   todo: <ListTodo className="h-4 w-4" />,
   in_progress: <Clock className="h-4 w-4 text-primary" />,
-  review: <ArrowUpDown className="h-4 w-4 text-orange-500" />,
-  done: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+  review: <ArrowUpDown className="h-4 w-4 text-muted-foreground" />,
+  done: <CheckCircle2 className="h-4 w-4 text-primary" />,
   blocked: <AlertTriangle className="h-4 w-4 text-destructive" />,
 };
 
@@ -304,6 +306,8 @@ export default function ProjectManagement() {
             <Calendar className="mr-1 h-4 w-4" />Gantt {!hasGantt && <Lock className="ml-1 h-3 w-3" />}
           </TabsTrigger>
           <TabsTrigger value="budget"><DollarSign className="mr-1 h-4 w-4" />Budget</TabsTrigger>
+          <TabsTrigger value="procurement"><Building2 className="mr-1 h-4 w-4" />Procurement</TabsTrigger>
+          <TabsTrigger value="scoring"><Award className="mr-1 h-4 w-4" />DISM Score</TabsTrigger>
           <TabsTrigger value="indicators"><Activity className="mr-1 h-4 w-4" />Impact</TabsTrigger>
           <TabsTrigger value="updates"><FileText className="mr-1 h-4 w-4" />Updates</TabsTrigger>
           <TabsTrigger value="verification"><Shield className="mr-1 h-4 w-4" />Verification</TabsTrigger>
@@ -431,6 +435,24 @@ export default function ProjectManagement() {
         <TabsContent value="budget">
           {selectedProject ? (
             <BudgetTracker reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* Procurement Tracking */}
+        <TabsContent value="procurement">
+          {selectedProject ? (
+            <ProcurementTracker reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* DISM Impact Scoring */}
+        <TabsContent value="scoring">
+          {selectedProject ? (
+            <ImpactScorecard reportId={selectedProject} readOnly={!isOwner} />
           ) : (
             <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
           )}
