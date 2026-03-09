@@ -268,7 +268,7 @@ const Fundraising = () => {
   const resetForm = () => {
     setFormData({
       title: '', description: '', target_amount: '', currency: 'USD',
-      sdg_goals: [], location: '', category: 'nano', deadline: '', image_url: ''
+      sdg_goals: [], location: '', category: 'nano', deadline: '', image_url: '', report_id: '',
     });
     setFormErrors({});
   };
