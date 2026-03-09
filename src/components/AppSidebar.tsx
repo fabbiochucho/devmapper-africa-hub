@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { 
   Home, Search, Users, Heart, Inbox, MessageSquare, 
   BarChart3, TrendingUp, FileText, UserPlus, Target, 
@@ -8,6 +8,7 @@ import {
   FolderOpen, Layers
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { prefetchRoute } from "@/lib/route-prefetch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Badge } from "@/components/ui/badge";
