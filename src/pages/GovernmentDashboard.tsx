@@ -149,7 +149,7 @@ const GovernmentDashboard = () => {
 
   const sdgProgress: SdgProgressRow[] = useMemo(() => {
     const map = new Map<number, { projects: number; budget: number; completed: number }>();
-    for (const p of projects) {
+    for (const p of filteredProjects) {
       for (const g of (p.sdg_goals || [])) {
         const cur = map.get(g) || { projects: 0, budget: 0, completed: 0 };
         cur.projects += 1; cur.budget += p.budget || 0;
