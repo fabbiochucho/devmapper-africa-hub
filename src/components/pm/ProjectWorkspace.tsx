@@ -4,10 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2 } from "lucide-react";
 import AddMilestoneDialog from "./AddMilestoneDialog";
 import SubmitVerificationDialog from "./SubmitVerificationDialog";
 import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
+import ProjectLifecycleManager from "./ProjectLifecycleManager";
+import StakeholderAffiliation from "./StakeholderAffiliation";
+import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 
 interface ProjectWorkspaceProps {
