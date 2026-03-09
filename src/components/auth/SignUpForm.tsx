@@ -123,6 +123,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
       }
     } catch (error) {
       toast.error("An error occurred during sign up");
+      setCaptchaToken(null); // Reset captcha on error
     } finally {
       setIsLoading(false);
     }
