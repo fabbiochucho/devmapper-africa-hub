@@ -159,6 +159,7 @@ const NgoDashboard = () => {
           <TabsTrigger value="all">All ({ownProjects.length})</TabsTrigger>
           <TabsTrigger value="active">Active ({filterByStatus('in_progress').length})</TabsTrigger>
           <TabsTrigger value="completed">Completed ({filterByStatus('completed').length})</TabsTrigger>
+          <TabsTrigger value="affiliated">Affiliated ({affiliatedProjects.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4 mt-4">
