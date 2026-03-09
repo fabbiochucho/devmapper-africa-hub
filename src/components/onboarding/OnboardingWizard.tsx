@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -30,7 +29,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   
-  // Form state
   const [fullName, setFullName] = useState("");
   const [organization, setOrganization] = useState("");
   const [country, setCountry] = useState("");
@@ -67,7 +65,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
 
     setLoading(true);
     try {
-      // Update profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -79,7 +76,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
 
       if (profileError) throw profileError;
 
-      // Add role
       const { error: roleError } = await supabase
         .from("user_roles")
         .upsert({
@@ -115,7 +111,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
         <Progress value={progress} className="h-2 mb-4" />
 
         <div className="space-y-6 py-4">
-          {/* Step 1: Basic Info */}
           {step === 1 && (
             <div className="space-y-4">
               <h3 className="font-semibold flex items-center gap-2">
@@ -147,7 +142,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
             </div>
           )}
 
-          {/* Step 2: Location */}
           {step === 2 && (
             <div className="space-y-4">
               <h3 className="font-semibold flex items-center gap-2">
@@ -169,16 +163,10 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
                     ))}
                   </SelectContent>
                 </Select>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           )}
 
-          {/* Step 3: Role Selection */}
           {step === 3 && (
             <div className="space-y-4">
               <h3 className="font-semibold flex items-center gap-2">
@@ -220,7 +208,6 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
           )}
         </div>
 
-        {/* Navigation */}
         <div className="flex items-center justify-between pt-4 border-t">
           <Button
             variant="ghost"
