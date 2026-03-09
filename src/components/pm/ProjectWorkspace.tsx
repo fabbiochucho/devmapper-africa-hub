@@ -230,6 +230,12 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       {/* DISM Impact Scorecard */}
       <ImpactScorecard readOnly />
 
+      {/* Stakeholder Affiliation */}
+      <StakeholderAffiliation reportId={reportId} isOwner={isOwner} />
+
+      {/* Donor Report Export */}
+      <DonorReportExport report={report} milestones={milestones} budgets={budgets} indicators={indicators} />
+
       {/* Community Feedback */}
       <CitizenFeedbackPanel reportId={reportId} />
     </div>
