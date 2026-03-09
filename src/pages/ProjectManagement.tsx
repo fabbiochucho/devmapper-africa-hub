@@ -26,6 +26,7 @@ import {
   AlertTriangle, ArrowUpDown, Lock, Users, BarChart3, Bot,
   FolderOpen, Shield, DollarSign, Activity, FileText
 } from "lucide-react";
+import KanbanBoard from "@/components/pm/KanbanBoard";
 
 interface ProjectTask {
   id: string;
