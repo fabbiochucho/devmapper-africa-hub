@@ -15,7 +15,7 @@ interface CMSContent {
   id: string;
   page_key: string;
   title: string;
-  content: Record<string, any>;
+  content: any;
   is_published: boolean;
   updated_at: string;
 }
