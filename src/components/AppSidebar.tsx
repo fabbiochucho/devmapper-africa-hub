@@ -169,6 +169,9 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" : "hover:bg-muted/50";
 
+  // Prefetch on hover for instant navigation
+  const handlePrefetch = useCallback((url: string) => () => prefetchRoute(url), []);
+
   const quickActions = getQuickActions(hasRole, isAuthenticated);
   const primaryDashboard = getPrimaryDashboard(hasRole);
   const submissionItems = getSubmissionItems(hasRole);
