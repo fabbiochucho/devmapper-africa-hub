@@ -44,6 +44,8 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
   const [severity, setSeverity] = useState('low');
   const [photoUrl, setPhotoUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchFeedback();
