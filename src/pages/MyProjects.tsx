@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, MapPin, Calendar, DollarSign, Target, TrendingUp, Users, FolderOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMyProjects, ProjectReport } from '@/hooks/useMyProjects';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,10 @@ import { useNavigate } from 'react-router-dom';
 import ProjectMilestones from '@/components/project/ProjectMilestones';
 import { sdgGoals } from '@/lib/constants';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import ExportManager from '@/components/export/ExportManager';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 const statusConfig: Record<string, { color: string; label: string }> = {
   planned: { color: 'bg-muted text-muted-foreground', label: 'Planned' },

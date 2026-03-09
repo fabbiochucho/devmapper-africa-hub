@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import {
   Share2, Copy, ExternalLink, Users, DollarSign, Target, TrendingUp,
-  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3
+  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';

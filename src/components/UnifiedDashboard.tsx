@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Users, Building2, Target, Globe, TrendingUp, 
-  BarChart3, Heart, UserCheck, MapPin, Award,
-  Calendar, Briefcase, Shield
+import {
+  Users, Building2, Target, Globe, TrendingUp,
+  BarChart3, Heart, UserCheck, Award,
+  Calendar, Briefcase, Shield, Clock
 } from "lucide-react";
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";

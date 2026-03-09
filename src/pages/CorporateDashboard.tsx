@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Target, TrendingUp, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
+import { Plus, Target, TrendingUp, Calendar, Users, Save, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import EntityLocationsManager from '@/components/locations/EntityLocationsManager';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,11 +29,34 @@ interface CorporateTarget {
   created_at: string;
 }
 
+type TargetStatus = 'active' | 'on_track' | 'at_risk' | 'delayed' | 'completed';
+
+const statusLabel: Record<TargetStatus, string> = {
+  active: 'active',
+  on_track: 'on track',
+  at_risk: 'at risk',
+  delayed: 'delayed',
+  completed: 'completed',
+};
+
+const getStatusVariant = (status: string): "default" | "secondary" | "outline" | "destructive" => {
+  if (status === 'completed') return 'default';
+  if (status === 'delayed') return 'destructive';
+  if (status === 'at_risk') return 'outline';
+  return 'secondary';
+};
+
 const CorporateDashboard = () => {
   const { user, hasRole } = useAuth();
   const [targets, setTargets] = useState<CorporateTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCurrentValue, setEditCurrentValue] = useState<string>('');
+  const [editStatus, setEditStatus] = useState<TargetStatus>('active');
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -70,7 +93,7 @@ const CorporateDashboard = () => {
 
   const handleCreateTarget = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const { error } = await supabase
         .from('corporate_targets')
@@ -86,7 +109,7 @@ const CorporateDashboard = () => {
         }]);
 
       if (error) throw error;
-      
+
       toast.success('Target created successfully!');
       setShowCreateDialog(false);
       setFormData({
@@ -105,19 +128,58 @@ const CorporateDashboard = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'on_track': return 'bg-blue-100 text-blue-800';
-      case 'at_risk': return 'bg-yellow-100 text-yellow-800';
-      case 'delayed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const startEdit = (t: CorporateTarget) => {
+    setEditingId(t.id);
+    setEditCurrentValue(String(t.current_value ?? 0));
+    setEditStatus((t.status as TargetStatus) || 'active');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditCurrentValue('');
+    setEditStatus('active');
+  };
+
+  const saveEdit = async (targetId: string) => {
+    if (!user) return;
+
+    const currentValue = Number(editCurrentValue);
+    if (Number.isNaN(currentValue) || currentValue < 0) {
+      toast.error('Current value must be a valid number');
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      const { error } = await supabase
+        .from('corporate_targets')
+        .update({ current_value: currentValue, status: editStatus })
+        .eq('id', targetId)
+        .eq('company_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Target updated');
+      cancelEdit();
+      fetchTargets();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update target');
+    } finally {
+      setSavingEdit(false);
     }
   };
 
   const getProgressPercentage = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100);
+    return Math.min((current / Math.max(1, target)) * 100, 100);
   };
+
+  const stats = useMemo(() => ({
+    total: targets.length,
+    completed: targets.filter(t => t.status === 'completed').length,
+    onTrack: targets.filter(t => t.status === 'on_track').length,
+    atRisk: targets.filter(t => t.status === 'at_risk' || t.status === 'delayed').length,
+  }), [targets]);
 
   if (!hasRole('company_representative')) {
     return (
