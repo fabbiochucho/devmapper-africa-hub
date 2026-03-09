@@ -1,25 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, UserCog } from "lucide-react";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import PartnerManagement from "@/components/admin/PartnerManagement";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
-  id: number;
+  id: string; // user_id
   name: string;
   email: string;
-  role: string;
-  organization?: string;
-  country: string;
-  document: string;
+  organization?: string | null;
+  country: string | null;
   createdAt: string;
 }
 
@@ -47,7 +46,9 @@ interface FundraisingCampaign {
 
 export default function AdminDashboard() {
   const { user: authUser } = useAuth();
+  const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdminVerification();
+
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [flaggedProjects, setFlaggedProjects] = useState<FlaggedProject[]>([]);
   const [campaigns, setCampaigns] = useState<FundraisingCampaign[]>([]);
@@ -61,91 +62,72 @@ export default function AdminDashboard() {
     activeCampaigns: 0,
   });
 
-  useEffect(() => {
-    fetchCampaigns();
-    fetchAdminData();
-  }, []);
-
-  const fetchCampaigns = async () => {
+  const loadDashboard = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('fundraising_campaigns')
-        .select(`
-          *,
-          public_profiles!fundraising_campaigns_created_by_fkey(full_name)
-        `)
-        .order('created_at', { ascending: false });
+      const [campaignsRes, totalUsersRes, pendingUsersCountRes, pendingProfilesRes] = await Promise.all([
+        supabase
+          .from('fundraising_campaigns')
+          .select(`*, public_profiles!fundraising_campaigns_created_by_fkey(full_name)`)
+          .order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_verified', false),
+        supabase
+          .from('profiles')
+          .select('user_id, full_name, email, organization, country, created_at')
+          .eq('is_verified', false)
+          .order('created_at', { ascending: false })
+          .limit(20),
+      ]);
 
-      if (error) throw error;
-      
-      setCampaigns((data as any) || []);
-    } catch (error) {
-      console.error('Error fetching campaigns:', error);
-    }
-  };
+      if (campaignsRes.error) throw campaignsRes.error;
 
-  const fetchAdminData = () => {
-      const mockPendingUsers: PendingUser[] = [
-        {
-          id: 1,
-          name: "John Doe",
-          email: "john@example.com",
-          role: "NGO Member",
-          organization: "Water for All NGO",
-          country: "KEN",
-          document: "ngo_certificate.pdf",
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: 2,
-          name: "Sarah Johnson",
-          email: "sarah@gov.ke",
-          role: "Government Official",
-          organization: "Ministry of Health",
-          country: "KEN",
-          document: "government_id.pdf",
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
-      setPendingUsers(mockPendingUsers);
+      const loadedCampaigns = ((campaignsRes.data as any) || []) as FundraisingCampaign[];
+      setCampaigns(loadedCampaigns);
 
-      const mockFlaggedProjects: FlaggedProject[] = [
-        {
-          id: 1,
-          title: "Suspicious Water Project",
-          author: "Anonymous User",
-          reason: "Duplicate location, unrealistic budget",
-          flaggedBy: "Community",
-          flaggedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          status: "pending",
-        },
-      ];
-      setFlaggedProjects(mockFlaggedProjects);
+      const pending = (pendingProfilesRes.data || []).map((p: any) => ({
+        id: p.user_id,
+        name: p.full_name || 'Unnamed',
+        email: p.email || '—',
+        organization: p.organization,
+        country: p.country,
+        createdAt: p.created_at,
+      }));
+      setPendingUsers(pending);
 
-      const totalRaised = campaigns.reduce((sum, c) => sum + c.raised_amount, 0);
-      const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
-      
+      // NOTE: flagged content + resolved issues require a dedicated moderation workflow/table.
+      setFlaggedProjects([]);
+
+      const totalRaised = loadedCampaigns.reduce((sum, c) => sum + (c.raised_amount || 0), 0);
+      const activeCampaigns = loadedCampaigns.filter(c => c.status === 'active').length;
+
       setAdminStats({
-        totalUsers: 1247,
-        pendingVerifications: mockPendingUsers.length,
-        flaggedContent: mockFlaggedProjects.length,
-        resolvedIssues: 156,
-        totalCampaigns: campaigns.length,
+        totalUsers: totalUsersRes.count || 0,
+        pendingVerifications: pendingUsersCountRes.count || 0,
+        flaggedContent: 0,
+        resolvedIssues: 0,
+        totalCampaigns: loadedCampaigns.length,
         totalRaised,
         activeCampaigns,
       });
-    };
+    } catch (error) {
+      console.error('Error loading admin dashboard:', error);
+      toast.error('Failed to load admin dashboard data');
+    }
+  }, []);
 
-  const handleUserVerification = (userId: number, verified: boolean) => {
-    setPendingUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
-    toast.success(`User has been ${verified ? "verified" : "rejected"}.`);
-    setAdminStats(stats => ({ ...stats, pendingVerifications: stats.pendingVerifications - 1, resolvedIssues: stats.resolvedIssues + (verified ? 0 : 1) }));
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const handleUserVerification = () => {
+    // Verification workflow lives in /user-management (full UI + logging)
+    navigate('/user-management');
   };
 
   const handleProjectModeration = (projectId: number, action: "approved" | "removed") => {
     setFlaggedProjects((prevProjects) => prevProjects.filter((p) => p.id !== projectId));
     toast.success(`Project has been ${action}.`);
-    setAdminStats(stats => ({ ...stats, flaggedContent: stats.flaggedContent - 1, resolvedIssues: stats.resolvedIssues + 1 }));
+    setAdminStats(stats => ({ ...stats, flaggedContent: Math.max(0, stats.flaggedContent - 1), resolvedIssues: stats.resolvedIssues + 1 }));
   };
 
   if (adminLoading) {
@@ -240,8 +222,7 @@ export default function AdminDashboard() {
                           <p className="text-sm text-muted-foreground">{u.email}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge>{u.role}</Badge>
-                          <Badge variant="outline">{u.country}</Badge>
+                          {u.country && <Badge variant="outline">{u.country}</Badge>}
                         </div>
                         {u.organization && (
                           <p className="text-sm text-muted-foreground">
@@ -249,24 +230,13 @@ export default function AdminDashboard() {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          Applied: {new Date(u.createdAt).toLocaleDateString()}
+                          Created: {new Date(u.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleUserVerification(u.id, true)}
-                        >
-                          <CheckCircle />
-                          Verify
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleUserVerification(u.id, false)}
-                        >
-                          <XCircle />
-                          Reject
+                        <Button size="sm" onClick={handleUserVerification}>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Review
                         </Button>
                       </div>
                     </div>

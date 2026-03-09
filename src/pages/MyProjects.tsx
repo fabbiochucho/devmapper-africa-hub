@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, MapPin, Calendar, DollarSign, Target, TrendingUp, Users, FolderOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMyProjects, ProjectReport } from '@/hooks/useMyProjects';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,10 @@ import { useNavigate } from 'react-router-dom';
 import ProjectMilestones from '@/components/project/ProjectMilestones';
 import { sdgGoals } from '@/lib/constants';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import ExportManager from '@/components/export/ExportManager';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 const statusConfig: Record<string, { color: string; label: string }> = {
   planned: { color: 'bg-muted text-muted-foreground', label: 'Planned' },
@@ -30,9 +34,11 @@ const relationshipLabels: Record<string, string> = {
 
 const MyProjects = () => {
   const { projects, loading, refetch } = useMyProjects();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { userPlan } = useFeatureAccess();
   const navigate = useNavigate();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
 
   if (!user) {
     return (
@@ -62,6 +68,29 @@ const MyProjects = () => {
     const found = sdgGoals.find(g => g.value === goal.toString());
     return found ? `SDG ${goal}` : `SDG ${goal}`;
   };
+
+  const updateProjectStatus = useCallback(async (projectId: string, status: string) => {
+    if (!user) return;
+
+    try {
+      setUpdatingProjectId(projectId);
+      const { error } = await supabase
+        .from('reports')
+        .update({ project_status: status })
+        .eq('id', projectId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Project status updated');
+      await refetch();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update project status');
+    } finally {
+      setUpdatingProjectId(null);
+    }
+  }, [refetch, user]);
 
   const renderProjectCard = (project: ProjectReport) => {
     const isExpanded = expandedProject === project.id;
@@ -122,6 +151,30 @@ const MyProjects = () => {
                 {project.end_date && <div><span className="font-medium">End:</span> {format(new Date(project.end_date), 'PPP')}</div>}
               </div>
 
+              {isOwner && (
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-sm">
+                    <span className="font-medium">Status:</span>
+                  </div>
+                  <Select
+                    value={project.project_status}
+                    onValueChange={(val) => updateProjectStatus(project.id, val)}
+                    disabled={updatingProjectId === project.id}
+                  >
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planned">Planned</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="stalled">Stalled</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <ProjectMilestones reportId={project.id} canEdit={isOwner} />
             </div>
           )}
@@ -137,9 +190,16 @@ const MyProjects = () => {
           <h1 className="text-3xl font-bold">My Projects</h1>
           <p className="text-muted-foreground">Manage your projects, track milestones, and view impact</p>
         </div>
-        <Button onClick={() => navigate('/submit-report')}>
-          <Plus className="mr-2 h-4 w-4" /> New Report
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <ExportManager
+            organizationName={profile?.organization || profile?.full_name || 'My Projects'}
+            planType={(userPlan === 'free' ? 'free' : userPlan === 'lite' ? 'lite' : 'pro') as any}
+            availableData={[{ type: 'reports', label: 'Projects / Reports', data: projects }]}
+          />
+          <Button onClick={() => navigate('/submit-report')}>
+            <Plus className="mr-2 h-4 w-4" /> New Report
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

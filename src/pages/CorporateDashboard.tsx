@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Target, TrendingUp, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
+import { Plus, Target, TrendingUp, Calendar, Users, Save, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import EntityLocationsManager from '@/components/locations/EntityLocationsManager';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,11 +29,34 @@ interface CorporateTarget {
   created_at: string;
 }
 
+type TargetStatus = 'active' | 'on_track' | 'at_risk' | 'delayed' | 'completed';
+
+const statusLabel: Record<TargetStatus, string> = {
+  active: 'active',
+  on_track: 'on track',
+  at_risk: 'at risk',
+  delayed: 'delayed',
+  completed: 'completed',
+};
+
+const getStatusVariant = (status: string): "default" | "secondary" | "outline" | "destructive" => {
+  if (status === 'completed') return 'default';
+  if (status === 'delayed') return 'destructive';
+  if (status === 'at_risk') return 'outline';
+  return 'secondary';
+};
+
 const CorporateDashboard = () => {
   const { user, hasRole } = useAuth();
   const [targets, setTargets] = useState<CorporateTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCurrentValue, setEditCurrentValue] = useState<string>('');
+  const [editStatus, setEditStatus] = useState<TargetStatus>('active');
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -70,7 +93,7 @@ const CorporateDashboard = () => {
 
   const handleCreateTarget = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const { error } = await supabase
         .from('corporate_targets')
@@ -86,7 +109,7 @@ const CorporateDashboard = () => {
         }]);
 
       if (error) throw error;
-      
+
       toast.success('Target created successfully!');
       setShowCreateDialog(false);
       setFormData({
@@ -105,19 +128,58 @@ const CorporateDashboard = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'on_track': return 'bg-blue-100 text-blue-800';
-      case 'at_risk': return 'bg-yellow-100 text-yellow-800';
-      case 'delayed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const startEdit = (t: CorporateTarget) => {
+    setEditingId(t.id);
+    setEditCurrentValue(String(t.current_value ?? 0));
+    setEditStatus((t.status as TargetStatus) || 'active');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditCurrentValue('');
+    setEditStatus('active');
+  };
+
+  const saveEdit = async (targetId: string) => {
+    if (!user) return;
+
+    const currentValue = Number(editCurrentValue);
+    if (Number.isNaN(currentValue) || currentValue < 0) {
+      toast.error('Current value must be a valid number');
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      const { error } = await supabase
+        .from('corporate_targets')
+        .update({ current_value: currentValue, status: editStatus })
+        .eq('id', targetId)
+        .eq('company_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Target updated');
+      cancelEdit();
+      fetchTargets();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update target');
+    } finally {
+      setSavingEdit(false);
     }
   };
 
   const getProgressPercentage = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100);
+    return Math.min((current / Math.max(1, target)) * 100, 100);
   };
+
+  const stats = useMemo(() => ({
+    total: targets.length,
+    completed: targets.filter(t => t.status === 'completed').length,
+    onTrack: targets.filter(t => t.status === 'on_track').length,
+    atRisk: targets.filter(t => t.status === 'at_risk' || t.status === 'delayed').length,
+  }), [targets]);
 
   if (!hasRole('company_representative')) {
     return (
@@ -256,7 +318,7 @@ const CorporateDashboard = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{targets.length}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
 
@@ -266,9 +328,7 @@ const CorporateDashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {targets.filter(t => t.status === 'completed').length}
-            </div>
+            <div className="text-2xl font-bold">{stats.completed}</div>
           </CardContent>
         </Card>
 
@@ -278,21 +338,17 @@ const CorporateDashboard = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {targets.filter(t => t.status === 'on_track').length}
-            </div>
+            <div className="text-2xl font-bold">{stats.onTrack}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">At Risk</CardTitle>
+            <CardTitle className="text-sm font-medium">Attention</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {targets.filter(t => t.status === 'at_risk').length}
-            </div>
+            <div className="text-2xl font-bold">{stats.atRisk}</div>
           </CardContent>
         </Card>
       </div>
@@ -312,46 +368,88 @@ const CorporateDashboard = () => {
           {targets.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <Target className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No targets</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <Target className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium">No targets</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Get started by creating your first SDG target.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {targets.map((target) => (
-                <Card key={target.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{target.title}</CardTitle>
-                      <Badge className={getStatusColor(target.status)}>
-                        {target.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <CardDescription>{target.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span>
-                          {target.current_value} / {target.target_value} {target.unit}
-                        </span>
+              {targets.map((target) => {
+                const isEditing = editingId === target.id;
+                return (
+                  <Card key={target.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start gap-2">
+                        <CardTitle className="text-lg">{target.title}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusVariant(target.status)}>
+                            {(statusLabel[target.status as TargetStatus] || target.status).replace('_', ' ')}
+                          </Badge>
+                          {!isEditing && (
+                            <Button size="sm" variant="outline" onClick={() => startEdit(target)}>
+                              Update
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <Progress 
-                        value={getProgressPercentage(target.current_value, target.target_value)} 
-                      />
-                    </div>
-                    
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Target Date: {new Date(target.target_date).toLocaleDateString()}</span>
-                      <span>SDG Goals: {target.sdg_goals.join(', ')}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <CardDescription>{target.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Progress</span>
+                          <span>
+                            {target.current_value} / {target.target_value} {target.unit}
+                          </span>
+                        </div>
+                        <Progress value={getProgressPercentage(target.current_value, target.target_value)} />
+                      </div>
+
+                      {isEditing && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border rounded-lg p-3">
+                          <div className="space-y-2">
+                            <Label>Current value</Label>
+                            <Input
+                              type="number"
+                              value={editCurrentValue}
+                              onChange={(e) => setEditCurrentValue(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Status</Label>
+                            <Select value={editStatus} onValueChange={(v) => setEditStatus(v as TargetStatus)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(['active','on_track','at_risk','delayed','completed'] as TargetStatus[]).map(s => (
+                                  <SelectItem key={s} value={s}>{statusLabel[s]}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="md:col-span-2 flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={cancelEdit} disabled={savingEdit}>
+                              <X className="mr-2 h-4 w-4" />Cancel
+                            </Button>
+                            <Button size="sm" onClick={() => saveEdit(target.id)} disabled={savingEdit}>
+                              <Save className="mr-2 h-4 w-4" />Save
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Target Date: {new Date(target.target_date).toLocaleDateString()}</span>
+                        <span>SDG Goals: {target.sdg_goals.join(', ')}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

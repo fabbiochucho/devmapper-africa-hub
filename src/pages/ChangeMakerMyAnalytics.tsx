@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import {
   Share2, Copy, ExternalLink, Users, DollarSign, Target, TrendingUp,
-  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3
+  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
@@ -157,6 +157,14 @@ const ChangeMakerMyAnalytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {profile && (
+              <Button size="sm" className="gap-2" asChild>
+                <a href={`/fundraising?create=1&sdgs=${encodeURIComponent((profile?.sdg_goals || []).join(','))}`}> 
+                  <Plus className="w-4 h-4" />
+                  New Campaign
+                </a>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-2">
               <Copy className="w-4 h-4" />
               Copy Link
