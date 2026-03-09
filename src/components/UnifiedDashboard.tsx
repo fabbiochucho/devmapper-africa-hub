@@ -80,6 +80,39 @@ const UnifiedDashboard = () => {
     fetchDashboardStats();
   }, [user?.id]);
 
+  useEffect(() => {
+    const fetchActivity = async () => {
+      if (!user?.id) return;
+      try {
+        const [reportsRes, campaignsRes] = await Promise.all([
+          supabase
+            .from('reports')
+            .select('id, title, submitted_at')
+            .eq('user_id', user.id)
+            .order('submitted_at', { ascending: false })
+            .limit(5),
+          supabase
+            .from('fundraising_campaigns')
+            .select('id, title, created_at')
+            .eq('created_by', user.id)
+            .order('created_at', { ascending: false })
+            .limit(5),
+        ]);
+
+        const items = [
+          ...(reportsRes.data || []).map((r: any) => ({ id: r.id, type: 'report', title: r.title, ts: r.submitted_at })),
+          ...(campaignsRes.data || []).map((c: any) => ({ id: c.id, type: 'campaign', title: c.title, ts: c.created_at })),
+        ].sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()).slice(0, 8);
+
+        setActivity(items);
+      } catch (e) {
+        console.error('Error fetching activity:', e);
+      }
+    };
+
+    fetchActivity();
+  }, [user?.id]);
+
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
