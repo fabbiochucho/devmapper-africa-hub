@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot } from 'lucide-react';
+import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot, ExternalLink } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
