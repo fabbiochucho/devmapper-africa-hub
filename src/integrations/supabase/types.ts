@@ -49,6 +49,42 @@ export type Database = {
           },
         ]
       }
+      admin_broadcasts: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read_by: Json | null
+          message: string
+          priority: string | null
+          recipient_ids: string[] | null
+          recipient_type: string
+          sender_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read_by?: Json | null
+          message: string
+          priority?: string | null
+          recipient_ids?: string[] | null
+          recipient_type: string
+          sender_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read_by?: Json | null
+          message?: string
+          priority?: string | null
+          recipient_ids?: string[] | null
+          recipient_type?: string
+          sender_id?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       agenda2063_links: {
         Row: {
           agenda_aspiration: number
@@ -470,6 +506,78 @@ export type Database = {
           total_funding?: number | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      cms_content: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          meta: Json | null
+          page_key: string
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta?: Json | null
+          page_key: string
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta?: Json | null
+          page_key?: string
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      cms_sections: {
+        Row: {
+          content: Json
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          page_key: string
+          section_key: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          page_key: string
+          section_key: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          page_key?: string
+          section_key?: string
+          title?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2334,6 +2442,51 @@ export type Database = {
           target_id?: string
           unit?: string
           verification_requirement?: string | null
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          priority: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
