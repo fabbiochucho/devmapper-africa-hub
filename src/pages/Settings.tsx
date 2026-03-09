@@ -121,9 +121,10 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile"><User className="w-4 h-4 mr-1" /> Profile</TabsTrigger>
           <TabsTrigger value="enrichment"><Briefcase className="w-4 h-4 mr-1" /> Entity</TabsTrigger>
+          <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1" /> Notifications</TabsTrigger>
           <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1" /> Security</TabsTrigger>
           <TabsTrigger value="roles"><Bell className="w-4 h-4 mr-1" /> Roles</TabsTrigger>
         </TabsList>
