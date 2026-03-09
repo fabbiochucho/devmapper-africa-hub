@@ -4,6 +4,11 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
+/* Font display optimization - ensures text is visible during font loading */
+@font-face {
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -111,10 +116,19 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Ensure system fonts display immediately */
+    font-display: swap;
+  }
+
+  /* Smooth font rendering */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
-/* Lazy loading image styles */
+/* Image optimization utilities */
 @layer utilities {
   .lazy-image {
     @apply opacity-0 transition-opacity duration-300;
@@ -122,5 +136,15 @@
   
   .lazy-image.loaded {
     @apply opacity-100;
+  }
+
+  /* Responsive image container */
+  .img-responsive {
+    @apply w-full h-auto object-cover;
+  }
+
+  /* Optimized image loading placeholder */
+  .img-placeholder {
+    @apply bg-muted animate-pulse;
   }
 }
