@@ -5,6 +5,10 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2 } from "lucide-react";
+import AddMilestoneDialog from "./AddMilestoneDialog";
+import SubmitVerificationDialog from "./SubmitVerificationDialog";
+import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
+import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 
 interface ProjectWorkspaceProps {
   reportId: string;
