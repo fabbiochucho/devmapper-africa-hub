@@ -390,10 +390,13 @@ const Forum = () => {
                   onLike={handleLike}
                   onReply={handleReply}
                   onShare={handleShare}
+                  onDelete={handleDelete}
+                  onPin={handlePin}
+                  isAdmin={isAdmin}
                 />
               ))}
             </TabsContent>
-            
+
             <TabsContent value="trending" className="space-y-4 mt-4">
               {filteredPosts
                 .sort((a, b) => (b.likes + b.replies + b.views) - (a.likes + a.replies + a.views))
@@ -404,10 +407,13 @@ const Forum = () => {
                     onLike={handleLike}
                     onReply={handleReply}
                     onShare={handleShare}
+                    onDelete={handleDelete}
+                    onPin={handlePin}
+                    isAdmin={isAdmin}
                   />
                 ))}
             </TabsContent>
-            
+
             <TabsContent value="pinned" className="space-y-4 mt-4">
               {filteredPosts
                 .filter(post => post.isPinned)
@@ -418,9 +424,13 @@ const Forum = () => {
                     onLike={handleLike}
                     onReply={handleReply}
                     onShare={handleShare}
+                    onDelete={handleDelete}
+                    onPin={handlePin}
+                    isAdmin={isAdmin}
                   />
                 ))}
             </TabsContent>
+
           </Tabs>
         </div>
 
