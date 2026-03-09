@@ -56,13 +56,13 @@ interface ForumPostProps {
   isAdmin?: boolean;
 }
 
-const categoryConfig: Record<string, { bg: string; text: string }> = {
-  Discussion: { bg: 'bg-primary/10', text: 'text-primary' },
-  Question: { bg: 'bg-green-500/10', text: 'text-green-700' },
-  Announcement: { bg: 'bg-purple-500/10', text: 'text-purple-700' },
-  Support: { bg: 'bg-orange-500/10', text: 'text-orange-700' },
-  'Project Update': { bg: 'bg-blue-500/10', text: 'text-blue-700' },
-  'Resource Sharing': { bg: 'bg-teal-500/10', text: 'text-teal-700' },
+const categoryConfig: Record<string, string> = {
+  Discussion: 'bg-primary/10 text-primary',
+  Question: 'bg-accent text-accent-foreground',
+  Announcement: 'bg-secondary text-secondary-foreground',
+  Support: 'bg-muted text-muted-foreground',
+  'Project Update': 'bg-primary/5 text-primary',
+  'Resource Sharing': 'bg-secondary/50 text-secondary-foreground',
 };
 
 const ForumPost: React.FC<ForumPostProps> = ({
