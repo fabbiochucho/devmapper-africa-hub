@@ -108,11 +108,14 @@ const GovernmentDashboard = () => {
         sdg_goals: formData.sdg_goals,
         status: formData.status,
         visibility: formData.visibility,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        beneficiaries: formData.beneficiaries ? parseInt(formData.beneficiaries) : null,
       }]);
       if (error) throw error;
       toast.success('Project created successfully!');
       setShowCreateDialog(false);
-      setFormData({ title: '', description: '', budget: '', currency: 'USD', location: '', sdg_goals: [], status: 'planning', visibility: 'public' });
+      setFormData({ title: '', description: '', budget: '', currency: 'USD', location: '', sdg_goals: [], status: 'planning', visibility: 'public', start_date: '', end_date: '', beneficiaries: '' });
       loadProjects();
     } catch (error) {
       console.error(error);
