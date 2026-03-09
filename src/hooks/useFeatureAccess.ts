@@ -13,6 +13,7 @@ export function useFeatureAccess() {
   const [userPlan, setUserPlan] = useState<PlanType>('free');
   const [quotaRemaining, setQuotaRemaining] = useState<number | null>(null);
   const [projectCap, setProjectCap] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchFeatureAccess();
@@ -21,11 +22,28 @@ export function useFeatureAccess() {
   const fetchFeatureAccess = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
-        // Per DevMapper protocol, default tier is 'lite' for all users
         setUserPlan('lite');
         await loadFeaturesForPlan('lite');
+        return;
+      }
+
+      // Check if user is admin or platform_admin — admins get unlimited access
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .in('role', ['admin', 'platform_admin', 'country_admin']);
+
+      if (adminRoles && adminRoles.length > 0) {
+        setIsAdmin(true);
+        setUserPlan('enterprise');
+        setQuotaRemaining(null);
+        setProjectCap(null);
+        // Admins get all features enabled — set a wildcard flag
+        setFeatures({ __admin_unrestricted__: true });
         return;
       }
 
@@ -37,13 +55,11 @@ export function useFeatureAccess() {
         .single();
 
       const org = membership?.organizations as any;
-      // Effective plan considers scholarship override
-      // Per DevMapper protocol, default tier is 'lite' when no org plan is set
       const effectivePlan = org?.scholarship_override || org?.plan_type || 'lite';
       setUserPlan(effectivePlan as PlanType);
       setQuotaRemaining(org?.project_quota_remaining ?? null);
       setProjectCap(org?.project_cap ?? null);
-      
+
       await loadFeaturesForPlan(effectivePlan as PlanType);
     } catch (error) {
       console.error('Error fetching feature access:', error);
@@ -54,7 +70,6 @@ export function useFeatureAccess() {
   };
 
   const loadFeaturesForPlan = async (plan: PlanType) => {
-    // Load from both feature_flags (existing) and plan_features (new) tables
     const [flagsResult, planFeaturesResult] = await Promise.all([
       supabase
         .from('feature_flags')
@@ -69,30 +84,33 @@ export function useFeatureAccess() {
     ]);
 
     const featureMap: FeatureFlags = {};
-    
+
     flagsResult.data?.forEach(item => {
       featureMap[item.feature] = item.enabled;
     });
-    
+
     planFeaturesResult.data?.forEach(item => {
       featureMap[item.feature_key] = item.enabled;
     });
-    
+
     setFeatures(featureMap);
   };
 
   const canAccess = useCallback((feature: string): boolean => {
+    // Admins bypass all feature gates
+    if (isAdmin || features['__admin_unrestricted__']) return true;
     return features[feature] === true;
-  }, [features]);
+  }, [features, isAdmin]);
 
   const requiresUpgrade = useCallback((feature: string): boolean => {
     return !canAccess(feature);
   }, [canAccess]);
 
   const hasQuota = useCallback((): boolean => {
-    if (quotaRemaining === null) return true; // No org = no enforcement
+    if (isAdmin) return true; // Admins have unlimited quota
+    if (quotaRemaining === null) return true;
     return quotaRemaining > 0;
-  }, [quotaRemaining]);
+  }, [quotaRemaining, isAdmin]);
 
   return {
     canAccess,
@@ -103,6 +121,7 @@ export function useFeatureAccess() {
     userPlan,
     quotaRemaining,
     projectCap,
+    isAdmin,
     refresh: fetchFeatureAccess
   };
 }
