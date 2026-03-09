@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense } from "react";
 import { Outlet, useNavigate, Link, createSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
@@ -10,6 +10,7 @@ import MobileBottomNav from "./navigation/MobileBottomNav";
 import NotificationCenter from "./notifications/NotificationCenter";
 import GlobalSearch from "./search/GlobalSearch";
 import OnboardingWizard from "./onboarding/OnboardingWizard";
+import SessionTimeoutWarning from "./SessionTimeoutWarning";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -256,6 +257,9 @@ const Layout = () => {
         )}
 
         <PWAInstallPrompt />
+        
+        {/* Session Timeout Warning */}
+        <SessionTimeoutWarning />
       </div>
     </SidebarProvider>
   );

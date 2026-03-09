@@ -67,5 +67,14 @@ verify_jwt = false
 [functions.rule-engine]
 verify_jwt = true
 
+[functions.email-digest]
+verify_jwt = false
+
+[functions.nominate-changemaker]
+verify_jwt = true
+
+[functions.reset-passwords]
+verify_jwt = false
+
 [edge_runtime]
 policy = "oneshot"
