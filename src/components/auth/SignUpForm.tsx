@@ -189,7 +189,19 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        <Button type="submit" className="w-full" disabled={isLoading || isBreached}>
+        <div className="flex justify-center">
+          <HCaptcha
+            onVerify={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => {
+              setCaptchaToken(null);
+              toast.error("CAPTCHA verification failed. Please try again.");
+            }}
+          />
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isLoading || isBreached || !captchaToken}>
+          <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
