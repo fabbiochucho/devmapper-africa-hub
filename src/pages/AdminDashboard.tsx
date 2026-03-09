@@ -14,13 +14,11 @@ import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 
 interface PendingUser {
-  id: number;
+  id: string; // user_id
   name: string;
   email: string;
-  role: string;
-  organization?: string;
-  country: string;
-  document: string;
+  organization?: string | null;
+  country: string | null;
   createdAt: string;
 }
 
