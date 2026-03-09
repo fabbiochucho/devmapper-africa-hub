@@ -34,9 +34,11 @@ const relationshipLabels: Record<string, string> = {
 
 const MyProjects = () => {
   const { projects, loading, refetch } = useMyProjects();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { userPlan } = useFeatureAccess();
   const navigate = useNavigate();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
 
   if (!user) {
     return (
