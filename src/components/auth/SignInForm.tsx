@@ -20,6 +20,7 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
