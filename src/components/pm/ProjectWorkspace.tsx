@@ -50,11 +50,13 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       supabase.from("project_verifications").select("*").eq("report_id", reportId).order("created_at"),
       supabase.from("project_budgets").select("*").eq("report_id", reportId),
       supabase.from("project_updates").select("*").eq("report_id", reportId).order("created_at", { ascending: false }).limit(5),
-    ]).then(([m, v, b, u]) => {
+      supabase.from("project_indicators").select("*").eq("report_id", reportId),
+    ]).then(([m, v, b, u, ind]) => {
       if (m.data) setMilestones(m.data);
       if (v.data) setVerifications(v.data);
       if (b.data) setBudgets(b.data);
       if (u.data) setUpdates(u.data);
+      if (ind.data) setIndicators(ind.data);
     });
   }, [reportId]);
 
