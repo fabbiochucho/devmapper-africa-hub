@@ -164,14 +164,14 @@ const GovernmentDashboard = () => {
 
   const regionalStats: RegionalRow[] = useMemo(() => {
     const map = new Map<string, { projects: number; budget: number }>();
-    for (const p of projects) {
+    for (const p of filteredProjects) {
       const region = (p.admin_area_id && areasById[p.admin_area_id]) || p.location || "Unspecified";
       const cur = map.get(region) || { projects: 0, budget: 0 };
       cur.projects += 1; cur.budget += p.budget || 0;
       map.set(region, cur);
     }
     return Array.from(map.entries()).map(([region, v]) => ({ region, ...v })).sort((a, b) => b.projects - a.projects).slice(0, 10);
-  }, [projects, areasById]);
+  }, [filteredProjects, areasById]);
 
   const recentActivity: ActivityRow[] = useMemo(() => {
     return projects.slice(0, 8).map(p => ({

@@ -49,7 +49,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
     { icon: MapPin, label: t('hero.projectsMapped'), value: stats ? formatNumber(stats.total_reports) : "—" },
     { icon: Users, label: t('hero.activeUsers'), value: stats ? formatNumber(stats.total_change_makers) : "—" },
     { icon: Target, label: t('hero.sdgGoalsTracked'), value: "17" },
-    { icon: CheckCircle, label: t('hero.verifiedReports'), value: stats ? formatNumber(stats.total_reports) : "—" },
+    { icon: CheckCircle, label: "Countries Reached", value: stats ? formatNumber(stats.countries_count) : "—" },
   ];
 
   return (

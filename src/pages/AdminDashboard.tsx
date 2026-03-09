@@ -388,10 +388,18 @@ export default function AdminDashboard() {
                   { key: 'verifications', title: 'Verification Report', desc: 'Community verification metrics' },
                   { key: 'moderation', title: 'Moderation Log', desc: 'Content moderation history' },
                 ].map(report => (
-                  <Button key={report.key} variant="outline" className="h-20 flex flex-col items-center justify-center text-center" onClick={() => exportReport(report.key)}>
-                    <div className="flex items-center gap-2"><Download className="h-4 w-4" /><span className="font-medium">{report.title}</span></div>
-                    <span className="text-sm text-muted-foreground">{report.desc}</span>
-                  </Button>
+                  <div key={report.key} className="border rounded-lg p-4 space-y-2">
+                    <div className="font-medium">{report.title}</div>
+                    <p className="text-sm text-muted-foreground">{report.desc}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'json')}>
+                        <Download className="h-3 w-3 mr-1" />JSON
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'csv')}>
+                        <Download className="h-3 w-3 mr-1" />CSV
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </CardContent>

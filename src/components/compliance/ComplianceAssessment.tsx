@@ -52,8 +52,9 @@ export default function ComplianceAssessment({ actorType, countryCode, sectorCod
     }
     setLoading(true);
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ptfrzwsivtetvmdotfui.supabase.co";
       const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rule-engine`,
+        `${supabaseUrl}/functions/v1/rule-engine`,
         {
           method: "POST",
           headers: {
