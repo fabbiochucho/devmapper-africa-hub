@@ -22,6 +22,7 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
   const [isBreached, setIsBreached] = useState(false);
   const [passwordValue, setPasswordValue] = useState('');

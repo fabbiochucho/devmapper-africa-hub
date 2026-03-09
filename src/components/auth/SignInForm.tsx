@@ -10,6 +10,7 @@ import { signInSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { HCaptcha } from "./HCaptcha";
 
 interface SignInFormProps {
   onAuthSuccess: () => void;
@@ -19,6 +20,7 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 
 const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -26,11 +28,19 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   });
 
   const handleSignIn = async (values: SignInFormValues) => {
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
+        options: {
+          captchaToken,
+        },
       });
 
       if (error) {
@@ -39,12 +49,14 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
           type: "manual",
           message: "Invalid credentials",
         });
+        setCaptchaToken(null); // Reset captcha on error
       } else {
         toast.success("Signed in successfully!");
         onAuthSuccess();
       }
     } catch (error) {
       toast.error("An error occurred during sign in");
+      setCaptchaToken(null); // Reset captcha on error
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +91,17 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <div className="flex justify-center">
+          <HCaptcha
+            onVerify={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => {
+              setCaptchaToken(null);
+              toast.error("CAPTCHA verification failed. Please try again.");
+            }}
+          />
+        </div>
+        <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
           <LogIn className="mr-2 h-4 w-4" /> {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
