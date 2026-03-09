@@ -27,6 +27,9 @@ interface Feedback {
   issue_severity: string | null;
   status: string;
   created_at: string;
+  upvotes: number;
+  downvotes: number;
+  userVote: 'up' | 'down' | null;
 }
 
 export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelProps) {
