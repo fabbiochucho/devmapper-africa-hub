@@ -319,38 +319,11 @@ export default function ProjectManagement() {
 
         {/* Kanban Board */}
         <TabsContent value="board">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {(["todo", "in_progress", "review", "done"] as const).map(status => (
-              <div key={status} className="space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-sm capitalize">
-                  {statusIcons[status]}
-                  {status.replace("_", " ")} ({tasksByStatus[status].length})
-                </div>
-                <div className="space-y-2 min-h-[100px] rounded-lg border border-dashed p-2">
-                  {tasksByStatus[status].map(task => (
-                    <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-3 space-y-2">
-                        <p className="font-medium text-sm">{task.title}</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge className={priorityColors[task.priority]} variant="secondary">{task.priority}</Badge>
-                          {task.due_date && <span className="text-xs text-muted-foreground">{task.due_date}</span>}
-                          {task.assigned_to && hasAssignment && (
-                            <Badge variant="outline" className="text-xs"><Users className="h-3 w-3 mr-1" />Assigned</Badge>
-                          )}
-                        </div>
-                        {status !== "done" && (
-                          <Button size="sm" variant="ghost" className="h-6 text-xs"
-                            onClick={() => updateTaskStatus(task.id, status === "todo" ? "in_progress" : status === "in_progress" ? "review" : "done")}>
-                            Move →
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <KanbanBoard
+            tasks={tasks}
+            onStatusChange={updateTaskStatus}
+            hasAssignment={hasAssignment}
+          />
         </TabsContent>
 
         {/* List View */}
