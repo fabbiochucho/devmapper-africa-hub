@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
+import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyProjects } from '@/hooks/useMyProjects';
 import { useNavigate } from 'react-router-dom';
@@ -193,6 +194,9 @@ const NgoDashboard = () => {
           <Button variant="outline" onClick={() => navigate('/my-projects')}>Go to My Projects</Button>
         </CardContent>
       </Card>
+
+      {/* Compliance Assessment */}
+      <ComplianceAssessment actorType="ngo" />
 
       {/* AI Copilot */}
       <AICopilot projectData={{ context: 'ngo_impact', projectCount: ownProjects.length }} />

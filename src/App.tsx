@@ -59,6 +59,7 @@ const CertificationWorkflow = lazy(() => import("./pages/CertificationWorkflow")
 const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 
 // Optimized QueryClient with proper caching and GC settings
 const queryClient = new QueryClient({
@@ -113,6 +114,7 @@ const App = () => (
                       <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
                       <Route path="/certification-workflow" element={<CertificationWorkflow />} />
                       <Route path="/platform-overview" element={<PlatformOverview />} />
+                      <Route path="/project/:id" element={<ProjectDetail />} />
                       {/* Protected routes */}
                       <Route path="/analytics" element={<P><Analytics /></P>} />
                       <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />

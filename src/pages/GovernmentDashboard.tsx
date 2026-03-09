@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot } from "lucide-react";
 import AICopilot from '@/components/ai/AICopilot';
+import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { sdgGoalColors, sdgGoals } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -350,6 +351,9 @@ const GovernmentDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Compliance Assessment */}
+      <ComplianceAssessment actorType="government" />
 
       {/* AI Copilot */}
       <AICopilot projectData={{ context: 'government_oversight', projectCount: projects.length }} />

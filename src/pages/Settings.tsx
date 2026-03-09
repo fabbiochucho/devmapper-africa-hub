@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Shield, Bell, LogOut, Save, CreditCard } from "lucide-react";
+import { User, Shield, Bell, LogOut, Save, CreditCard, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,13 @@ const Settings = () => {
   const [phone, setPhone] = useState(profile?.phone || "");
   const [saving, setSaving] = useState(false);
 
+  // Entity enrichment fields
+  const [legalCapacity, setLegalCapacity] = useState((profile as any)?.legal_capacity || "");
+  const [sectorClassification, setSectorClassification] = useState((profile as any)?.sector_classification || "");
+  const [verificationTier, setVerificationTier] = useState((profile as any)?.verification_tier || "");
+  const [impactArea, setImpactArea] = useState((profile as any)?.impact_area || "");
+  const [savingEnrichment, setSavingEnrichment] = useState(false);
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
@@ -41,6 +48,22 @@ const Settings = () => {
       phone,
     });
     setSaving(false);
+  };
+
+  const handleSaveEnrichment = async () => {
+    setSavingEnrichment(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        legal_capacity: legalCapacity || null,
+        sector_classification: sectorClassification || null,
+        verification_tier: verificationTier || null,
+        impact_area: impactArea || null,
+      })
+      .eq("user_id", user!.id);
+    if (error) toast.error("Failed to save entity details");
+    else toast.success("Entity details saved");
+    setSavingEnrichment(false);
   };
 
   const handleChangePassword = async () => {
@@ -98,8 +121,9 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile"><User className="w-4 h-4 mr-1" /> Profile</TabsTrigger>
+          <TabsTrigger value="enrichment"><Briefcase className="w-4 h-4 mr-1" /> Entity</TabsTrigger>
           <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1" /> Security</TabsTrigger>
           <TabsTrigger value="roles"><Bell className="w-4 h-4 mr-1" /> Roles</TabsTrigger>
         </TabsList>
@@ -171,6 +195,91 @@ const Settings = () => {
               <Button variant="outline" className="w-full" onClick={() => navigate("/billing-upgrade")}>
                 <CreditCard className="w-4 h-4 mr-2" />
                 Manage Plan & Billing
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="enrichment" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Entity Classification</CardTitle>
+              <CardDescription>Regulatory & governance attributes for compliance assessments</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="legalCapacity">Legal Capacity</Label>
+                  <Select value={legalCapacity} onValueChange={setLegalCapacity}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="individual">Individual</SelectItem>
+                      <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
+                      <SelectItem value="partnership">Partnership</SelectItem>
+                      <SelectItem value="llc">LLC / Limited Liability</SelectItem>
+                      <SelectItem value="corporation">Corporation / PLC</SelectItem>
+                      <SelectItem value="ngo_registered">Registered NGO</SelectItem>
+                      <SelectItem value="government_body">Government Body</SelectItem>
+                      <SelectItem value="cooperative">Cooperative</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sectorClassification">Sector Classification</Label>
+                  <Select value={sectorClassification} onValueChange={setSectorClassification}>
+                    <SelectTrigger><SelectValue placeholder="Select sector" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="agriculture">Agriculture & Agribusiness</SelectItem>
+                      <SelectItem value="energy">Energy & Utilities</SelectItem>
+                      <SelectItem value="finance">Financial Services</SelectItem>
+                      <SelectItem value="healthcare">Healthcare & Pharma</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="technology">Technology & ICT</SelectItem>
+                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="mining">Mining & Extractives</SelectItem>
+                      <SelectItem value="construction">Construction & Real Estate</SelectItem>
+                      <SelectItem value="transport">Transport & Logistics</SelectItem>
+                      <SelectItem value="water_sanitation">Water & Sanitation</SelectItem>
+                      <SelectItem value="environment">Environment & Conservation</SelectItem>
+                      <SelectItem value="governance">Governance & Public Admin</SelectItem>
+                      <SelectItem value="social_services">Social Services</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="verificationTier">Verification Tier</Label>
+                  <Select value={verificationTier} onValueChange={setVerificationTier}>
+                    <SelectTrigger><SelectValue placeholder="Select tier" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unverified">Unverified</SelectItem>
+                      <SelectItem value="self_declared">Self-Declared</SelectItem>
+                      <SelectItem value="peer_verified">Peer Verified</SelectItem>
+                      <SelectItem value="institution_verified">Institution Verified</SelectItem>
+                      <SelectItem value="audit_verified">Audit Verified</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="impactArea">Impact Area</Label>
+                  <Select value={impactArea} onValueChange={setImpactArea}>
+                    <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="climate">Climate & Environment</SelectItem>
+                      <SelectItem value="health">Health & Wellbeing</SelectItem>
+                      <SelectItem value="education">Education & Skills</SelectItem>
+                      <SelectItem value="economic">Economic Development</SelectItem>
+                      <SelectItem value="governance">Governance & Institutions</SelectItem>
+                      <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                      <SelectItem value="gender">Gender Equality</SelectItem>
+                      <SelectItem value="food_security">Food Security</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button onClick={handleSaveEnrichment} disabled={savingEnrichment}>
+                <Save className="w-4 h-4 mr-2" />
+                {savingEnrichment ? "Saving..." : "Save Entity Details"}
               </Button>
             </CardContent>
           </Card>
