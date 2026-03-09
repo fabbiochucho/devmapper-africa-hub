@@ -107,6 +107,15 @@ const Fundraising = () => {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // Fetch user's reports for campaign linking
+  useEffect(() => {
+    if (user) {
+      supabase.from('reports').select('id, title').eq('user_id', user.id).order('submitted_at', { ascending: false }).then(({ data }) => {
+        if (data) setUserReports(data);
+      });
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchCampaigns();
 
