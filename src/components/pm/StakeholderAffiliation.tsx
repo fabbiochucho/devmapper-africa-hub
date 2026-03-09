@@ -105,7 +105,7 @@ export default function StakeholderAffiliation({ reportId, isOwner }: Stakeholde
       const { error } = await supabase.from("project_affiliations").insert({
         report_id: reportId,
         user_id: profile.user_id,
-        role,
+        relationship_type: role,
       });
 
       if (error) throw error;
