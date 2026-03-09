@@ -13,6 +13,8 @@ import RoleSelector from "./RoleSelector";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 import { checkPasswordBreached } from "@/lib/passwordSecurity";
 import type { UserRole } from "@/contexts/UserRoleContext";
+import { HCaptcha } from "./HCaptcha";
+import { UserPlus } from "lucide-react";
 
 interface SignUpFormProps {
   onAuthSuccess: () => void;
@@ -53,6 +55,11 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   }, []);
 
   const handleSignUp = async (values: SignUpFormValues) => {
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
+
     // Final breach check before submit
     if (isBreached) {
       form.setError("password", {
@@ -83,12 +90,14 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
         password: values.password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: { full_name: values.name, selected_role: selectedRole }
+          data: { full_name: values.name, selected_role: selectedRole },
+          captchaToken,
         }
       });
 
       if (error) {
         toast.error(error.message);
+        setCaptchaToken(null); // Reset captcha on error
         if (error.message.includes("already registered")) {
           form.setError("email", {
             type: "manual",
@@ -114,6 +123,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
       }
     } catch (error) {
       toast.error("An error occurred during sign up");
+      setCaptchaToken(null); // Reset captcha on error
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +189,19 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        <Button type="submit" className="w-full" disabled={isLoading || isBreached}>
+        <div className="flex justify-center">
+          <HCaptcha
+            onVerify={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => {
+              setCaptchaToken(null);
+              toast.error("CAPTCHA verification failed. Please try again.");
+            }}
+          />
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isLoading || isBreached || !captchaToken}>
+          <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
