@@ -229,6 +229,12 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
           </CardContent>
         </Card>
       )}
+
+      {/* DISM Impact Scorecard */}
+      <ImpactScorecard readOnly />
+
+      {/* Community Feedback */}
+      <CitizenFeedbackPanel reportId={reportId} />
     </div>
   );
 }
