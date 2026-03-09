@@ -206,10 +206,23 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
         <ScrollArea className="flex-1">
           <div className="space-y-3 pr-4">
             {messages.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 text-muted-foreground space-y-4">
                 <Bot className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p className="font-medium">How can I help?</p>
                 <p className="text-sm mt-1">Ask about compliance gaps, draft reports, or get project insights.</p>
+                <AICopilotQuickActions
+                  onAction={(prompt, ctx) => {
+                    setContext(ctx as CopilotContext);
+                    setInput(prompt);
+                    // Auto-send after a tick so context updates
+                    setTimeout(() => {
+                      const el = document.querySelector('[data-copilot-send]') as HTMLButtonElement;
+                      el?.click();
+                    }, 100);
+                  }}
+                  hasProjectData={!!projectData}
+                  disabled={loading}
+                />
               </div>
             )}
             {messages.map((msg, i) => (
