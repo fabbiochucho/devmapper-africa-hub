@@ -64,7 +64,7 @@ const GovernmentDashboard = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("government_projects")
-        .select("id, title, budget, spent_amount, currency, status, sdg_goals, admin_area_id, location, created_at")
+        .select("id, title, budget, spent_amount, currency, status, sdg_goals, admin_area_id, location, created_at, start_date, end_date, beneficiaries")
         .eq("government_id", authUser.id)
         .order("created_at", { ascending: false })
         .limit(500);
