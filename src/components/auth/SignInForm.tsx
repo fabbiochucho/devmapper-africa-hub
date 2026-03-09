@@ -10,6 +10,7 @@ import { signInSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { HCaptcha } from "./HCaptcha";
 
 interface SignInFormProps {
   onAuthSuccess: () => void;
