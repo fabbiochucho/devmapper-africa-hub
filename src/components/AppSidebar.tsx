@@ -200,7 +200,12 @@ export function AppSidebar() {
               {coreItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === "/"} className={getNavCls}>
+                    <NavLink 
+                      to={item.url} 
+                      end={item.url === "/"} 
+                      className={getNavCls}
+                      onMouseEnter={handlePrefetch(item.url)}
+                    >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span className="ml-2">{item.title}</span>}
                     </NavLink>
