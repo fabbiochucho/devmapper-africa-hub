@@ -76,5 +76,8 @@ verify_jwt = true
 [functions.reset-passwords]
 verify_jwt = false
 
+[functions.compliance-check]
+verify_jwt = false
+
 [edge_runtime]
 policy = "oneshot"

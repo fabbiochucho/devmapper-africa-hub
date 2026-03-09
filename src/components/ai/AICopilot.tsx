@@ -254,7 +254,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
             className="min-h-[40px] max-h-[100px] resize-none"
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           />
-          <Button onClick={send} disabled={loading || !input.trim()} size="icon" className="shrink-0">
+          <Button data-copilot-send onClick={send} disabled={loading || !input.trim()} size="icon" className="shrink-0">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
