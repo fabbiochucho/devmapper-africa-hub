@@ -300,15 +300,17 @@ function VerificationNotificationsPanel({ userId }: { userId: string }) {
   );
 }
 
-// Sub-component: allows NGOs to verify public projects
+// Sub-component: allows NGOs to verify public projects with proper review UI
 function PublicProjectVerifier({ userId }: { userId: string }) {
   const [publicProjects, setPublicProjects] = useState<any[]>([]);
   const [loadingVerify, setLoadingVerify] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
-  useEffect(() => {
+  const loadProjects = () => {
     supabase
       .from('reports')
-      .select('id, title, sdg_goal, location, project_status, user_id')
+      .select('id, title, description, sdg_goal, location, project_status, user_id, submitted_at')
       .eq('visibility', 'public')
       .neq('user_id', userId)
       .order('submitted_at', { ascending: false })
@@ -317,41 +319,40 @@ function PublicProjectVerifier({ userId }: { userId: string }) {
         setPublicProjects(data || []);
         setLoadingVerify(false);
       });
-  }, [userId]);
-
-  const submitVerification = async (reportId: string) => {
-    const { error } = await supabase.from('project_verifications').insert({
-      report_id: reportId,
-      verifier_id: userId,
-      verification_level: 'ngo',
-      status: 'approved',
-      comments: 'Verified by NGO reviewer',
-    } as any);
-    if (error) {
-      toast.error('Failed to submit verification');
-    } else {
-      toast.success('Verification submitted');
-      setPublicProjects(prev => prev.filter(p => p.id !== reportId));
-    }
   };
+
+  useEffect(() => {
+    loadProjects();
+  }, [userId]);
 
   if (loadingVerify) return <p className="text-sm text-muted-foreground">Loading public projects...</p>;
   if (publicProjects.length === 0) return <p className="text-sm text-muted-foreground">No public projects available for verification.</p>;
 
   return (
-    <div className="space-y-3">
-      {publicProjects.map(p => (
-        <div key={p.id} className="flex items-center justify-between border rounded-lg p-3">
-          <div>
-            <p className="text-sm font-medium">{p.title}</p>
-            <p className="text-xs text-muted-foreground">SDG {p.sdg_goal} • {p.location || 'No location'} • {p.project_status}</p>
+    <>
+      <div className="space-y-3">
+        {publicProjects.map(p => (
+          <div key={p.id} className="flex items-center justify-between border rounded-lg p-3">
+            <div>
+              <p className="text-sm font-medium">{p.title}</p>
+              <p className="text-xs text-muted-foreground">SDG {p.sdg_goal} • {p.location || 'No location'} • {p.project_status}</p>
+            </div>
+            <Button size="sm" onClick={() => { setSelectedProject(p); setReviewOpen(true); }}>
+              <ShieldCheck className="h-3 w-3 mr-1" />Review & Verify
+            </Button>
           </div>
-          <Button size="sm" onClick={() => submitVerification(p.id)}>
-            <ShieldCheck className="h-3 w-3 mr-1" />Verify
-          </Button>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <VerificationReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        project={selectedProject}
+        userId={userId}
+        onVerified={() => {
+          loadProjects();
+        }}
+      />
+    </>
   );
 }
 
