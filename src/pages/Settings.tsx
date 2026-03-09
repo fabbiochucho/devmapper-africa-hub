@@ -287,6 +287,10 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="notifications" className="space-y-4 mt-4">
+          <NotificationPreferences />
+        </TabsContent>
+
         <TabsContent value="security" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
