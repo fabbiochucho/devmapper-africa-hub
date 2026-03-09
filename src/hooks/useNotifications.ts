@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -33,9 +33,9 @@ export function useNotifications() {
     return result === 'granted';
   };
 
-  const sendLocalNotification = (title: string, body: string, url?: string) => {
+  const sendLocalNotification = useCallback((title: string, body: string, url?: string) => {
     if (permission !== 'granted') return;
-    if (document.visibilityState === 'visible') return; // Don't send if app is focused
+    if (document.visibilityState === 'visible') return;
     
     const notification = new Notification(title, {
       body,
@@ -47,70 +47,78 @@ export function useNotifications() {
         window.location.href = url;
       };
     }
-  };
+  }, [permission]);
 
-  // Listen to realtime changes for notifications
+  // Load persisted notifications from DB + listen for realtime
   useEffect(() => {
     if (!user) return;
 
-    // Listen for new reports on projects the user is affiliated with
+    // Fetch existing notifications from DB
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (data) {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          title: n.title,
+          body: n.message || '',
+          type: (n.type as AppNotification['type']) || 'info',
+          read: n.is_read,
+          created_at: n.created_at,
+          action_url: n.link || undefined,
+        })));
+      }
+    };
+
+    fetchNotifications();
+
+    // Listen for new notifications in realtime
     const channel = supabase
       .channel('user-notifications')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'project_milestones',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        const milestone = payload.new as any;
+        const n = payload.new as any;
         const notif: AppNotification = {
-          id: milestone.id,
-          title: 'New Milestone Added',
-          body: `A new milestone "${milestone.title}" was added to a project.`,
-          type: 'info',
+          id: n.id,
+          title: n.title,
+          body: n.message || '',
+          type: n.type || 'info',
           read: false,
-          created_at: milestone.created_at,
-          action_url: '/my-projects',
+          created_at: n.created_at,
+          action_url: n.link || undefined,
         };
         setNotifications(prev => [notif, ...prev]);
         sendLocalNotification(notif.title, notif.body, notif.action_url);
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'reports',
-        filter: `user_id=eq.${user.id}`,
-      }, (payload) => {
-        const report = payload.new as any;
-        if (report.is_verified && !(payload.old as any)?.is_verified) {
-          const notif: AppNotification = {
-            id: `verified-${report.id}`,
-            title: 'Report Verified!',
-            body: `Your report "${report.title}" has been verified.`,
-            type: 'success',
-            read: false,
-            created_at: new Date().toISOString(),
-            action_url: '/my-projects',
-          };
-          setNotifications(prev => [notif, ...prev]);
-          sendLocalNotification(notif.title, notif.body, notif.action_url);
-        }
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, permission]);
+  }, [user, sendLocalNotification]);
 
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback(async (id: string) => {
     setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
-  };
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+  }, []);
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
+    if (user) {
+      await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    }
+  }, [user]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

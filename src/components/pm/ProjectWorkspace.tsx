@@ -4,10 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2 } from "lucide-react";
 import AddMilestoneDialog from "./AddMilestoneDialog";
 import SubmitVerificationDialog from "./SubmitVerificationDialog";
 import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
+import ProjectLifecycleManager from "./ProjectLifecycleManager";
+import StakeholderAffiliation from "./StakeholderAffiliation";
+import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 
 interface ProjectWorkspaceProps {
@@ -29,10 +33,15 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
+  const { user } = useAuth();
   const [milestones, setMilestones] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [indicators, setIndicators] = useState<any[]>([]);
+  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "planning");
+
+  const isOwner = user?.id === report?.user_id;
 
   useEffect(() => {
     if (!reportId) return;
@@ -41,11 +50,13 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       supabase.from("project_verifications").select("*").eq("report_id", reportId).order("created_at"),
       supabase.from("project_budgets").select("*").eq("report_id", reportId),
       supabase.from("project_updates").select("*").eq("report_id", reportId).order("created_at", { ascending: false }).limit(5),
-    ]).then(([m, v, b, u]) => {
+      supabase.from("project_indicators").select("*").eq("report_id", reportId),
+    ]).then(([m, v, b, u, ind]) => {
       if (m.data) setMilestones(m.data);
       if (v.data) setVerifications(v.data);
       if (b.data) setBudgets(b.data);
       if (u.data) setUpdates(u.data);
+      if (ind.data) setIndicators(ind.data);
     });
   }, [reportId]);
 
@@ -101,30 +112,16 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
         </CardContent>
       </Card>
 
-      {/* Project Lifecycle */}
+      {/* Project Lifecycle Manager */}
       <Card>
         <CardHeader><CardTitle className="text-base">Project Lifecycle</CardTitle></CardHeader>
         <CardContent>
-          <div className="flex items-center gap-1 overflow-x-auto pb-2">
-            {LIFECYCLE_STEPS.map((step, i) => {
-              const stepIdx = STATUS_ORDER[step.key] ?? i;
-              const isActive = step.key === report.project_status;
-              const isDone = currentStep > stepIdx;
-              return (
-                <div key={step.key} className="flex items-center gap-1">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                    isActive ? "bg-primary text-primary-foreground" :
-                    isDone ? "bg-primary/20 text-primary" :
-                    "bg-muted text-muted-foreground"
-                  }`}>
-                    {isDone && <CheckCircle2 className="h-3 w-3" />}
-                    {step.label}
-                  </div>
-                  {i < LIFECYCLE_STEPS.length - 1 && <div className={`w-6 h-0.5 ${isDone ? "bg-primary" : "bg-muted"}`} />}
-                </div>
-              );
-            })}
-          </div>
+          <ProjectLifecycleManager
+            reportId={reportId}
+            currentStatus={currentStatus}
+            isOwner={isOwner}
+            onStatusChange={setCurrentStatus}
+          />
         </CardContent>
       </Card>
 
@@ -232,6 +229,12 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
 
       {/* DISM Impact Scorecard */}
       <ImpactScorecard readOnly />
+
+      {/* Stakeholder Affiliation */}
+      <StakeholderAffiliation reportId={reportId} isOwner={isOwner} />
+
+      {/* Donor Report Export */}
+      <DonorReportExport report={report} milestones={milestones} budgets={budgets} indicators={indicators} />
 
       {/* Community Feedback */}
       <CitizenFeedbackPanel reportId={reportId} />

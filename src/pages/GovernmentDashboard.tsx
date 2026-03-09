@@ -47,7 +47,8 @@ const GovernmentDashboard = () => {
 
   const [formData, setFormData] = useState({
     title: '', description: '', budget: '', currency: 'USD', location: '',
-    sdg_goals: [] as number[], status: 'planning', visibility: 'public'
+    sdg_goals: [] as number[], status: 'planning', visibility: 'public',
+    start_date: '', end_date: '', beneficiaries: '',
   });
 
   const loadProjects = async () => {
@@ -107,11 +108,14 @@ const GovernmentDashboard = () => {
         sdg_goals: formData.sdg_goals,
         status: formData.status,
         visibility: formData.visibility,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        beneficiaries: formData.beneficiaries ? parseInt(formData.beneficiaries) : null,
       }]);
       if (error) throw error;
       toast.success('Project created successfully!');
       setShowCreateDialog(false);
-      setFormData({ title: '', description: '', budget: '', currency: 'USD', location: '', sdg_goals: [], status: 'planning', visibility: 'public' });
+      setFormData({ title: '', description: '', budget: '', currency: 'USD', location: '', sdg_goals: [], status: 'planning', visibility: 'public', start_date: '', end_date: '', beneficiaries: '' });
       loadProjects();
     } catch (error) {
       console.error(error);
@@ -238,6 +242,20 @@ const GovernmentDashboard = () => {
               <div className="space-y-2">
                 <Label>Location</Label>
                 <Input value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder="e.g., Lagos, Nigeria" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input type="date" value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input type="date" value={formData.end_date} onChange={e => setFormData({ ...formData, end_date: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Beneficiaries</Label>
+                <Input type="number" value={formData.beneficiaries} onChange={e => setFormData({ ...formData, beneficiaries: e.target.value })} placeholder="Number of people impacted" />
               </div>
               <div className="space-y-2">
                 <Label>SDG Goals <span className="text-destructive">*</span></Label>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 interface DashboardStats {
   userReports: number;
@@ -33,6 +34,14 @@ const UnifiedDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState<Array<{ id: string; type: string; title: string; ts: string }>>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Auto-trigger onboarding wizard for new users with incomplete profiles
+  useEffect(() => {
+    if (profile && !profile.full_name && !profile.country) {
+      setShowOnboarding(true);
+    }
+  }, [profile]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -384,6 +393,7 @@ const UnifiedDashboard = () => {
       </Tabs>
       <ProductWalkthrough />
       <ProfileCompletionPrompt />
+      <OnboardingWizard open={showOnboarding} onComplete={() => setShowOnboarding(false)} />
     </div>
   );
 };
