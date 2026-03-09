@@ -1,15 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot, ExternalLink } from 'lucide-react';
+import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot, ExternalLink, ShieldCheck } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyProjects } from '@/hooks/useMyProjects';
 import { useNavigate } from 'react-router-dom';
 import { sdgGoals } from '@/lib/constants';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const statusConfig: Record<string, { variant: "default" | "secondary" | "outline" | "destructive"; label: string }> = {
   planned: { variant: 'secondary', label: 'Planned' },
@@ -184,6 +186,20 @@ const NgoDashboard = () => {
         </TabsContent>
       </Tabs>
 
+      {/* NGO Verification: verify public projects (PRD V7 - NGO can validate project data) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            Verify Public Projects
+          </CardTitle>
+          <CardDescription>As an NGO, you can verify community and public projects to increase their trust score.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PublicProjectVerifier userId={user?.id || ''} />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -206,5 +222,60 @@ const NgoDashboard = () => {
     </div>
   );
 };
+
+// Sub-component: allows NGOs to verify public projects
+function PublicProjectVerifier({ userId }: { userId: string }) {
+  const [publicProjects, setPublicProjects] = useState<any[]>([]);
+  const [loadingVerify, setLoadingVerify] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from('reports')
+      .select('id, title, sdg_goal, location, project_status, user_id')
+      .eq('visibility', 'public')
+      .neq('user_id', userId)
+      .order('submitted_at', { ascending: false })
+      .limit(10)
+      .then(({ data }) => {
+        setPublicProjects(data || []);
+        setLoadingVerify(false);
+      });
+  }, [userId]);
+
+  const submitVerification = async (reportId: string) => {
+    const { error } = await supabase.from('project_verifications').insert({
+      report_id: reportId,
+      verifier_id: userId,
+      verification_level: 'ngo',
+      status: 'approved',
+      comments: 'Verified by NGO reviewer',
+    } as any);
+    if (error) {
+      toast.error('Failed to submit verification');
+    } else {
+      toast.success('Verification submitted');
+      setPublicProjects(prev => prev.filter(p => p.id !== reportId));
+    }
+  };
+
+  if (loadingVerify) return <p className="text-sm text-muted-foreground">Loading public projects...</p>;
+  if (publicProjects.length === 0) return <p className="text-sm text-muted-foreground">No public projects available for verification.</p>;
+
+  return (
+    <div className="space-y-3">
+      {publicProjects.map(p => (
+        <div key={p.id} className="flex items-center justify-between border rounded-lg p-3">
+          <div>
+            <p className="text-sm font-medium">{p.title}</p>
+            <p className="text-xs text-muted-foreground">SDG {p.sdg_goal} • {p.location || 'No location'} • {p.project_status}</p>
+          </div>
+          <Button size="sm" onClick={() => submitVerification(p.id)}>
+            <ShieldCheck className="h-3 w-3 mr-1" />Verify
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default NgoDashboard;

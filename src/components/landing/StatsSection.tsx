@@ -11,9 +11,9 @@ export default function StatsSection() {
 
   const items = [
     { value: stats?.total_reports?.toLocaleString() ?? "—", label: "Projects Tracked", color: "text-primary" },
-    { value: stats?.countries_count?.toString() ?? "—", label: "African Countries", color: "text-green-600" },
-    { value: stats ? formatCurrency(stats.total_funds_raised) : "—", label: "Total Investment", color: "text-purple-600" },
-    { value: stats?.total_campaigns?.toString() ?? "—", label: "Active Campaigns", color: "text-orange-600" },
+    { value: stats?.total_change_makers?.toString() ?? "—", label: "Change Makers", color: "text-green-600" },
+    { value: stats?.countries_count?.toString() ?? "—", label: "African Countries", color: "text-purple-600" },
+    { value: stats ? formatCurrency(stats.total_funds_raised) : "—", label: "Total Investment", color: "text-orange-600" },
   ];
 
   return (

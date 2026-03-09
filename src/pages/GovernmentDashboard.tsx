@@ -50,6 +50,7 @@ const GovernmentDashboard = () => {
   const [editSpent, setEditSpent] = useState('');
   const [editStatus, setEditStatus] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [regionFilter, setRegionFilter] = useState('all');
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -132,18 +133,23 @@ const GovernmentDashboard = () => {
 
   const sdgGoalMap = new Map(sdgGoals.map(g => [Number(g.value), g.label.replace(/Goal \d+: /, "")]));
 
+  const filteredProjects = useMemo(() => {
+    if (regionFilter === 'all') return projects;
+    return projects.filter(p => p.admin_area_id === regionFilter);
+  }, [projects, regionFilter]);
+
   const overview = useMemo(() => {
-    const totalProjects = projects.length;
-    const totalBudget = projects.reduce((s, p) => s + (p.budget || 0), 0);
-    const pendingReview = projects.filter(p => p.status === "planning").length;
-    const completed = projects.filter(p => p.status === "completed").length;
+    const totalProjects = filteredProjects.length;
+    const totalBudget = filteredProjects.reduce((s, p) => s + (p.budget || 0), 0);
+    const pendingReview = filteredProjects.filter(p => p.status === "planning").length;
+    const completed = filteredProjects.filter(p => p.status === "completed").length;
     const completionRate = totalProjects > 0 ? Math.round((completed / totalProjects) * 100) : 0;
     return { totalProjects, totalBudget, pendingReview, completionRate };
-  }, [projects]);
+  }, [filteredProjects]);
 
   const sdgProgress: SdgProgressRow[] = useMemo(() => {
     const map = new Map<number, { projects: number; budget: number; completed: number }>();
-    for (const p of projects) {
+    for (const p of filteredProjects) {
       for (const g of (p.sdg_goals || [])) {
         const cur = map.get(g) || { projects: 0, budget: 0, completed: 0 };
         cur.projects += 1; cur.budget += p.budget || 0;
@@ -158,14 +164,14 @@ const GovernmentDashboard = () => {
 
   const regionalStats: RegionalRow[] = useMemo(() => {
     const map = new Map<string, { projects: number; budget: number }>();
-    for (const p of projects) {
+    for (const p of filteredProjects) {
       const region = (p.admin_area_id && areasById[p.admin_area_id]) || p.location || "Unspecified";
       const cur = map.get(region) || { projects: 0, budget: 0 };
       cur.projects += 1; cur.budget += p.budget || 0;
       map.set(region, cur);
     }
     return Array.from(map.entries()).map(([region, v]) => ({ region, ...v })).sort((a, b) => b.projects - a.projects).slice(0, 10);
-  }, [projects, areasById]);
+  }, [filteredProjects, areasById]);
 
   const recentActivity: ActivityRow[] = useMemo(() => {
     return projects.slice(0, 8).map(p => ({
@@ -209,7 +215,25 @@ const GovernmentDashboard = () => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
           <LayoutDashboard className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Government Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Government Dashboard</h1>
+            {/* Regional filter */}
+            {Object.keys(areasById).length > 0 && (
+              <div className="mt-2">
+                <Select value={regionFilter} onValueChange={setRegionFilter}>
+                  <SelectTrigger className="w-48 h-8 text-xs">
+                    <SelectValue placeholder="Filter by region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Regions</SelectItem>
+                    {Object.entries(areasById).map(([id, name]) => (
+                      <SelectItem key={id} value={id}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>

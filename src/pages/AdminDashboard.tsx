@@ -177,39 +177,55 @@ export default function AdminDashboard() {
     }
   };
 
-  const exportReport = async (type: string) => {
+  const convertToCSV = (data: any[]): string => {
+    if (data.length === 0) return '';
+    const headers = Object.keys(data[0]);
+    const rows = data.map(row => headers.map(h => {
+      const val = row[h];
+      const str = val === null || val === undefined ? '' : String(val);
+      return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+    }).join(','));
+    return [headers.join(','), ...rows].join('\n');
+  };
+
+  const exportReport = async (type: string, format: 'json' | 'csv' = 'json') => {
     try {
       let data: any[] = [];
-      let filename = '';
+      let baseName = '';
 
       switch (type) {
         case 'users': {
           const { data: users } = await supabase.from('profiles').select('user_id, full_name, email, organization, country, is_verified, created_at').order('created_at', { ascending: false }).limit(1000);
           data = users || [];
-          filename = 'user-activity-report.json';
+          baseName = 'user-activity-report';
           break;
         }
         case 'projects': {
           const { data: reports } = await supabase.from('reports').select('id, title, sdg_goal, country_code, project_status, cost, beneficiaries, submitted_at').order('submitted_at', { ascending: false }).limit(1000);
           data = reports || [];
-          filename = 'project-analytics.json';
+          baseName = 'project-analytics';
           break;
         }
         case 'verifications': {
           const { data: verifications } = await supabase.from('verification_logs').select('*').order('created_at', { ascending: false }).limit(1000);
           data = verifications || [];
-          filename = 'verification-report.json';
+          baseName = 'verification-report';
           break;
         }
         case 'moderation': {
           const { data: flags } = await supabase.from('report_flags').select('*').order('created_at', { ascending: false }).limit(1000);
           data = flags || [];
-          filename = 'moderation-log.json';
+          baseName = 'moderation-log';
           break;
         }
       }
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const isCSV = format === 'csv';
+      const content = isCSV ? convertToCSV(data) : JSON.stringify(data, null, 2);
+      const mimeType = isCSV ? 'text/csv' : 'application/json';
+      const filename = `${baseName}.${isCSV ? 'csv' : 'json'}`;
+
+      const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = filename; a.click();
@@ -218,6 +234,18 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
       toast.error('Failed to export report');
+    }
+  };
+
+  const handleCampaignVerification = async (campaignId: string, verified: boolean) => {
+    try {
+      const { error } = await supabase.from('fundraising_campaigns').update({ is_verified: verified }).eq('id', campaignId);
+      if (error) throw error;
+      toast.success(verified ? 'Campaign verified' : 'Campaign unverified');
+      loadDashboard();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update campaign');
     }
   };
 
@@ -288,7 +316,11 @@ export default function AdminDashboard() {
                   <div key={campaign.id} className="border rounded-lg p-4">
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                       <div className="space-y-2">
-                        <div><h3 className="font-semibold">{campaign.title}</h3><p className="text-sm text-muted-foreground">By: {campaign.public_profiles?.full_name || 'Anonymous'}</p></div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{campaign.title}</h3>
+                          {(campaign as any).is_verified && <Badge variant="default" className="text-xs">✔ Verified</Badge>}
+                        </div>
+                        <p className="text-sm text-muted-foreground">By: {campaign.public_profiles?.full_name || 'Anonymous'}</p>
                         <div className="flex items-center gap-2">
                           <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
                           <span className="text-sm text-muted-foreground">{campaign.currency} {campaign.raised_amount.toLocaleString()} / {campaign.target_amount.toLocaleString()}</span>
@@ -296,8 +328,10 @@ export default function AdminDashboard() {
                         <p className="text-xs text-muted-foreground">Created: {new Date(campaign.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button size="sm" variant="outline"><TrendingUp className="w-4 h-4" /></Button>
-                        <Button size="sm" variant="outline"><DollarSign className="w-4 h-4" /></Button>
+                        <Button size="sm" variant={(campaign as any).is_verified ? "outline" : "default"}
+                          onClick={() => handleCampaignVerification(campaign.id, !(campaign as any).is_verified)}>
+                          <CheckCircle className="mr-1 h-4 w-4" />{(campaign as any).is_verified ? 'Unverify' : 'Verify'}
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -354,10 +388,18 @@ export default function AdminDashboard() {
                   { key: 'verifications', title: 'Verification Report', desc: 'Community verification metrics' },
                   { key: 'moderation', title: 'Moderation Log', desc: 'Content moderation history' },
                 ].map(report => (
-                  <Button key={report.key} variant="outline" className="h-20 flex flex-col items-center justify-center text-center" onClick={() => exportReport(report.key)}>
-                    <div className="flex items-center gap-2"><Download className="h-4 w-4" /><span className="font-medium">{report.title}</span></div>
-                    <span className="text-sm text-muted-foreground">{report.desc}</span>
-                  </Button>
+                  <div key={report.key} className="border rounded-lg p-4 space-y-2">
+                    <div className="font-medium">{report.title}</div>
+                    <p className="text-sm text-muted-foreground">{report.desc}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'json')}>
+                        <Download className="h-3 w-3 mr-1" />JSON
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'csv')}>
+                        <Download className="h-3 w-3 mr-1" />CSV
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </CardContent>
