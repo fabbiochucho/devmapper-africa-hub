@@ -42,6 +42,7 @@ interface ForumStats {
 
 const Forum = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdminVerification();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [posts, setPosts] = useState<ForumPostData[]>([]);
