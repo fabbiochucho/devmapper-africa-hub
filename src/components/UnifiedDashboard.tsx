@@ -228,6 +228,33 @@ const UnifiedDashboard = () => {
 
         <TabsContent value="overview">
           <div className="grid gap-4">
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {activity.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No recent activity yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {activity.map((a) => (
+                      <div key={a.id} className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{a.title}</p>
+                          <p className="text-xs text-muted-foreground">{a.type === 'report' ? 'Report submitted' : 'Campaign created'}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground shrink-0">{new Date(a.ts).toLocaleDateString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Personal Stats */}
             <Card>
               <CardHeader>

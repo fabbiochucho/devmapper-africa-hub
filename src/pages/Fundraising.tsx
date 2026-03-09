@@ -107,10 +107,24 @@ const Fundraising = () => {
 
   useEffect(() => {
     fetchCampaigns();
-    
+
     const donationStatus = searchParams.get('donation');
     if (donationStatus === 'success') {
       toast.success('Thank you for your donation! Your contribution will make a real impact.');
+    }
+
+    // Deep-link: open create dialog + prefill SDGs
+    if (searchParams.get('create') === '1') {
+      const sdgs = (searchParams.get('sdgs') || '')
+        .split(',')
+        .map(s => Number(s.trim()))
+        .filter(n => Number.isFinite(n) && n >= 1 && n <= 17)
+        .slice(0, 5);
+
+      if (sdgs.length > 0) {
+        setFormData(prev => ({ ...prev, sdg_goals: sdgs }));
+      }
+      setShowCreateDialog(true);
     }
   }, [searchParams]);
 

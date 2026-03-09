@@ -157,6 +157,14 @@ const ChangeMakerMyAnalytics = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {profile && (
+              <Button size="sm" className="gap-2" asChild>
+                <a href={`/fundraising?create=1&sdgs=${encodeURIComponent((profile?.sdg_goals || []).join(','))}`}> 
+                  <Plus className="w-4 h-4" />
+                  New Campaign
+                </a>
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-2">
               <Copy className="w-4 h-4" />
               Copy Link

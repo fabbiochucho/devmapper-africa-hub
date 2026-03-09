@@ -222,8 +222,7 @@ export default function AdminDashboard() {
                           <p className="text-sm text-muted-foreground">{u.email}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge>{u.role}</Badge>
-                          <Badge variant="outline">{u.country}</Badge>
+                          {u.country && <Badge variant="outline">{u.country}</Badge>}
                         </div>
                         {u.organization && (
                           <p className="text-sm text-muted-foreground">
@@ -231,24 +230,13 @@ export default function AdminDashboard() {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          Applied: {new Date(u.createdAt).toLocaleDateString()}
+                          Created: {new Date(u.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleUserVerification(u.id, true)}
-                        >
-                          <CheckCircle />
-                          Verify
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleUserVerification(u.id, false)}
-                        >
-                          <XCircle />
-                          Reject
+                        <Button size="sm" onClick={handleUserVerification}>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Review
                         </Button>
                       </div>
                     </div>

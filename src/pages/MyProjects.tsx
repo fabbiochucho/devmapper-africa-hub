@@ -190,9 +190,16 @@ const MyProjects = () => {
           <h1 className="text-3xl font-bold">My Projects</h1>
           <p className="text-muted-foreground">Manage your projects, track milestones, and view impact</p>
         </div>
-        <Button onClick={() => navigate('/submit-report')}>
-          <Plus className="mr-2 h-4 w-4" /> New Report
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <ExportManager
+            organizationName={profile?.organization || profile?.full_name || 'My Projects'}
+            planType={(userPlan === 'free' ? 'free' : userPlan === 'lite' ? 'lite' : 'pro') as any}
+            availableData={[{ type: 'reports', label: 'Projects / Reports', data: projects }]}
+          />
+          <Button onClick={() => navigate('/submit-report')}>
+            <Plus className="mr-2 h-4 w-4" /> New Report
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
