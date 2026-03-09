@@ -122,7 +122,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
 
           <div className="flex items-center gap-1">
             {post.isPinned && (
-              <Pin className="w-4 h-4 text-orange-500" />
+              <Pin className="w-4 h-4 text-muted-foreground" />
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
