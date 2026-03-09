@@ -151,6 +151,30 @@ const MyProjects = () => {
                 {project.end_date && <div><span className="font-medium">End:</span> {format(new Date(project.end_date), 'PPP')}</div>}
               </div>
 
+              {isOwner && (
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-sm">
+                    <span className="font-medium">Status:</span>
+                  </div>
+                  <Select
+                    value={project.project_status}
+                    onValueChange={(val) => updateProjectStatus(project.id, val)}
+                    disabled={updatingProjectId === project.id}
+                  >
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planned">Planned</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="stalled">Stalled</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <ProjectMilestones reportId={project.id} canEdit={isOwner} />
             </div>
           )}
