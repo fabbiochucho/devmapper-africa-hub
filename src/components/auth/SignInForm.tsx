@@ -28,11 +28,19 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   });
 
   const handleSignIn = async (values: SignInFormValues) => {
+    if (!captchaToken) {
+      toast.error("Please complete the CAPTCHA verification");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
+        options: {
+          captchaToken,
+        },
       });
 
       if (error) {
@@ -41,12 +49,14 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
           type: "manual",
           message: "Invalid credentials",
         });
+        setCaptchaToken(null); // Reset captcha on error
       } else {
         toast.success("Signed in successfully!");
         onAuthSuccess();
       }
     } catch (error) {
       toast.error("An error occurred during sign in");
+      setCaptchaToken(null); // Reset captcha on error
     } finally {
       setIsLoading(false);
     }
