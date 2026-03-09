@@ -92,15 +92,34 @@ export default function ImpactScorecard({ reportId, initialDimensions, readOnly 
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4" /> DISM Impact Scorecard</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="h-4 w-4" /> DISM Impact Scorecard
+          </CardTitle>
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-bold" style={{ color: result.ratingColor }}>{result.totalScore}</div>
+            <div className="text-3xl font-bold" style={{ color: result.ratingColor }}>
+              {result.totalScore}
+            </div>
             <div className="text-right">
-              <Badge style={{ backgroundColor: result.ratingColor, color: '#fff' }}>{result.rating}</Badge>
+              <Badge style={{ backgroundColor: result.ratingColor, color: '#fff' }}>
+                {result.rating}
+              </Badge>
               <p className="text-xs text-muted-foreground mt-0.5">{result.impactCategory}</p>
             </div>
           </div>
         </div>
+        {!readOnly && reportId && (
+          <div className="flex justify-end">
+            <Button 
+              onClick={saveScore} 
+              disabled={!hasChanges || saving} 
+              size="sm"
+              variant="outline"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {saving ? 'Saving...' : 'Save Score'}
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {(Object.entries(DISM_DIMENSION_DETAILS) as [keyof DISMDimensions, typeof DISM_DIMENSION_DETAILS[keyof DISMDimensions]][]).map(([key, dim]) => (
