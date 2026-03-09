@@ -103,6 +103,7 @@ const getDashboardItems = (hasRole: (role: UserRole) => boolean, currentRole: Us
   
   if (hasRole('admin') || hasRole('platform_admin')) {
     items.push({ title: "Admin Dashboard", url: "/admin-dashboard", icon: Shield });
+    items.push({ title: "Admin CRM", url: "/admin-crm", icon: Settings });
     items.push({ title: "User Management", url: "/user-management", icon: Users });
     items.push({ title: "ESG Module", url: "/esg", icon: Leaf });
   }
