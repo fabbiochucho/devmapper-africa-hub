@@ -193,6 +193,9 @@ const NgoDashboard = () => {
           <Button variant="outline" onClick={() => navigate('/my-projects')}>Go to My Projects</Button>
         </CardContent>
       </Card>
+
+      {/* AI Copilot */}
+      <AICopilot projectData={{ context: 'ngo_impact', projectCount: ownProjects.length }} />
     </div>
   );
 };

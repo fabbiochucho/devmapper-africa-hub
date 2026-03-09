@@ -456,6 +456,11 @@ const CorporateDashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* AI Copilot */}
+      <div className="mt-6">
+        <AICopilot projectData={{ context: 'corporate_esg', targetCount: targets.length }} />
+      </div>
     </div>
   );
 };

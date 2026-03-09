@@ -350,6 +350,9 @@ const GovernmentDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Copilot */}
+      <AICopilot projectData={{ context: 'government_oversight', projectCount: projects.length }} />
     </div>
   );
 };
