@@ -306,6 +306,8 @@ export default function ProjectManagement() {
             <Calendar className="mr-1 h-4 w-4" />Gantt {!hasGantt && <Lock className="ml-1 h-3 w-3" />}
           </TabsTrigger>
           <TabsTrigger value="budget"><DollarSign className="mr-1 h-4 w-4" />Budget</TabsTrigger>
+          <TabsTrigger value="procurement"><Building2 className="mr-1 h-4 w-4" />Procurement</TabsTrigger>
+          <TabsTrigger value="scoring"><Award className="mr-1 h-4 w-4" />DISM Score</TabsTrigger>
           <TabsTrigger value="indicators"><Activity className="mr-1 h-4 w-4" />Impact</TabsTrigger>
           <TabsTrigger value="updates"><FileText className="mr-1 h-4 w-4" />Updates</TabsTrigger>
           <TabsTrigger value="verification"><Shield className="mr-1 h-4 w-4" />Verification</TabsTrigger>
