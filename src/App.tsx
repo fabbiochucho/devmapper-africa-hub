@@ -59,6 +59,7 @@ const CertificationWorkflow = lazy(() => import("./pages/CertificationWorkflow")
 const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 
 // Optimized QueryClient with proper caching and GC settings
 const queryClient = new QueryClient({
