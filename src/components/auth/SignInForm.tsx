@@ -28,7 +28,9 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   });
 
   const handleSignIn = async (values: SignInFormValues) => {
-    if (!captchaToken) {
+    // Only require captcha if the site key is configured
+    const captchaEnabled = !!import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+    if (captchaEnabled && !captchaToken) {
       toast.error("Please complete the CAPTCHA verification");
       return;
     }
@@ -38,9 +40,7 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
       const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
-        options: {
-          captchaToken,
-        },
+        options: captchaToken ? { captchaToken } : undefined,
       });
 
       if (error) {
