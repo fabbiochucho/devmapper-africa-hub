@@ -33,10 +33,15 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
+  const { user } = useAuth();
   const [milestones, setMilestones] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [indicators, setIndicators] = useState<any[]>([]);
+  const [currentStatus, setCurrentStatus] = useState(report?.project_status || "planning");
+
+  const isOwner = user?.id === report?.user_id;
 
   useEffect(() => {
     if (!reportId) return;
