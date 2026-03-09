@@ -31,6 +31,9 @@ type GovProject = {
   admin_area_id: string | null;
   location: string | null;
   created_at: string;
+  start_date: string | null;
+  end_date: string | null;
+  beneficiaries: number | null;
 };
 
 type SdgProgressRow = { goal: number; projects: number; budget: number; progress: number };
