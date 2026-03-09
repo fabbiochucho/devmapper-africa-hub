@@ -209,7 +209,25 @@ const GovernmentDashboard = () => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
           <LayoutDashboard className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Government Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Government Dashboard</h1>
+            {/* Regional filter */}
+            {Object.keys(areasById).length > 0 && (
+              <div className="mt-2">
+                <Select value={regionFilter} onValueChange={setRegionFilter}>
+                  <SelectTrigger className="w-48 h-8 text-xs">
+                    <SelectValue placeholder="Filter by region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Regions</SelectItem>
+                    {Object.entries(areasById).map(([id, name]) => (
+                      <SelectItem key={id} value={id}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
