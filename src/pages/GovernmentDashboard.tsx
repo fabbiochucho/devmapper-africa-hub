@@ -47,7 +47,8 @@ const GovernmentDashboard = () => {
 
   const [formData, setFormData] = useState({
     title: '', description: '', budget: '', currency: 'USD', location: '',
-    sdg_goals: [] as number[], status: 'planning', visibility: 'public'
+    sdg_goals: [] as number[], status: 'planning', visibility: 'public',
+    start_date: '', end_date: '', beneficiaries: '',
   });
 
   const loadProjects = async () => {
