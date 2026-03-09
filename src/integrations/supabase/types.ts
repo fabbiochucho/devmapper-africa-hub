@@ -1966,6 +1966,65 @@ export type Database = {
           },
         ]
       }
+      project_dism_scores: {
+        Row: {
+          created_at: string
+          evidence_verification: number
+          governance_ethics: number
+          id: string
+          impact_depth: number
+          impact_scale: number
+          innovation_replicability: number
+          outcome_effectiveness: number
+          report_id: string
+          scored_by: string | null
+          sdg_alignment: number
+          sustainability: number
+          total_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_verification?: number
+          governance_ethics?: number
+          id?: string
+          impact_depth?: number
+          impact_scale?: number
+          innovation_replicability?: number
+          outcome_effectiveness?: number
+          report_id: string
+          scored_by?: string | null
+          sdg_alignment?: number
+          sustainability?: number
+          total_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_verification?: number
+          governance_ethics?: number
+          id?: string
+          impact_depth?: number
+          impact_scale?: number
+          innovation_replicability?: number
+          outcome_effectiveness?: number
+          report_id?: string
+          scored_by?: string | null
+          sdg_alignment?: number
+          sustainability?: number
+          total_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_dism_scores_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_indicators: {
         Row: {
           agenda2063_aspiration: string | null
@@ -2065,6 +2124,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_milestones_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_procurement: {
+        Row: {
+          contract_type: string
+          contract_value: number
+          contractor_name: string
+          created_at: string
+          created_by: string
+          currency: string
+          end_date: string | null
+          evidence_url: string | null
+          id: string
+          procurement_method: string
+          report_id: string
+          scope: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contract_type?: string
+          contract_value?: number
+          contractor_name: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          end_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          procurement_method?: string
+          report_id: string
+          scope?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_type?: string
+          contract_value?: number
+          contractor_name?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          end_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          procurement_method?: string
+          report_id?: string
+          scope?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_procurement_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "reports"
