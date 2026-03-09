@@ -76,6 +76,34 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
     });
   }, [reportId]);
 
+  const addTask = async () => {
+    if (!newTaskTitle.trim() || !user) return;
+    const { error } = await supabase.from("project_tasks").insert({
+      report_id: reportId,
+      title: newTaskTitle.trim(),
+      priority: newTaskPriority,
+      created_by: user.id,
+    } as any);
+    if (error) { toast.error("Failed to add task"); return; }
+    toast.success("Task added");
+    setNewTaskTitle("");
+    setAddTaskOpen(false);
+    const { data } = await supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at");
+    if (data) setTasks(data);
+  };
+
+  const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
+    await supabase.from("project_tasks").update({ status: newStatus } as any).eq("id", taskId);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+  };
+
+  const toggleVisibility = async () => {
+    const newVis = visibility === "public" ? "private" : "public";
+    await supabase.from("reports").update({ visibility: newVis } as any).eq("id", reportId);
+    setVisibility(newVis);
+    toast.success(`Project is now ${newVis}`);
+  };
+
   if (!report) return null;
 
   const currentStep = STATUS_ORDER[report.project_status] ?? 0;
