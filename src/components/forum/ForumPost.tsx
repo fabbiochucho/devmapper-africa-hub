@@ -4,18 +4,29 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  MoreVertical, 
-  Pin, 
-  Flag, 
-  ChevronUp, 
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  MoreVertical,
+  Pin,
+  Flag,
+  ChevronUp,
   ChevronDown,
   Eye,
-  Clock
+  Clock,
+  Trash2,
+  X,
+  Send
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ForumPostProps {
   post: {
@@ -38,37 +49,50 @@ interface ForumPostProps {
     isLiked?: boolean;
   };
   onLike?: (postId: string) => void;
-  onReply?: (postId: string) => void;
+  onReply?: (postId: string, content: string) => void;
   onShare?: (postId: string) => void;
+  onDelete?: (postId: string) => void;
+  onPin?: (postId: string) => void;
+  isAdmin?: boolean;
 }
 
-const ForumPost: React.FC<ForumPostProps> = ({ post, onLike, onReply, onShare }) => {
+const categoryConfig: Record<string, string> = {
+  Discussion: 'bg-primary/10 text-primary',
+  Question: 'bg-accent text-accent-foreground',
+  Announcement: 'bg-secondary text-secondary-foreground',
+  Support: 'bg-muted text-muted-foreground',
+  'Project Update': 'bg-primary/5 text-primary',
+  'Resource Sharing': 'bg-secondary/50 text-secondary-foreground',
+};
+
+const ForumPost: React.FC<ForumPostProps> = ({
+  post,
+  onLike,
+  onReply,
+  onShare,
+  onDelete,
+  onPin,
+  isAdmin = false
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showReply, setShowReply] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
 
-  const handleLike = () => {
-    onLike?.(post.id);
-  };
+  const categoryStyle = categoryConfig[post.category] || { bg: 'bg-muted', text: 'text-muted-foreground' };
 
-  const handleReply = () => {
-    onReply?.(post.id);
-  };
+  const categoryClass = categoryConfig[post.category] ?? 'bg-muted text-muted-foreground';
 
-  const handleShare = () => {
-    onShare?.(post.id);
-  };
+  const handleLike = () => onLike?.(post.id);
+  const handleShare = () => onShare?.(post.id);
+  const handleDelete = () => onDelete?.(post.id);
+  const handlePin = () => onPin?.(post.id);
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Discussion':
-        return 'bg-blue-100 text-blue-800';
-      case 'Question':
-        return 'bg-green-100 text-green-800';
-      case 'Announcement':
-        return 'bg-purple-100 text-purple-800';
-      case 'Support':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleSubmitReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (replyContent.trim()) {
+      onReply?.(post.id, replyContent.trim());
+      setReplyContent('');
+      setShowReply(false);
     }
   };
 
@@ -85,7 +109,7 @@ const ForumPost: React.FC<ForumPostProps> = ({ post, onLike, onReply, onShare })
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{post.author.name}</span>
                 {post.author.verified && (
-                  <Badge className="bg-green-100 text-green-800 text-xs px-1 py-0">✓</Badge>
+                  <Badge className="bg-primary/10 text-primary text-xs px-1 py-0 border-0">✓ Verified</Badge>
                 )}
                 <Badge variant="outline" className="text-xs">{post.author.role}</Badge>
               </div>
@@ -95,33 +119,64 @@ const ForumPost: React.FC<ForumPostProps> = ({ post, onLike, onReply, onShare })
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1">
             {post.isPinned && (
-              <Pin className="w-4 h-4 text-orange-500" />
+              <Pin className="w-4 h-4 text-muted-foreground" />
             )}
-            <Button variant="ghost" size="sm">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Copy Link
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report Post
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handlePin}>
+                      <Pin className="w-4 h-4 mr-2" />
+                      {post.isPinned ? 'Unpin Post' : 'Pin Post'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Post
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-0">
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Badge className={getCategoryColor(post.category)}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryClass}`}>
               {post.category}
-            </Badge>
+            </span>
             {post.tags.map((tag, index) => (
               <Badge key={index} variant="outline" className="text-xs">
                 #{tag}
               </Badge>
             ))}
           </div>
-          
+
           <div>
             <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
-            <div className={`text-muted-foreground ${!isExpanded ? 'line-clamp-3' : ''}`}>
+            <div className={`text-muted-foreground text-sm leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
               {post.content}
             </div>
             {post.content.length > 200 && (
@@ -129,60 +184,77 @@ const ForumPost: React.FC<ForumPostProps> = ({ post, onLike, onReply, onShare })
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-0 h-auto text-primary"
+                className="p-0 h-auto text-primary mt-1"
               >
                 {isExpanded ? (
-                  <>
-                    <ChevronUp className="w-4 h-4 mr-1" />
-                    Show less
-                  </>
+                  <><ChevronUp className="w-4 h-4 mr-1" />Show less</>
                 ) : (
-                  <>
-                    <ChevronDown className="w-4 h-4 mr-1" />
-                    Show more
-                  </>
+                  <><ChevronDown className="w-4 h-4 mr-1" />Show more</>
                 )}
               </Button>
             )}
           </div>
-          
+
           <div className="flex items-center justify-between pt-3 border-t">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLike}
-                className={`flex items-center gap-2 ${post.isLiked ? 'text-red-500' : ''}`}
+                className={`flex items-center gap-1.5 ${post.isLiked ? 'text-red-500' : ''}`}
               >
                 <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                {post.likes}
+                <span className="text-sm">{post.likes}</span>
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleReply}
-                className="flex items-center gap-2"
+                onClick={() => setShowReply(!showReply)}
+                className="flex items-center gap-1.5"
               >
                 <MessageCircle className="w-4 h-4" />
-                {post.replies}
+                <span className="text-sm">{post.replies}</span>
               </Button>
-              
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+
+              <div className="flex items-center gap-1 text-sm text-muted-foreground px-2">
                 <Eye className="w-4 h-4" />
-                {post.views}
+                <span>{post.views}</span>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleShare}>
-                <Share2 className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Flag className="w-4 h-4" />
-              </Button>
-            </div>
+
+            <Button variant="ghost" size="sm" onClick={handleShare}>
+              <Share2 className="w-4 h-4" />
+            </Button>
           </div>
+
+          {/* Inline reply form */}
+          {showReply && (
+            <div className="border-t pt-3">
+              <form onSubmit={handleSubmitReply} className="space-y-2">
+                <Textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Write a reply..."
+                  rows={3}
+                  className="resize-none"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setShowReply(false); setReplyContent(''); }}
+                  >
+                    <X className="w-4 h-4 mr-1" />Cancel
+                  </Button>
+                  <Button type="submit" size="sm" disabled={!replyContent.trim()}>
+                    <Send className="w-4 h-4 mr-1" />Reply
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
