@@ -145,24 +145,20 @@ const NotificationCenter = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const handleMarkAllRead = useCallback(async () => {
-    // Mark broadcasts as read in DB
     const broadcastIds = notifications
       .filter(n => n.type === "broadcast" && !n.isRead)
       .map(n => n.id);
 
     if (broadcastIds.length > 0 && session?.user?.id) {
-      // Update is_read_by array for each broadcast
-      for (const id of broadcastIds) {
-        const broadcast = notifications.find(n => n.id === id);
-        if (broadcast) {
-          await supabase
+      // Batch update all unread broadcasts in parallel
+      await Promise.all(
+        broadcastIds.map(id =>
+          supabase
             .from("admin_broadcasts")
-            .update({ 
-              is_read_by: supabase.rpc ? [session.user.id] : [session.user.id]
-            })
-            .eq("id", id);
-        }
-      }
+            .update({ is_read_by: [session.user.id] })
+            .eq("id", id)
+        )
+      );
     }
 
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
