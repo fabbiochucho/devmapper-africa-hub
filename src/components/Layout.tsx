@@ -256,6 +256,9 @@ const Layout = () => {
         )}
 
         <PWAInstallPrompt />
+        
+        {/* Session Timeout Warning */}
+        <SessionTimeoutWarning />
       </div>
     </SidebarProvider>
   );
