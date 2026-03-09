@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin, Bot, ExternalLink, ShieldCheck, Bell } from 'lucide-react';
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
+import VerificationReviewDialog from '@/components/ngo/VerificationReviewDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyProjects } from '@/hooks/useMyProjects';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +30,11 @@ const NgoDashboard = () => {
   const ownProjects = useMemo(() => {
     if (!user) return [];
     return projects.filter(p => p.user_id === user.id);
+  }, [projects, user]);
+
+  const affiliatedProjects = useMemo(() => {
+    if (!user) return [];
+    return projects.filter(p => p.user_id !== user.id && p.relationship_type);
   }, [projects, user]);
 
   const totals = useMemo(() => {
@@ -153,6 +159,7 @@ const NgoDashboard = () => {
           <TabsTrigger value="all">All ({ownProjects.length})</TabsTrigger>
           <TabsTrigger value="active">Active ({filterByStatus('in_progress').length})</TabsTrigger>
           <TabsTrigger value="completed">Completed ({filterByStatus('completed').length})</TabsTrigger>
+          <TabsTrigger value="affiliated">Affiliated ({affiliatedProjects.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4 mt-4">
@@ -182,6 +189,21 @@ const NgoDashboard = () => {
             <p className="text-center text-sm text-muted-foreground py-8">No completed projects.</p>
           ) : (
             <div className="space-y-3">{filterByStatus('completed').map(renderProjectCard)}</div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="affiliated" className="space-y-4 mt-4">
+          {affiliatedProjects.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">No affiliated projects. Projects where you're a partner, sponsor, or funder will appear here.</p>
+          ) : (
+            <div className="space-y-3">
+              {affiliatedProjects.map(p => (
+                <div key={p.id}>
+                  <Badge variant="outline" className="mb-1 text-xs">{p.relationship_type}</Badge>
+                  {renderProjectCard(p)}
+                </div>
+              ))}
+            </div>
           )}
         </TabsContent>
       </Tabs>
@@ -300,15 +322,17 @@ function VerificationNotificationsPanel({ userId }: { userId: string }) {
   );
 }
 
-// Sub-component: allows NGOs to verify public projects
+// Sub-component: allows NGOs to verify public projects with proper review UI
 function PublicProjectVerifier({ userId }: { userId: string }) {
   const [publicProjects, setPublicProjects] = useState<any[]>([]);
   const [loadingVerify, setLoadingVerify] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
-  useEffect(() => {
+  const loadProjects = () => {
     supabase
       .from('reports')
-      .select('id, title, sdg_goal, location, project_status, user_id')
+      .select('id, title, description, sdg_goal, location, project_status, user_id, submitted_at')
       .eq('visibility', 'public')
       .neq('user_id', userId)
       .order('submitted_at', { ascending: false })
@@ -317,41 +341,40 @@ function PublicProjectVerifier({ userId }: { userId: string }) {
         setPublicProjects(data || []);
         setLoadingVerify(false);
       });
-  }, [userId]);
-
-  const submitVerification = async (reportId: string) => {
-    const { error } = await supabase.from('project_verifications').insert({
-      report_id: reportId,
-      verifier_id: userId,
-      verification_level: 'ngo',
-      status: 'approved',
-      comments: 'Verified by NGO reviewer',
-    } as any);
-    if (error) {
-      toast.error('Failed to submit verification');
-    } else {
-      toast.success('Verification submitted');
-      setPublicProjects(prev => prev.filter(p => p.id !== reportId));
-    }
   };
+
+  useEffect(() => {
+    loadProjects();
+  }, [userId]);
 
   if (loadingVerify) return <p className="text-sm text-muted-foreground">Loading public projects...</p>;
   if (publicProjects.length === 0) return <p className="text-sm text-muted-foreground">No public projects available for verification.</p>;
 
   return (
-    <div className="space-y-3">
-      {publicProjects.map(p => (
-        <div key={p.id} className="flex items-center justify-between border rounded-lg p-3">
-          <div>
-            <p className="text-sm font-medium">{p.title}</p>
-            <p className="text-xs text-muted-foreground">SDG {p.sdg_goal} • {p.location || 'No location'} • {p.project_status}</p>
+    <>
+      <div className="space-y-3">
+        {publicProjects.map(p => (
+          <div key={p.id} className="flex items-center justify-between border rounded-lg p-3">
+            <div>
+              <p className="text-sm font-medium">{p.title}</p>
+              <p className="text-xs text-muted-foreground">SDG {p.sdg_goal} • {p.location || 'No location'} • {p.project_status}</p>
+            </div>
+            <Button size="sm" onClick={() => { setSelectedProject(p); setReviewOpen(true); }}>
+              <ShieldCheck className="h-3 w-3 mr-1" />Review & Verify
+            </Button>
           </div>
-          <Button size="sm" onClick={() => submitVerification(p.id)}>
-            <ShieldCheck className="h-3 w-3 mr-1" />Verify
-          </Button>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <VerificationReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        project={selectedProject}
+        userId={userId}
+        onVerified={() => {
+          loadProjects();
+        }}
+      />
+    </>
   );
 }
 

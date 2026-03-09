@@ -420,7 +420,7 @@ const CorporateDashboard = () => {
 
       <EntityLocationsManager entityType="company" />
 
-      {/* ESG-Target Alignment Card */}
+      {/* ESG-Target Alignment Card with Auto-Sync */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -430,11 +430,37 @@ const CorporateDashboard = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-3">
-            Link your ESG indicators with corporate targets to auto-track progress. Navigate to the ESG module to update indicators.
+            Sync your ESG indicators with corporate targets for automatic progress tracking. The sync maps carbon emissions, energy usage, and sustainability metrics.
           </p>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => navigate('/esg')}>Open ESG Module</Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/my-projects')}>Project Management</Button>
+            <Button size="sm" onClick={async () => {
+              try {
+                // Get user's org
+                const { data: membership } = await supabase
+                  .from('organization_members')
+                  .select('organization_id')
+                  .eq('user_id', user?.id)
+                  .single();
+                
+                if (!membership) {
+                  toast.error('No organization found. Please set up your organization first.');
+                  return;
+                }
+                
+                const { data, error } = await supabase.rpc('sync_esg_to_targets', { p_org_id: membership.organization_id });
+                if (error) throw error;
+                
+                const result = data as any;
+                toast.success(`ESG sync complete — ${result?.synced_count || 0} indicators mapped to targets`);
+                fetchTargets();
+              } catch (e: any) {
+                toast.error('Sync failed: ' + e.message);
+              }
+            }}>
+              Sync ESG → Targets
+            </Button>
           </div>
         </CardContent>
       </Card>

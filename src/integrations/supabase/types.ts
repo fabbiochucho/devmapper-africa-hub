@@ -2565,10 +2565,15 @@ export type Database = {
           country_code: string | null
           description: string
           end_date: string | null
+          escalation_status: string | null
+          evidence_type: string | null
           evidence_url: string | null
           funder: string | null
           id: string
+          is_anonymous: boolean | null
           is_verified: boolean | null
+          issue_severity: string | null
+          issue_type: string | null
           lat: number | null
           lng: number | null
           location: string | null
@@ -2592,10 +2597,15 @@ export type Database = {
           country_code?: string | null
           description: string
           end_date?: string | null
+          escalation_status?: string | null
+          evidence_type?: string | null
           evidence_url?: string | null
           funder?: string | null
           id?: string
+          is_anonymous?: boolean | null
           is_verified?: boolean | null
+          issue_severity?: string | null
+          issue_type?: string | null
           lat?: number | null
           lng?: number | null
           location?: string | null
@@ -2619,10 +2629,15 @@ export type Database = {
           country_code?: string | null
           description?: string
           end_date?: string | null
+          escalation_status?: string | null
+          evidence_type?: string | null
           evidence_url?: string | null
           funder?: string | null
           id?: string
+          is_anonymous?: boolean | null
           is_verified?: boolean | null
+          issue_severity?: string | null
+          issue_type?: string | null
           lat?: number | null
           lng?: number | null
           location?: string | null
@@ -3266,6 +3281,17 @@ export type Database = {
         }[]
       }
       get_effective_plan: { Args: { p_org_id: string }; Returns: string }
+      get_government_budget_analytics: {
+        Args: { p_user_id: string }
+        Returns: {
+          avg_completion: number
+          project_count: number
+          sdg_goal: number
+          sdg_label: string
+          total_budget: number
+          total_spent: number
+        }[]
+      }
       get_test_accounts: {
         Args: never
         Returns: {
@@ -3314,6 +3340,7 @@ export type Database = {
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       reset_monthly_quotas: { Args: never; Returns: undefined }
+      sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
       app_role:

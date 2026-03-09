@@ -13,6 +13,7 @@ import BroadcastManager from "@/components/admin/BroadcastManager";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
+import PlatformHealthDashboard from "@/components/admin/PlatformHealthDashboard";
 
 interface PendingUser {
   id: string;
@@ -270,8 +271,9 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="users" className="w-full">
+      <Tabs defaultValue="platform-health" className="w-full">
         <TabsList className="flex-wrap">
+          <TabsTrigger value="platform-health">Platform Health</TabsTrigger>
           <TabsTrigger value="users">User Verification</TabsTrigger>
           <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
           <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
@@ -282,6 +284,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="platform-health">
+          <PlatformHealthDashboard />
+        </TabsContent>
 
         <TabsContent value="users">
           <Card>

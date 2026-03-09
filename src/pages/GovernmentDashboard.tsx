@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot } from "lucide-react";
 import GovernmentSdgHeatmap from '@/components/government/GovernmentSdgHeatmap';
 import AICopilot from '@/components/ai/AICopilot';
+import BudgetAnalyticsDashboard from '@/components/government/BudgetAnalyticsDashboard';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import { sdgGoalColors, sdgGoals } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
@@ -488,6 +489,9 @@ const GovernmentDashboard = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Budget Analytics Dashboard */}
+      <BudgetAnalyticsDashboard />
 
       <ComplianceAssessment actorType="government" />
 

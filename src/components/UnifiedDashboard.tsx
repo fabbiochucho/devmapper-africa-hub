@@ -15,6 +15,7 @@ import {
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import MyReportsTracker from "@/components/citizen/MyReportsTracker";
 
 interface DashboardStats {
   userReports: number;
@@ -286,13 +287,16 @@ const UnifiedDashboard = () => {
 
             {/* Role-specific features - same as before */}
             {hasRole('citizen_reporter') && (
-              <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Citizen Reporter</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full" asChild><a href="/submit-report">Submit New Report</a></Button>
-                  <Button variant="outline" className="w-full" asChild><a href="/analytics?tab=reports">View Your Reports</a></Button>
-                </CardContent>
-              </Card>
+              <>
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />Citizen Reporter</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button className="w-full" asChild><a href="/submit-report">Submit New Report</a></Button>
+                    <Button variant="outline" className="w-full" asChild><a href="/analytics?tab=reports">View Your Reports</a></Button>
+                  </CardContent>
+                </Card>
+                <MyReportsTracker />
+              </>
             )}
 
             {hasRole('government_official') && (

@@ -14,6 +14,7 @@ import { User, Shield, Bell, LogOut, Save, CreditCard, Briefcase } from "lucide-
 import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
+import NotificationPreferences from "@/components/settings/NotificationPreferences";
 
 const Settings = () => {
   const { user, profile, signOut, updateProfile, updatePassword } = useAuth();
@@ -121,9 +122,10 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile"><User className="w-4 h-4 mr-1" /> Profile</TabsTrigger>
           <TabsTrigger value="enrichment"><Briefcase className="w-4 h-4 mr-1" /> Entity</TabsTrigger>
+          <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1" /> Notifications</TabsTrigger>
           <TabsTrigger value="security"><Shield className="w-4 h-4 mr-1" /> Security</TabsTrigger>
           <TabsTrigger value="roles"><Bell className="w-4 h-4 mr-1" /> Roles</TabsTrigger>
         </TabsList>
@@ -283,6 +285,10 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4 mt-4">
+          <NotificationPreferences />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4 mt-4">
