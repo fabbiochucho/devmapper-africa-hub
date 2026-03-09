@@ -19,17 +19,19 @@ interface ProjectWorkspaceProps {
   report: any;
 }
 
+// PRD V7: 7-stage lifecycle
 const LIFECYCLE_STEPS = [
+  { key: "idea", label: "Idea / Proposal" },
   { key: "planning", label: "Planning" },
-  { key: "approved", label: "Approved" },
-  { key: "active", label: "Active" },
-  { key: "delayed", label: "Delayed" },
-  { key: "completed", label: "Completed" },
+  { key: "funded", label: "Funding Secured" },
+  { key: "implementation", label: "Implementation" },
+  { key: "monitoring", label: "Monitoring" },
+  { key: "completed", label: "Completion" },
   { key: "verified", label: "Verified" },
 ];
 
 const STATUS_ORDER: Record<string, number> = {
-  planning: 0, approved: 1, active: 2, delayed: 2, completed: 3, "on-hold": 2, cancelled: -1, verified: 4,
+  idea: 0, planning: 1, funded: 2, implementation: 3, monitoring: 4, delayed: 3, "on-hold": 3, cancelled: -1, completed: 5, verified: 6,
 };
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {

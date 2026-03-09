@@ -9,21 +9,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
+// PRD V7: 7-stage lifecycle — Idea → Planning → Funded → Implementation → Monitoring → Completion → Verification
 const LIFECYCLE_STAGES = [
-  { key: "planning", label: "Planning", order: 0 },
-  { key: "approved", label: "Approved", order: 1 },
-  { key: "in_progress", label: "Implementation", order: 2 },
-  { key: "active", label: "Active", order: 3 },
-  { key: "completed", label: "Completed", order: 4 },
-  { key: "verified", label: "Verified", order: 5 },
+  { key: "idea", label: "Idea / Proposal", order: 0 },
+  { key: "planning", label: "Planning", order: 1 },
+  { key: "funded", label: "Funding Secured", order: 2 },
+  { key: "implementation", label: "Implementation", order: 3 },
+  { key: "monitoring", label: "Monitoring", order: 4 },
+  { key: "completed", label: "Completion", order: 5 },
+  { key: "verified", label: "Verified", order: 6 },
 ];
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  planning: ["approved", "in_progress"],
-  approved: ["in_progress", "active"],
-  in_progress: ["active", "completed", "delayed"],
-  active: ["completed", "delayed"],
-  delayed: ["active", "completed"],
+  idea: ["planning"],
+  planning: ["funded", "implementation"],
+  funded: ["implementation"],
+  implementation: ["monitoring", "completed", "delayed"],
+  monitoring: ["completed", "delayed"],
+  delayed: ["implementation", "monitoring", "completed"],
   completed: ["verified"],
 };
 

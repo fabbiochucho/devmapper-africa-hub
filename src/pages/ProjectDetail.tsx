@@ -23,9 +23,13 @@ const VERIFICATION_LABELS: Record<string, { label: string; icon: React.ReactNode
   platform_audit: { label: "Platform Audited", icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
+// PRD V7: 7-stage lifecycle
 const STATUS_STEPS = [
-  { key: "planned", label: "Planned" },
-  { key: "in_progress", label: "In Progress" },
+  { key: "idea", label: "Idea" },
+  { key: "planning", label: "Planning" },
+  { key: "funded", label: "Funded" },
+  { key: "implementation", label: "Implementation" },
+  { key: "monitoring", label: "Monitoring" },
   { key: "completed", label: "Completed" },
   { key: "verified", label: "Verified" },
 ];
