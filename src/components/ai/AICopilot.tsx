@@ -65,7 +65,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
       user_id: user.id,
       context_type: context,
       context_id: projectData?.id || null,
-      messages: msgs,
+      messages: msgs as any,
       title: msgs[0]?.content?.slice(0, 80) || "Untitled",
       updated_at: new Date().toISOString(),
     };
@@ -78,7 +78,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
     } else {
       const { data } = await supabase
         .from("ai_conversations")
-        .insert(payload)
+        .insert([payload])
         .select("id")
         .single();
       if (data) setConversationId(data.id);
