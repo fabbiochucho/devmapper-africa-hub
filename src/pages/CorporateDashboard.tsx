@@ -463,7 +463,7 @@ const CorporateDashboard = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{target.title}</CardTitle>
-                      <Badge className={getStatusColor(target.status)}>
+                      <Badge variant={getStatusVariant(target.status)}>
                         {target.status.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -501,7 +501,7 @@ const CorporateDashboard = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{target.title}</CardTitle>
-                      <Badge className={getStatusColor(target.status)}>
+                      <Badge variant={getStatusVariant(target.status)}>
                         {target.status.replace('_', ' ')}
                       </Badge>
                     </div>
