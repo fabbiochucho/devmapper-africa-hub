@@ -48,11 +48,10 @@ export default function StakeholderAffiliation({ reportId, isOwner }: Stakeholde
   const fetchAffiliations = async () => {
     const { data } = await supabase
       .from("project_affiliations")
-      .select("id, user_id, role, created_at")
+      .select("id, user_id, relationship_type, created_at")
       .eq("report_id", reportId);
 
     if (data && data.length > 0) {
-      // Fetch profiles for all affiliated users
       const userIds = data.map(a => a.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
@@ -61,7 +60,10 @@ export default function StakeholderAffiliation({ reportId, isOwner }: Stakeholde
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
       setAffiliations(data.map(a => ({
-        ...a,
+        id: a.id,
+        user_id: a.user_id,
+        role: a.relationship_type,
+        created_at: a.created_at,
         profile: profileMap.get(a.user_id) || undefined,
       })));
     } else {
