@@ -5,9 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  Shield, Upload, Brain, Users, BarChart3, Award, Eye, Globe,
-  ArrowRight, CheckCircle2, FileText, Satellite, Bot, UserCheck,
-  Building2, Lock, DollarSign
+  Shield,
+  Upload,
+  BarChart3,
+  Award,
+  Eye,
+  Globe,
+  ArrowRight,
+  CheckCircle2,
+  FileText,
+  Bot,
+  UserCheck,
+  Building2,
+  Lock,
+  DollarSign,
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 
@@ -16,11 +27,9 @@ const WORKFLOW_STEPS = [
     step: 1,
     title: 'Project Submission',
     icon: Upload,
-    color: 'bg-blue-500',
-    description: 'Organizations submit SDG projects via web portal or mobile app.',
+    description: 'Organizations submit SDG projects via the web portal or mobile app.',
     details: [
       'Project description, budget, SDG alignment, baseline indicators, expected outcomes',
-      'Submission triggers the Global API Gateway for routing',
       'Automatic SDG target and indicator mapping',
     ],
   },
@@ -28,11 +37,10 @@ const WORKFLOW_STEPS = [
     step: 2,
     title: 'Evidence Upload & Baseline Verification',
     icon: FileText,
-    color: 'bg-green-500',
-    description: 'Implementers upload documents, photos, satellite imagery, financial reports, surveys.',
+    description: 'Implementers upload documents, photos, satellite imagery, financial reports, and surveys.',
     details: [
       'Initial baseline verification (automated + human)',
-      'All evidence stored securely with blockchain ledger',
+      'Evidence stored securely with a tamper-evident hash-chain audit trail',
       'Minimum 3 evidence forms per claim required',
     ],
   },
@@ -40,7 +48,6 @@ const WORKFLOW_STEPS = [
     step: 3,
     title: 'Automated Verification (AI/ML)',
     icon: Bot,
-    color: 'bg-purple-500',
     description: 'AI/ML models verify impact, detect anomalies, and validate outcomes.',
     details: [
       'Outcome prediction based on historical projects',
@@ -53,20 +60,18 @@ const WORKFLOW_STEPS = [
     step: 4,
     title: 'Human Verification',
     icon: UserCheck,
-    color: 'bg-amber-500',
     description: 'Field auditors and verification nodes perform manual checks.',
     details: [
       'Site inspections and physical verification',
       'Document verification and cross-referencing',
       'Beneficiary interviews and community validation',
-      'Results logged on blockchain audit trail',
+      'Verification events written to the hash-chain audit trail',
     ],
   },
   {
     step: 5,
     title: 'SDG Impact Score (SIS) Calculation',
     icon: BarChart3,
-    color: 'bg-red-500',
     description: 'Combines AI predictions and human verification into composite SIS (0–100).',
     details: [
       'SDG Alignment (15%) + Evidence Strength (20%)',
@@ -79,7 +84,6 @@ const WORKFLOW_STEPS = [
     step: 6,
     title: 'Certification Decision',
     icon: Award,
-    color: 'bg-emerald-500',
     description: 'Based on SIS score and governance approval, projects receive a rating.',
     details: [
       'Platinum: SIS 90–100 (Transformational global impact)',
@@ -92,7 +96,6 @@ const WORKFLOW_STEPS = [
     step: 7,
     title: 'Governance & Approval',
     icon: Building2,
-    color: 'bg-indigo-500',
     description: 'Global SDG Verification Council and national nodes ensure credibility.',
     details: [
       'UN, UNDP, academic experts, DFI oversight',
@@ -104,7 +107,6 @@ const WORKFLOW_STEPS = [
     step: 8,
     title: 'Transparency & Public Dashboard',
     icon: Eye,
-    color: 'bg-cyan-500',
     description: 'Certified projects displayed globally on interactive dashboards.',
     details: [
       'Real-time SDG impact scores and funding flows',
@@ -119,28 +121,32 @@ const CERTIFICATION_TIERS = [
     tier: 'Platinum',
     sisRange: '90–100',
     fee: '$15,000 – $50,000',
-    color: 'hsl(var(--primary))',
+    iconBgClassName: 'bg-primary',
+    iconFgClassName: 'text-primary-foreground',
     complexity: 'Large-scale, multi-country, full AI/ML + satellite verification, government approval',
   },
   {
     tier: 'Gold',
     sisRange: '80–89',
     fee: '$5,000 – $15,000',
-    color: 'hsl(45, 93%, 47%)',
+    iconBgClassName: 'bg-accent',
+    iconFgClassName: 'text-accent-foreground',
     complexity: 'High impact, cross-sector, full SDG alignment, multi-stakeholder verification',
   },
   {
     tier: 'Silver',
     sisRange: '65–79',
     fee: '$1,500 – $5,000',
-    color: 'hsl(0, 0%, 65%)',
+    iconBgClassName: 'bg-secondary',
+    iconFgClassName: 'text-secondary-foreground',
     complexity: 'Medium complexity, outcome/benefit focus, independent auditing',
   },
   {
     tier: 'Bronze',
     sisRange: '50–64',
     fee: '$500 – $1,500',
-    color: 'hsl(30, 60%, 50%)',
+    iconBgClassName: 'bg-muted',
+    iconFgClassName: 'text-foreground',
     complexity: 'Small NGO/local projects, output verification, field visit sampling',
   },
 ];
@@ -157,22 +163,21 @@ const CertificationWorkflow = () => {
     <>
       <SEOHead
         title="SDG Certification Workflow | DevMapper"
-        description="The 8-step DevMapper SDG Certification process — from project submission through AI verification to global certification and public dashboard."
+        description="The 8-step DevMapper SDG Certification process — from submission through AI verification and human auditing to certification and public transparency."
       />
+
       <div className="container max-w-5xl mx-auto px-4 py-8 space-y-10">
         {/* Header */}
         <div className="text-center space-y-4">
           <Shield className="h-14 w-14 mx-auto text-primary" />
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            SDG Certification Workflow
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">SDG Certification Workflow</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            DevMapper's 8-step verification and certification process combines AI-powered scoring,
-            human auditing, blockchain transparency, and governance approval to issue globally-recognized SDG certificates.
+            DevMapper's 8-step verification and certification process combines AI-powered scoring, human auditing,
+            tamper-evident hash-chain transparency, and governance approval to issue globally-recognized SDG certificates.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
             <Badge variant="outline">AI/ML Verification</Badge>
-            <Badge variant="outline">Blockchain Audit Trail</Badge>
+            <Badge variant="outline">Hash-Chain Audit Trail</Badge>
             <Badge variant="outline">UN-Aligned Governance</Badge>
             <Badge variant="outline">Public Transparency</Badge>
           </div>
@@ -187,7 +192,7 @@ const CertificationWorkflow = () => {
               return (
                 <Card key={step.step} className="overflow-hidden">
                   <div className="flex">
-                    <div className={`${step.color} w-16 flex-shrink-0 flex flex-col items-center justify-center text-white`}>
+                    <div className="bg-primary w-16 flex-shrink-0 flex flex-col items-center justify-center text-primary-foreground">
                       <span className="text-2xl font-bold">{step.step}</span>
                     </div>
                     <div className="flex-1 p-4">
@@ -223,15 +228,15 @@ const CertificationWorkflow = () => {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-center">Certification Tiers & Pricing</h2>
           <p className="text-center text-muted-foreground max-w-2xl mx-auto">
-            Fees scale with project size, geographic scope, and verification complexity.
-            AI/ML verification reduces costs compared to fully manual audits.
+            Fees scale with project size, geographic scope, and verification complexity. AI/ML verification reduces costs
+            compared to fully manual audits.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {CERTIFICATION_TIERS.map((t) => (
               <Card key={t.tier} className="text-center">
                 <CardHeader className="pb-2">
-                  <div className="w-10 h-10 rounded-full mx-auto flex items-center justify-center" style={{ backgroundColor: t.color }}>
-                    <Award className="h-5 w-5 text-white" />
+                  <div className={`w-10 h-10 rounded-full mx-auto flex items-center justify-center ${t.iconBgClassName}`}>
+                    <Award className={`h-5 w-5 ${t.iconFgClassName}`} />
                   </div>
                   <CardTitle className="text-lg mt-2">{t.tier}</CardTitle>
                   <p className="font-mono text-sm">SIS {t.sisRange}</p>
@@ -253,9 +258,7 @@ const CertificationWorkflow = () => {
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" /> Benchmarking Against Global Standards
             </CardTitle>
-            <CardDescription>
-              DevMapper pricing is competitive with leading verification and ESG rating platforms
-            </CardDescription>
+            <CardDescription>DevMapper pricing is competitive with leading verification and ESG rating platforms</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -308,10 +311,10 @@ const CertificationWorkflow = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" />
-                <p className="font-semibold text-sm">Blockchain Audit Trail</p>
+                <p className="font-semibold text-sm">Hash-Chain Audit Trail</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Immutable records for every verification step. Full transparency and tamper-proof certification history.
+                Tamper-evident records for every verification step using cryptographic hash-chaining of events (stored in Postgres).
               </p>
             </div>
           </CardContent>
@@ -319,11 +322,21 @@ const CertificationWorkflow = () => {
 
         {/* CTAs */}
         <div className="flex flex-wrap justify-center gap-3">
-          <Link to="/apply-certification"><Button size="lg">Apply for Certification</Button></Link>
-          <Link to="/spvf-standards"><Button variant="outline">View SPVF Standards</Button></Link>
-          <Link to="/verify"><Button variant="outline">Verify a Certificate</Button></Link>
-          <Link to="/pricing"><Button variant="outline">View Pricing</Button></Link>
-          <Link to="/sdg-indicators"><Button variant="outline">SDG Indicator Registry</Button></Link>
+          <Link to="/apply-certification">
+            <Button size="lg">Apply for Certification</Button>
+          </Link>
+          <Link to="/spvf-standards">
+            <Button variant="outline">View SPVF Standards</Button>
+          </Link>
+          <Link to="/verify">
+            <Button variant="outline">Verify a Certificate</Button>
+          </Link>
+          <Link to="/pricing">
+            <Button variant="outline">View Pricing</Button>
+          </Link>
+          <Link to="/sdg-indicators">
+            <Button variant="outline">SDG Indicator Registry</Button>
+          </Link>
         </div>
       </div>
     </>

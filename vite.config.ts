@@ -9,14 +9,15 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  // Prevent duplicate instances of React / React Router that can break context (e.g., Link useContext null)
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router", "react-router-dom"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
   },
 }));
