@@ -91,6 +91,7 @@ const Fundraising = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<FundraisingCampaign | null>(null);
   const [creating, setCreating] = useState(false);
   
+  const [userReports, setUserReports] = useState<{ id: string; title: string }[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -100,7 +101,8 @@ const Fundraising = () => {
     location: '',
     category: 'nano' as 'nano' | 'micro' | 'small',
     deadline: '',
-    image_url: ''
+    image_url: '',
+    report_id: '' as string,
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
