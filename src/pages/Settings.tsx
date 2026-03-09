@@ -50,6 +50,22 @@ const Settings = () => {
     setSaving(false);
   };
 
+  const handleSaveEnrichment = async () => {
+    setSavingEnrichment(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        legal_capacity: legalCapacity || null,
+        sector_classification: sectorClassification || null,
+        verification_tier: verificationTier || null,
+        impact_area: impactArea || null,
+      })
+      .eq("user_id", user!.id);
+    if (error) toast.error("Failed to save entity details");
+    else toast.success("Entity details saved");
+    setSavingEnrichment(false);
+  };
+
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
       toast.error("Password must be at least 6 characters");
