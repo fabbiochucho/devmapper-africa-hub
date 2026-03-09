@@ -2,19 +2,19 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, FileText, Shield, Sparkles, History } from "lucide-react";
+import { Bot, Send, Loader2, FileText, Shield, Sparkles, Leaf, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import AICopilotQuickActions from "./AICopilotQuickActions";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-type CopilotContext = "general" | "compliance" | "report_draft";
+type CopilotContext = "general" | "compliance" | "report_draft" | "carbon";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-copilot`;
 
@@ -22,6 +22,7 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
   { value: "general", label: "General", icon: <Sparkles className="h-3 w-3" /> },
   { value: "compliance", label: "Compliance", icon: <Shield className="h-3 w-3" /> },
   { value: "report_draft", label: "Report Draft", icon: <FileText className="h-3 w-3" /> },
+  { value: "carbon", label: "Carbon", icon: <Leaf className="h-3 w-3" /> },
 ];
 
 export default function AICopilot({ projectData }: { projectData?: any }) {
@@ -205,10 +206,23 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
         <ScrollArea className="flex-1">
           <div className="space-y-3 pr-4">
             {messages.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 text-muted-foreground space-y-4">
                 <Bot className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p className="font-medium">How can I help?</p>
                 <p className="text-sm mt-1">Ask about compliance gaps, draft reports, or get project insights.</p>
+                <AICopilotQuickActions
+                  onAction={(prompt, ctx) => {
+                    setContext(ctx as CopilotContext);
+                    setInput(prompt);
+                    // Auto-send after a tick so context updates
+                    setTimeout(() => {
+                      const el = document.querySelector('[data-copilot-send]') as HTMLButtonElement;
+                      el?.click();
+                    }, 100);
+                  }}
+                  hasProjectData={!!projectData}
+                  disabled={loading}
+                />
               </div>
             )}
             {messages.map((msg, i) => (
@@ -240,7 +254,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
             className="min-h-[40px] max-h-[100px] resize-none"
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           />
-          <Button onClick={send} disabled={loading || !input.trim()} size="icon" className="shrink-0">
+          <Button data-copilot-send onClick={send} disabled={loading || !input.trim()} size="icon" className="shrink-0">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
