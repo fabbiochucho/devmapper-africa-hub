@@ -162,8 +162,13 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
                     <SelectValue placeholder="Select your country" />
                   </SelectTrigger>
                   <SelectContent>
-                    {countries.map((c) => (
+                    {africanCountries.map((c) => (
                       <SelectItem key={c.code} value={c.name}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                         {c.name}
                       </SelectItem>
                     ))}
