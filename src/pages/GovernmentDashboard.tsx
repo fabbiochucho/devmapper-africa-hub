@@ -352,6 +352,9 @@ const GovernmentDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* Compliance Assessment */}
+      <ComplianceAssessment actorType="government" />
+
       {/* AI Copilot */}
       <AICopilot projectData={{ context: 'government_oversight', projectCount: projects.length }} />
     </div>

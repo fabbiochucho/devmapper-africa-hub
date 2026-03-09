@@ -195,6 +195,9 @@ const NgoDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* Compliance Assessment */}
+      <ComplianceAssessment actorType="ngo" />
+
       {/* AI Copilot */}
       <AICopilot projectData={{ context: 'ngo_impact', projectCount: ownProjects.length }} />
     </div>
