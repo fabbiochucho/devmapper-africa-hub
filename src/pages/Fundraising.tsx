@@ -231,21 +231,25 @@ const Fundraising = () => {
     else category = 'small';
 
     try {
+      const insertData: any = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        target_amount: amount,
+        currency: formData.currency,
+        sdg_goals: formData.sdg_goals,
+        location: formData.location.trim(),
+        category,
+        deadline: formData.deadline,
+        image_url: formData.image_url || '/placeholder.svg',
+        created_by: user.id,
+        change_maker_id: user.id,
+      };
+      if (formData.report_id) {
+        insertData.report_id = formData.report_id;
+      }
       const { error } = await supabase
         .from('fundraising_campaigns')
-        .insert([{
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          target_amount: amount,
-          currency: formData.currency,
-          sdg_goals: formData.sdg_goals,
-          location: formData.location.trim(),
-          category,
-          deadline: formData.deadline,
-          image_url: formData.image_url || '/placeholder.svg',
-          created_by: user.id,
-          change_maker_id: user.id
-        }]);
+        .insert([insertData]);
 
       if (error) throw error;
       
