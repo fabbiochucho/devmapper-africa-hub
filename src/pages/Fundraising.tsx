@@ -498,6 +498,22 @@ const Fundraising = () => {
                   />
                 </div>
 
+                {userReports.length > 0 && (
+                  <div className="md:col-span-2">
+                    <Label>Link to Project (optional)</Label>
+                    <Select value={formData.report_id || "none"} onValueChange={(v) => setFormData({ ...formData, report_id: v === "none" ? "" : v })}>
+                      <SelectTrigger><SelectValue placeholder="Select a project to link" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No linked project</SelectItem>
+                        {userReports.map(r => (
+                          <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">Link this campaign to one of your projects for transparency</p>
+                  </div>
+                )}
+
                 <div className="md:col-span-2">
                   <Label>SDG Goals * (select 1–5)</Label>
                   {formErrors.sdg_goals && <p className="text-sm text-destructive mt-1">{formErrors.sdg_goals}</p>}
