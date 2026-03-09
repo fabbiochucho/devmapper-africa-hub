@@ -181,11 +181,20 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       </div>
 
       {/* Milestones */}
-      {milestones.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Milestones</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {milestones.map((m: any) => (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Milestones</CardTitle>
+            <AddMilestoneDialog reportId={reportId} onAdded={() => {
+              supabase.from("project_milestones").select("*").eq("report_id", reportId).order("target_date").then(r => { if (r.data) setMilestones(r.data); });
+            }} />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {milestones.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No milestones yet. Add one to track project phases.</p>
+          ) : (
+            milestones.map((m: any) => (
               <div key={m.id} className="flex items-center gap-3">
                 <CheckCircle2 className={`h-5 w-5 shrink-0 ${m.status === "completed" ? "text-green-500" : "text-muted-foreground"}`} />
                 <div className="flex-1">
@@ -195,10 +204,10 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                 <Progress value={m.completion_percentage} className="w-20 h-2" />
                 <span className="text-xs text-muted-foreground w-8">{m.completion_percentage}%</span>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Updates */}
       {updates.length > 0 && (
