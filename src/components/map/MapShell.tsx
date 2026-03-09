@@ -191,7 +191,9 @@ export default function MapShell({
         .setHTML(`
           <div class="p-2">
             <h3 class="font-bold">${feature.properties?.title || 'Project'}</h3>
-            <p class="text-sm">${feature.properties?.description || ''}</p>
+            <p class="text-sm">${feature.properties?.description?.substring(0, 100) || ''}</p>
+            <p class="text-xs mt-1">Status: ${feature.properties?.status || 'N/A'} | SDG ${feature.properties?.sdg || ''}</p>
+            <a href="/project/${feature.properties?.id}" class="text-xs text-blue-600 underline mt-1 inline-block">View Details →</a>
           </div>
         `)
         .addTo(map.current!);
