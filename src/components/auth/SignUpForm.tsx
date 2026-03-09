@@ -13,6 +13,8 @@ import RoleSelector from "./RoleSelector";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 import { checkPasswordBreached } from "@/lib/passwordSecurity";
 import type { UserRole } from "@/contexts/UserRoleContext";
+import { HCaptcha } from "./HCaptcha";
+import { UserPlus } from "lucide-react";
 
 interface SignUpFormProps {
   onAuthSuccess: () => void;
