@@ -175,6 +175,52 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
         </CardContent>
       </Card>
 
+      {/* Task Management — PRD V7 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Tasks ({tasks.length})</CardTitle>
+            {isOwner && (
+              <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" />Add Task</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Add Task</DialogTitle></DialogHeader>
+                  <div className="space-y-3">
+                    <div><Label>Title</Label><Input value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Task title..." /></div>
+                    <div>
+                      <Label>Priority</Label>
+                      <Select value={newTaskPriority} onValueChange={setNewTaskPriority}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button onClick={addTask} disabled={!newTaskTitle.trim()}>Add Task</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {tasks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No tasks yet. Add tasks to track project work.</p>
+          ) : (
+            <KanbanBoard
+              tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: t.tags || [] }))}
+              onStatusChange={handleTaskStatusChange}
+              hasAssignment={false}
+            />
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Budget Summary */}
         <Card>
