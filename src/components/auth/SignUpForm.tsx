@@ -55,7 +55,9 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   }, []);
 
   const handleSignUp = async (values: SignUpFormValues) => {
-    if (!captchaToken) {
+    // Only require captcha if the site key is configured
+    const captchaEnabled = !!import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+    if (captchaEnabled && !captchaToken) {
       toast.error("Please complete the CAPTCHA verification");
       return;
     }
@@ -85,14 +87,19 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
       const redirectUrl = `${window.location.origin}/`;
       
+      const signUpOptions: any = {
+        emailRedirectTo: redirectUrl,
+        data: { full_name: values.name, selected_role: selectedRole },
+      };
+      
+      if (captchaToken) {
+        signUpOptions.captchaToken = captchaToken;
+      }
+      
       const { error, data } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: { full_name: values.name, selected_role: selectedRole },
-          captchaToken,
-        }
+        options: signUpOptions,
       });
 
       if (error) {
@@ -189,18 +196,24 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        <div className="flex justify-center">
-          <HCaptcha
-            onVerify={(token) => setCaptchaToken(token)}
-            onExpire={() => setCaptchaToken(null)}
-            onError={() => {
-              setCaptchaToken(null);
-              toast.error("CAPTCHA verification failed. Please try again.");
-            }}
-          />
-        </div>
+        {import.meta.env.VITE_HCAPTCHA_SITE_KEY && (
+          <div className="flex justify-center">
+            <HCaptcha
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => {
+                setCaptchaToken(null);
+                toast.error("CAPTCHA verification failed. Please try again.");
+              }}
+            />
+          </div>
+        )}
 
-        <Button type="submit" className="w-full" disabled={isLoading || isBreached || !captchaToken}>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading || isBreached || (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !captchaToken)}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
