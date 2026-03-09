@@ -84,17 +84,17 @@ export default function AddMilestoneDialog({ reportId, onAdded }: AddMilestoneDi
             <div className="grid grid-cols-6 gap-1.5">
               {sdgGoals.map(goal => (
                 <button
-                  key={goal.id}
+                  key={goal.number}
                   type="button"
-                  onClick={() => toggleSdg(goal.id)}
+                  onClick={() => toggleSdg(goal.number)}
                   className={`text-xs p-1.5 rounded border text-center transition-colors ${
-                    sdgIndicators.includes(goal.id)
+                    sdgIndicators.includes(goal.number)
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-muted text-muted-foreground border-border hover:border-primary/50'
                   }`}
-                  title={goal.name}
+                  title={goal.title}
                 >
-                  {goal.id}
+                  {goal.number}
                 </button>
               ))}
             </div>
