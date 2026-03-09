@@ -38,8 +38,8 @@ const UnifiedDashboard = () => {
       if (!user?.id) return;
       
       try {
-        // Batch all queries in parallel & use count/minimal selects
-        const [reportsResult, verificationsResult, allReportsResult] = await Promise.all([
+        // Batch all queries in parallel & use count-only where possible
+        const [reportsResult, verificationsResult, totalProjectsResult, fundingResult] = await Promise.all([
           supabase
             .from('reports')
             .select('id', { count: 'exact', head: true })
@@ -50,15 +50,18 @@ const UnifiedDashboard = () => {
             .eq('user_id', user.id),
           supabase
             .from('reports')
-            .select('cost'),
+            .select('id', { count: 'exact', head: true }),
+          supabase
+            .from('reports')
+            .select('cost')
+            .not('cost', 'is', null),
         ]);
 
         if (reportsResult.error) throw reportsResult.error;
         if (verificationsResult.error) throw verificationsResult.error;
-        if (allReportsResult.error) throw allReportsResult.error;
 
-        const totalProjects = allReportsResult.data?.length || 0;
-        const totalFunding = allReportsResult.data?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) || 0;
+        const totalProjects = totalProjectsResult.count || 0;
+        const totalFunding = fundingResult.data?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) || 0;
 
         setStats({
           userReports: reportsResult.count || 0,

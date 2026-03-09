@@ -31,7 +31,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<UserRoleData[]>([]);
   const [currentRole, setCurrentRole] = useState<UserRole>('citizen_reporter');
   const [loading, setLoading] = useState(true);
-  const { user: authUser, session, loading: authLoading } = useAuth();
+  const { user: authUser, session, loading: authLoading, userRoles: authRoles } = useAuth();
 
   const isAuthenticated = !!authUser;
 
@@ -41,6 +41,19 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserRoles = useCallback(async (userId: string) => {
     try {
+      // If AuthContext already has roles loaded, use them to avoid a duplicate query
+      if (authRoles.length > 0) {
+        const userRoles: UserRoleData[] = authRoles.map(role => ({
+          role: role as UserRole,
+          is_active: true
+        }));
+        setRoles(userRoles);
+        if (userRoles.length > 0) {
+          setCurrentRole(userRoles[0].role);
+        }
+        return;
+      }
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, organization, country, is_active')
@@ -58,17 +71,15 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
 
       setRoles(userRoles);
       
-      // Set current role to first available role or default
       if (userRoles.length > 0) {
         setCurrentRole(userRoles[0].role);
       }
     } catch (error) {
       console.error('Error fetching user roles:', error);
-      // Default to citizen_reporter if no roles found
       setRoles([{ role: 'citizen_reporter', is_active: true }]);
       setCurrentRole('citizen_reporter');
     }
-  }, []);
+  }, [authRoles]);
 
   const addRole = async (roleData: UserRoleData): Promise<void> => {
     if (!authUser) return;

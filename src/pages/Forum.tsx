@@ -47,6 +47,9 @@ const Forum = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [posts, setPosts] = useState<ForumPostData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 20;
   const [stats, setStats] = useState<ForumStats>({
     totalMembers: 0,
     activeToday: 0,
@@ -55,13 +58,17 @@ const Forum = () => {
   });
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(0);
     fetchStats();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNum: number) => {
     try {
-      const { data: postsData, error: postsError } = await supabase
+      const from = pageNum * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      // Batch posts + user likes in parallel
+      const postsPromise = supabase
         .from('forum_posts')
         .select(`
           *,
@@ -71,22 +78,19 @@ const Forum = () => {
             is_verified
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      const likesPromise = user
+        ? supabase.from('forum_post_likes').select('post_id').eq('user_id', user.id)
+        : Promise.resolve({ data: [] as any[] });
+
+      const [{ data: postsData, error: postsError }, { data: likesData }] = await Promise.all([postsPromise, likesPromise]);
 
       if (postsError) throw postsError;
 
-      // Fetch user likes for authenticated users
-      let userLikes: any[] = [];
-      if (user) {
-        const { data: likesData, error: likesError } = await supabase
-          .from('forum_post_likes')
-          .select('post_id')
-          .eq('user_id', user.id);
-
-        if (!likesError) {
-          userLikes = likesData || [];
-        }
-      }
+      const userLikes = likesData || [];
 
       const formattedPosts = postsData?.map(post => ({
         id: post.id,
@@ -108,7 +112,13 @@ const Forum = () => {
         isLiked: userLikes.some(like => like.post_id === post.id)
       })) || [];
 
-      setPosts(formattedPosts);
+      if (pageNum === 0) {
+        setPosts(formattedPosts);
+      } else {
+        setPosts(prev => [...prev, ...formattedPosts]);
+      }
+      setHasMore((postsData?.length || 0) === PAGE_SIZE);
+      setPage(pageNum);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast.error('Failed to load forum posts');
@@ -119,29 +129,22 @@ const Forum = () => {
 
   const fetchStats = async () => {
     try {
-      // Get total members
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id');
-
-      if (profilesError) throw profilesError;
-
-      // Get posts this week
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      
-      const { data: recentPosts, error: recentError } = await supabase
-        .from('forum_posts')
-        .select('id')
-        .gte('created_at', weekAgo.toISOString());
 
-      if (recentError) throw recentError;
+      // Use count queries instead of fetching all rows
+      const [membersResult, recentPostsResult] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString()),
+      ]);
+
+      const totalMembers = membersResult.count || 0;
 
       setStats({
-        totalMembers: profilesData?.length || 0,
-        activeToday: Math.floor((profilesData?.length || 0) * 0.08), // 8% active estimate
-        postsThisWeek: recentPosts?.length || 0,
-        newMembers: Math.floor((profilesData?.length || 0) * 0.02) // 2% new members estimate
+        totalMembers,
+        activeToday: Math.floor(totalMembers * 0.08),
+        postsThisWeek: recentPostsResult.count || 0,
+        newMembers: Math.floor(totalMembers * 0.02)
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -395,6 +398,13 @@ const Forum = () => {
                   isAdmin={isAdmin}
                 />
               ))}
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <Button variant="outline" onClick={() => fetchPosts(page + 1)}>
+                    Load More Posts
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="trending" className="space-y-4 mt-4">

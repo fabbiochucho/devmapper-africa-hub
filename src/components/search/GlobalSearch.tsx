@@ -63,83 +63,49 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
     setLoading(true);
     try {
       const term = `%${searchTerm}%`;
-      const allResults: SearchResult[] = [];
 
-      // Search projects/reports
-      const { data: reports } = await supabase
-        .from("reports")
-        .select("id, title, location, country_code")
-        .or(`title.ilike.${term},description.ilike.${term},location.ilike.${term}`)
-        .limit(5);
+      // Batch all 4 searches in parallel
+      const [reportsRes, profilesRes, postsRes, changemakersRes] = await Promise.all([
+        supabase
+          .from("reports")
+          .select("id, title, location, country_code")
+          .or(`title.ilike.${term},description.ilike.${term},location.ilike.${term}`)
+          .limit(5),
+        supabase
+          .from("profiles")
+          .select("user_id, full_name, organization, country")
+          .or(`full_name.ilike.${term},organization.ilike.${term}`)
+          .limit(5),
+        supabase
+          .from("forum_posts")
+          .select("id, title, category")
+          .or(`title.ilike.${term},content.ilike.${term}`)
+          .limit(5),
+        supabase
+          .from("change_makers")
+          .select("id, title, location")
+          .or(`title.ilike.${term},description.ilike.${term},location.ilike.${term}`)
+          .limit(5),
+      ]);
 
-      if (reports) {
-        reports.forEach((r) => {
-          allResults.push({
-            id: r.id,
-            type: "project",
-            title: r.title,
-            subtitle: r.location || r.country_code || "Project",
-            url: `/my-projects?id=${r.id}`,
-          });
-        });
-      }
-
-      // Search users/profiles
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, organization, country")
-        .or(`full_name.ilike.${term},organization.ilike.${term}`)
-        .limit(5);
-
-      if (profiles) {
-        profiles.forEach((p) => {
-          allResults.push({
-            id: p.user_id,
-            type: "user",
-            title: p.full_name || "User",
-            subtitle: p.organization || p.country || "",
-            url: `/connect?user=${p.user_id}`,
-          });
-        });
-      }
-
-      // Search forum posts
-      const { data: posts } = await supabase
-        .from("forum_posts")
-        .select("id, title, category")
-        .or(`title.ilike.${term},content.ilike.${term}`)
-        .limit(5);
-
-      if (posts) {
-        posts.forEach((p) => {
-          allResults.push({
-            id: p.id,
-            type: "forum",
-            title: p.title,
-            subtitle: p.category,
-            url: `/forum?post=${p.id}`,
-          });
-        });
-      }
-
-      // Search change makers
-      const { data: changemakers } = await supabase
-        .from("change_makers")
-        .select("id, title, location")
-        .or(`title.ilike.${term},description.ilike.${term},location.ilike.${term}`)
-        .limit(5);
-
-      if (changemakers) {
-        changemakers.forEach((c) => {
-          allResults.push({
-            id: c.id,
-            type: "changemaker",
-            title: c.title,
-            subtitle: c.location,
-            url: `/change-makers/${c.id}`,
-          });
-        });
-      }
+      const allResults: SearchResult[] = [
+        ...(reportsRes.data || []).map((r) => ({
+          id: r.id, type: "project" as const, title: r.title,
+          subtitle: r.location || r.country_code || "Project", url: `/my-projects?id=${r.id}`,
+        })),
+        ...(profilesRes.data || []).map((p) => ({
+          id: p.user_id, type: "user" as const, title: p.full_name || "User",
+          subtitle: p.organization || p.country || "", url: `/connect?user=${p.user_id}`,
+        })),
+        ...(postsRes.data || []).map((p) => ({
+          id: p.id, type: "forum" as const, title: p.title,
+          subtitle: p.category, url: `/forum?post=${p.id}`,
+        })),
+        ...(changemakersRes.data || []).map((c) => ({
+          id: c.id, type: "changemaker" as const, title: c.title,
+          subtitle: c.location, url: `/change-makers/${c.id}`,
+        })),
+      ];
 
       setResults(allResults);
     } catch (error) {
