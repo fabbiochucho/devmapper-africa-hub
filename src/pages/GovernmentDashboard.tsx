@@ -50,6 +50,7 @@ const GovernmentDashboard = () => {
   const [editSpent, setEditSpent] = useState('');
   const [editStatus, setEditStatus] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [regionFilter, setRegionFilter] = useState('all');
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
