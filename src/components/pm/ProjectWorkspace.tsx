@@ -3,16 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2 } from "lucide-react";
+import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Plus, Eye, EyeOff } from "lucide-react";
 import AddMilestoneDialog from "./AddMilestoneDialog";
 import SubmitVerificationDialog from "./SubmitVerificationDialog";
 import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
 import ProjectLifecycleManager from "./ProjectLifecycleManager";
 import StakeholderAffiliation from "./StakeholderAffiliation";
+import KanbanBoard from "./KanbanBoard";
 import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
+import { toast } from "sonner";
 
 interface ProjectWorkspaceProps {
   reportId: string;
