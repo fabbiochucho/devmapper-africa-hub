@@ -186,6 +186,9 @@ const NgoDashboard = () => {
         </TabsContent>
       </Tabs>
 
+      {/* NGO Verification Notifications Panel */}
+      <VerificationNotificationsPanel userId={user?.id || ''} />
+
       {/* NGO Verification: verify public projects (PRD V7 - NGO can validate project data) */}
       <Card>
         <CardHeader>
