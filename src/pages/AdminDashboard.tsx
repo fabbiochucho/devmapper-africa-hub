@@ -295,9 +295,14 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="broadcasts"><BroadcastManager /></TabsContent>
         <TabsContent value="partners"><PartnerManagement /></TabsContent>
         <TabsContent value="test-accounts"><TestAccountManager /></TabsContent>
         <TabsContent value="fellowships"><ScholarshipManager /></TabsContent>
+
+        <TabsContent value="audit">
+          <AuditLogViewer />
+        </TabsContent>
 
         <TabsContent value="reports">
           <Card>
