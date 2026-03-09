@@ -147,7 +147,13 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge className="text-sm">{report.project_status}</Badge>
+              <Badge className="text-sm">{currentStatus}</Badge>
+              {isOwner && (
+                <Button variant="ghost" size="sm" onClick={toggleVisibility} className="gap-1 text-xs">
+                  {visibility === "public" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  {visibility === "public" ? "Public" : "Private"}
+                </Button>
+              )}
               {report.beneficiaries && (
                 <span className="text-sm text-muted-foreground"><Users className="inline h-3 w-3 mr-1" />{report.beneficiaries.toLocaleString()} beneficiaries</span>
               )}
