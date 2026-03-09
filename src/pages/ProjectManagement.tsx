@@ -440,6 +440,24 @@ export default function ProjectManagement() {
           )}
         </TabsContent>
 
+        {/* Procurement Tracking */}
+        <TabsContent value="procurement">
+          {selectedProject ? (
+            <ProcurementTracker reportId={selectedProject} isOwner={isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
+        {/* DISM Impact Scoring */}
+        <TabsContent value="scoring">
+          {selectedProject ? (
+            <ImpactScorecard reportId={selectedProject} readOnly={!isOwner} />
+          ) : (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+          )}
+        </TabsContent>
+
         {/* Impact Indicators */}
         <TabsContent value="indicators">
           {selectedProject ? (
