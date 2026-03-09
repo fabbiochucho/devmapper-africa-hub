@@ -59,8 +59,77 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
       .select('*')
       .eq('report_id', reportId)
       .order('created_at', { ascending: false });
-    setFeedbacks((data as Feedback[]) || []);
+    
+    const feedbackItems = (data || []) as any[];
+    
+    // Fetch votes for all feedback items
+    const feedbackIds = feedbackItems.map(f => f.id);
+    let votesMap: Record<string, { up: number; down: number; userVote: 'up' | 'down' | null }> = {};
+    
+    if (feedbackIds.length > 0) {
+      const { data: votes } = await supabase
+        .from('feedback_votes')
+        .select('feedback_id, vote_type, user_id')
+        .in('feedback_id', feedbackIds);
+      
+      for (const fId of feedbackIds) {
+        votesMap[fId] = { up: 0, down: 0, userVote: null };
+      }
+      
+      for (const v of (votes || [])) {
+        if (!votesMap[v.feedback_id]) votesMap[v.feedback_id] = { up: 0, down: 0, userVote: null };
+        if (v.vote_type === 'up') votesMap[v.feedback_id].up++;
+        else votesMap[v.feedback_id].down++;
+        if (user && v.user_id === user.id) votesMap[v.feedback_id].userVote = v.vote_type as 'up' | 'down';
+      }
+    }
+    
+    setFeedbacks(feedbackItems.map(f => ({
+      ...f,
+      upvotes: votesMap[f.id]?.up || 0,
+      downvotes: votesMap[f.id]?.down || 0,
+      userVote: votesMap[f.id]?.userVote || null,
+    })));
     setLoading(false);
+  };
+
+  const handleVote = async (feedbackId: string, voteType: 'up' | 'down') => {
+    if (!user) { toast.error('Sign in to vote'); return; }
+    
+    const fb = feedbacks.find(f => f.id === feedbackId);
+    if (!fb) return;
+    
+    if (fb.userVote === voteType) {
+      // Remove vote
+      await supabase.from('feedback_votes').delete().eq('feedback_id', feedbackId).eq('user_id', user.id);
+      setFeedbacks(prev => prev.map(f => f.id === feedbackId ? {
+        ...f,
+        upvotes: voteType === 'up' ? f.upvotes - 1 : f.upvotes,
+        downvotes: voteType === 'down' ? f.downvotes - 1 : f.downvotes,
+        userVote: null,
+      } : f));
+    } else {
+      // Upsert vote
+      const { error } = await supabase.from('feedback_votes').upsert({
+        feedback_id: feedbackId,
+        user_id: user.id,
+        vote_type: voteType,
+      } as any, { onConflict: 'feedback_id,user_id' });
+      
+      if (error) { toast.error('Failed to vote'); return; }
+      
+      setFeedbacks(prev => prev.map(f => {
+        if (f.id !== feedbackId) return f;
+        let up = f.upvotes, down = f.downvotes;
+        // Remove old vote count
+        if (f.userVote === 'up') up--;
+        if (f.userVote === 'down') down--;
+        // Add new
+        if (voteType === 'up') up++;
+        if (voteType === 'down') down++;
+        return { ...f, upvotes: up, downvotes: down, userVote: voteType };
+      }));
+    }
   };
 
   const submitFeedback = async () => {
