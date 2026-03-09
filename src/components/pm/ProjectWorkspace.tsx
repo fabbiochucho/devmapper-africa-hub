@@ -112,30 +112,16 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
         </CardContent>
       </Card>
 
-      {/* Project Lifecycle */}
+      {/* Project Lifecycle Manager */}
       <Card>
         <CardHeader><CardTitle className="text-base">Project Lifecycle</CardTitle></CardHeader>
         <CardContent>
-          <div className="flex items-center gap-1 overflow-x-auto pb-2">
-            {LIFECYCLE_STEPS.map((step, i) => {
-              const stepIdx = STATUS_ORDER[step.key] ?? i;
-              const isActive = step.key === report.project_status;
-              const isDone = currentStep > stepIdx;
-              return (
-                <div key={step.key} className="flex items-center gap-1">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                    isActive ? "bg-primary text-primary-foreground" :
-                    isDone ? "bg-primary/20 text-primary" :
-                    "bg-muted text-muted-foreground"
-                  }`}>
-                    {isDone && <CheckCircle2 className="h-3 w-3" />}
-                    {step.label}
-                  </div>
-                  {i < LIFECYCLE_STEPS.length - 1 && <div className={`w-6 h-0.5 ${isDone ? "bg-primary" : "bg-muted"}`} />}
-                </div>
-              );
-            })}
-          </div>
+          <ProjectLifecycleManager
+            reportId={reportId}
+            currentStatus={currentStatus}
+            isOwner={isOwner}
+            onStatusChange={setCurrentStatus}
+          />
         </CardContent>
       </Card>
 
