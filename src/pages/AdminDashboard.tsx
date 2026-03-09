@@ -177,39 +177,55 @@ export default function AdminDashboard() {
     }
   };
 
-  const exportReport = async (type: string) => {
+  const convertToCSV = (data: any[]): string => {
+    if (data.length === 0) return '';
+    const headers = Object.keys(data[0]);
+    const rows = data.map(row => headers.map(h => {
+      const val = row[h];
+      const str = val === null || val === undefined ? '' : String(val);
+      return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+    }).join(','));
+    return [headers.join(','), ...rows].join('\n');
+  };
+
+  const exportReport = async (type: string, format: 'json' | 'csv' = 'json') => {
     try {
       let data: any[] = [];
-      let filename = '';
+      let baseName = '';
 
       switch (type) {
         case 'users': {
           const { data: users } = await supabase.from('profiles').select('user_id, full_name, email, organization, country, is_verified, created_at').order('created_at', { ascending: false }).limit(1000);
           data = users || [];
-          filename = 'user-activity-report.json';
+          baseName = 'user-activity-report';
           break;
         }
         case 'projects': {
           const { data: reports } = await supabase.from('reports').select('id, title, sdg_goal, country_code, project_status, cost, beneficiaries, submitted_at').order('submitted_at', { ascending: false }).limit(1000);
           data = reports || [];
-          filename = 'project-analytics.json';
+          baseName = 'project-analytics';
           break;
         }
         case 'verifications': {
           const { data: verifications } = await supabase.from('verification_logs').select('*').order('created_at', { ascending: false }).limit(1000);
           data = verifications || [];
-          filename = 'verification-report.json';
+          baseName = 'verification-report';
           break;
         }
         case 'moderation': {
           const { data: flags } = await supabase.from('report_flags').select('*').order('created_at', { ascending: false }).limit(1000);
           data = flags || [];
-          filename = 'moderation-log.json';
+          baseName = 'moderation-log';
           break;
         }
       }
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const isCSV = format === 'csv';
+      const content = isCSV ? convertToCSV(data) : JSON.stringify(data, null, 2);
+      const mimeType = isCSV ? 'text/csv' : 'application/json';
+      const filename = `${baseName}.${isCSV ? 'csv' : 'json'}`;
+
+      const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = filename; a.click();
@@ -218,6 +234,18 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
       toast.error('Failed to export report');
+    }
+  };
+
+  const handleCampaignVerification = async (campaignId: string, verified: boolean) => {
+    try {
+      const { error } = await supabase.from('fundraising_campaigns').update({ is_verified: verified }).eq('id', campaignId);
+      if (error) throw error;
+      toast.success(verified ? 'Campaign verified' : 'Campaign unverified');
+      loadDashboard();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update campaign');
     }
   };
 
