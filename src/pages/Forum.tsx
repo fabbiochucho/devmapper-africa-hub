@@ -398,6 +398,13 @@ const Forum = () => {
                   isAdmin={isAdmin}
                 />
               ))}
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <Button variant="outline" onClick={() => fetchPosts(page + 1)}>
+                    Load More Posts
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="trending" className="space-y-4 mt-4">
