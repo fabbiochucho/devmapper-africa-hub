@@ -46,14 +46,16 @@ export function useOptimizedQuery<T>(
   const { queryFn, deduplicationKey, ...restOptions } = options;
   
   const optimizedQueryFn = async () => {
-    if (!queryFn) throw new Error('queryFn is required');
+    if (!queryFn || typeof queryFn !== 'function') {
+      throw new Error('queryFn is required and must be a function');
+    }
     
     // Apply deduplication if key provided
     if (deduplicationKey) {
       return deduplicateRequest(deduplicationKey, queryFn as () => Promise<T>);
     }
     
-    return queryFn();
+    return (queryFn as () => Promise<T>)();
   };
   
   return useQuery({
@@ -65,7 +67,7 @@ export function useOptimizedQuery<T>(
     // Retry failed requests with exponential backoff
     retry: restOptions.retry ?? 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
+  } as any);
 }
 
 /**
