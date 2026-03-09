@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useOptimizedQuery, STALE_TIMES } from './useOptimizedQuery';
+import { CacheKeys } from '@/lib/query-utils';
 
 export interface DashboardStats {
   total_reports: number;
@@ -20,14 +21,16 @@ const defaultStats: DashboardStats = {
 };
 
 export function useDashboardStats() {
-  return useQuery({
+  return useOptimizedQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
-    queryFn: async (): Promise<DashboardStats> => {
+    deduplicationKey: CacheKeys.dashboardStats(),
+    queryFn: async () => {
       const { data, error } = await supabase.rpc('get_dashboard_stats');
       if (error) throw error;
       return data?.[0] ?? defaultStats;
     },
-    staleTime: 5 * 60 * 1000, // 5 min cache
+    // Dashboard stats update infrequently, cache for 10 minutes
+    staleTime: STALE_TIMES.SEMI_STATIC,
     refetchOnWindowFocus: false,
   });
 }

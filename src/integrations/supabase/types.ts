@@ -2584,6 +2584,17 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_dashboard_stats: {
+        Row: {
+          countries_count: number | null
+          last_updated: string | null
+          total_campaigns: number | null
+          total_change_makers: number | null
+          total_funds_raised: number | null
+          total_reports: number | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar_url: string | null
@@ -2704,6 +2715,7 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_dashboard_stats: { Args: never; Returns: undefined }
       reset_monthly_quotas: { Args: never; Returns: undefined }
     }
     Enums: {
