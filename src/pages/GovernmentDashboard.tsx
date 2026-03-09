@@ -490,6 +490,9 @@ const GovernmentDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* Budget Analytics Dashboard */}
+      <BudgetAnalyticsDashboard />
+
       <ComplianceAssessment actorType="government" />
 
       {/* AI Copilot */}

@@ -15,6 +15,7 @@ import {
 import ProductWalkthrough from "@/components/onboarding/ProductWalkthrough";
 import ProfileCompletionPrompt from "@/components/onboarding/ProfileCompletionPrompt";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import MyReportsTracker from "@/components/citizen/MyReportsTracker";
 
 interface DashboardStats {
   userReports: number;

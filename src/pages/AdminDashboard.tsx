@@ -13,6 +13,7 @@ import BroadcastManager from "@/components/admin/BroadcastManager";
 import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
+import PlatformHealthDashboard from "@/components/admin/PlatformHealthDashboard";
 
 interface PendingUser {
   id: string;
