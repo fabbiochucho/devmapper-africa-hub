@@ -10,6 +10,7 @@ import MobileBottomNav from "./navigation/MobileBottomNav";
 import NotificationCenter from "./notifications/NotificationCenter";
 import GlobalSearch from "./search/GlobalSearch";
 import OnboardingWizard from "./onboarding/OnboardingWizard";
+import SessionTimeoutWarning from "./SessionTimeoutWarning";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
