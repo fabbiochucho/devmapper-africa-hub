@@ -12,7 +12,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Users, MessageSquare, Search, MapPin, Target, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useDebounce } from "@/hooks/use-mobile";
 
 interface SearchResult {
   id: string;
