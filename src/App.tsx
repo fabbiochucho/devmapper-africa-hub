@@ -1,7 +1,8 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, memo } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
@@ -59,11 +60,18 @@ const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
 
+// Optimized QueryClient with proper caching and GC settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes (formerly cacheTime)
       retry: 2,
+      refetchOnWindowFocus: false, // Reduce unnecessary refetches
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
@@ -74,73 +82,75 @@ const P = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <AuthProvider>
-          <UserRoleProvider>
-            <BrowserRouter>
-              <Suspense fallback={<PageSkeleton />}>
-                <Routes>
-                  <Route element={<Layout />}>
-                    <Route path="/" element={<Index />} />
-                    {/* Public routes */}
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/change-makers" element={<ChangeMakers />} />
-                    <Route path="/change-makers/:id" element={<ChangeMakerDetail />} />
-                    <Route path="/fundraising" element={<Fundraising />} />
-                    <Route path="/guidelines" element={<Guidelines />} />
-                    <Route path="/support" element={<Support />} />
-                    <Route path="/resources" element={<Resources />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
-                    <Route path="/sdg-overview" element={<SdgOverview />} />
-                    <Route path="/connect" element={<Connect />} />
-                    <Route path="/spvf-standards" element={<SPVFStandards />} />
-                    <Route path="/dspm-methodology" element={<DSPMMethodology />} />
-                    <Route path="/verify/:certNumber" element={<VerifyCertificate />} />
-                    <Route path="/verify" element={<VerifyCertificate />} />
-                    <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
-                    <Route path="/certification-workflow" element={<CertificationWorkflow />} />
-                    <Route path="/platform-overview" element={<PlatformOverview />} />
-                    {/* Protected routes */}
-                    <Route path="/analytics" element={<P><Analytics /></P>} />
-                    <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
-                    <Route path="/government-dashboard" element={<P><GovernmentDashboard /></P>} />
-                    <Route path="/settings" element={<P><Settings /></P>} />
-                    <Route path="/submit-report" element={<P><SubmitReport /></P>} />
-                    <Route path="/submit-change-maker" element={<P><SubmitChangeMaker /></P>} />
-                    <Route path="/change-maker-analytics" element={<P><ChangeMakerAnalyticsPage /></P>} />
-                    <Route path="/user-management" element={<P><UserManagement /></P>} />
-                    <Route path="/admin-dashboard" element={<P><AdminDashboard /></P>} />
-                    <Route path="/forum" element={<P><Forum /></P>} />
-                    <Route path="/messages" element={<P><Messages /></P>} />
-                    <Route path="/training" element={<P><Training /></P>} />
-                    <Route path="/esg" element={<P><ESG /></P>} />
-                    <Route path="/billing-upgrade" element={<P><BillingUpgrade /></P>} />
-                    <Route path="/advanced-analytics" element={<P><AdvancedAnalyticsPage /></P>} />
-                    <Route path="/corporate-dashboard" element={<P><CorporateDashboard /></P>} />
-                    <Route path="/ngo-dashboard" element={<P><NgoDashboard /></P>} />
-                    <Route path="/my-analytics" element={<P><ChangeMakerMyAnalytics /></P>} />
-                    <Route path="/scholarship" element={<P><Scholarship /></P>} />
-                    <Route path="/my-projects" element={<P><MyProjects /></P>} />
-                    <Route path="/project-analytics" element={<P><ProjectAnalytics /></P>} />
-                    <Route path="/project-management" element={<P><ProjectManagement /></P>} />
-                    <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
-                    <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
-                    <Route path="/admin-crm" element={<P><AdminCRM /></P>} />
-                  </Route>
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-              <Sonner />
-            </BrowserRouter>
-          </UserRoleProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <UserRoleProvider>
+              <BrowserRouter>
+                <Suspense fallback={<PageSkeleton />}>
+                  <Routes>
+                    <Route element={<Layout />}>
+                      <Route path="/" element={<Index />} />
+                      {/* Public routes */}
+                      <Route path="/search" element={<SearchPage />} />
+                      <Route path="/change-makers" element={<ChangeMakers />} />
+                      <Route path="/change-makers/:id" element={<ChangeMakerDetail />} />
+                      <Route path="/fundraising" element={<Fundraising />} />
+                      <Route path="/guidelines" element={<Guidelines />} />
+                      <Route path="/support" element={<Support />} />
+                      <Route path="/resources" element={<Resources />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/pricing" element={<Pricing />} />
+                      <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
+                      <Route path="/sdg-overview" element={<SdgOverview />} />
+                      <Route path="/connect" element={<Connect />} />
+                      <Route path="/spvf-standards" element={<SPVFStandards />} />
+                      <Route path="/dspm-methodology" element={<DSPMMethodology />} />
+                      <Route path="/verify/:certNumber" element={<VerifyCertificate />} />
+                      <Route path="/verify" element={<VerifyCertificate />} />
+                      <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
+                      <Route path="/certification-workflow" element={<CertificationWorkflow />} />
+                      <Route path="/platform-overview" element={<PlatformOverview />} />
+                      {/* Protected routes */}
+                      <Route path="/analytics" element={<P><Analytics /></P>} />
+                      <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
+                      <Route path="/government-dashboard" element={<P><GovernmentDashboard /></P>} />
+                      <Route path="/settings" element={<P><Settings /></P>} />
+                      <Route path="/submit-report" element={<P><SubmitReport /></P>} />
+                      <Route path="/submit-change-maker" element={<P><SubmitChangeMaker /></P>} />
+                      <Route path="/change-maker-analytics" element={<P><ChangeMakerAnalyticsPage /></P>} />
+                      <Route path="/user-management" element={<P><UserManagement /></P>} />
+                      <Route path="/admin-dashboard" element={<P><AdminDashboard /></P>} />
+                      <Route path="/forum" element={<P><Forum /></P>} />
+                      <Route path="/messages" element={<P><Messages /></P>} />
+                      <Route path="/training" element={<P><Training /></P>} />
+                      <Route path="/esg" element={<P><ESG /></P>} />
+                      <Route path="/billing-upgrade" element={<P><BillingUpgrade /></P>} />
+                      <Route path="/advanced-analytics" element={<P><AdvancedAnalyticsPage /></P>} />
+                      <Route path="/corporate-dashboard" element={<P><CorporateDashboard /></P>} />
+                      <Route path="/ngo-dashboard" element={<P><NgoDashboard /></P>} />
+                      <Route path="/my-analytics" element={<P><ChangeMakerMyAnalytics /></P>} />
+                      <Route path="/scholarship" element={<P><Scholarship /></P>} />
+                      <Route path="/my-projects" element={<P><MyProjects /></P>} />
+                      <Route path="/project-analytics" element={<P><ProjectAnalytics /></P>} />
+                      <Route path="/project-management" element={<P><ProjectManagement /></P>} />
+                      <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
+                      <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
+                      <Route path="/admin-crm" element={<P><AdminCRM /></P>} />
+                    </Route>
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+                <Sonner />
+              </BrowserRouter>
+            </UserRoleProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   </ErrorBoundary>
 );
 

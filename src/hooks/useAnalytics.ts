@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -9,41 +9,78 @@ interface AnalyticsEvent {
   referrer?: string;
 }
 
+/**
+ * Analytics tracking hook with debounced page views and batched events
+ */
 export function useAnalytics() {
   const { user } = useAuth();
+  const lastTrackedUrl = useRef<string | null>(null);
+  const eventQueue = useRef<AnalyticsEvent[]>([]);
+  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const track = async (event: AnalyticsEvent) => {
+  // Batched event flush - sends events in batches for efficiency
+  const flushEvents = useCallback(async () => {
+    if (eventQueue.current.length === 0) return;
+    
+    const eventsToSend = [...eventQueue.current];
+    eventQueue.current = [];
+    
     try {
-      const eventData = {
+      const formattedEvents = eventsToSend.map(event => ({
         ...event,
         user_id: user?.id || null,
-        page_url: event.page_url || window.location.href,
-        referrer: event.referrer || document.referrer,
-        user_agent: navigator.userAgent,
+        page_url: event.page_url || (typeof window !== 'undefined' ? window.location.href : ''),
+        referrer: event.referrer || (typeof document !== 'undefined' ? document.referrer : ''),
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
         created_at: new Date().toISOString()
-      };
+      }));
 
-      await supabase
-        .from('analytics_events')
-        .insert([eventData]);
+      await supabase.from('analytics_events').insert(formattedEvents);
     } catch (error) {
       console.error('Analytics tracking error:', error);
     }
-  };
+  }, [user?.id]);
 
-  const trackPageView = () => {
-    track({
+  // Queue event with debounced flush
+  const queueEvent = useCallback((event: AnalyticsEvent) => {
+    eventQueue.current.push(event);
+    
+    // Clear existing timeout
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+    }
+    
+    // Flush after 2 seconds of inactivity or when queue reaches 10 events
+    if (eventQueue.current.length >= 10) {
+      flushEvents();
+    } else {
+      flushTimeoutRef.current = setTimeout(flushEvents, 2000);
+    }
+  }, [flushEvents]);
+
+  const track = useCallback((event: AnalyticsEvent) => {
+    queueEvent(event);
+  }, [queueEvent]);
+
+  const trackPageView = useCallback(() => {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    
+    // Prevent duplicate tracking for same URL
+    if (lastTrackedUrl.current === currentUrl) return;
+    lastTrackedUrl.current = currentUrl;
+    
+    queueEvent({
       event_type: 'page_view',
       event_data: {
-        title: document.title,
-        url: window.location.href,
+        title: typeof document !== 'undefined' ? document.title : '',
+        url: currentUrl,
         timestamp: Date.now()
       }
     });
-  };
+  }, [queueEvent]);
 
-  const trackClick = (element: string, data?: any) => {
-    track({
+  const trackClick = useCallback((element: string, data?: any) => {
+    queueEvent({
       event_type: 'click',
       event_data: {
         element,
@@ -51,32 +88,37 @@ export function useAnalytics() {
         timestamp: Date.now()
       }
     });
-  };
+  }, [queueEvent]);
 
-  const trackCustomEvent = (eventType: string, data?: any) => {
-    track({
+  const trackCustomEvent = useCallback((eventType: string, data?: any) => {
+    queueEvent({
       event_type: eventType,
       event_data: {
         ...data,
         timestamp: Date.now()
       }
     });
-  };
+  }, [queueEvent]);
 
-  // Auto-track page views
+  // Auto-track page views on mount only (not on every visibility change)
   useEffect(() => {
     trackPageView();
 
-    // Track page visibility changes
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        trackPageView();
-      }
+    // Flush remaining events when user leaves page
+    const handleBeforeUnload = () => {
+      flushEvents();
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (flushTimeoutRef.current) {
+        clearTimeout(flushTimeoutRef.current);
+      }
+      flushEvents();
+    };
+  }, [trackPageView, flushEvents]);
 
   return {
     track,
