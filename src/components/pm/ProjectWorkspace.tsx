@@ -156,7 +156,14 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
 
         {/* Verification Status */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Verification Status</CardTitle></CardHeader>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Verification Status</CardTitle>
+              <SubmitVerificationDialog reportId={reportId} onSubmitted={() => {
+                supabase.from("project_verifications").select("*").eq("report_id", reportId).order("created_at").then(r => { if (r.data) setVerifications(r.data); });
+              }} />
+            </div>
+          </CardHeader>
           <CardContent className="space-y-2">
             {verificationLevels.map(level => {
               const status = getVerificationStatus(level.key);
