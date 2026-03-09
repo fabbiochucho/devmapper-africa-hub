@@ -38,32 +38,31 @@ const UnifiedDashboard = () => {
       if (!user?.id) return;
       
       try {
-        const { data: userReports, error: reportsError } = await supabase
-          .from('reports')
-          .select('*')
-          .eq('user_id', user.id);
+        // Batch all queries in parallel & use count/minimal selects
+        const [reportsResult, verificationsResult, allReportsResult] = await Promise.all([
+          supabase
+            .from('reports')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+          supabase
+            .from('verification_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+          supabase
+            .from('reports')
+            .select('cost'),
+        ]);
 
-        if (reportsError) throw reportsError;
+        if (reportsResult.error) throw reportsResult.error;
+        if (verificationsResult.error) throw verificationsResult.error;
+        if (allReportsResult.error) throw allReportsResult.error;
 
-        const { data: userVerifications, error: verificationsError } = await supabase
-          .from('verification_logs')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (verificationsError) throw verificationsError;
-
-        const { data: allReports, error: allReportsError } = await supabase
-          .from('reports')
-          .select('cost');
-
-        if (allReportsError) throw allReportsError;
-
-        const totalProjects = allReports?.length || 0;
-        const totalFunding = allReports?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) || 0;
+        const totalProjects = allReportsResult.data?.length || 0;
+        const totalFunding = allReportsResult.data?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) || 0;
 
         setStats({
-          userReports: userReports?.length || 0,
-          userVerifications: userVerifications?.length || 0,
+          userReports: reportsResult.count || 0,
+          userVerifications: verificationsResult.count || 0,
           totalProjects,
           totalFunding
         });

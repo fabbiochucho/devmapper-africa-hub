@@ -1,19 +1,27 @@
-import { useEffect } from "react";
+import { lazy, Suspense } from "react";
 import AuthModal from "@/components/AuthModal";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import UnifiedDashboard from "@/components/UnifiedDashboard";
 import { useState } from "react";
 import HeroSection from "@/components/landing/HeroSection";
-import FeaturesGridSection from "@/components/landing/FeaturesGridSection";
-import MapSection from "@/components/landing/MapSection";
-import WhyNowSection from "@/components/landing/WhyNowSection";
-import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import ImpactMetricsSection from "@/components/landing/ImpactMetricsSection";
-import ChangeMakersSection from "@/components/landing/ChangeMakersSection";
-import PartnersCarousel from "@/components/landing/PartnersCarousel";
-import FinalCTASection from "@/components/landing/FinalCTASection";
 import SdgCarousel from "@/components/landing/SdgCarousel";
+import FeaturesGridSection from "@/components/landing/FeaturesGridSection";
+
+// Lazy load below-fold sections for faster initial paint
+const WhyNowSection = lazy(() => import("@/components/landing/WhyNowSection"));
+const MapSection = lazy(() => import("@/components/landing/MapSection"));
+const HowItWorksSection = lazy(() => import("@/components/landing/HowItWorksSection"));
+const ImpactMetricsSection = lazy(() => import("@/components/landing/ImpactMetricsSection"));
+const ChangeMakersSection = lazy(() => import("@/components/landing/ChangeMakersSection"));
+const PartnersCarousel = lazy(() => import("@/components/landing/PartnersCarousel"));
+const FinalCTASection = lazy(() => import("@/components/landing/FinalCTASection"));
+
+const SectionFallback = () => (
+  <div className="py-16 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+  </div>
+);
 
 export default function Index() {
   const { user: authUser, loading } = useAuth();
@@ -41,16 +49,33 @@ export default function Index() {
 
   return (
     <div className="space-y-0">
+      {/* Above-the-fold: loaded eagerly */}
       <HeroSection user={null} setShowAuthModal={setShowAuthModal} />
       <SdgCarousel />
       <FeaturesGridSection />
-      <WhyNowSection />
-      <MapSection />
-      <HowItWorksSection />
-      <ImpactMetricsSection />
-      <ChangeMakersSection />
-      <PartnersCarousel />
-      <FinalCTASection onGetStarted={() => setShowAuthModal(true)} />
+
+      {/* Below-the-fold: lazy loaded */}
+      <Suspense fallback={<SectionFallback />}>
+        <WhyNowSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <MapSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <HowItWorksSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <ImpactMetricsSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <ChangeMakersSection />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <PartnersCarousel />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <FinalCTASection onGetStarted={() => setShowAuthModal(true)} />
+      </Suspense>
 
       <AuthModal 
         isOpen={showAuthModal} 

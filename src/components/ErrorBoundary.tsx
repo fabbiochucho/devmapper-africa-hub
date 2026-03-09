@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   children: ReactNode;
@@ -28,6 +29,30 @@ class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
+
+    // Report error to analytics_events for monitoring
+    this.reportError(error, errorInfo);
+  }
+
+  private async reportError(error: Error, errorInfo: ErrorInfo) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('analytics_events').insert({
+        event_type: 'client_error',
+        user_id: user?.id || null,
+        page_url: typeof window !== 'undefined' ? window.location.href : '',
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+        event_data: {
+          error_name: error.name,
+          error_message: error.message,
+          error_stack: error.stack?.slice(0, 2000),
+          component_stack: errorInfo.componentStack?.slice(0, 2000),
+          timestamp: Date.now(),
+        },
+      });
+    } catch {
+      // Silently fail - don't cause more errors
+    }
   }
 
   private handleRetry = () => {
