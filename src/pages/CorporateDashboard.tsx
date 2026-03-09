@@ -137,6 +137,7 @@ const TargetCard = ({ target, showEdit, onStartEdit, editingId, editCurrentValue
 
 const CorporateDashboard = () => {
   const { user, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [targets, setTargets] = useState<CorporateTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
