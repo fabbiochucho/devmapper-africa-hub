@@ -27,6 +27,13 @@ const Settings = () => {
   const [phone, setPhone] = useState(profile?.phone || "");
   const [saving, setSaving] = useState(false);
 
+  // Entity enrichment fields
+  const [legalCapacity, setLegalCapacity] = useState((profile as any)?.legal_capacity || "");
+  const [sectorClassification, setSectorClassification] = useState((profile as any)?.sector_classification || "");
+  const [verificationTier, setVerificationTier] = useState((profile as any)?.verification_tier || "");
+  const [impactArea, setImpactArea] = useState((profile as any)?.impact_area || "");
+  const [savingEnrichment, setSavingEnrichment] = useState(false);
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
