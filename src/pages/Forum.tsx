@@ -321,6 +321,16 @@ const Forum = () => {
     toast.success('Post link copied to clipboard!');
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
