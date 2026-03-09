@@ -72,8 +72,8 @@ const priorityColors: Record<string, string> = {
 const statusIcons: Record<string, React.ReactNode> = {
   todo: <ListTodo className="h-4 w-4" />,
   in_progress: <Clock className="h-4 w-4 text-primary" />,
-  review: <ArrowUpDown className="h-4 w-4 text-orange-500" />,
-  done: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+  review: <ArrowUpDown className="h-4 w-4 text-muted-foreground" />,
+  done: <CheckCircle2 className="h-4 w-4 text-primary" />,
   blocked: <AlertTriangle className="h-4 w-4 text-destructive" />,
 };
 
