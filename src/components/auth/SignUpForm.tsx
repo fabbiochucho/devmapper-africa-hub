@@ -97,6 +97,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
       if (error) {
         toast.error(error.message);
+        setCaptchaToken(null); // Reset captcha on error
         if (error.message.includes("already registered")) {
           form.setError("email", {
             type: "manual",
