@@ -48,6 +48,10 @@ const Layout = () => {
         .eq("user_id", session.user.id)
         .eq("is_active", true);
 
+      // Admins skip onboarding entirely
+      const isAdmin = roles?.some((r: any) => ['admin', 'platform_admin', 'country_admin'].includes(r.role));
+      if (isAdmin) return;
+
       const needsOnboarding = !profileData?.full_name || !profileData?.country || !roles?.length;
       
       // Only show once per session
