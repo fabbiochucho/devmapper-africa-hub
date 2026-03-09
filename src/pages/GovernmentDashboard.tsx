@@ -243,6 +243,20 @@ const GovernmentDashboard = () => {
                 <Label>Location</Label>
                 <Input value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder="e.g., Lagos, Nigeria" />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input type="date" value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input type="date" value={formData.end_date} onChange={e => setFormData({ ...formData, end_date: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Beneficiaries</Label>
+                <Input type="number" value={formData.beneficiaries} onChange={e => setFormData({ ...formData, beneficiaries: e.target.value })} placeholder="Number of people impacted" />
+              </div>
               <div className="space-y-2">
                 <Label>SDG Goals <span className="text-destructive">*</span></Label>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">

@@ -393,6 +393,7 @@ const UnifiedDashboard = () => {
       </Tabs>
       <ProductWalkthrough />
       <ProfileCompletionPrompt />
+      <OnboardingWizard open={showOnboarding} onComplete={() => setShowOnboarding(false)} />
     </div>
   );
 };
