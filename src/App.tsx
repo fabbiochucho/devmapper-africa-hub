@@ -114,6 +114,7 @@ const App = () => (
                       <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
                       <Route path="/certification-workflow" element={<CertificationWorkflow />} />
                       <Route path="/platform-overview" element={<PlatformOverview />} />
+                      <Route path="/project/:id" element={<ProjectDetail />} />
                       {/* Protected routes */}
                       <Route path="/analytics" element={<P><Analytics /></P>} />
                       <Route path="/corporate-targets" element={<P><CorporateTargets /></P>} />
