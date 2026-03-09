@@ -420,6 +420,25 @@ const CorporateDashboard = () => {
 
       <EntityLocationsManager entityType="company" />
 
+      {/* ESG-Target Alignment Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            ESG-Target Alignment
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3">
+            Link your ESG indicators with corporate targets to auto-track progress. Navigate to the ESG module to update indicators.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => navigate('/esg')}>Open ESG Module</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/my-projects')}>Project Management</Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
           <TabsTrigger value="all">All Targets</TabsTrigger>
