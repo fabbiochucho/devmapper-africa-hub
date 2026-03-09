@@ -118,25 +118,6 @@ const GovernmentDashboard = () => {
     }
   };
 
-  if (!authLoading && !loading && (!hasRole("government_official") && !hasRole("admin") && !hasRole("platform_admin"))) {
-    return (
-      <div className="flex items-center justify-center h-full p-8">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <ShieldAlert className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-            <p className="text-muted-foreground mb-4">You need to be a Government Official to access this dashboard.</p>
-            <Button onClick={() => navigate("/auth")} variant="outline">Register as Government Official</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (loading || authLoading) {
-    return <div className="flex items-center justify-center h-full"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
-  }
-
   const sdgGoalMap = new Map(sdgGoals.map(g => [Number(g.value), g.label.replace(/Goal \d+: /, "")]));
 
   const overview = useMemo(() => {
