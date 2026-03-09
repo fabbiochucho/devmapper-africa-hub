@@ -9,8 +9,6 @@ import {
   Database,
   Brain,
   Building2,
-  Users,
-  BarChart3,
   Lock,
   Satellite,
   CheckCircle2,
