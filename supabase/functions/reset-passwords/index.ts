@@ -2,28 +2,63 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    // Create admin client with service role
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
+
+    // Authenticate the caller via JWT
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const callerClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
     })
 
-    // Get the new password from request body, default to 'tester123'
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const callerId = claimsData.claims.sub
+
+    // Verify the caller has admin or platform_admin role
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    const { data: roles } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', callerId)
+      .eq('is_active', true)
+      .in('role', ['admin', 'platform_admin'])
+
+    if (!roles || roles.length === 0) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Get the new password from request body
     let newPassword = 'tester123'
     try {
       const body = await req.json()
@@ -34,75 +69,48 @@ Deno.serve(async (req) => {
       // Use default password if no body provided
     }
 
-    console.log('Starting password reset for all users...')
-
     // List all users
     const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers()
-    
-    if (listError) {
-      console.error('Error listing users:', listError)
-      throw listError
-    }
+    if (listError) throw listError
 
-    console.log(`Found ${users.users.length} users to update`)
+    let successCount = 0
+    let failCount = 0
 
-    const results: { email: string; success: boolean; error?: string }[] = []
-
-    // Update each user's password
     for (const user of users.users) {
       try {
         const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
           user.id,
           { password: newPassword }
         )
-
         if (updateError) {
-          console.error(`Error updating password for ${user.email}:`, updateError)
-          results.push({ 
-            email: user.email || user.id, 
-            success: false, 
-            error: updateError.message 
-          })
+          failCount++
         } else {
-          console.log(`Password updated for ${user.email}`)
-          results.push({ 
-            email: user.email || user.id, 
-            success: true 
-          })
+          successCount++
         }
-      } catch (err) {
-        console.error(`Exception updating ${user.email}:`, err)
-        results.push({ 
-          email: user.email || user.id, 
-          success: false, 
-          error: err instanceof Error ? err.message : 'Unknown error' 
-        })
+      } catch {
+        failCount++
       }
     }
 
-    const successCount = results.filter(r => r.success).length
-    const failCount = results.filter(r => !r.success).length
-
+    // Return only counts — never leak user emails
     return new Response(
       JSON.stringify({
         message: `Password reset complete. ${successCount} succeeded, ${failCount} failed.`,
-        results
+        success_count: successCount,
+        fail_count: failCount,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Password reset error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      { 
+      JSON.stringify({ error: 'Internal server error' }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500,
       }
     )
   }
