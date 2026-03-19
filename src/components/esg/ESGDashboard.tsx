@@ -513,6 +513,13 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           />
         </TabsContent>
 
+        <TabsContent value="ifrs">
+          <IFRSReadinessAssessment
+            organizationId={organizationId}
+            organizationName={organization.name}
+          />
+        </TabsContent>
+
         <TabsContent value="reports">
           <ESGReportGenerator
             organizationName={organization.name}
