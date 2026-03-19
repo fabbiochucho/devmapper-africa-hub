@@ -22,7 +22,7 @@ interface ESGReportDialogProps {
   planType: 'free' | 'lite' | 'pro';
 }
 
-type ReportStandard = 'gri' | 'sdg' | 'tcfd' | 'cdp' | 'country';
+type ReportStandard = 'gri' | 'sdg' | 'tcfd' | 'cdp' | 'ifrs_sds' | 'country';
 
 interface StandardConfig {
   id: ReportStandard;
