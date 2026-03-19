@@ -39,6 +39,7 @@ import ESGDataVerification from './ESGDataVerification';
 import SupplierCSVImporter from './SupplierCSVImporter';
 import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
+import IFRSReadinessAssessment from './IFRSReadinessAssessment';
 
 interface ESGIndicators {
   id: string;
