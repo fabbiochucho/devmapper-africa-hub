@@ -35,7 +35,7 @@ interface StandardConfig {
 }
 
 const COUNTRY_STANDARDS = [
-  { code: 'NG', name: 'Nigeria SEC ESG Guidelines' },
+  { code: 'NG', name: 'Nigeria FRC IFRS SDS / SRG1 2026' },
   { code: 'ZA', name: 'South Africa King IV / JSE Sustainability' },
   { code: 'KE', name: 'Kenya CMA ESG Reporting' },
   { code: 'GH', name: 'Ghana Stock Exchange ESG' },
