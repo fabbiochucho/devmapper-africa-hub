@@ -232,7 +232,7 @@ export default function ESGReportDialog({
           {/* Standard Selection */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">Reporting Standard</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {STANDARDS.map(std => {
                 const accessible = canAccess(std);
                 return (
