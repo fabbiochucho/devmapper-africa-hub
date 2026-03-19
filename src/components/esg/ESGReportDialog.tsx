@@ -22,7 +22,7 @@ interface ESGReportDialogProps {
   planType: 'free' | 'lite' | 'pro';
 }
 
-type ReportStandard = 'gri' | 'sdg' | 'tcfd' | 'cdp' | 'country';
+type ReportStandard = 'gri' | 'sdg' | 'tcfd' | 'cdp' | 'ifrs_sds' | 'country';
 
 interface StandardConfig {
   id: ReportStandard;
@@ -35,7 +35,7 @@ interface StandardConfig {
 }
 
 const COUNTRY_STANDARDS = [
-  { code: 'NG', name: 'Nigeria SEC ESG Guidelines' },
+  { code: 'NG', name: 'Nigeria FRC IFRS SDS / SRG1 2026' },
   { code: 'ZA', name: 'South Africa King IV / JSE Sustainability' },
   { code: 'KE', name: 'Kenya CMA ESG Reporting' },
   { code: 'GH', name: 'Ghana Stock Exchange ESG' },
@@ -74,11 +74,29 @@ const STANDARDS: StandardConfig[] = [
     ],
   },
   {
+    id: 'ifrs_sds',
+    name: 'IFRS S1/S2',
+    fullName: 'IFRS Sustainability Disclosure Standards (ISSB)',
+    icon: <Globe className="w-4 h-4" />,
+    description: 'Global baseline: IFRS S1 General Requirements + IFRS S2 Climate-Related Disclosures (ISSB, effective Jan 2024)',
+    sections: [
+      { id: 'ifrs_governance', label: 'Governance (IFRS S1.26-27)', description: 'Board/management oversight of sustainability-related risks and opportunities' },
+      { id: 'ifrs_strategy', label: 'Strategy (IFRS S1.28-42)', description: 'Effects on business model, value chain, financial position, and transition plans' },
+      { id: 'ifrs_risk', label: 'Risk Management (IFRS S1.43-44)', description: 'Processes to identify, assess, prioritise, and monitor sustainability risks' },
+      { id: 'ifrs_metrics', label: 'Metrics & Targets (IFRS S1.45-53)', description: 'Performance metrics, targets, and progress tracking' },
+      { id: 'ifrs_ghg', label: 'GHG Emissions (IFRS S2.29)', description: 'Scope 1, 2, 3 emissions per GHG Protocol, measurement approach, internal carbon price' },
+      { id: 'ifrs_climate_resilience', label: 'Climate Resilience & Scenario Analysis', description: 'Scenario analysis (1.5°C / 2°C), transition plans, physical and transition risk assessment' },
+      { id: 'ifrs_transition', label: 'Transition Plans & Targets (IFRS S2.33-36)', description: 'GHG reduction targets, science-based alignment, Paris Agreement compatibility' },
+      { id: 'ifrs_cross_industry', label: 'Cross-Industry Climate Metrics (IFRS S2.29b-g)', description: 'Transition/physical risk exposure, capital deployment, internal carbon price, remuneration' },
+      { id: 'ifrs_compliance', label: 'Statement of Compliance', description: 'Explicit and unreserved statement of compliance with IFRS Sustainability Disclosure Standards' },
+    ],
+  },
+  {
     id: 'tcfd',
     name: 'TCFD',
     fullName: 'Task Force on Climate-Related Financial Disclosures',
     icon: <Leaf className="w-4 h-4" />,
-    description: 'Climate risk and opportunity disclosures for financial stakeholders',
+    description: 'Climate risk and opportunity disclosures for financial stakeholders (now superseded by ISSB)',
     proOnly: true,
     sections: [
       { id: 'tcfd_governance', label: 'Governance', description: 'Board oversight and management role in climate risks' },
@@ -106,12 +124,15 @@ const STANDARDS: StandardConfig[] = [
     name: 'Country',
     fullName: 'Country-Specific Standards',
     icon: <Shield className="w-4 h-4" />,
-    description: 'Comply with African country-specific ESG reporting requirements',
+    description: 'Comply with African country-specific sustainability reporting requirements',
     sections: [
-      { id: 'country_governance', label: 'Corporate Governance', description: 'Board composition, ethics, risk management' },
-      { id: 'country_environmental', label: 'Environmental Compliance', description: 'Local environmental regulations and performance' },
-      { id: 'country_social', label: 'Social Impact', description: 'Community development, employment, local procurement' },
-      { id: 'country_economic', label: 'Economic Contribution', description: 'Tax, jobs, local economic development' },
+      { id: 'country_governance', label: 'Governance & Board Oversight', description: 'Board sustainability oversight structure, policies, and risk management' },
+      { id: 'country_environmental', label: 'Environmental Compliance', description: 'Local environmental regulations, EIA, NESREA, and climate change act compliance' },
+      { id: 'country_social', label: 'Social Impact & Community', description: 'Community development, employment, local procurement, host community obligations' },
+      { id: 'country_economic', label: 'Economic Contribution', description: 'Tax, jobs, local economic development, sustainable finance principles' },
+      { id: 'country_ghg', label: 'GHG Emissions & Carbon Price', description: 'Scope 1/2/3 emissions, internal carbon price disclosure, IPCC/UNFCCC calculator usage' },
+      { id: 'country_readiness', label: 'FRC Readiness & Compliance', description: 'Readiness test status, adoption phase, statement of compliance, ICSR controls' },
+      { id: 'country_assurance', label: 'Assurance Status', description: 'Assurance level, provider registration, timeline compliance per FRC roadmap' },
     ],
   },
 ];
@@ -211,7 +232,7 @@ export default function ESGReportDialog({
           {/* Standard Selection */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">Reporting Standard</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {STANDARDS.map(std => {
                 const accessible = canAccess(std);
                 return (
@@ -346,8 +367,137 @@ function buildReport(opts: {
 
     let content = '';
 
-    // Environment-related sections
-    if (sId.includes('environmental') || sId.includes('emissions') || sId.includes('climate') || sId.includes('metrics')) {
+    // IFRS S1/S2 GHG emissions section
+    if (sId === 'ifrs_ghg' || sId === 'country_ghg') {
+      const scope1 = indicators?.carbon_scope1_tonnes || 0;
+      const scope2 = indicators?.carbon_scope2_tonnes || 0;
+      const scope3 = indicators?.carbon_scope3_tonnes || 0;
+      content = `
+        <h3>Absolute Gross GHG Emissions (GHG Protocol Corporate Standard)</h3>
+        <table class="data-table">
+          <thead><tr><th>Scope</th><th>Emissions (tCO2e)</th><th>% of Total</th><th>Measurement Approach</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Scope 1</strong> — Direct emissions</td><td>${scope1.toLocaleString()}</td><td>${totalEmissions > 0 ? ((scope1 / totalEmissions) * 100).toFixed(1) : 0}%</td><td>Activity-based calculation</td></tr>
+            <tr><td><strong>Scope 2</strong> — Indirect (energy)</td><td>${scope2.toLocaleString()}</td><td>${totalEmissions > 0 ? ((scope2 / totalEmissions) * 100).toFixed(1) : 0}%</td><td>Location-based method</td></tr>
+            <tr><td><strong>Scope 3</strong> — Value chain</td><td>${scope3.toLocaleString()}</td><td>${totalEmissions > 0 ? ((scope3 / totalEmissions) * 100).toFixed(1) : 0}%</td><td>GHG Protocol Value Chain Standard</td></tr>
+            <tr class="total-row"><td><strong>Total GHG Emissions</strong></td><td><strong>${totalEmissions.toLocaleString()}</strong></td><td><strong>100%</strong></td><td></td></tr>
+          </tbody>
+        </table>
+        <h3>Resource Consumption Indicators</h3>
+        <table class="data-table">
+          <thead><tr><th>Metric</th><th>Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td>Energy Consumption</td><td>${(indicators?.energy_consumption_kwh || 0).toLocaleString()}</td><td>kWh</td></tr>
+            <tr><td>Renewable Energy Share</td><td>${(indicators?.renewable_energy_percentage || 0).toFixed(1)}</td><td>%</td></tr>
+            <tr><td>Water Consumption</td><td>${(indicators?.water_consumption_m3 || 0).toLocaleString()}</td><td>m³</td></tr>
+            <tr><td>Waste Generated</td><td>${(indicators?.waste_generated_tonnes || 0).toLocaleString()}</td><td>tonnes</td></tr>
+          </tbody>
+        </table>
+        <p class="source"><em>Note: Internal carbon price disclosure required per IFRS S2.29(f). Entities without jurisdictional carbon pricing should use comparable jurisdiction estimates as recommended by Nigeria FRC SRG1 §9.</em></p>`;
+    }
+    // IFRS S1/S2 Governance section
+    else if (sId === 'ifrs_governance' || sId === 'ifrs_s2_governance') {
+      content = `
+        <p>This section should disclose the governance body(s) responsible for oversight of sustainability-related risks and opportunities, including:</p>
+        <ul>
+          <li>How responsibilities are reflected in terms of reference, mandates, and policies</li>
+          <li>Skills and competencies available for managing sustainability matters</li>
+          <li>How and how often the body is informed about sustainability-related risks and opportunities</li>
+          <li>How sustainability is considered when overseeing strategy, major transactions, and risk management</li>
+          <li>Management's role in governance processes, controls, and procedures</li>
+          <li>Executive remuneration linked to climate-related considerations (IFRS S2.29(g))</li>
+        </ul>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-value">${(indicators?.esg_score || 0).toFixed(0)}</div><div class="metric-label">ESG Score</div></div>
+          <div class="metric-card"><div class="metric-value">${totalEmissions.toLocaleString()}</div><div class="metric-label">Total Emissions (tCO2e)</div></div>
+        </div>`;
+    }
+    // IFRS Climate Resilience & Scenario Analysis
+    else if (sId === 'ifrs_climate_resilience') {
+      if (scenarios.length > 0) {
+        const rows = scenarios.map(s =>
+          `<tr><td>${s.name}</td><td>${s.baseline_year}→${s.target_year}</td><td>${s.status || 'draft'}</td><td>${s.description || '-'}</td></tr>`
+        ).join('');
+        content = `
+          <p>Climate resilience assessment per IFRS S2.22: entities shall use scenario analysis to assess resilience to climate-related changes, uncertainties, and transition risks.</p>
+          <table class="data-table"><thead><tr><th>Scenario</th><th>Timeline</th><th>Status</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table>
+          <p class="source"><em>Recommended: Include analysis consistent with 1.5°C and 2°C warming scenarios per Paris Agreement. Nigeria FRC allows qualitative analysis initially, progressing to quantitative.</em></p>`;
+      } else {
+        content = '<p>No scenarios modeled yet. IFRS S2 requires climate resilience assessment using scenario analysis.</p><p class="source"><em>Nigeria FRC SRG1 §10: Entities may use qualitative scenario analysis initially and progress to quantitative for subsequent periods.</em></p>';
+      }
+    }
+    // IFRS Transition Plans & Targets
+    else if (sId === 'ifrs_transition') {
+      content = `
+        <p>Per IFRS S2.33-36, entities must disclose climate-related targets including GHG reduction targets, whether science-based, and transition plan details.</p>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-value">${totalEmissions.toLocaleString()}</div><div class="metric-label">Current Total Emissions</div></div>
+          <div class="metric-card"><div class="metric-value">${(indicators?.renewable_energy_percentage || 0).toFixed(0)}%</div><div class="metric-label">Renewable Energy Share</div></div>
+        </div>
+        <p class="source"><em>Disclosures should include: target scope, base year, target year, progress, whether validated by third party, and compatibility with Paris Agreement.</em></p>`;
+    }
+    // IFRS Cross-Industry Metrics
+    else if (sId === 'ifrs_cross_industry') {
+      content = `
+        <h3>Cross-Industry Climate Metrics (IFRS S2.29b-g)</h3>
+        <table class="data-table">
+          <thead><tr><th>Metric Category</th><th>Disclosure Required</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Transition Risks</td><td>Amount and % of assets/activities vulnerable to transition risks</td><td>To be assessed</td></tr>
+            <tr><td>Physical Risks</td><td>Amount and % of assets/activities vulnerable to physical risks</td><td>To be assessed</td></tr>
+            <tr><td>Climate Opportunities</td><td>Amount and % of assets/activities aligned with opportunities</td><td>To be assessed</td></tr>
+            <tr><td>Capital Deployment</td><td>Capital deployed towards climate-related risks and opportunities</td><td>To be assessed</td></tr>
+            <tr><td>Internal Carbon Price</td><td>Price per tCO2e used in decision-making</td><td>Required per IFRS S2.29(f)</td></tr>
+            <tr><td>Remuneration</td><td>% of executive remuneration linked to climate considerations</td><td>To be assessed</td></tr>
+          </tbody>
+        </table>`;
+    }
+    // Statement of Compliance
+    else if (sId === 'ifrs_compliance') {
+      content = `
+        <div style="border:2px solid #065f46;padding:20px;border-radius:8px;margin:16px 0;background:#f0fdf4">
+          <h3 style="color:#065f46;margin-bottom:8px">Statement of Compliance</h3>
+          <p>The sustainability-related financial disclosures of <strong>${org}</strong> for the reporting year ending ${year} have been prepared in accordance with IFRS Sustainability Disclosure Standards issued by the International Sustainability Standards Board (ISSB), comprising IFRS S1 <em>General Requirements for Disclosure of Sustainability-related Financial Information</em> and IFRS S2 <em>Climate-related Disclosures</em>.</p>
+          <p style="margin-top:8px">These disclosures comply with all requirements of the applicable IFRS Sustainability Disclosure Standards${countryStandard ? ' and the Nigeria FRC Sustainability Reporting Guideline (SRG1) 2026' : ''}.</p>
+          <p style="margin-top:12px;font-size:12px;color:#6b7280"><em>This statement is made in accordance with IFRS S1.72 and Nigeria FRC SRG1 §2.</em></p>
+        </div>`;
+    }
+    // FRC Readiness & Compliance (Nigeria country)
+    else if (sId === 'country_readiness') {
+      content = `
+        <h3>FRC IFRS SDS Adoption Status</h3>
+        <table class="data-table">
+          <thead><tr><th>Requirement</th><th>Reference</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Board Resolution for IFRS SDS Adoption</td><td>FRC Roadmap Stage 1</td><td>To be confirmed</td></tr>
+            <tr><td>GAP Analysis Report</td><td>FRC Roadmap Stage 1</td><td>To be confirmed</td></tr>
+            <tr><td>Sustainability Disclosure Policies</td><td>SRG1 §12</td><td>To be confirmed</td></tr>
+            <tr><td>Materiality Assessment</td><td>IFRS S1.17-19</td><td>To be confirmed</td></tr>
+            <tr><td>Governance Structure</td><td>SRG1 §2, IFRS S1.26</td><td>To be confirmed</td></tr>
+            <tr><td>Internal Control Over Sustainability Reporting (ICSR)</td><td>SRG1 §17</td><td>To be confirmed</td></tr>
+            <tr><td>Industry Classification (SASB)</td><td>SRG1 §7, IFRS S1.59(b)</td><td>To be confirmed</td></tr>
+            <tr><td>FRC Registration</td><td>FRC Act 2011, Section 41</td><td>To be confirmed</td></tr>
+          </tbody>
+        </table>
+        <p class="source"><em>All entities must pass the FRC Readiness Test before publishing sustainability disclosures (SRG1 §6).</em></p>`;
+    }
+    // Assurance status (Nigeria country)
+    else if (sId === 'country_assurance') {
+      content = `
+        <h3>Assurance Timeline (FRC Amended Roadmap 2026)</h3>
+        <table class="data-table">
+          <thead><tr><th>Period</th><th>Assurance Level</th><th>Scope</th></tr></thead>
+          <tbody>
+            <tr><td>Years 1–3 after reporting</td><td>Voluntary</td><td>No mandatory assurance required</td></tr>
+            <tr><td>Years 4–5 after reporting</td><td>Limited assurance</td><td>S1 and S2 disclosures (excl. Scope 3, scenario analysis, transition plans)</td></tr>
+            <tr><td>Year 6 after reporting</td><td>Limited + Reasonable</td><td>Limited: Scope 3, scenarios, transition plans. Reasonable: all other disclosures</td></tr>
+            <tr><td>Year 7+ after reporting</td><td>Full reasonable assurance</td><td>All sustainability disclosures (ISSA 5000)</td></tr>
+          </tbody>
+        </table>
+        <p class="source"><em>Assurance providers must be registered with FRC and comply with IESBA independence standards. Standard: ISSA 5000 (effective Dec 15, 2026).</em></p>`;
+    }
+    // Environment-related sections (existing)
+    else if (sId.includes('environmental') || sId.includes('emissions') || sId.includes('climate') || sId.includes('metrics')) {
       content = `
         <table class="data-table">
           <thead><tr><th>Metric</th><th>Value</th><th>Unit</th></tr></thead>
@@ -382,7 +532,7 @@ function buildReport(opts: {
         content = '<p>No scenarios modeled yet.</p>';
       }
     }
-    // Benchmark sections
+    // Benchmark / Risk sections
     else if (sId.includes('benchmark') || sId.includes('risk')) {
       if (benchmark) {
         content = `<div class="metrics-grid">

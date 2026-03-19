@@ -39,6 +39,7 @@ import ESGDataVerification from './ESGDataVerification';
 import SupplierCSVImporter from './SupplierCSVImporter';
 import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
+import IFRSReadinessAssessment from './IFRSReadinessAssessment';
 
 interface ESGIndicators {
   id: string;
@@ -335,6 +336,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
           <TabsTrigger value="verification">Verification</TabsTrigger>
+          <TabsTrigger value="ifrs">IFRS S1/S2</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -508,6 +510,13 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             indicatorId={latestIndicators?.id}
             currentStatus={(latestIndicators?.verification_status as 'unverified' | 'pending' | 'verified' | 'rejected') || 'unverified'}
             onStatusChange={() => loadESGData()}
+          />
+        </TabsContent>
+
+        <TabsContent value="ifrs">
+          <IFRSReadinessAssessment
+            organizationId={organizationId}
+            organizationName={organization.name}
           />
         </TabsContent>
 
