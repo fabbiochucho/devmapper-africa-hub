@@ -73,20 +73,20 @@
     "subtitle": "Visually track projects with real-time Earth observation data including vegetation, water, urban development, and emissions."
   },
   "impact": {
-    "title": "Our Impact in Numbers",
-    "subtitle": "Real data from real communities driving sustainable development across Africa.",
-    "africanCountries": "African Countries",
-    "africanCountriesDesc": "Coverage across the entire continent",
+    "title": "Verified Impact in Numbers",
+    "subtitle": "Real data from verified communities driving accountable, sustainable development across Africa.",
+    "africanCountries": "Countries Reached",
+    "africanCountriesDesc": "Verified coverage across the continent",
     "activeChangeMakers": "Active Change Makers",
-    "activeChangeMakersDesc": "Community members driving impact",
-    "verifiedProjects": "Verified Projects",
+    "activeChangeMakersDesc": "Community members driving verified impact",
+    "verifiedProjects": "Projects Tracked",
     "verifiedProjectsDesc": "Community-verified development initiatives",
     "fundsTracked": "Funds Tracked",
-    "fundsTrackedDesc": "Development investment monitored",
-    "partnerOrgs": "Partner Organizations",
-    "partnerOrgsDesc": "NGOs, governments, and corporates",
-    "sdgGoalsMapped": "SDG Goals Mapped",
-    "sdgGoalsMappedDesc": "Full UN SDG framework coverage"
+    "fundsTrackedDesc": "Development investment under verified oversight",
+    "partnerOrgs": "Active Campaigns",
+    "partnerOrgsDesc": "Funded through the platform",
+    "sdgGoalsMapped": "SDG Goals Covered",
+    "sdgGoalsMappedDesc": "Full UN SDG framework alignment"
   },
   "cta": {
     "title": "Build What Can Be Trusted",

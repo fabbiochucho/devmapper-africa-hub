@@ -25,7 +25,7 @@ export default function DemoVideoSection() {
                   <Play className="h-8 w-8 text-primary-foreground ml-1" />
                 </div>
                 <p className="text-sm text-muted-foreground font-medium">
-                  Platform Demo • Coming Soon
+                  Platform Walkthrough
                 </p>
               </div>
 
