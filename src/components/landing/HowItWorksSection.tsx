@@ -1,9 +1,16 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, TrendingUp } from "lucide-react";
+import { MapPin, Users, Award, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export default function HowItWorksSection() {
   const { t } = useTranslation();
+
+  const steps = [
+    { icon: MapPin, title: t('howItWorks.reportTitle'), desc: t('howItWorks.reportDesc'), step: "01" },
+    { icon: Users, title: t('howItWorks.verifyTitle'), desc: t('howItWorks.verifyDesc'), step: "02" },
+    { icon: Award, title: t('howItWorks.scoreTitle', { defaultValue: 'Score' }), desc: t('howItWorks.scoreDesc', { defaultValue: 'Each project is assigned a credibility and impact score based on evidence strength, verification depth, and outcome achievement.' }), step: "03" },
+    { icon: TrendingUp, title: t('howItWorks.trackTitle'), desc: t('howItWorks.trackDesc'), step: "04" },
+  ];
 
   return (
     <section className="py-16 bg-background">
@@ -15,28 +22,19 @@ export default function HowItWorksSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card>
-            <CardHeader>
-              <MapPin className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>{t('howItWorks.reportTitle')}</CardTitle>
-              <CardDescription>{t('howItWorks.reportDesc')}</CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Users className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>{t('howItWorks.verifyTitle')}</CardTitle>
-              <CardDescription>{t('howItWorks.verifyDesc')}</CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <TrendingUp className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>{t('howItWorks.trackTitle')}</CardTitle>
-              <CardDescription>{t('howItWorks.trackDesc')}</CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, index) => (
+            <Card key={index} className="relative group hover:shadow-lg transition-all duration-300 border hover:border-primary/50">
+              <CardHeader>
+                <div className="absolute -top-3 -left-3 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                  {step.step}
+                </div>
+                <step.icon className="w-10 h-10 text-primary mb-4 mt-2" />
+                <CardTitle className="text-lg">{step.title}</CardTitle>
+                <CardDescription>{step.desc}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
         </div>
       </div>
     </section>
