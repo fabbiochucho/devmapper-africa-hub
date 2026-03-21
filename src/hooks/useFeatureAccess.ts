@@ -82,10 +82,6 @@ export function useFeatureAccess() {
       featureMap[item.feature] = item.enabled;
     });
 
-    planFeaturesResult.data?.forEach(item => {
-      featureMap[item.feature_key] = item.enabled;
-    });
-
     setFeatures(featureMap);
   };
 

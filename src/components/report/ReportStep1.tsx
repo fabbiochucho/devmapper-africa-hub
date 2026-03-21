@@ -309,7 +309,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="photograph">Photograph</SelectItem>
                     <SelectItem value="document">Document</SelectItem>
                     <SelectItem value="testimony">Testimony</SelectItem>
