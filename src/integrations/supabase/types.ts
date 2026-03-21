@@ -380,6 +380,167 @@ export type Database = {
           },
         ]
       }
+      carbon_assets: {
+        Row: {
+          created_at: string | null
+          credits_generated: number | null
+          credits_owned: number | null
+          credits_retired: number | null
+          estimated_value_usd: number | null
+          id: string
+          issuance_date: string | null
+          methodology: string | null
+          organization_id: string | null
+          reference_price_usd: number | null
+          report_id: string | null
+          updated_at: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credits_generated?: number | null
+          credits_owned?: number | null
+          credits_retired?: number | null
+          estimated_value_usd?: number | null
+          id?: string
+          issuance_date?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          reference_price_usd?: number | null
+          report_id?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits_generated?: number | null
+          credits_owned?: number | null
+          credits_retired?: number | null
+          estimated_value_usd?: number | null
+          id?: string
+          issuance_date?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          reference_price_usd?: number | null
+          report_id?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carbon_assets_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_compliance: {
+        Row: {
+          article6_status: string | null
+          compliance_type: string | null
+          country_of_origin: string | null
+          created_at: string | null
+          er_credits_issued: number | null
+          id: string
+          itmo_eligible: boolean | null
+          jurisdiction: string | null
+          organization_id: string | null
+          report_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          article6_status?: string | null
+          compliance_type?: string | null
+          country_of_origin?: string | null
+          created_at?: string | null
+          er_credits_issued?: number | null
+          id?: string
+          itmo_eligible?: boolean | null
+          jurisdiction?: string | null
+          organization_id?: string | null
+          report_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          article6_status?: string | null
+          compliance_type?: string | null
+          country_of_origin?: string | null
+          created_at?: string | null
+          er_credits_issued?: number | null
+          id?: string
+          itmo_eligible?: boolean | null
+          jurisdiction?: string | null
+          organization_id?: string | null
+          report_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_compliance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carbon_compliance_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_transfer_logs: {
+        Row: {
+          carbon_asset_id: string | null
+          created_at: string | null
+          credits_transferred: number | null
+          from_entity: string | null
+          id: string
+          ownership_proof: string | null
+          to_entity: string | null
+          transfer_date: string | null
+        }
+        Insert: {
+          carbon_asset_id?: string | null
+          created_at?: string | null
+          credits_transferred?: number | null
+          from_entity?: string | null
+          id?: string
+          ownership_proof?: string | null
+          to_entity?: string | null
+          transfer_date?: string | null
+        }
+        Update: {
+          carbon_asset_id?: string | null
+          created_at?: string | null
+          credits_transferred?: number | null
+          from_entity?: string | null
+          id?: string
+          ownership_proof?: string | null
+          to_entity?: string | null
+          transfer_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_transfer_logs_carbon_asset_id_fkey"
+            columns: ["carbon_asset_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certification_applications: {
         Row: {
           applicant_id: string
@@ -1935,6 +2096,68 @@ export type Database = {
           },
         ]
       }
+      project_carbon_data: {
+        Row: {
+          carbon_verified: boolean | null
+          created_at: string | null
+          emission_source: string | null
+          estimated_emissions_tco2e: number | null
+          estimated_savings: number | null
+          evidence_url: string | null
+          funding_source: string | null
+          id: string
+          report_id: string
+          reporting_period_end: string | null
+          reporting_period_start: string | null
+          scope_types: string[] | null
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          carbon_verified?: boolean | null
+          created_at?: string | null
+          emission_source?: string | null
+          estimated_emissions_tco2e?: number | null
+          estimated_savings?: number | null
+          evidence_url?: string | null
+          funding_source?: string | null
+          id?: string
+          report_id: string
+          reporting_period_end?: string | null
+          reporting_period_start?: string | null
+          scope_types?: string[] | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          carbon_verified?: boolean | null
+          created_at?: string | null
+          emission_source?: string | null
+          estimated_emissions_tco2e?: number | null
+          estimated_savings?: number | null
+          evidence_url?: string | null
+          funding_source?: string | null
+          id?: string
+          report_id?: string
+          reporting_period_end?: string | null
+          reporting_period_start?: string | null
+          scope_types?: string[] | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_carbon_data_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_certifications: {
         Row: {
           certificate_number: string | null
@@ -1998,6 +2221,100 @@ export type Database = {
           },
         ]
       }
+      project_circularity: {
+        Row: {
+          circularity_score: number | null
+          created_at: string | null
+          id: string
+          material_input_quantity: number | null
+          material_input_type: string | null
+          report_id: string
+          reuse_percentage: number | null
+          updated_at: string | null
+          waste_generated_tonnes: number | null
+          waste_recycled_tonnes: number | null
+        }
+        Insert: {
+          circularity_score?: number | null
+          created_at?: string | null
+          id?: string
+          material_input_quantity?: number | null
+          material_input_type?: string | null
+          report_id: string
+          reuse_percentage?: number | null
+          updated_at?: string | null
+          waste_generated_tonnes?: number | null
+          waste_recycled_tonnes?: number | null
+        }
+        Update: {
+          circularity_score?: number | null
+          created_at?: string | null
+          id?: string
+          material_input_quantity?: number | null
+          material_input_type?: string | null
+          report_id?: string
+          reuse_percentage?: number | null
+          updated_at?: string | null
+          waste_generated_tonnes?: number | null
+          waste_recycled_tonnes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_circularity_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_decarbonisation: {
+        Row: {
+          baseline_emissions: number | null
+          created_at: string | null
+          id: string
+          methane_emissions_tco2e: number | null
+          methane_sector: string | null
+          reduction_strategy: string | null
+          report_id: string
+          target_emissions: number | null
+          target_year: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          baseline_emissions?: number | null
+          created_at?: string | null
+          id?: string
+          methane_emissions_tco2e?: number | null
+          methane_sector?: string | null
+          reduction_strategy?: string | null
+          report_id: string
+          target_emissions?: number | null
+          target_year?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          baseline_emissions?: number | null
+          created_at?: string | null
+          id?: string
+          methane_emissions_tco2e?: number | null
+          methane_sector?: string | null
+          reduction_strategy?: string | null
+          report_id?: string
+          target_emissions?: number | null
+          target_year?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_decarbonisation_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_dism_scores: {
         Row: {
           created_at: string
@@ -2052,6 +2369,53 @@ export type Database = {
             foreignKeyName: "project_dism_scores_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_financial_impact: {
+        Row: {
+          carbon_credit_value: number | null
+          created_at: string | null
+          efficiency_gains_pct: number | null
+          id: string
+          notes: string | null
+          operational_cost_savings: number | null
+          report_id: string
+          revenue_generated: number | null
+          roi_percentage: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          carbon_credit_value?: number | null
+          created_at?: string | null
+          efficiency_gains_pct?: number | null
+          id?: string
+          notes?: string | null
+          operational_cost_savings?: number | null
+          report_id: string
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          carbon_credit_value?: number | null
+          created_at?: string | null
+          efficiency_gains_pct?: number | null
+          id?: string
+          notes?: string | null
+          operational_cost_savings?: number | null
+          report_id?: string
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_financial_impact_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
             referencedRelation: "reports"
             referencedColumns: ["id"]
           },
