@@ -260,7 +260,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="infrastructure_damage">Infrastructure Damage</SelectItem>
                     <SelectItem value="environmental_concern">Environmental Concern</SelectItem>
                     <SelectItem value="budget_misuse">Budget Misuse</SelectItem>
