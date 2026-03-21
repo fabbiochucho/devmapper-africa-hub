@@ -70,27 +70,16 @@ export function useFeatureAccess() {
   };
 
   const loadFeaturesForPlan = async (plan: PlanType) => {
-    const [flagsResult, planFeaturesResult] = await Promise.all([
-      supabase
-        .from('feature_flags')
-        .select('feature, enabled')
-        .eq('plan', plan as any)
-        .eq('enabled', true),
-      supabase
-        .from('plan_features')
-        .select('feature_key, enabled')
-        .eq('plan', plan)
-        .eq('enabled', true),
-    ]);
+    const flagsResult = await supabase
+      .from('feature_flags')
+      .select('feature, enabled')
+      .eq('plan', plan as any)
+      .eq('enabled', true);
 
     const featureMap: FeatureFlags = {};
 
     flagsResult.data?.forEach(item => {
       featureMap[item.feature] = item.enabled;
-    });
-
-    planFeaturesResult.data?.forEach(item => {
-      featureMap[item.feature_key] = item.enabled;
     });
 
     setFeatures(featureMap);
