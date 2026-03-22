@@ -90,7 +90,7 @@ const About = () => {
           <div className="container mx-auto px-4 max-w-6xl">
             <h2 className="text-3xl font-bold text-center mb-3">Chief Development Mappers</h2>
             <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-              DevMapper is led by a husband-and-wife team combining decades of experience in global development, 
+              DevMapper is led by two extraordinary professionals combining decades of experience in global development, 
               health systems, ESG governance, education, and community empowerment.
             </p>
             <div className="grid md:grid-cols-2 gap-8">
