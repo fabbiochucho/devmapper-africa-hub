@@ -21,7 +21,7 @@ const plans = [
     projectLimit: 'Up to 10',
     monthlyAdd: 3,
     rollover: false,
-    users: 'Up to 5',
+    users: 'Up to 3',
     features: {
       project_workspace: true,
       multi_module: false,
@@ -70,7 +70,7 @@ const plans = [
     projectLimit: 'Up to 40',
     monthlyAdd: 5,
     rollover: true,
-    users: 'Up to 25',
+    users: 'Up to 10',
     popular: true,
     features: {
       project_workspace: true,
@@ -120,7 +120,7 @@ const plans = [
     projectLimit: 'Up to 150',
     monthlyAdd: 15,
     rollover: true,
-    users: 'Unlimited',
+    users: 'Up to 25',
     features: {
       project_workspace: true,
       multi_module: true,
@@ -169,7 +169,7 @@ const plans = [
     projectLimit: 'Unlimited',
     monthlyAdd: 'Custom',
     rollover: true,
-    users: 'Unlimited',
+    users: 'Up to 50',
     features: {
       project_workspace: true,
       multi_module: true,

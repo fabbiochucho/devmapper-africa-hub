@@ -49,9 +49,8 @@ const About = () => {
                   compliance frameworks.
                 </p>
                 <p className="text-lg leading-relaxed mb-4">
-                  Working in partnership with <strong>Synergy Network Services Ltd</strong> — an advisory, strategy, and execution 
-                  support firm that partners with governments, development institutions, foundations, and mission-aligned private 
-                  sector organizations to design, finance, and implement high-stakes reforms, programs, and systems across Africa.
+46:                   Working at the intersection of policy, financing, governance, and execution, we support DevMapper's strategic 
+                  positioning as development intelligence infrastructure for Africa's most complex challenges.
                 </p>
                 <div className="grid md:grid-cols-4 gap-6 mt-8">
                   <div className="text-center p-4 rounded-lg bg-muted/50">
@@ -91,7 +90,7 @@ const About = () => {
           <div className="container mx-auto px-4 max-w-6xl">
             <h2 className="text-3xl font-bold text-center mb-3">Chief Development Mappers</h2>
             <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
-              DevMapper is led by a husband-and-wife team combining decades of experience in global development, 
+              DevMapper is led by two extraordinary professionals combining decades of experience in global development, 
               health systems, ESG governance, education, and community empowerment.
             </p>
             <div className="grid md:grid-cols-2 gap-8">
@@ -210,8 +209,8 @@ const About = () => {
                     loading="lazy"
                   />
                   <CardTitle className="text-xl">Pauline Abiola-Oshunniyi</CardTitle>
-                  <p className="text-muted-foreground text-sm">Co-Chief Development Mapper & Community Lead</p>
-                  <p className="text-xs text-muted-foreground italic mt-1">Education Specialist & Community Development Practitioner</p>
+                   <p className="text-muted-foreground text-sm">Co-Chief Development Mapper & Community Lead</p>
+                   <p className="text-xs text-muted-foreground italic mt-1">International Development and Systems Leadership Strategist</p>
                   <div className="flex justify-center gap-2 mt-3">
                     <a href="https://www.linkedin.com/in/paulineabiolaoshunniyi" target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-muted rounded-full transition-colors" aria-label="LinkedIn">
                       <Linkedin className="h-4 w-4 text-muted-foreground" />
@@ -220,48 +219,57 @@ const About = () => {
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
                   <p className="text-sm leading-relaxed">
-                    Pauline Abiola-Oshunniyi is an <strong>education specialist and community development practitioner</strong> with over 
-                    15 years of experience in international development. Based in Nairobi, Kenya, she has led community-driven development 
-                    initiatives across West and East Africa, specializing in education, health, women's empowerment, and youth programs.
+                    Pauline Abiola-Oshunniyi is an <strong>award-winning international development professional, sustainability strategist, and systems leadership advocate</strong> working at the intersection of governance, ESG, and sustainable development across Africa.
                   </p>
                   <p className="text-sm leading-relaxed">
-                    As <strong>Co-founder of DiBadili Institute</strong>, Pauline brings deep expertise in community engagement methodologies, 
-                    participatory development, and stakeholder coordination. She ensures DevMapper remains grounded in the lived experiences 
-                    of the communities it serves — championing inclusive data practices, vernacular accessibility, and bottom-up verification.
+                    With more than two decades of experience across development practice, policy engagement, and institutional leadership, Pauline works with governments, development institutions, and private sector partners to design solutions that strengthen systems, empower communities, and support Africa's transition toward resilient and sustainable economies.
                   </p>
                   <p className="text-sm leading-relaxed">
-                    Her work spans education systems reform, teacher training, curriculum development, school management, and child 
-                    protection frameworks. She has collaborated with international NGOs, government education ministries, and faith-based 
-                    organizations to design and implement programs reaching thousands of learners and educators across the continent.
+                    She consults at the executive level through fractional leadership, strategic advisory, board-level engagement, and international speaking focused on sustainability, governance, systems strengthening, and future-ready leadership. Her work centers on translating complex development challenges into actionable strategies that strengthen institutions and unlock sustainable growth.
                   </p>
+                  <p className="text-sm leading-relaxed">
+                    Pauline is a pioneer Fellow of the <strong>Mandela Washington Fellowship</strong> under the Young African Leaders Initiative and a <strong>Vital Voices Global Partnership Lead Fellow</strong>. Her leadership has supported the design of partnerships with regional and global institutions, facilitated multi-stakeholder dialogues across Africa, and contributed to initiatives mobilizing development finance for institutional strengthening and sustainable development programs.
+                  </p>
+
+                  {/* Recognition */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Recognition</h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> UN Habitat Emerging Community Champion Award</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Transform Kenya Awards</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> AU / UN OCHA Helping Hands Award</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Mandela Washington Fellowship Pioneer Fellow</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Vital Voices Global Partnership Lead Fellow</li>
+                    </ul>
+                  </div>
 
                   {/* Core Focus Areas */}
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Core Focus Areas</h4>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <GraduationCap className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Education & Teacher Training</span>
+                        <Target className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Sustainability & ESG</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Heart className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Women's Empowerment</span>
+                        <Building className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Governance & Policy</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
                         <Users className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Community Engagement</span>
+                        <span>Systems Leadership</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Child Protection</span>
+                        <Heart className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Community Empowerment</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Curriculum Development</span>
+                        <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Strategic Advisory</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Target className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Youth Development</span>
+                        <GraduationCap className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Institutional Strengthening</span>
                       </div>
                     </div>
                   </div>
@@ -282,20 +290,20 @@ const About = () => {
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">DevMapper Role</h4>
                     <ul className="text-xs text-muted-foreground space-y-0.5">
-                      <li>• Leads community engagement and user experience strategy</li>
-                      <li>• Designs verification workflows with grassroots validators</li>
+                      <li>• Co-leads strategic vision and institutional partnerships</li>
+                      <li>• Designs community engagement and stakeholder coordination strategy</li>
                       <li>• Champions multilingual and inclusive platform design</li>
                       <li>• Oversees change maker nomination and recognition programs</li>
-                      <li>• Ensures data practices reflect community realities</li>
+                      <li>• Drives sustainability advisory and governance initiatives</li>
                     </ul>
                   </div>
 
                   <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge>Education</Badge>
-                    <Badge>Community Development</Badge>
-                    <Badge>Women's Empowerment</Badge>
-                    <Badge>Youth Programs</Badge>
-                    <Badge>Stakeholder Engagement</Badge>
+                    <Badge>Sustainability</Badge>
+                    <Badge>Governance</Badge>
+                    <Badge>Systems Leadership</Badge>
+                    <Badge>Strategic Advisory</Badge>
+                    <Badge>Community Empowerment</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -303,53 +311,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Synergy Network Services */}
-        <section className="py-16">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <Card className="border-l-4 border-l-accent">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Building className="w-5 h-5" />
-                  Synergy Network Services Ltd
-                </CardTitle>
-                <p className="text-muted-foreground text-sm">Strategic Advisory & Execution Partner</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm leading-relaxed">
-                  Synergy Network Services Ltd partners with governments, development institutions, foundations, and mission-aligned 
-                  private sector organizations to design, finance, and implement high-stakes reforms, programs, and systems across Africa.
-                </p>
-                <p className="text-sm leading-relaxed">
-                  Africa's most complex development challenges sit at the intersection of <strong>policy, financing, governance, and 
-                  execution</strong>. Synergy provides pragmatic advisory and execution support grounded in institutional realism — 
-                  supporting DevMapper's strategic positioning as development intelligence infrastructure.
-                </p>
-                <div className="grid sm:grid-cols-3 gap-4 mt-4">
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Strategy to Execution</h4>
-                    <p className="text-xs text-muted-foreground">From strategic design through implementation, ensuring ideas become operational results</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Independent Advisory</h4>
-                    <p className="text-xs text-muted-foreground">Contract-based, non-advocacy model aligned with global best practice</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Pan-African Reach</h4>
-                    <p className="text-xs text-muted-foreground">Multi-sector experience navigating political economy and delivery complexity</p>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <a href="https://synergynetworkservices.lovable.app" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                      Visit Synergy Network Services
-                    </Button>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+
 
         {/* DevMapper Team */}
         <section className="py-16 bg-muted/30">

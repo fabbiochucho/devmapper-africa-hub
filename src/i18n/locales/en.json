@@ -8,8 +8,8 @@
   },
   "hero": {
     "liveTracking": "Verified impact intelligence across 54 African nations",
-    "title": "Verify Impact. Unlock Funding. Build Trust.",
-    "subtitle": "DevMapper is Africa's infrastructure for verified impact and ESG accountability — enabling governments, corporates, and development partners to move from reported impact to proven impact.",
+    "title": "Track Goals. Verify Impact. Unlock Funding. Build Trust.",
+    "subtitle": "DevMapper is Africa's infrastructure for verified impact and ESG accountability. Enabling governments, corporates, and development partners to move from reported impact to proven impact.",
     "getStarted": "Get Started Free",
     "watchDemo": "Partner With Us",
     "projectsMapped": "Projects Mapped",
@@ -24,7 +24,7 @@
     "interactiveMapping": "Interactive Impact Map",
     "interactiveMappingDesc": "Explore verified and unverified projects across Africa with real-time Earth observation data, colour-coded by credibility status.",
     "communityVerification": "Community Verification",
-    "communityVerificationDesc": "Multi-layer validation from communities, partners, and institutions ensures data credibility — not just data collection.",
+    "communityVerificationDesc": "Multi-layer validation from communities, partners, and institutions ensures data credibility, not just data collection.",
     "realTimeAnalytics": "Decision Intelligence",
     "realTimeAnalyticsDesc": "Impact scoring, credibility ratings, and funding readiness indicators turn data into actionable insights for funders and executives.",
     "sdgAgenda": "SDG & Agenda 2063 Alignment",
@@ -58,7 +58,7 @@
   },
   "howItWorks": {
     "title": "How DevMapper Works",
-    "subtitle": "A simple system designed for real-world use — from ground-level capture to executive-level decision-making.",
+    "subtitle": "A simple system designed for real-world use, from ground-level capture to executive-level decision-making.",
     "reportTitle": "Capture",
     "reportDesc": "Projects are uploaded with geolocation, evidence, photos, and SDG alignment — capturing reality as it happens.",
     "verifyTitle": "Verify",

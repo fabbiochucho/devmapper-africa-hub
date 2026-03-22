@@ -101,8 +101,7 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-lg px-8 py-6 h-auto"
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold text-lg px-8 py-6 h-auto"
                   asChild
                 >
                   <Link to="/about">
