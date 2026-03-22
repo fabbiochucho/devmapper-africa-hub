@@ -311,53 +311,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Synergy Network Services */}
-        <section className="py-16">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <Card className="border-l-4 border-l-accent">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Building className="w-5 h-5" />
-                  Synergy Network Services Ltd
-                </CardTitle>
-                <p className="text-muted-foreground text-sm">Strategic Advisory & Execution Partner</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm leading-relaxed">
-                  Synergy Network Services Ltd partners with governments, development institutions, foundations, and mission-aligned 
-                  private sector organizations to design, finance, and implement high-stakes reforms, programs, and systems across Africa.
-                </p>
-                <p className="text-sm leading-relaxed">
-                  Africa's most complex development challenges sit at the intersection of <strong>policy, financing, governance, and 
-                  execution</strong>. Synergy provides pragmatic advisory and execution support grounded in institutional realism — 
-                  supporting DevMapper's strategic positioning as development intelligence infrastructure.
-                </p>
-                <div className="grid sm:grid-cols-3 gap-4 mt-4">
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Strategy to Execution</h4>
-                    <p className="text-xs text-muted-foreground">From strategic design through implementation, ensuring ideas become operational results</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Independent Advisory</h4>
-                    <p className="text-xs text-muted-foreground">Contract-based, non-advocacy model aligned with global best practice</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-sm mb-1">Pan-African Reach</h4>
-                    <p className="text-xs text-muted-foreground">Multi-sector experience navigating political economy and delivery complexity</p>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <a href="https://synergynetworkservices.lovable.app" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                      Visit Synergy Network Services
-                    </Button>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+
 
         {/* DevMapper Team */}
         <section className="py-16 bg-muted/30">
