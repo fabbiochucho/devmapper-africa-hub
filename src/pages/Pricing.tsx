@@ -120,7 +120,7 @@ const plans = [
     projectLimit: 'Up to 150',
     monthlyAdd: 15,
     rollover: true,
-    users: 'Unlimited',
+    users: 'Up to 25',
     features: {
       project_workspace: true,
       multi_module: true,
