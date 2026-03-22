@@ -231,33 +231,45 @@ const About = () => {
                     Pauline is a pioneer Fellow of the <strong>Mandela Washington Fellowship</strong> under the Young African Leaders Initiative and a <strong>Vital Voices Global Partnership Lead Fellow</strong>. Her leadership has supported the design of partnerships with regional and global institutions, facilitated multi-stakeholder dialogues across Africa, and contributed to initiatives mobilizing development finance for institutional strengthening and sustainable development programs.
                   </p>
 
+                  {/* Recognition */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Recognition</h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> UN Habitat Emerging Community Champion Award</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Transform Kenya Awards</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> AU / UN OCHA Helping Hands Award</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Mandela Washington Fellowship Pioneer Fellow</li>
+                      <li className="flex items-start gap-1.5"><Award className="w-3 h-3 text-primary mt-0.5 shrink-0" /> Vital Voices Global Partnership Lead Fellow</li>
+                    </ul>
+                  </div>
+
                   {/* Core Focus Areas */}
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Core Focus Areas</h4>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <GraduationCap className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Education & Teacher Training</span>
+                        <Target className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Sustainability & ESG</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Heart className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Women's Empowerment</span>
+                        <Building className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Governance & Policy</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
                         <Users className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Community Engagement</span>
+                        <span>Systems Leadership</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Child Protection</span>
+                        <Heart className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Community Empowerment</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <BookOpen className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Curriculum Development</span>
+                        <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Strategic Advisory</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
-                        <Target className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Youth Development</span>
+                        <GraduationCap className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Institutional Strengthening</span>
                       </div>
                     </div>
                   </div>
