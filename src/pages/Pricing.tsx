@@ -21,7 +21,7 @@ const plans = [
     projectLimit: 'Up to 10',
     monthlyAdd: 3,
     rollover: false,
-    users: 'Up to 5',
+    users: 'Up to 3',
     features: {
       project_workspace: true,
       multi_module: false,
