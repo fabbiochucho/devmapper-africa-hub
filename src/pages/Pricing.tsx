@@ -169,7 +169,7 @@ const plans = [
     projectLimit: 'Unlimited',
     monthlyAdd: 'Custom',
     rollover: true,
-    users: 'Unlimited',
+    users: 'Up to 50',
     features: {
       project_workspace: true,
       multi_module: true,

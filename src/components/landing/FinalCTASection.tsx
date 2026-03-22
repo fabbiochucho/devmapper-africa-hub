@@ -31,7 +31,7 @@ export default function FinalCTASection({ onGetStarted }: FinalCTASectionProps) 
             {t('cta.getStarted')}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-lg px-8 py-6 h-auto" asChild>
+          <Button size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold text-lg px-8 py-6 h-auto" asChild>
             <Link to="/contact">
               <Calendar className="mr-2 h-5 w-5" />
               {t('cta.scheduleDemo')}

@@ -8,7 +8,7 @@ export default function DemoVideoSection() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl font-bold mb-3">See DevMapper in Action</h2>
         <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Watch how organizations across Africa verify impact, manage ESG compliance, and generate audit-ready reports — all in one verification ecosystem.
+          Watch how organizations across Africa verify impact, manage ESG compliance, and generate audit-ready reports. All-in-one verification ecosystem.
         </p>
         <Card className="relative overflow-hidden group cursor-pointer border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
           <CardContent className="p-0">
