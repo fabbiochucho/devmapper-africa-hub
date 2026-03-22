@@ -49,9 +49,8 @@ const About = () => {
                   compliance frameworks.
                 </p>
                 <p className="text-lg leading-relaxed mb-4">
-                  Working in partnership with <strong>Synergy Network Services Ltd</strong> — an advisory, strategy, and execution 
-                  support firm that partners with governments, development institutions, foundations, and mission-aligned private 
-                  sector organizations to design, finance, and implement high-stakes reforms, programs, and systems across Africa.
+46:                   Working at the intersection of policy, financing, governance, and execution, we support DevMapper's strategic 
+                  positioning as development intelligence infrastructure for Africa's most complex challenges.
                 </p>
                 <div className="grid md:grid-cols-4 gap-6 mt-8">
                   <div className="text-center p-4 rounded-lg bg-muted/50">
