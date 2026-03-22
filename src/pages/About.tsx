@@ -209,8 +209,8 @@ const About = () => {
                     loading="lazy"
                   />
                   <CardTitle className="text-xl">Pauline Abiola-Oshunniyi</CardTitle>
-                  <p className="text-muted-foreground text-sm">Co-Chief Development Mapper & Community Lead</p>
-                  <p className="text-xs text-muted-foreground italic mt-1">Education Specialist & Community Development Practitioner</p>
+                   <p className="text-muted-foreground text-sm">Co-Chief Development Mapper & Community Lead</p>
+                   <p className="text-xs text-muted-foreground italic mt-1">International Development and Systems Leadership Strategist</p>
                   <div className="flex justify-center gap-2 mt-3">
                     <a href="https://www.linkedin.com/in/paulineabiolaoshunniyi" target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-muted rounded-full transition-colors" aria-label="LinkedIn">
                       <Linkedin className="h-4 w-4 text-muted-foreground" />
