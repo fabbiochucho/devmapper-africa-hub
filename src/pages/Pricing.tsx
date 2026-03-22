@@ -70,7 +70,7 @@ const plans = [
     projectLimit: 'Up to 40',
     monthlyAdd: 5,
     rollover: true,
-    users: 'Up to 25',
+    users: 'Up to 10',
     popular: true,
     features: {
       project_workspace: true,
