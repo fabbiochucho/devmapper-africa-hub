@@ -290,20 +290,20 @@ const About = () => {
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">DevMapper Role</h4>
                     <ul className="text-xs text-muted-foreground space-y-0.5">
-                      <li>• Leads community engagement and user experience strategy</li>
-                      <li>• Designs verification workflows with grassroots validators</li>
+                      <li>• Co-leads strategic vision and institutional partnerships</li>
+                      <li>• Designs community engagement and stakeholder coordination strategy</li>
                       <li>• Champions multilingual and inclusive platform design</li>
                       <li>• Oversees change maker nomination and recognition programs</li>
-                      <li>• Ensures data practices reflect community realities</li>
+                      <li>• Drives sustainability advisory and governance initiatives</li>
                     </ul>
                   </div>
 
                   <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge>Education</Badge>
-                    <Badge>Community Development</Badge>
-                    <Badge>Women's Empowerment</Badge>
-                    <Badge>Youth Programs</Badge>
-                    <Badge>Stakeholder Engagement</Badge>
+                    <Badge>Sustainability</Badge>
+                    <Badge>Governance</Badge>
+                    <Badge>Systems Leadership</Badge>
+                    <Badge>Strategic Advisory</Badge>
+                    <Badge>Community Empowerment</Badge>
                   </div>
                 </CardContent>
               </Card>
