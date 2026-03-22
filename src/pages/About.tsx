@@ -219,19 +219,16 @@ const About = () => {
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
                   <p className="text-sm leading-relaxed">
-                    Pauline Abiola-Oshunniyi is an <strong>education specialist and community development practitioner</strong> with over 
-                    15 years of experience in international development. Based in Nairobi, Kenya, she has led community-driven development 
-                    initiatives across West and East Africa, specializing in education, health, women's empowerment, and youth programs.
+                    Pauline Abiola-Oshunniyi is an <strong>award-winning international development professional, sustainability strategist, and systems leadership advocate</strong> working at the intersection of governance, ESG, and sustainable development across Africa.
                   </p>
                   <p className="text-sm leading-relaxed">
-                    As <strong>Co-founder of DiBadili Institute</strong>, Pauline brings deep expertise in community engagement methodologies, 
-                    participatory development, and stakeholder coordination. She ensures DevMapper remains grounded in the lived experiences 
-                    of the communities it serves — championing inclusive data practices, vernacular accessibility, and bottom-up verification.
+                    With more than two decades of experience across development practice, policy engagement, and institutional leadership, Pauline works with governments, development institutions, and private sector partners to design solutions that strengthen systems, empower communities, and support Africa's transition toward resilient and sustainable economies.
                   </p>
                   <p className="text-sm leading-relaxed">
-                    Her work spans education systems reform, teacher training, curriculum development, school management, and child 
-                    protection frameworks. She has collaborated with international NGOs, government education ministries, and faith-based 
-                    organizations to design and implement programs reaching thousands of learners and educators across the continent.
+                    She consults at the executive level through fractional leadership, strategic advisory, board-level engagement, and international speaking focused on sustainability, governance, systems strengthening, and future-ready leadership. Her work centers on translating complex development challenges into actionable strategies that strengthen institutions and unlock sustainable growth.
+                  </p>
+                  <p className="text-sm leading-relaxed">
+                    Pauline is a pioneer Fellow of the <strong>Mandela Washington Fellowship</strong> under the Young African Leaders Initiative and a <strong>Vital Voices Global Partnership Lead Fellow</strong>. Her leadership has supported the design of partnerships with regional and global institutions, facilitated multi-stakeholder dialogues across Africa, and contributed to initiatives mobilizing development finance for institutional strengthening and sustainable development programs.
                   </p>
 
                   {/* Core Focus Areas */}
