@@ -353,7 +353,7 @@ const Support = () => {
                   { name: 'ESG Module', status: 'Operational' },
                   { name: 'Project Management', status: 'Operational' },
                   { name: 'Payment Processing (Flutterwave / Paystack)', status: 'Operational' },
-                  { name: 'API Gateway', status: 'Operational' },
+                  { name: 'Carbon & Sustainability Module', status: 'Operational' },
                   { name: 'File Storage', status: 'Operational' },
                 ].map((service, i) => (
                   <div key={i} className="flex justify-between items-center py-1.5 border-b last:border-0">
