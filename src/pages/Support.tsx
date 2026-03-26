@@ -69,13 +69,24 @@ const Support = () => {
       ]
     },
     {
+      category: 'Carbon & Sustainability',
+      icon: <Globe className="w-4 h-4" />,
+      faqs: [
+        { q: "How do I track carbon emissions for a project?", a: "Open any project in Project Management, then navigate to the 'Carbon' tab. Enter Scope 1 (direct), Scope 2 (energy), and Scope 3 (supply chain) emissions in tonnes CO2e. The platform calculates total footprint and tracks reduction over time." },
+        { q: "What is the Circularity Score?", a: "The Circularity Score measures how well a project reuses materials and diverts waste. It is calculated as: (waste_diverted + material_reused) / total_waste × 100. Scores above 50% indicate good circular economy practices." },
+        { q: "How does Article 6 compliance work?", a: "The Compliance tab tracks Paris Agreement Article 6 readiness. It assesses ITMO (Internationally Transferred Mitigation Outcomes) eligibility, corresponding adjustments, and country-of-origin compliance. This helps projects participate in international carbon markets." },
+        { q: "Can I generate carbon credits from my project?", a: "Yes. Use the 'Carbon Assets' tab to register verified emission reductions. Credits can be tracked through their lifecycle: generation, ownership transfer, and retirement. Each credit includes methodology, vintage year, and verification status." },
+      ]
+    },
+    {
       category: 'Technical Issues',
       icon: <Zap className="w-4 h-4" />,
       faqs: [
-        { q: "The map isn't loading — what should I do?", a: "Maps require a stable internet connection. Try: 1) Refresh the page, 2) Clear browser cache, 3) Try a different browser. If maps consistently fail, check if your organization has firewall rules blocking MapLibre or Leaflet tile servers." },
-        { q: "How do I reset my password?", a: "Click 'Forgot Password' on the login page. Enter your email and you'll receive a password reset link. The link expires in 1 hour. If you signed up with Google or GitHub, use those providers to log in instead." },
+        { q: "The map isn't loading. What should I do?", a: "Maps require a stable internet connection. Try: 1) Refresh the page, 2) Clear browser cache, 3) Try a different browser. If maps consistently fail, check if your organization has firewall rules blocking MapLibre or Leaflet tile servers." },
+        { q: "How do I reset my password?", a: "Click 'Forgot Password' on the login page. Enter your email and you'll receive a password reset link. The link expires in 10 minutes. If you signed up with Google or GitHub, use those providers to log in instead." },
         { q: "Can I use DevMapper offline?", a: "DevMapper is a Progressive Web App (PWA). You can install it to your home screen for quick access. Basic viewing works offline, but submitting reports and syncing data requires an internet connection." },
-        { q: "My report submission failed — what happened?", a: "Common causes: 1) Project quota exhausted (check plan limits), 2) Missing required fields (title, description, location, SDG goals), 3) Network timeout. Check the error message for specifics. Reports auto-save as drafts." },
+        { q: "My report submission failed. What happened?", a: "Common causes: 1) Project quota exhausted (check plan limits), 2) Missing required fields (title, description, location, SDG goal, status), 3) Network timeout. Check the error message for specifics and try again." },
+        { q: "How do I connect to my organization?", a: "Organizations are auto-created on sign-up. To join an existing organization, contact the organization admin who can add you via the Admin Dashboard. Organization membership determines your plan tier and project quota." },
       ]
     },
   ];
@@ -312,8 +323,8 @@ const Support = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-1">Quick support via messaging platforms</p>
-                  <p className="text-sm">WhatsApp: <span className="font-medium">+254 XXX DEVMAP</span></p>
-                  <p className="text-sm">Telegram: <span className="font-medium">@DevMapperBot</span></p>
+                  <p className="text-sm">WhatsApp: <span className="font-medium">+234 XXX DEVMAP</span></p>
+                  <p className="text-sm">Telegram: <span className="font-medium">@DevMapperSupport</span></p>
                 </CardContent>
               </Card>
             </div>
