@@ -39,9 +39,9 @@ const Guidelines = () => {
       description: "Guidelines for submitting high-quality, actionable project reports",
       rules: [
         "Write clear, descriptive project titles that accurately reflect the initiative's scope",
-        "Align projects to the correct UN Sustainable Development Goals (SDGs 1–17) — don't over-tag",
+        "Align projects to the correct UN Sustainable Development Goals (SDGs 1–17). Don't over-tag",
         "Include specific beneficiary numbers, budget figures, and measurable outcomes wherever possible",
-        "Provide photo evidence taken at the project site — stock photos are not accepted for verification",
+        "Provide photo evidence taken at the project site, stock photos are not accepted for verification",
         "Update project milestones regularly to maintain a living record of progress",
         "Link projects to AU Agenda 2063 aspirations when applicable",
         "Disclose all funding sources and organizational affiliations transparently"
@@ -52,7 +52,7 @@ const Guidelines = () => {
       title: "Verification & Trust",
       description: "Guidelines for the multi-tier community verification system",
       rules: [
-        "Citizen Verification: You must have firsthand knowledge — hearsay is not sufficient",
+        "Citizen Verification: You must have firsthand knowledge, hearsay is not sufficient",
         "NGO Verification: Requires organizational credentials and site visit documentation",
         "Government Verification: Must come from verified government official accounts only",
         "Verifiers must provide written comments explaining their verification decision",
@@ -67,11 +67,11 @@ const Guidelines = () => {
       description: "Guidelines for effective and respectful platform communication",
       rules: [
         "Stay on topic and relevant to SDG development, ESG compliance, or community impact",
-        "Use clear, descriptive titles for forum posts — avoid clickbait or misleading headlines",
-        "Search before posting to avoid duplicates — check if your question has already been answered",
+        "Use clear, descriptive titles for forum posts, avoid clickbait or misleading headlines",
+        "Search before posting to avoid duplicates, check if your question has already been answered",
         "Provide context: country, SDG focus, project type, and relevant background information",
         "No spam, unsolicited advertising, or self-promotion unrelated to development work",
-        "Respect the privacy of community members — do not share personal information without consent",
+        "Respect the privacy of community members, do not share personal information without consent",
         "Use @mentions responsibly and do not abuse notification systems"
       ]
     },
@@ -83,7 +83,7 @@ const Guidelines = () => {
         "Do not share personally identifiable information (PII) of project beneficiaries without informed consent",
         "Obtain permission before photographing individuals, especially children, for project documentation",
         "Anonymize sensitive health, financial, or personal data in public reports",
-        "Respect the 'anonymous donation' feature — do not attempt to identify anonymous donors",
+        "Respect the 'anonymous donation' feature, do not attempt to identify anonymous donors",
         "Government officials and organizational representatives must use verified institutional accounts",
         "Report any suspected data breaches or unauthorized access immediately"
       ]
@@ -93,7 +93,7 @@ const Guidelines = () => {
       title: "ESG & Corporate Reporting Ethics",
       description: "Standards for organizations using the ESG compliance module",
       rules: [
-        "Report emissions data (Scope 1, 2, 3) accurately — greenwashing is a serious violation",
+        "Report emissions data (Scope 1, 2, 3) accurately, greenwashing is a serious violation",
         "Do not manipulate ESG scores, benchmarks, or supplier data for reputational benefit",
         "Disclose data quality levels honestly (estimated vs. measured vs. third-party verified)",
         "Respect supplier confidentiality when sharing supply chain emissions data",
@@ -119,7 +119,7 @@ const Guidelines = () => {
       title: "Reporting & Moderation",
       description: "How to report issues and what to expect from moderation",
       rules: [
-        "Report violations using the Report button on any content — reports are reviewed within 48 hours",
+        "Report violations using the Report button on any content, reports are reviewed within 48 hours",
         "Provide specific details about the policy violation including timestamps and evidence",
         "Don't engage in arguments — let moderators handle disputes professionally",
         "Appeals can be submitted through the Support Center within 14 days of any moderation action",
@@ -156,7 +156,7 @@ const Guidelines = () => {
       role: 'Government Officials',
       icon: <Globe className="w-4 h-4" />,
       rules: [
-        'Use verified institutional accounts — personal accounts cannot perform government verifications',
+        'Use verified institutional accounts, personal accounts cannot perform government verifications',
         'Ensure alignment with national SDG implementation plans and reporting',
         'Provide official data sources and budget documentation when verifying',
         'Maintain political neutrality in verification decisions',
