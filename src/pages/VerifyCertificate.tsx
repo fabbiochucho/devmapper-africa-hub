@@ -190,7 +190,7 @@ const VerifyCertificate = () => {
 
                   <Separator />
                   <div className="text-center text-xs text-muted-foreground space-y-1">
-                    <p>Verified under <strong>SDG-PVS 1000</strong> — DevMapper Standardized SDG Project Verification Framework</p>
+                    <p>Verified under <strong>SDG-PVS 1000</strong>: DevMapper Standardized SDG Project Verification Framework</p>
                     <Link to="/spvf-standards" className="text-primary underline inline-flex items-center gap-1">
                       View SPVF Standards <ExternalLink className="h-3 w-3" />
                     </Link>

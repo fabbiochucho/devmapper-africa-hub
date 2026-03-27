@@ -62,7 +62,7 @@ const STRATEGIC_BENEFITS = [
   },
   {
     title: 'Full SDG Lifecycle',
-    description: 'From registration to certification — an end-to-end verification platform.',
+    description: 'From registration to certification, an end-to-end verification platform.',
   },
   {
     title: 'Globally Scalable',
@@ -89,7 +89,7 @@ const PlatformOverview = () => {
             The Platform to Verify,<br />Score, and Certify SDG Projects
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            SDG funding flows at scale — but measurement and trust are fragmented.
+            SDG funding flows at scale, but measurement and trust are fragmented.
             DevMapper standardizes evidence, scoring, and certification.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
@@ -193,7 +193,7 @@ const PlatformOverview = () => {
                 <Lock className="h-4 w-4" /> Hash-Chain Audit Trail
               </p>
               <p className="text-xs text-muted-foreground">
-                Tamper-evident verification ledger using cryptographic hash-chaining of events (prev_hash → hash) stored in Postgres — a practical alternative to blockchain.
+                Tamper-evident verification ledger using cryptographic hash-chaining of events (prev_hash → hash) stored in Postgres, a practical alternative to blockchain.
               </p>
             </div>
           </CardContent>

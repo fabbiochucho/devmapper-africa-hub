@@ -120,7 +120,7 @@ const About = () => {
                   <p className="text-sm leading-relaxed">
                     Abiola Oshunniyi is a <strong>Global Development Tri-Sector Strategist and Systems Strengthening Expert</strong> with 
                     nearly two decades of experience spanning public health, sustainability, governance, and digital transformation. He 
-                    advises governments, donors, and corporations — translating evidence, policy, and technology into measurable public value.
+                    advises governments, donors, and corporations, translating evidence, policy, and technology into measurable public value.
                   </p>
                   <p className="text-sm leading-relaxed">
                     He is the <strong>Co-founder of DiBadili Institute</strong> (Become Change Institute) and <strong>Chief Executive/Responsibility 
