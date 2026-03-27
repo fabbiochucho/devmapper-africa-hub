@@ -97,7 +97,7 @@ const Guidelines = () => {
         "Do not manipulate ESG scores, benchmarks, or supplier data for reputational benefit",
         "Disclose data quality levels honestly (estimated vs. measured vs. third-party verified)",
         "Respect supplier confidentiality when sharing supply chain emissions data",
-        "Use the AI Copilot for genuine compliance gap analysis — not to generate misleading reports",
+        "Use the Ndovu Akili AI (Copilot) for genuine compliance gap analysis, not to generate misleading reports",
         "Regulatory exposure assessments should be treated as advisory, not legal counsel"
       ]
     },
