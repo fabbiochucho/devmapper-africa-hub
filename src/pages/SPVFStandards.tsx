@@ -21,7 +21,7 @@ const SPVFStandards = () => {
     <>
       <SEOHead
         title="SPVF Standards | DevMapper SDG Verification"
-        description="The Standardized SDG Project Verification Framework (SPVF) — SDG-PVS 1000. A global standard for verifying Sustainable Development Goal projects."
+        description="The Standardized SDG Project Verification Framework (SPVF): SDG-PVS 1000. A global standard for verifying Sustainable Development Goal projects."
       />
       <div className="container max-w-4xl mx-auto py-8 space-y-8">
         {/* Header */}

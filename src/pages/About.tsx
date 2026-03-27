@@ -49,7 +49,7 @@ const About = () => {
                   compliance frameworks.
                 </p>
                 <p className="text-lg leading-relaxed mb-4">
-46:                   Working at the intersection of policy, financing, governance, and execution, we support DevMapper's strategic 
+                  Working at the intersection of policy, financing, governance, and execution, we support strategic 
                   positioning as development intelligence infrastructure for Africa's most complex challenges.
                 </p>
                 <div className="grid md:grid-cols-4 gap-6 mt-8">
