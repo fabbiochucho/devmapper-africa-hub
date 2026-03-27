@@ -203,7 +203,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {sdgTargets.map((target) => (
+                    {sdgTargets.filter(t => t && t.trim() !== '').map((target) => (
                       <SelectItem key={target} value={target}>
                         {target}
                       </SelectItem>
@@ -345,7 +345,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {countries.map((country) => (
+                  {countries.filter(c => c.name && c.name.trim() !== '').map((country) => (
                     <SelectItem key={country.code} value={country.name}>
                       {country.name}
                     </SelectItem>

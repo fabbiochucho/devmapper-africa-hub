@@ -495,7 +495,7 @@ const GovernmentDashboard = () => {
 
       <ComplianceAssessment actorType="government" />
 
-      {/* AI Copilot */}
+      {/* Ndovu Akili AI */}
       <AICopilot projectData={{ context: 'government_oversight', projectCount: projects.length }} />
     </div>
   );

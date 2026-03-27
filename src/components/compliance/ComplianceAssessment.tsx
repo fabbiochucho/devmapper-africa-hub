@@ -155,7 +155,7 @@ export default function ComplianceAssessment({ actorType, countryCode, sectorCod
                 {result.exposure.length === 0 ? (
                   <p className="text-center text-muted-foreground py-6">
                     No regulatory frameworks found for this country/actor combination. 
-                    Framework data is being expanded — check back soon.
+                    Check if data has been uploaded. However, the framework data is being expanded, check back soon.
                   </p>
                 ) : (
                   result.exposure.map((fw, i) => {

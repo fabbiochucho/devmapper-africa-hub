@@ -483,12 +483,12 @@ const Resources = () => {
       ]
     },
     {
-      category: 'AI Copilot',
+      category: 'Ndovu Akili AI',
       icon: <Zap className="w-4 h-4" />,
       endpoints: [
         {
           method: 'POST', path: '/api/v1/ai/chat',
-          description: 'Send a message to the AI Copilot for compliance analysis, report drafting, or general questions',
+          description: 'Send a message to the Ndovu Akili AI for compliance analysis, report drafting, or general questions',
           params: [
             { name: 'message', type: 'string', required: true, description: 'User message/prompt' },
             { name: 'context', type: 'string', required: false, description: 'compliance, report_drafting, general' },
@@ -1158,7 +1158,7 @@ Retry-After: 45`} />
             </div>
             {[
               { date: '2025-03-08', version: 'v1.6.0', changes: [
-                { type: 'added', text: 'AI Copilot endpoint for compliance analysis and report drafting' },
+                { type: 'added', text: 'Ndovu Akili AI endpoint for compliance analysis and report drafting' },
                 { type: 'added', text: 'Regulatory exposure profile endpoint' },
                 { type: 'added', text: 'Bulk supplier CSV import for Scope 3 emissions' },
                 { type: 'improved', text: 'Project details include verification_summary with trust_score' },

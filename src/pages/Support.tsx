@@ -25,7 +25,7 @@ const Support = () => {
         { q: "How do I create an account?", a: "Click 'Sign Up' on the homepage. You can register with email, Google, or GitHub. After registration, you'll be prompted to complete your profile and select your primary role (citizen reporter, NGO, government, or corporate)." },
         { q: "How do I submit a development project report?", a: "Navigate to 'Submit Report' from the sidebar. Fill out the project details including title, description, location (with GPS coordinates), SDG alignment, and supporting documentation. Your report starts at 'Self-Report' verification level and can be upgraded through community verification." },
         { q: "What are the different user roles?", a: "DevMapper has 5 primary roles: Citizen Reporter (default), NGO Representative, Government Official, Corporate Representative, and Platform Admin. Each role has different verification capabilities. For example, only government officials can provide Level 4 'Institutional Verification'." },
-        { q: "Is DevMapper free to use?", a: "Yes! The Free tier allows you to submit up to 3 projects per month, use Kanban and List views, and access basic analytics. Paid plans (Lite, Pro, Advanced, Enterprise) unlock features like Gantt charts, AI Copilot, ESG modules, and higher project quotas." },
+        { q: "Is DevMapper free to use?", a: "Yes! The Free tier allows you to submit up to 3 projects per month, use Kanban and List views, and access basic analytics. Paid plans (Lite, Pro, Advanced, Enterprise) unlock features like Gantt charts, Ndovu Akili AI (Copilot), ESG modules, and higher project quotas." },
       ]
     },
     {
@@ -43,10 +43,10 @@ const Support = () => {
       category: 'Project Management',
       icon: <FileText className="w-4 h-4" />,
       faqs: [
-        { q: "What PM features are available on the Free plan?", a: "Free users get Kanban Board and List View with basic task management. You can create tasks, set priorities, and track status (to-do, in-progress, done). Gantt Chart, resource allocation, and AI Copilot require Lite+ or Pro+ plans." },
+        { q: "What PM features are available on the Free plan?", a: "Free users get Kanban Board and List View with basic task management. You can create tasks, set priorities, and track status (to-do, in-progress, done). Gantt Chart, resource allocation, and Ndovu Akili AI (Copilot) require Lite+ or Pro+ plans." },
         { q: "How does the Gantt Chart view work?", a: "Available on Lite+ plans. The Gantt Chart visualizes project timelines, task dependencies, and milestone dates. Tasks are displayed as horizontal bars with drag-to-reschedule support. It integrates directly with your project milestones from Supabase." },
         { q: "Can I assign tasks to team members?", a: "Yes, on Lite+ plans and above. Task assignment uses the project affiliation system — only users who are affiliated with a project (owner, partner, funder) can be assigned tasks. Assignees receive notifications." },
-        { q: "What is the AI Copilot?", a: "Available on Pro+ plans. The AI Copilot assists with compliance gap analysis, report drafting, and general development questions. It has context-aware modes for different use cases and maintains conversation history." },
+        { q: "What is the Ndovu Akili AI (Copilot)?", a: "Available on Pro+ plans. The Ndovu Akili AI assists with compliance gap analysis, report drafting, and general development questions. It has context-aware modes for different use cases and maintains conversation history." },
       ]
     },
     {
@@ -349,7 +349,7 @@ const Support = () => {
                   { name: 'Report Submission Pipeline', status: 'Operational' },
                   { name: 'User Authentication (Supabase Auth)', status: 'Operational' },
                   { name: 'Analytics Dashboard', status: 'Operational' },
-                  { name: 'AI Copilot (Edge Function)', status: 'Operational' },
+                  { name: 'Ndovu Akili AI (Edge Function)', status: 'Operational' },
                   { name: 'ESG Module', status: 'Operational' },
                   { name: 'Project Management', status: 'Operational' },
                   { name: 'Payment Processing (Flutterwave / Paystack)', status: 'Operational' },

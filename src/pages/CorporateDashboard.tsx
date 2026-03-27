@@ -518,7 +518,7 @@ const CorporateDashboard = () => {
       {/* Compliance Assessment */}
       <ComplianceAssessment actorType="corporate" countryCode={user?.user_metadata?.country} />
 
-      {/* AI Copilot */}
+      {/* Ndovu Akili AI */}
       <div className="mt-6">
         <AICopilot projectData={{ context: 'corporate_esg', targetCount: targets.length }} />
       </div>
