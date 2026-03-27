@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, FileText, Shield, Sparkles, Leaf, History } from "lucide-react";
+import { Send, Loader2, FileText, Shield, Sparkles, Leaf, History } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import AICopilotQuickActions from "./AICopilotQuickActions";
+import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -181,8 +182,8 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Bot className="h-5 w-5 text-primary" />
-            AI Copilot
+            <img src={ndoviLogo} alt="Ndovu Akili AI" className="h-6 w-6 object-contain" />
+            Ndovu Akili AI
           </CardTitle>
           <div className="flex gap-1">
             <Button size="sm" variant="ghost" onClick={newConversation} className="h-7 text-xs gap-1">
@@ -207,7 +208,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
           <div className="space-y-3 pr-4">
             {messages.length === 0 && (
               <div className="text-center py-6 text-muted-foreground space-y-4">
-                <Bot className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <img src={ndoviLogo} alt="Ndovu Akili AI" className="h-12 w-12 mx-auto mb-3 opacity-60" />
                 <p className="font-medium">How can I help?</p>
                 <p className="text-sm mt-1">Ask about compliance gaps, draft reports, or get project insights.</p>
                 <AICopilotQuickActions
