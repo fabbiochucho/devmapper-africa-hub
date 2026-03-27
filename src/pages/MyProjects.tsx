@@ -40,6 +40,29 @@ const MyProjects = () => {
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [updatingProjectId, setUpdatingProjectId] = useState<string | null>(null);
 
+  const updateProjectStatus = useCallback(async (projectId: string, status: string) => {
+    if (!user) return;
+
+    try {
+      setUpdatingProjectId(projectId);
+      const { error } = await supabase
+        .from('reports')
+        .update({ project_status: status })
+        .eq('id', projectId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Project status updated');
+      await refetch();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update project status');
+    } finally {
+      setUpdatingProjectId(null);
+    }
+  }, [refetch, user]);
+
   if (!user) {
     return (
       <div className="p-8 text-center">
@@ -68,29 +91,6 @@ const MyProjects = () => {
     const found = sdgGoals.find(g => g.value === goal.toString());
     return found ? `SDG ${goal}` : `SDG ${goal}`;
   };
-
-  const updateProjectStatus = useCallback(async (projectId: string, status: string) => {
-    if (!user) return;
-
-    try {
-      setUpdatingProjectId(projectId);
-      const { error } = await supabase
-        .from('reports')
-        .update({ project_status: status })
-        .eq('id', projectId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast.success('Project status updated');
-      await refetch();
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to update project status');
-    } finally {
-      setUpdatingProjectId(null);
-    }
-  }, [refetch, user]);
 
   const renderProjectCard = (project: ProjectReport) => {
     const isExpanded = expandedProject === project.id;
