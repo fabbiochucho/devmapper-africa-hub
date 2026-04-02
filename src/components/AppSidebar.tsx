@@ -5,7 +5,7 @@ import {
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
   ChevronRight, ChevronDown, User, Briefcase, ListTodo, FileSpreadsheet,
-  FolderOpen, Layers
+  FolderOpen, Layers, ShoppingCart, Award
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { prefetchRoute } from "@/lib/route-prefetch";
