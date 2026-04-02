@@ -60,6 +60,9 @@ const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const VerifierMarketplace = lazy(() => import("./pages/VerifierMarketplace"));
+const CarbonMarketplace = lazy(() => import("./pages/CarbonMarketplace"));
+const CarbonPortfolio = lazy(() => import("./pages/CarbonPortfolio"));
 
 // Optimized QueryClient with proper caching and GC settings
 const queryClient = new QueryClient({
