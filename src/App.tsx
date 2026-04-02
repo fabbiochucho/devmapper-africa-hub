@@ -144,6 +144,9 @@ const App = () => (
                       <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
                       <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
                       <Route path="/admin-crm" element={<P><AdminCRM /></P>} />
+                      <Route path="/verifier-marketplace" element={<VerifierMarketplace />} />
+                      <Route path="/carbon-marketplace" element={<CarbonMarketplace />} />
+                      <Route path="/carbon-portfolio" element={<P><CarbonPortfolio /></P>} />
                     </Route>
                     <Route path="/auth" element={<Auth />} />
                     <Route path="*" element={<NotFound />} />
