@@ -500,6 +500,104 @@ export type Database = {
           },
         ]
       }
+      carbon_credit_orders: {
+        Row: {
+          buyer_id: string
+          buyer_notes: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          listing_id: string
+          payment_reference: string | null
+          price_per_tonne: number
+          quantity: number
+          retirement_certificate_url: string | null
+          retirement_date: string | null
+          status: string | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          listing_id: string
+          payment_reference?: string | null
+          price_per_tonne: number
+          quantity: number
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          listing_id?: string
+          payment_reference?: string | null
+          price_per_tonne?: number
+          quantity?: number
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_credit_orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_portfolios: {
+        Row: {
+          budget_usd: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          impact_focus: string[] | null
+          name: string
+          risk_level: string | null
+          target_tonnes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget_usd?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_focus?: string[] | null
+          name?: string
+          risk_level?: string | null
+          target_tonnes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget_usd?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_focus?: string[] | null
+          name?: string
+          risk_level?: string | null
+          target_tonnes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       carbon_transfer_logs: {
         Row: {
           carbon_asset_id: string | null
@@ -1697,6 +1795,109 @@ export type Database = {
           },
         ]
       }
+      marketplace_listings: {
+        Row: {
+          available_credits: number | null
+          carbon_asset_id: string | null
+          co_benefits: Json | null
+          country_code: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          documents: string[] | null
+          id: string
+          images: string[] | null
+          listing_status: string | null
+          location: string | null
+          methodology: string | null
+          organization_id: string | null
+          price_per_tonne: number | null
+          project_type: string | null
+          report_id: string | null
+          sdg_goals: number[] | null
+          seller_id: string
+          title: string
+          total_credits: number | null
+          updated_at: string | null
+          verification_status: string | null
+          vintage_year: number | null
+        }
+        Insert: {
+          available_credits?: number | null
+          carbon_asset_id?: string | null
+          co_benefits?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          documents?: string[] | null
+          id?: string
+          images?: string[] | null
+          listing_status?: string | null
+          location?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          price_per_tonne?: number | null
+          project_type?: string | null
+          report_id?: string | null
+          sdg_goals?: number[] | null
+          seller_id: string
+          title: string
+          total_credits?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          vintage_year?: number | null
+        }
+        Update: {
+          available_credits?: number | null
+          carbon_asset_id?: string | null
+          co_benefits?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          documents?: string[] | null
+          id?: string
+          images?: string[] | null
+          listing_status?: string | null
+          location?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          price_per_tonne?: number | null
+          project_type?: string | null
+          report_id?: string | null
+          sdg_goals?: number[] | null
+          seller_id?: string
+          title?: string
+          total_credits?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          vintage_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_carbon_asset_id_fkey"
+            columns: ["carbon_asset_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string | null
@@ -1947,6 +2148,67 @@ export type Database = {
           plan?: string
         }
         Relationships: []
+      }
+      portfolio_holdings: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          id: string
+          listing_id: string | null
+          order_id: string | null
+          portfolio_id: string
+          purchase_price: number | null
+          quantity: number
+          retired_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          portfolio_id: string
+          purchase_price?: number | null
+          quantity: number
+          retired_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          portfolio_id?: string
+          purchase_price?: number | null
+          quantity?: number
+          retired_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_holdings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_holdings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_credit_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_holdings_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -3323,6 +3585,69 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_assignments: {
+        Row: {
+          assigned_by: string | null
+          assignment_type: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          review_data: Json | null
+          stage: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          verifier_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assignment_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          review_data?: Json | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verifier_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assignment_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          review_data?: Json | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verifier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_assignments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_assignments_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "verifier_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_ledger: {
         Row: {
           actor_id: string | null
@@ -3511,6 +3836,108 @@ export type Database = {
           },
         ]
       }
+      verifier_profiles: {
+        Row: {
+          approval_rate: number | null
+          availability_status: string | null
+          bio: string | null
+          created_at: string | null
+          credentials: string[] | null
+          display_name: string
+          id: string
+          is_certified: boolean | null
+          methodologies: string[] | null
+          organization_name: string | null
+          profile_image_url: string | null
+          regions: string[] | null
+          reputation_score: number | null
+          updated_at: string | null
+          user_id: string
+          verification_count: number | null
+        }
+        Insert: {
+          approval_rate?: number | null
+          availability_status?: string | null
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          display_name: string
+          id?: string
+          is_certified?: boolean | null
+          methodologies?: string[] | null
+          organization_name?: string | null
+          profile_image_url?: string | null
+          regions?: string[] | null
+          reputation_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          verification_count?: number | null
+        }
+        Update: {
+          approval_rate?: number | null
+          availability_status?: string | null
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          display_name?: string
+          id?: string
+          is_certified?: boolean | null
+          methodologies?: string[] | null
+          organization_name?: string | null
+          profile_image_url?: string | null
+          regions?: string[] | null
+          reputation_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verification_count?: number | null
+        }
+        Relationships: []
+      }
+      verifier_reviews: {
+        Row: {
+          assignment_id: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+          verifier_id: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+          verifier_id: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+          verifier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verifier_reviews_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "verification_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifier_reviews_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "verifier_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -3615,6 +4042,7 @@ export type Database = {
         }
         Returns: string
       }
+      auto_assign_verifier: { Args: { p_report_id: string }; Returns: string }
       can_access_feature: {
         Args: { p_feature: string; p_user_id: string }
         Returns: boolean
