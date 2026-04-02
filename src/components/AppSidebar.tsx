@@ -5,7 +5,7 @@ import {
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
   ChevronRight, ChevronDown, User, Briefcase, ListTodo, FileSpreadsheet,
-  FolderOpen, Layers
+  FolderOpen, Layers, ShoppingCart, Award
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { prefetchRoute } from "@/lib/route-prefetch";
@@ -93,6 +93,15 @@ const getPrimaryDashboard = (hasRole: (role: UserRole) => boolean) => {
 
 // Collapsible resource groups
 const resourceGroups = {
+  carbon: {
+    label: "Carbon & Marketplace",
+    icon: Leaf,
+    items: [
+      { title: "Carbon Marketplace", url: "/carbon-marketplace", icon: ShoppingCart },
+      { title: "Carbon Portfolio", url: "/carbon-portfolio", icon: Briefcase },
+      { title: "Verifier Marketplace", url: "/verifier-marketplace", icon: Award },
+    ]
+  },
   learn: {
     label: "Learn & Train",
     icon: BookOpen,

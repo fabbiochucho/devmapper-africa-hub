@@ -60,6 +60,9 @@ const PlatformOverview = lazy(() => import("./pages/PlatformOverview"));
 const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const VerifierMarketplace = lazy(() => import("./pages/VerifierMarketplace"));
+const CarbonMarketplace = lazy(() => import("./pages/CarbonMarketplace"));
+const CarbonPortfolio = lazy(() => import("./pages/CarbonPortfolio"));
 
 // Optimized QueryClient with proper caching and GC settings
 const queryClient = new QueryClient({
@@ -141,6 +144,9 @@ const App = () => (
                       <Route path="/bulk-upload" element={<P><BulkUpload /></P>} />
                       <Route path="/apply-certification" element={<P><ApplyCertification /></P>} />
                       <Route path="/admin-crm" element={<P><AdminCRM /></P>} />
+                      <Route path="/verifier-marketplace" element={<VerifierMarketplace />} />
+                      <Route path="/carbon-marketplace" element={<CarbonMarketplace />} />
+                      <Route path="/carbon-portfolio" element={<P><CarbonPortfolio /></P>} />
                     </Route>
                     <Route path="/auth" element={<Auth />} />
                     <Route path="*" element={<NotFound />} />
