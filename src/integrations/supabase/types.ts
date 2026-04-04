@@ -121,6 +121,136 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_agent_outputs: {
+        Row: {
+          agent_name: string
+          agent_version: string | null
+          confidence_score: number | null
+          created_at: string | null
+          data_sources: string[] | null
+          id: string
+          raw_output: string | null
+          session_id: string | null
+          structured_output: Json | null
+        }
+        Insert: {
+          agent_name: string
+          agent_version?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          data_sources?: string[] | null
+          id?: string
+          raw_output?: string | null
+          session_id?: string | null
+          structured_output?: Json | null
+        }
+        Update: {
+          agent_name?: string
+          agent_version?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          data_sources?: string[] | null
+          id?: string
+          raw_output?: string | null
+          session_id?: string | null
+          structured_output?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_outputs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_sessions: {
+        Row: {
+          agents_invoked: string[] | null
+          approved_by_user: boolean | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          intent: string | null
+          session_type: string
+          synthesis_output: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agents_invoked?: string[] | null
+          approved_by_user?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          intent?: string | null
+          session_type: string
+          synthesis_output?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agents_invoked?: string[] | null
+          approved_by_user?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          intent?: string | null
+          session_type?: string
+          synthesis_output?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_audit_log: {
+        Row: {
+          action: string | null
+          agent_name: string | null
+          created_at: string | null
+          human_approved: boolean | null
+          id: string
+          input_summary: string | null
+          output_summary: string | null
+          rule_engine_result: Json | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          agent_name?: string | null
+          created_at?: string | null
+          human_approved?: boolean | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          rule_engine_result?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          agent_name?: string | null
+          created_at?: string | null
+          human_approved?: boolean | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          rule_engine_result?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_audit_log_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           context_id: string | null
@@ -1627,6 +1757,50 @@ export type Database = {
           views_count?: number
         }
         Relationships: []
+      }
+      framework_indicators: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          framework_id: string | null
+          id: string
+          indicator_code: string
+          indicator_name: string
+          metric_key: string | null
+          sdg_alignment: number[] | null
+          unit_of_measure: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          framework_id?: string | null
+          id?: string
+          indicator_code: string
+          indicator_name: string
+          metric_key?: string | null
+          sdg_alignment?: number[] | null
+          unit_of_measure?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          framework_id?: string | null
+          id?: string
+          indicator_code?: string
+          indicator_name?: string
+          metric_key?: string | null
+          sdg_alignment?: number[] | null
+          unit_of_measure?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "framework_indicators_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "reporting_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fundraising_campaigns: {
         Row: {
@@ -3181,6 +3355,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reporting_frameworks: {
+        Row: {
+          applicable_regions: string[] | null
+          category: string | null
+          code: string
+          created_at: string | null
+          id: string
+          is_mandatory: boolean | null
+          name: string
+          version: string | null
+        }
+        Insert: {
+          applicable_regions?: string[] | null
+          category?: string | null
+          code: string
+          created_at?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name: string
+          version?: string | null
+        }
+        Update: {
+          applicable_regions?: string[] | null
+          category?: string | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name?: string
+          version?: string | null
+        }
+        Relationships: []
       }
       reports: {
         Row: {
