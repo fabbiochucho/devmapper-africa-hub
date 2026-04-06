@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2, FileText, Shield, Sparkles, Leaf, History } from "lucide-react";
+import { Send, Loader2, FileText, Shield, Sparkles, Leaf, History, GraduationCap, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import AICopilotQuickActions from "./AICopilotQuickActions";
+import NdovuMultiAgentPanel from "./NdovuMultiAgentPanel";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
 
 interface Message {
@@ -33,13 +34,14 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState<CopilotContext>("general");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [expertMode, setExpertMode] = useState(false);
+  const [showMultiAgent, setShowMultiAgent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load most recent conversation on mount
   useEffect(() => {
     if (!user) return;
     supabase
@@ -60,7 +62,6 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
       });
   }, [user, context]);
 
-  // Persist conversation to ai_conversations table
   const persistConversation = useCallback(async (msgs: Message[]) => {
     if (!user || msgs.length === 0) return;
     const payload = {
@@ -108,6 +109,8 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
           messages: updatedMessages,
           context,
           projectData,
+          expertMode,
+          structuredOutput: true,
         }),
       });
 
@@ -160,7 +163,6 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
         }
       }
 
-      // Persist after full response
       const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantSoFar }];
       setMessages(finalMessages);
       persistConversation(finalMessages);
@@ -177,6 +179,17 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
     setConversationId(null);
   };
 
+  if (showMultiAgent) {
+    return (
+      <div className="space-y-4">
+        <Button size="sm" variant="outline" onClick={() => setShowMultiAgent(false)} className="h-7 text-xs">
+          ← Back to Chat
+        </Button>
+        <NdovuMultiAgentPanel />
+      </div>
+    );
+  }
+
   return (
     <Card className="flex flex-col h-[600px]">
       <CardHeader className="pb-3">
@@ -185,22 +198,36 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
             <img src={ndoviLogo} alt="Ndovu Akili AI" className="h-6 w-6 object-contain" />
             Ndovu Akili AI
           </CardTitle>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <Button size="sm" variant="ghost" onClick={newConversation} className="h-7 text-xs gap-1">
               <History className="h-3 w-3" />New
             </Button>
-            {contextOptions.map(opt => (
-              <Button
-                key={opt.value}
-                size="sm"
-                variant={context === opt.value ? "default" : "outline"}
-                onClick={() => setContext(opt.value)}
-                className="h-7 text-xs gap-1"
-              >
-                {opt.icon}{opt.label}
-              </Button>
-            ))}
+            <Button
+              size="sm"
+              variant={expertMode ? "default" : "outline"}
+              onClick={() => setExpertMode(!expertMode)}
+              className="h-7 text-xs gap-1"
+            >
+              {expertMode ? <Zap className="h-3 w-3" /> : <GraduationCap className="h-3 w-3" />}
+              {expertMode ? "Expert" : "Beginner"}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowMultiAgent(true)} className="h-7 text-xs gap-1">
+              <Sparkles className="h-3 w-3" />Multi-Agent
+            </Button>
           </div>
+        </div>
+        <div className="flex gap-1 mt-1">
+          {contextOptions.map(opt => (
+            <Button
+              key={opt.value}
+              size="sm"
+              variant={context === opt.value ? "default" : "outline"}
+              onClick={() => setContext(opt.value)}
+              className="h-7 text-xs gap-1"
+            >
+              {opt.icon}{opt.label}
+            </Button>
+          ))}
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3 overflow-hidden pb-3">
@@ -215,7 +242,6 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
                   onAction={(prompt, ctx) => {
                     setContext(ctx as CopilotContext);
                     setInput(prompt);
-                    // Auto-send after a tick so context updates
                     setTimeout(() => {
                       const el = document.querySelector('[data-copilot-send]') as HTMLButtonElement;
                       el?.click();
