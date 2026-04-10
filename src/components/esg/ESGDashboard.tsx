@@ -40,6 +40,7 @@ import SupplierCSVImporter from './SupplierCSVImporter';
 import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 import IFRSReadinessAssessment from './IFRSReadinessAssessment';
+import FrameworkGapAnalysis from './FrameworkGapAnalysis';
 
 interface ESGIndicators {
   id: string;
@@ -337,6 +338,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
           <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="ifrs">IFRS S1/S2</TabsTrigger>
+          <TabsTrigger value="frameworks">Frameworks</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -517,6 +519,24 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           <IFRSReadinessAssessment
             organizationId={organizationId}
             organizationName={organization.name}
+          />
+        </TabsContent>
+
+        <TabsContent value="frameworks">
+          <FrameworkGapAnalysis
+            availableData={{
+              hasEmissions: totalEmissions > 0,
+              hasScope1: (latestIndicators?.carbon_scope1_tonnes || 0) > 0,
+              hasScope2: (latestIndicators?.carbon_scope2_tonnes || 0) > 0,
+              hasScope3: (latestIndicators?.carbon_scope3_tonnes || 0) > 0,
+              hasGovernance: false,
+              hasTargets: false,
+              hasBiodiversity: false,
+              hasWater: (latestIndicators?.water_consumption_m3 || 0) > 0,
+              hasWaste: (latestIndicators?.waste_generated_tonnes || 0) > 0,
+              hasSuppliers: suppliers.length > 0,
+              hasSocialMetrics: false,
+            }}
           />
         </TabsContent>
 
