@@ -338,6 +338,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
           <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="ifrs">IFRS S1/S2</TabsTrigger>
+          <TabsTrigger value="frameworks">Frameworks</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
