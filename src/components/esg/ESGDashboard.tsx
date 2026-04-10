@@ -40,6 +40,7 @@ import SupplierCSVImporter from './SupplierCSVImporter';
 import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 import IFRSReadinessAssessment from './IFRSReadinessAssessment';
+import FrameworkGapAnalysis from './FrameworkGapAnalysis';
 
 interface ESGIndicators {
   id: string;
