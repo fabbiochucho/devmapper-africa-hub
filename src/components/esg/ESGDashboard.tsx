@@ -522,6 +522,24 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           />
         </TabsContent>
 
+        <TabsContent value="frameworks">
+          <FrameworkGapAnalysis
+            availableData={{
+              hasEmissions: totalEmissions > 0,
+              hasScope1: (latestIndicators?.carbon_scope1_tonnes || 0) > 0,
+              hasScope2: (latestIndicators?.carbon_scope2_tonnes || 0) > 0,
+              hasScope3: (latestIndicators?.carbon_scope3_tonnes || 0) > 0,
+              hasGovernance: false,
+              hasTargets: false,
+              hasBiodiversity: false,
+              hasWater: (latestIndicators?.water_consumption_m3 || 0) > 0,
+              hasWaste: (latestIndicators?.waste_generated_tonnes || 0) > 0,
+              hasSuppliers: suppliers.length > 0,
+              hasSocialMetrics: false,
+            }}
+          />
+        </TabsContent>
+
         <TabsContent value="reports">
           <ESGReportGenerator
             organizationName={organization.name}
