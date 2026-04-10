@@ -97,6 +97,7 @@ const resourceGroups = {
     label: "Carbon & Marketplace",
     icon: Leaf,
     items: [
+      { title: "Carbon Accounting", url: "/carbon-accounting", icon: Leaf },
       { title: "Carbon Marketplace", url: "/carbon-marketplace", icon: ShoppingCart },
       { title: "Carbon Portfolio", url: "/carbon-portfolio", icon: Briefcase },
       { title: "Verifier Marketplace", url: "/verifier-marketplace", icon: Award },
