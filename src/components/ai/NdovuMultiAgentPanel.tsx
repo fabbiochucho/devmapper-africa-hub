@@ -12,6 +12,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import NdovuAuditTrail from "./NdovuAuditTrail";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
 
 interface NdovuMultiAgentPanelProps {
@@ -193,6 +194,19 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
             <p className="text-xs text-muted-foreground italic">
               {synthesis.disclaimer || "AI-generated guidance. Not legal or financial advice."}
             </p>
+
+            {/* Audit Trail */}
+            {sessionId && (
+              <NdovuAuditTrail
+                sessionId={sessionId}
+                entries={synthesis.agentContributions?.map(a => ({
+                  agentName: a.agentName,
+                  confidenceScore: synthesis.overallConfidence,
+                  dataSources: [],
+                  createdAt: new Date().toISOString(),
+                })) || []}
+              />
+            )}
           </div>
         )}
 
