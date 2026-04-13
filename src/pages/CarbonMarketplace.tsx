@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Package, CheckCircle, Filter, ArrowUpDown } from "lucide-react";
+import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Package, CheckCircle, Filter, ArrowUpDown, Briefcase } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { Link } from "react-router-dom";
 
 const PROJECT_TYPES = [
   { value: "reforestation", label: "Reforestation" },
@@ -336,9 +337,16 @@ const CarbonMarketplace = () => {
                           <TableCell className="text-sm text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
                             {(o.status === "paid" || o.status === "delivered") && (
-                              <Button size="sm" variant="outline" onClick={() => retireCredits.mutate(o.id)}>
-                                <CheckCircle className="h-3 w-3 mr-1" />Retire
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="outline" onClick={() => retireCredits.mutate(o.id)}>
+                                  <CheckCircle className="h-3 w-3 mr-1" />Retire
+                                </Button>
+                                <Link to="/carbon-portfolio">
+                                  <Button size="sm" variant="outline">
+                                    <Briefcase className="h-3 w-3 mr-1" />Portfolio
+                                  </Button>
+                                </Link>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
