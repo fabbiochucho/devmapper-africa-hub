@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Send, Loader2, FileText, Shield, Sparkles, Leaf, History, GraduationCap
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { useLocation } from "react-router-dom";
 import AICopilotQuickActions from "./AICopilotQuickActions";
 import NdovuMultiAgentPanel from "./NdovuMultiAgentPanel";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
@@ -29,6 +30,7 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
 
 export default function AICopilot({ projectData }: { projectData?: any }) {
   const { user } = useAuth();
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,18 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
   const [expertMode, setExpertMode] = useState(false);
   const [showMultiAgent, setShowMultiAgent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Derive page context for quick actions based on current route
+  const pageContext = useMemo(() => {
+    const path = location.pathname;
+    if (path.includes("esg") || path.includes("carbon-accounting")) return "emissions" as const;
+    if (path.includes("verif") || path.includes("certification")) return "verification" as const;
+    if (path.includes("marketplace")) return "marketplace" as const;
+    if (path.includes("compliance")) return "compliance" as const;
+    if (path.includes("government")) return "government" as const;
+    if (path.includes("investor") || path.includes("portfolio")) return "investor" as const;
+    return "general" as const;
+  }, [location.pathname]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -249,6 +263,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
                   }}
                   hasProjectData={!!projectData}
                   disabled={loading}
+                  pageContext={pageContext}
                 />
               </div>
             )}
