@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import CitizenFeedbackPanel from "@/components/pm/CitizenFeedbackPanel";
+import ImpactCredibilityBadge from "@/components/scoring/ImpactCredibilityBadge";
+import { calculateCredibilityScore } from "@/lib/impact-credibility";
 import { sdgGoals } from "@/lib/constants";
 import {
   MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Clock,
@@ -87,6 +89,20 @@ export default function ProjectDetail() {
   const avgRating = feedback.filter(f => f.rating).reduce((sum, f, _, arr) => sum + f.rating / arr.length, 0);
   const issueCount = feedback.filter(f => f.is_issue_report).length;
 
+  // Impact Credibility Score
+  const hasVerified = verifications.some((v: any) => v.status === "approved");
+  const tierMap: Record<string, 'none' | 'self' | 'community' | 'partner' | 'institutional'> = {
+    self_report: 'self', citizen: 'community', ngo: 'partner', government: 'institutional', platform_audit: 'institutional',
+  };
+  const bestVerification = verifications.find((v: any) => v.status === "approved");
+  const credibilityScore = calculateCredibilityScore({
+    verificationTier: bestVerification ? (tierMap[bestVerification.verification_level] || 'none') : 'none',
+    evidenceCount: updates.length + milestones.filter((m: any) => m.completed).length,
+    carbonDataVerified: hasVerified,
+    reportCompleteness: report.description ? 0.8 : 0.3,
+    lastUpdated: report.updated_at || report.created_at,
+  });
+
   const getVerificationStatus = (level: string) => {
     const v = verifications.find((vr: any) => vr.verification_level === level);
     return v?.status || "pending";
@@ -98,8 +114,11 @@ export default function ProjectDetail() {
         <Link to="/analytics">
           <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold">{report.title}</h1>
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{report.title}</h1>
+            <ImpactCredibilityBadge score={credibilityScore} />
+          </div>
           <p className="text-muted-foreground">{report.description}</p>
         </div>
       </div>
