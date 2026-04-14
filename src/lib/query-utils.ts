@@ -98,7 +98,7 @@ export const QueryFilters = {
   }) => {
     const { limit = 20, offset = 0, userId, sdgGoal, countryCode, status } = options;
     
-    let query: any = { limit, offset };
+    const query: any = { limit, offset };
     if (userId) query.user_id = userId;
     if (sdgGoal) query.sdg_goal = sdgGoal;
     if (countryCode) query.country_code = countryCode;

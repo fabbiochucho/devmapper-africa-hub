@@ -22,7 +22,7 @@ export type CorporateTarget = {
   }[];
 };
 
-let corporateTargets: CorporateTarget[] = [
+const corporateTargets: CorporateTarget[] = [
   {
     id: 1,
     title: "Reduce Carbon Footprint by 20%",

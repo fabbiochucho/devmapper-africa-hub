@@ -64,7 +64,7 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
     
     // Fetch votes for all feedback items
     const feedbackIds = feedbackItems.map(f => f.id);
-    let votesMap: Record<string, { up: number; down: number; userVote: 'up' | 'down' | null }> = {};
+    const votesMap: Record<string, { up: number; down: number; userVote: 'up' | 'down' | null }> = {};
     
     if (feedbackIds.length > 0) {
       const { data: votes } = await supabase
