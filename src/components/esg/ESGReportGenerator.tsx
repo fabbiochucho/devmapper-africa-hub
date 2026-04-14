@@ -303,7 +303,7 @@ export default function ESGReportGenerator({
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>${organization} - ESG Report ${reportYear}</title>
+        <title>${escapeHtml(organization)} - ESG Report ${escapeHtml(reportYear)}</title>
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { 
@@ -383,8 +383,8 @@ export default function ESGReportGenerator({
       </head>
       <body>
         <div class="header">
-          <h1>${organization}</h1>
-          <div class="subtitle">Environmental, Social & Governance Report - ${reportYear}</div>
+          <h1>${escapeHtml(organization)}</h1>
+          <div class="subtitle">Environmental, Social & Governance Report - ${escapeHtml(reportYear)}</div>
           <div class="subtitle">Generated: ${date}</div>
         </div>
         ${sectionsHTML}

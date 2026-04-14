@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { escapeHtml } from '@/lib/escapeHtml';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from '@/components/ui/dialog';
@@ -416,7 +417,7 @@ function buildReport(opts: {
     else if (sId === 'ifrs_climate_resilience') {
       if (scenarios.length > 0) {
         const rows = scenarios.map(s =>
-          `<tr><td>${s.name}</td><td>${s.baseline_year}→${s.target_year}</td><td>${s.status || 'draft'}</td><td>${s.description || '-'}</td></tr>`
+          `<tr><td>${escapeHtml(s.name)}</td><td>${s.baseline_year}→${s.target_year}</td><td>${escapeHtml(s.status) || 'draft'}</td><td>${escapeHtml(s.description) || '-'}</td></tr>`
         ).join('');
         content = `
           <p>Climate resilience assessment per IFRS S2.22: entities shall use scenario analysis to assess resilience to climate-related changes, uncertainties, and transition risks.</p>
@@ -457,7 +458,7 @@ function buildReport(opts: {
       content = `
         <div style="border:2px solid #065f46;padding:20px;border-radius:8px;margin:16px 0;background:#f0fdf4">
           <h3 style="color:#065f46;margin-bottom:8px">Statement of Compliance</h3>
-          <p>The sustainability-related financial disclosures of <strong>${org}</strong> for the reporting year ending ${year} have been prepared in accordance with IFRS Sustainability Disclosure Standards issued by the International Sustainability Standards Board (ISSB), comprising IFRS S1 <em>General Requirements for Disclosure of Sustainability-related Financial Information</em> and IFRS S2 <em>Climate-related Disclosures</em>.</p>
+          <p>The sustainability-related financial disclosures of <strong>${escapeHtml(org)}</strong> for the reporting year ending ${escapeHtml(year)} have been prepared in accordance with IFRS Sustainability Disclosure Standards issued by the International Sustainability Standards Board (ISSB), comprising IFRS S1 <em>General Requirements for Disclosure of Sustainability-related Financial Information</em> and IFRS S2 <em>Climate-related Disclosures</em>.</p>
           <p style="margin-top:8px">These disclosures comply with all requirements of the applicable IFRS Sustainability Disclosure Standards${countryStandard ? ' and the Nigeria FRC Sustainability Reporting Guideline (SRG1) 2026' : ''}.</p>
           <p style="margin-top:12px;font-size:12px;color:#6b7280"><em>This statement is made in accordance with IFRS S1.72 and Nigeria FRC SRG1 §2.</em></p>
         </div>`;
@@ -516,7 +517,7 @@ function buildReport(opts: {
     // Supplier / supply chain sections
     else if (sId.includes('supply') || sId.includes('supplier')) {
       const rows = suppliers.slice(0, 10).map(s =>
-        `<tr><td>${s.name}</td><td>${s.sector || '-'}</td><td>${s.country_code || '-'}</td><td>$${(s.annual_spend || 0).toLocaleString()}</td></tr>`
+        `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.sector) || '-'}</td><td>${escapeHtml(s.country_code) || '-'}</td><td>$${(s.annual_spend || 0).toLocaleString()}</td></tr>`
       ).join('');
       content = `<p>${suppliers.length} suppliers tracked.</p>
         <table class="data-table"><thead><tr><th>Supplier</th><th>Sector</th><th>Country</th><th>Annual Spend</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -525,7 +526,7 @@ function buildReport(opts: {
     else if (sId.includes('scenario') || sId.includes('strategy') || sId.includes('pathway')) {
       if (scenarios.length > 0) {
         const rows = scenarios.map(s =>
-          `<tr><td>${s.name}</td><td>${s.baseline_year}→${s.target_year}</td><td>${s.status || 'draft'}</td></tr>`
+          `<tr><td>${escapeHtml(s.name)}</td><td>${s.baseline_year}→${s.target_year}</td><td>${escapeHtml(s.status) || 'draft'}</td></tr>`
         ).join('');
         content = `<table class="data-table"><thead><tr><th>Scenario</th><th>Timeline</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
       } else {
@@ -557,7 +558,7 @@ function buildReport(opts: {
     return `<section class="section"><h2>${sec.label}</h2><p class="section-desc">${sec.description}</p>${content}</section>`;
   }).join('');
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${org} — ${standard.name} Report ${year}</title>
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${escapeHtml(org)} — ${escapeHtml(standard.name)} Report ${escapeHtml(year)}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6;color:#1a1a1a;max-width:900px;margin:0 auto;padding:40px}
@@ -581,9 +582,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6;color:#1a1a1a;m
 @media print{body{padding:20px}.section{page-break-inside:avoid}}
 </style></head><body>
 <div class="header">
-  <h1>${org}</h1>
-  <div class="standard-badge">${standardLabel}</div>
-  <div class="subtitle">ESG Report — Reporting Year ${year} • Generated ${date}</div>
+  <h1>${escapeHtml(org)}</h1>
+  <div class="standard-badge">${escapeHtml(standardLabel)}</div>
+  <div class="subtitle">ESG Report — Reporting Year ${escapeHtml(year)} • Generated ${date}</div>
 </div>
 ${sectionHTML}
 <div class="footer">
