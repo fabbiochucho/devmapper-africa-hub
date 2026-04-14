@@ -41,7 +41,7 @@ export default function SdgMapView() {
   );
 
   useEffect(() => {
-    let newFilteredReports = mockReports.filter(report => {
+    const newFilteredReports = mockReports.filter(report => {
       if (filters.country_code !== "all" && report.country_code !== filters.country_code) {
         return false;
       }

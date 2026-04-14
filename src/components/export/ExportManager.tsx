@@ -155,14 +155,15 @@ export default function ExportManager({ organizationName, availableData, planTyp
       const timestamp = new Date().toISOString().split('T')[0];
       const baseFilename = `${organizationName.replace(/\s+/g, '_')}_${timestamp}`;
 
-      switch (format) {
-        case 'json':
+       switch (format) {
+        case 'json': {
           const combinedData: Record<string, any[]> = {};
           selectedData.forEach(d => {
             combinedData[d.type] = d.data;
           });
           exportToJSON(combinedData, baseFilename);
           break;
+        }
         case 'excel':
           // Export as CSV (Excel-compatible)
           selectedData.forEach(dataset => {
