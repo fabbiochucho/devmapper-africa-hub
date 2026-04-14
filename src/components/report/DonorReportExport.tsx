@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { escapeHtml } from "@/lib/escapeHtml";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,21 +34,21 @@ export default function DonorReportExport({ report, milestones = [], budgets = [
       const now = new Date().toLocaleDateString();
 
       const milestoneRows = milestones.map(m =>
-        `<tr><td>${m.title}</td><td>${m.target_date || '-'}</td><td>${m.completed ? '✅ Complete' : '⏳ Pending'}</td></tr>`
+        `<tr><td>${escapeHtml(m.title)}</td><td>${escapeHtml(m.target_date) || '-'}</td><td>${m.completed ? '✅ Complete' : '⏳ Pending'}</td></tr>`
       ).join('');
 
       const budgetRows = budgets.map(b =>
-        `<tr><td>${b.source || '-'}</td><td>${b.currency} ${(b.allocated || 0).toLocaleString()}</td><td>${b.currency} ${(b.spent || 0).toLocaleString()}</td><td>${b.allocated > 0 ? Math.round((b.spent / b.allocated) * 100) : 0}%</td></tr>`
+        `<tr><td>${escapeHtml(b.source) || '-'}</td><td>${escapeHtml(b.currency)} ${(b.allocated || 0).toLocaleString()}</td><td>${escapeHtml(b.currency)} ${(b.spent || 0).toLocaleString()}</td><td>${b.allocated > 0 ? Math.round((b.spent / b.allocated) * 100) : 0}%</td></tr>`
       ).join('');
 
       const indicatorRows = indicators.map(i =>
-        `<tr><td>${i.name}</td><td>${i.baseline || '-'}</td><td>${i.current_value || '-'}</td><td>${i.target_value || '-'}</td><td>${i.unit || '-'}</td></tr>`
+        `<tr><td>${escapeHtml(i.name)}</td><td>${escapeHtml(i.baseline) || '-'}</td><td>${escapeHtml(i.current_value) || '-'}</td><td>${escapeHtml(i.target_value) || '-'}</td><td>${escapeHtml(i.unit) || '-'}</td></tr>`
       ).join('');
 
       const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>${tmpl?.label} - ${report.title}</title>
+  <title>${escapeHtml(tmpl?.label)} - ${escapeHtml(report.title)}</title>
   <style>
     body { font-family: 'Times New Roman', serif; margin: 50px; color: #333; line-height: 1.6; }
     h1 { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; }
@@ -62,23 +63,23 @@ export default function DonorReportExport({ report, milestones = [], budgets = [
   </style>
 </head>
 <body>
-  <h1>${tmpl?.label || 'Donor Report'}</h1>
+  <h1>${escapeHtml(tmpl?.label) || 'Donor Report'}</h1>
   <div class="meta">
-    <span>Project: ${report.title}</span>
+    <span>Project: ${escapeHtml(report.title)}</span>
     <span>Generated: ${now}</span>
   </div>
 
   <h2>1. Project Overview</h2>
   <table>
     <tr><th>Field</th><th>Value</th></tr>
-    <tr><td>Project Title</td><td>${report.title}</td></tr>
-    <tr><td>Description</td><td>${report.description || '-'}</td></tr>
-    <tr><td>Location</td><td>${report.location || '-'}</td></tr>
-    <tr><td>SDG Alignment</td><td>SDG ${report.sdg_goal}</td></tr>
-    <tr><td>Status</td><td>${report.project_status || '-'}</td></tr>
+    <tr><td>Project Title</td><td>${escapeHtml(report.title)}</td></tr>
+    <tr><td>Description</td><td>${escapeHtml(report.description) || '-'}</td></tr>
+    <tr><td>Location</td><td>${escapeHtml(report.location) || '-'}</td></tr>
+    <tr><td>SDG Alignment</td><td>SDG ${escapeHtml(String(report.sdg_goal))}</td></tr>
+    <tr><td>Status</td><td>${escapeHtml(report.project_status) || '-'}</td></tr>
     <tr><td>Beneficiaries</td><td>${report.beneficiaries?.toLocaleString() || '-'}</td></tr>
-    <tr><td>Start Date</td><td>${report.start_date || '-'}</td></tr>
-    <tr><td>End Date</td><td>${report.end_date || '-'}</td></tr>
+    <tr><td>Start Date</td><td>${escapeHtml(report.start_date) || '-'}</td></tr>
+    <tr><td>End Date</td><td>${escapeHtml(report.end_date) || '-'}</td></tr>
   </table>
 
   <h2>2. Milestones & Progress</h2>
