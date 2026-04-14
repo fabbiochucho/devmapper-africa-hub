@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { escapeHtml } from '@/lib/escapeHtml';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -215,9 +216,9 @@ export default function ESGReportGenerator({
     if (selectedSections.includes('suppliers') && suppliers.length > 0) {
       const supplierRows = suppliers.slice(0, 10).map(s => `
         <tr>
-          <td>${s.name}</td>
-          <td>${s.sector || '-'}</td>
-          <td>${s.country_code || '-'}</td>
+          <td>${escapeHtml(s.name)}</td>
+          <td>${escapeHtml(s.sector) || '-'}</td>
+          <td>${escapeHtml(s.country_code) || '-'}</td>
           <td>$${(s.annual_spend || 0).toLocaleString()}</td>
         </tr>
       `).join('');
@@ -247,7 +248,7 @@ export default function ESGReportGenerator({
     if (selectedSections.includes('scenarios') && scenarios.length > 0) {
       const scenarioRows = scenarios.map(s => `
         <tr>
-          <td>${s.name}</td>
+          <td>${escapeHtml(s.name)}</td>
           <td>${s.baseline_year} → ${s.target_year}</td>
           <td>$${(s.results?.cost_savings || 0).toLocaleString()}</td>
           <td>${s.results?.roi_years || '-'} years</td>
@@ -302,7 +303,7 @@ export default function ESGReportGenerator({
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>${organization} - ESG Report ${reportYear}</title>
+        <title>${escapeHtml(organization)} - ESG Report ${escapeHtml(reportYear)}</title>
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { 
@@ -382,8 +383,8 @@ export default function ESGReportGenerator({
       </head>
       <body>
         <div class="header">
-          <h1>${organization}</h1>
-          <div class="subtitle">Environmental, Social & Governance Report - ${reportYear}</div>
+          <h1>${escapeHtml(organization)}</h1>
+          <div class="subtitle">Environmental, Social & Governance Report - ${escapeHtml(reportYear)}</div>
           <div class="subtitle">Generated: ${date}</div>
         </div>
         ${sectionsHTML}
