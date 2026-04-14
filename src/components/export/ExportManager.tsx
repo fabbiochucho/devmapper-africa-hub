@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { escapeHtml } from '@/lib/escapeHtml';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -94,13 +95,13 @@ export default function ExportManager({ organizationName, availableData, planTyp
       if (!dataset.data.length) return;
       
       const headers = Object.keys(dataset.data[0]);
-      const headerRow = headers.map(h => `<th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5;">${h}</th>`).join('');
+      const headerRow = headers.map(h => `<th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5;">${escapeHtml(String(h))}</th>`).join('');
       const rows = dataset.data.map(row => 
-        `<tr>${headers.map(h => `<td style="border: 1px solid #ddd; padding: 8px;">${row[h] ?? ''}</td>`).join('')}</tr>`
+        `<tr>${headers.map(h => `<td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(String(row[h] ?? ''))}</td>`).join('')}</tr>`
       ).join('');
       
       tablesHTML += `
-        <h2 style="margin-top: 30px;">${dataset.label}</h2>
+        <h2 style="margin-top: 30px;">${escapeHtml(dataset.label)}</h2>
         <table style="border-collapse: collapse; width: 100%; margin-top: 10px;">
           <thead><tr>${headerRow}</tr></thead>
           <tbody>${rows}</tbody>
@@ -112,7 +113,7 @@ export default function ExportManager({ organizationName, availableData, planTyp
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${organizationName} - ESG Report</title>
+          <title>${escapeHtml(organizationName)} - ESG Report</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 40px; }
             h1 { color: #333; }
@@ -123,7 +124,7 @@ export default function ExportManager({ organizationName, availableData, planTyp
           </style>
         </head>
         <body>
-          <h1>${organizationName} - ESG Report</h1>
+          <h1>${escapeHtml(organizationName)} - ESG Report</h1>
           <p style="color: #666;">Generated on ${now}</p>
           ${tablesHTML}
         </body>
