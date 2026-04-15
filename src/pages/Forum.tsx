@@ -134,7 +134,7 @@ const Forum = () => {
 
       // Use count queries instead of fetching all rows
       const [membersResult, recentPostsResult] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('public_profiles').select('id', { count: 'exact', head: true }),
         supabase.from('forum_posts').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString()),
       ]);
 
