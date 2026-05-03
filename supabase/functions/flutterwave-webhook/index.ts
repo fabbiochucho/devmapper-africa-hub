@@ -113,7 +113,16 @@ serve(async (req) => {
     if (event === "charge.completed" && data.status === "successful") {
       const metadata = data.meta || data.metadata || {};
       const organizationId = metadata.organizationId || metadata.organization_id;
-      const newPlan = metadata.planType || metadata.plan_type || 'pro';
+      const VALID_PLANS = ['lite', 'pro', 'advanced', 'enterprise'];
+      const requestedPlan = metadata.planType || metadata.plan_type || 'pro';
+      if (!VALID_PLANS.includes(requestedPlan)) {
+        console.error("Invalid plan_type in metadata:", requestedPlan);
+        return new Response(
+          JSON.stringify({ error: "Invalid plan type" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const newPlan = requestedPlan;
 
       if (!organizationId) {
         console.error("Missing organizationId in metadata");
@@ -246,7 +255,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error processing webhook:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
