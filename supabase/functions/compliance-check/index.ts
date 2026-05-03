@@ -145,13 +145,15 @@ serve(async (req) => {
         });
       }
 
-      results.push({ org_id: org.id, org_name: org.name, alerts_count: alerts.length, alerts });
+      results.push({ org_id: org.id, alerts_count: alerts.length });
     }
 
+    const totalAlerts = results.reduce((sum, r) => sum + r.alerts_count, 0);
     return new Response(JSON.stringify({
       message: `Compliance check completed for ${orgs.length} organizations`,
       timestamp: now.toISOString(),
-      results,
+      organizations_checked: orgs.length,
+      total_alerts: totalAlerts,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
