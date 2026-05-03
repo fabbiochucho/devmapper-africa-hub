@@ -89,8 +89,9 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('[SDG-PROXY] Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: error.message === 'Unauthorized' ? 401 : 500,
+    const isAuth = error instanceof Error && error.message === 'Unauthorized';
+    return new Response(JSON.stringify({ error: isAuth ? 'Unauthorized' : 'Internal server error' }), {
+      status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
