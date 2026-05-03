@@ -12,13 +12,26 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   // Prevent duplicate instances of React / React Router that can break context
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router", "react-router-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "@tanstack/react-query-devtools",
+      "react-helmet-async",
+      "next-themes",
+      "react-i18next",
+      "i18next",
+      "i18next-browser-languagedetector",
+    ],
+    force: true,
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
+    dedupe: ["react", "react-dom", "react-router-dom"],
   },
   build: {
     // Chunk splitting for better caching & smaller initial load
