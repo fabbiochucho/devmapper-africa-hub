@@ -96,12 +96,11 @@ export const ComplianceScoresDashboard = ({ organizationId }: Props) => {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Progress
-                    value={Number(s.score_percentage)}
-                    className="flex-1"
-                    indicatorClassName={getColor(Number(s.score_percentage))}
-                  />
-                  <span className="text-sm font-semibold w-12 text-right">
+                  <Progress value={Number(s.score_percentage)} className="flex-1" />
+                  <span className={`text-sm font-semibold w-12 text-right ${
+                    Number(s.score_percentage) >= 75 ? "text-primary" :
+                    Number(s.score_percentage) >= 50 ? "text-accent-foreground" : "text-destructive"
+                  }`}>
                     {Number(s.score_percentage).toFixed(0)}%
                   </span>
                 </div>
