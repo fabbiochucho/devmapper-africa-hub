@@ -92,7 +92,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Verify admin error:', error);
     return new Response(
-      JSON.stringify({ isAdmin: false, error: error.message }),
+      JSON.stringify({ isAdmin: false, error: 'Internal server error' }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

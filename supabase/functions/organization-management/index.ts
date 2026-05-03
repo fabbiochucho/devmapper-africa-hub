@@ -183,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.error('Error in organization-management function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Internal server error' 
+        error: 'Internal server error' 
       }),
       { 
         status: 500, 
