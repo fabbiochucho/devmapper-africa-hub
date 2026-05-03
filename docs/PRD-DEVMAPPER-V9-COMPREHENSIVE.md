@@ -349,3 +349,61 @@ All agents read from DevMapper's PostgreSQL schema only — no external dependen
 **Document Version:** 9.1
 **Last Updated:** 2026-04-02
 **Sources:** V1–V8 PRDs + Devmapper_Ndovu.txt + DevMapper_02042026-2.txt + all strategic documents
+
+---
+
+# Appendix: Global Standards Alignment (V9.2 Addendum)
+**Source:** Devmapper_15042026.txt — Standards Alignment Strategy
+
+## Standards Layer Model
+
+| Layer | Standard | DevMapper Role |
+|-------|----------|----------------|
+| **Measurement** | GHG Protocol | Scope 1/2/3 emissions accounting |
+| **Verification** | ISO 14064/14067 | Audit & third-party certification |
+| **Reporting** | CDP / ISSB / CSRD / GRI / TCFD | Multi-framework ESG disclosure |
+| **Targets** | SBTi / Net Zero Standard | Decarbonization pathways |
+| **Markets** | Verra / Gold Standard / Article 6 / ICVCM | Carbon credit integrity |
+| **Sector** | GLEC (transport), GPC (cities), ISO 14040 (LCA) | Specialized accounting |
+| **Science** | IPCC | Emission factor foundation |
+
+## Standards Engine (Implemented in V9.2)
+
+Every data point is taggable with:
+```json
+{
+  "value": 1200,
+  "unit": "kgCO2e",
+  "standard": "GHG Protocol",
+  "frameworks": ["CDP", "ISSB"],
+  "confidence_score": 0.85
+}
+```
+
+**Database tables:**
+- `standards_metadata` — Per-record standard tagging
+- `compliance_scores` — Per-organization framework alignment %
+
+**UI components:**
+- `ComplianceScoresDashboard` — Live % alignment per framework (CDP, ISSB, CSRD, SBTi, GHG Protocol)
+
+## Implementation Prioritization
+
+### MVP (Implemented ✅)
+- GHG Protocol (esg_indicators + CarbonCalculator)
+- IFRS S1/S2 (IFRSReadinessAssessment)
+- Article 6 / ITMO (carbon_compliance)
+- Standards Engine schema (V9.2)
+
+### Phase 2 (In Progress ⚠️)
+- CDP auto-filled questionnaire
+- SBTi pathway generator
+- Verra/Gold Standard methodology mapping
+
+### Phase 3 (Planned ❌)
+- GLEC transport/freight emissions module
+- Full ISO 14040/14044 LCA workflow
+- GPC city/state/national aggregation
+
+## Ndovu Akili AI Role
+The AI copilot translates between frameworks, explains compliance gaps using `compliance_scores` data, and recommends remediation actions per the standards engine metadata.
