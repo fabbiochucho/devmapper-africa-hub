@@ -18,6 +18,32 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
+    // Require authenticated admin/platform_admin caller
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token)
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    const { data: roles } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userData.user.id)
+      .eq('is_active', true)
+    const isAdmin = (roles || []).some((r: any) => r.role === 'admin' || r.role === 'platform_admin')
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const { nominee_email, nominee_name, nominator_name, reason } = await req.json()
 
     if (!nominee_email || !nominee_name) {
