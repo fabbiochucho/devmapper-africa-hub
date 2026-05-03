@@ -17,6 +17,7 @@ import {
   Shield
 } from 'lucide-react';
 import ESGDashboard from '@/components/esg/ESGDashboard';
+import ComplianceScoresDashboard from '@/components/esg/ComplianceScoresDashboard';
 import SupplierCSVImporter from '@/components/esg/SupplierCSVImporter';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -216,6 +217,7 @@ const ESGPage = () => {
 
             <TabsContent value="dashboard" className="space-y-6">
               <ESGDashboard organizationId={selectedOrgId} />
+              <ComplianceScoresDashboard organizationId={selectedOrgId} />
             </TabsContent>
 
             <TabsContent value="suppliers" className="space-y-6">
