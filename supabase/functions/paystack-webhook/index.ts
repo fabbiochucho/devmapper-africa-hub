@@ -20,9 +20,19 @@ serve(async (req: Request) => {
     const signature = req.headers.get('x-paystack-signature');
     const body = await req.text();
 
-    // Verify HMAC signature
+    // Verify HMAC signature - MANDATORY
     const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
-    if (PAYSTACK_SECRET && signature) {
+    if (!PAYSTACK_SECRET) {
+      console.error('PAYSTACK_SECRET_KEY not configured');
+      return new Response(JSON.stringify({ error: 'Server misconfigured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+    if (!signature) {
+      return new Response('Missing signature', { status: 401, headers: corsHeaders });
+    }
+    {
       const encoder = new TextEncoder();
       const key = await crypto.subtle.importKey(
         'raw',
