@@ -1,4 +1,4 @@
-const CACHE_NAME = 'devmapper-v1';
+const CACHE_NAME = 'devmapper-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -28,8 +28,10 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET and Supabase API calls
+  // Skip non-GET, dev server modules, and Supabase API calls
   if (request.method !== 'GET') return;
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.endsWith('.lovableproject.com')) return;
+  if (url.pathname.startsWith('/src/') || url.pathname.startsWith('/node_modules/') || url.pathname.includes('/@vite/')) return;
   if (url.hostname.includes('supabase')) return;
 
   // API/dynamic routes: network-first
