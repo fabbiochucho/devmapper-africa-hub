@@ -19,6 +19,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Require shared secret (function is intended for scheduled execution)
+    const CRON_SECRET = Deno.env.get("CRON_SECRET");
+    const provided = req.headers.get("Authorization")?.replace("Bearer ", "")
+      ?? req.headers.get("x-cron-secret");
+    if (!CRON_SECRET || provided !== CRON_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -134,13 +145,15 @@ serve(async (req) => {
         });
       }
 
-      results.push({ org_id: org.id, org_name: org.name, alerts_count: alerts.length, alerts });
+      results.push({ org_id: org.id, alerts_count: alerts.length });
     }
 
+    const totalAlerts = results.reduce((sum, r) => sum + r.alerts_count, 0);
     return new Response(JSON.stringify({
       message: `Compliance check completed for ${orgs.length} organizations`,
       timestamp: now.toISOString(),
-      results,
+      organizations_checked: orgs.length,
+      total_alerts: totalAlerts,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
