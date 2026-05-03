@@ -1026,6 +1026,56 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_scores: {
+        Row: {
+          assessed_at: string
+          assessed_by: string | null
+          created_at: string
+          framework_code: string
+          gaps: Json | null
+          id: string
+          organization_id: string
+          reported_indicators: number | null
+          score_percentage: number | null
+          total_indicators: number | null
+          updated_at: string
+        }
+        Insert: {
+          assessed_at?: string
+          assessed_by?: string | null
+          created_at?: string
+          framework_code: string
+          gaps?: Json | null
+          id?: string
+          organization_id: string
+          reported_indicators?: number | null
+          score_percentage?: number | null
+          total_indicators?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assessed_at?: string
+          assessed_by?: string | null
+          created_at?: string
+          framework_code?: string
+          gaps?: Json | null
+          id?: string
+          organization_id?: string
+          reported_indicators?: number | null
+          score_percentage?: number | null
+          total_indicators?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -3633,6 +3683,59 @@ export type Database = {
           verification_requirement?: string | null
         }
         Relationships: []
+      }
+      standards_metadata: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          frameworks: string[] | null
+          id: string
+          methodology: string | null
+          notes: string | null
+          organization_id: string
+          standard: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          frameworks?: string[] | null
+          id?: string
+          methodology?: string | null
+          notes?: string | null
+          organization_id: string
+          standard: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          frameworks?: string[] | null
+          id?: string
+          methodology?: string | null
+          notes?: string | null
+          organization_id?: string
+          standard?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standards_metadata_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_tickets: {
         Row: {
