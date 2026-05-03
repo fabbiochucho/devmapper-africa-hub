@@ -226,7 +226,7 @@ async function handleSupplierEnrichment(
       enrichedResults.push({
         supplier_id: supplier.id,
         supplier_name: supplier.name,
-        error: error.message
+        error: 'Failed to enrich supplier'
       });
     }
   }
