@@ -46,11 +46,7 @@ export const ComplianceScoresDashboard = ({ organizationId }: Props) => {
     load();
   }, [organizationId]);
 
-  const getColor = (score: number) => {
-    if (score >= 75) return "bg-primary";
-    if (score >= 50) return "bg-accent";
-    return "bg-destructive";
-  };
+
 
   if (loading) {
     return (
