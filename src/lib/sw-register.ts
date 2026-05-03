@@ -6,6 +6,28 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return null;
   }
 
+  if (import.meta.env.DEV) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith('devmapper-'))
+            .map((name) => caches.delete(name))
+        );
+      }
+
+      console.log('SW disabled in development');
+    } catch (error) {
+      console.error('SW cleanup failed:', error);
+    }
+
+    return null;
+  }
+
   try {
     const registration = await navigator.serviceWorker.register('/sw.js');
     console.log('SW registered:', registration.scope);
