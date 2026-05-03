@@ -1,5 +1,6 @@
-import { useUserRole } from "@/contexts/UserRoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { PageSkeleton } from "@/components/ui/loading-skeleton";
 
 interface RoleRouteProps {
   roles: string[];
@@ -7,8 +8,10 @@ interface RoleRouteProps {
 }
 
 const RoleRoute = ({ roles, children }: RoleRouteProps) => {
-  const { currentRole } = useUserRole();
-  if (!roles.includes(currentRole)) return <Navigate to="/" replace />;
+  const { userRoles, loading } = useAuth();
+  if (loading) return <PageSkeleton />;
+  const allowed = roles.some((r) => userRoles.includes(r));
+  if (!allowed) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
