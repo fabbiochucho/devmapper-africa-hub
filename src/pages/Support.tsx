@@ -105,6 +105,14 @@ const Support = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
+      <SEOHead
+        title="Support Center — Dev Mapper"
+        description="FAQs, guides, and ticket submission for Dev Mapper users — verification, reporting, billing, and platform help."
+        canonicalUrl="/support"
+        structuredData={generateFAQSchema(
+          faqCategories.flatMap((c) => c.faqs).slice(0, 12).map((f) => ({ question: f.q, answer: f.a }))
+        )}
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Support Center</h1>
         <p className="text-muted-foreground">
