@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, Users, Shield, MessageCircle, Flag, FileText, Eye, Globe, Scale, Heart, Lock, Camera, MapPin, BarChart3 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { SEOHead, generateFAQSchema } from '@/components/seo/SEOHead';
 
 const Guidelines = () => {
   const coreGuidelines = [
@@ -178,6 +179,17 @@ const Guidelines = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
+      <SEOHead
+        title="Community Guidelines — Dev Mapper"
+        description="Standards for respectful, accurate, and impactful participation on Dev Mapper across all roles and tiers."
+        canonicalUrl="/guidelines"
+        structuredData={generateFAQSchema(
+          coreGuidelines.map((g) => ({
+            question: g.title,
+            answer: `${g.description}. ${g.rules.join(' ')}`,
+          }))
+        )}
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Community Guidelines</h1>
         <p className="text-muted-foreground">

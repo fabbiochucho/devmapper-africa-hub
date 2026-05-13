@@ -10,6 +10,7 @@ import { mockOrganizations, Organization } from '@/data/mockOrganizations';
 import { sdgGoals } from '@/lib/constants';
 import { getCountries, Country } from '@/data/countries';
 import { Search, FolderKanban, User, Building } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface UserProfile {
   id: string;
@@ -99,6 +100,11 @@ const SearchPage = () => {
 
   return (
     <div className="space-y-6">
+      <SEOHead
+        title="Search — Dev Mapper"
+        description="Search verified SDG projects, change-makers, and organisations across Africa on Dev Mapper."
+        canonicalUrl="/search"
+      />
       <h1 className="text-3xl font-bold">Search</h1>
       <form onSubmit={handleSearch} className="flex items-center gap-2">
         <Input 

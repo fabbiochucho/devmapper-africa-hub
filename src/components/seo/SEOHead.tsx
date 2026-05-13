@@ -39,14 +39,18 @@ export const SEOHead = ({
     updateMetaTag('description', description);
     updateMetaTag('keywords', keywords.join(', '));
 
+    // Resolve canonical to absolute URL (accept relative paths like "/about")
+    const SITE_ORIGIN = 'https://devmapperafrica.lovable.app';
+    const resolvedCanonical = canonicalUrl
+      ? (canonicalUrl.startsWith('http') ? canonicalUrl : `${SITE_ORIGIN}${canonicalUrl.startsWith('/') ? '' : '/'}${canonicalUrl}`)
+      : `${SITE_ORIGIN}${typeof window !== 'undefined' ? window.location.pathname : '/'}`;
+
     // Open Graph tags
     updateMetaTag('og:title', title, true);
     updateMetaTag('og:description', description, true);
     updateMetaTag('og:type', ogType, true);
     updateMetaTag('og:image', ogImage, true);
-    if (canonicalUrl) {
-      updateMetaTag('og:url', canonicalUrl, true);
-    }
+    updateMetaTag('og:url', resolvedCanonical, true);
 
     // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
@@ -54,16 +58,14 @@ export const SEOHead = ({
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', ogImage);
 
-    // Canonical URL
-    if (canonicalUrl) {
-      let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'canonical';
-        document.head.appendChild(link);
-      }
-      link.href = canonicalUrl;
+    // Canonical URL — always self-referencing for the current route
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      document.head.appendChild(link);
     }
+    link.href = resolvedCanonical;
 
     // Structured Data (JSON-LD)
     if (structuredData) {

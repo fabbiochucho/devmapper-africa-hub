@@ -41,7 +41,7 @@ const Fundraising = lazy(() => import("./pages/Fundraising"));
 const Auth = lazy(() => import("./pages/Auth"));
 const CorporateDashboard = lazy(() => import("./pages/CorporateDashboard"));
 const NgoDashboard = lazy(() => import("./pages/NgoDashboard"));
-const SdgAgenda2063Alignment = lazy(() => import("./components/SdgAgenda2063Alignment"));
+const SdgAgenda2063Alignment = lazy(() => import("./pages/SdgAgenda2063"));
 const ESG = lazy(() => import("./pages/ESG"));
 const BillingUpgrade = lazy(() => import("./pages/BillingUpgrade"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage"));
