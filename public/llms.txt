@@ -1,0 +1,39 @@
+# Dev Mapper
+
+> Africa's SDG and ESG tracking platform — monitor sustainable development goal progress, ESG compliance, climate action, and grassroots impact across the continent in real time.
+
+Dev Mapper helps citizens, NGOs, governments, and corporates report, verify, and analyse sustainability projects aligned to the UN SDGs, AU Agenda 2063, GRI, CDP, CSRD, SBTi, TCFD, IFRS S1/S2, and Nigeria FRC SRG1. Features include a verified change-maker registry, carbon accounting, a carbon marketplace, fundraising campaigns, and the Ndovu Akili AI assistant.
+
+## Pages
+
+- [Home](/): Platform overview and impact map.
+- [About](/about): Mission, partners, and methodology.
+- [Pricing](/pricing): Plans for citizens, NGOs, governments, and enterprises.
+- [Support](/support): FAQs and ticket submission.
+- [Guidelines](/guidelines): Community standards and verification rules.
+- [Resources](/resources): Toolkits, templates, and learning materials.
+- [Training](/training): Capacity-building courses.
+- [Contact](/contact): Get in touch with the team.
+
+## Discover
+
+- [Change Makers](/change-makers): Verified African change-maker registry.
+- [Fundraising](/fundraising): Active campaigns supporting SDG projects.
+- [Search](/search): Find projects, organisations, and people.
+- [SDG Overview](/sdg-overview): Country-level SDG progress dashboards.
+- [SDG ↔ Agenda 2063](/sdg-agenda2063): Alignment between UN SDGs and AU Agenda 2063.
+- [SDG Indicator Registry](/sdg-indicators): Indicator library used across the platform.
+
+## Sustainability & Carbon
+
+- [ESG](/esg): GRI/CDP/CSRD/SBTi/TCFD/IFRS S1-S2 reporting and gap analysis.
+- [Carbon Marketplace](/carbon-marketplace): Buy and retire verified African carbon credits.
+- [Verifier Marketplace](/verifier-marketplace): Find accredited project verifiers.
+- [SPVF Standards](/spvf-standards): Sustainable Project Verification Framework.
+- [DSPM Methodology](/dspm-methodology): Development & Sustainability Project Monitoring methodology.
+
+## Optional
+
+- [Platform Overview](/platform-overview): Detailed product walkthrough.
+- [Verify Certificate](/verify): Validate a Dev Mapper-issued certificate.
+- [Sign in / Sign up](/auth): Account access.
