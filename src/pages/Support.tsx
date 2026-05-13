@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle, Search, BookOpen, Shield, Users, FileText, Globe, CreditCard, Zap, ExternalLink, MapPin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { SEOHead, generateFAQSchema } from '@/components/seo/SEOHead';
 
 const Support = () => {
   const [ticketForm, setTicketForm] = useState({
