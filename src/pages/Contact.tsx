@@ -106,9 +106,9 @@ const Contact = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                <Send className="w-4 h-4 mr-2" />
-                Send Message
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                {submitting ? 'Sending…' : 'Send Message'}
               </Button>
             </form>
           </CardContent>
