@@ -135,11 +135,12 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Flutterwave response:', flutterwaveData);
 
       if (flutterwaveData.status === 'success' && flutterwaveData.data?.link) {
-        // Update donation with transaction reference
+        // Update donation with transaction reference (only if not already linked)
         await supabase
           .from('campaign_donations')
           .update({ payment_intent_id: tx_ref })
-          .eq('id', donation_id);
+          .eq('id', donation_id)
+          .is('payment_intent_id', null);
 
         return new Response(
           JSON.stringify({ 
