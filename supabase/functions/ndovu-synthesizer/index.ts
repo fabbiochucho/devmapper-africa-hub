@@ -15,49 +15,77 @@ Deno.serve(async (req) => {
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-  const body = await req.json();
-  const { sessionId } = body;
+  let body: any;
+  try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+  const { sessionId } = body ?? {};
+  if (typeof sessionId !== "string" || sessionId.length < 8) {
+    return new Response(JSON.stringify({ error: "Invalid sessionId" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
 
-  // Fetch all agent outputs scoped to session AND user
+  // Verify session ownership and pull invoked-agent order for weighting
+  const { data: session } = await supabaseAdmin
+    .from("ai_agent_sessions")
+    .select("id, user_id, agents_invoked, intent")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session || session.user_id !== user.id) {
+    return new Response(JSON.stringify({ error: "Session not found or forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
+  // Fetch all agent outputs scoped to session
   const { data: outputs } = await supabaseAdmin
     .from("ai_agent_outputs")
-    .select("*, ai_agent_sessions!inner(user_id)")
-    .eq("session_id", sessionId)
-    .eq("ai_agent_sessions.user_id", user.id);
+    .select("*")
+    .eq("session_id", sessionId);
 
   if (!outputs || outputs.length === 0) {
     return new Response(JSON.stringify({ error: "No agent outputs found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
-  // Merge outputs
+  // Order outputs by orchestrator-assigned agent priority (primary first)
+  const order: string[] = Array.isArray(session.agents_invoked) ? session.agents_invoked : [];
+  const priority = (name: string) => {
+    const handle = name.replace(/_ai$/, "").replace(/_agent$/, "");
+    const idx = order.indexOf(handle);
+    return idx === -1 ? 999 : idx;
+  };
+  outputs.sort((a, b) => priority(a.agent_name) - priority(b.agent_name));
+
+  // Merge outputs (primary agent's insights ranked first)
   const allInsights: string[] = [];
   const allRisks: string[] = [];
   const allActions: string[] = [];
-  const contributions: { agentName: string; mainContribution: string }[] = [];
-  let totalConfidence = 0;
+  const contributions: { agentName: string; mainContribution: string; confidence: number }[] = [];
+  let weightedConfidence = 0;
+  let totalWeight = 0;
   let requiresHumanApproval = false;
 
-  for (const output of outputs) {
-    const so = output.structured_output || {};
-    if (so.keyInsights) allInsights.push(...so.keyInsights);
-    if (so.risks) allRisks.push(...so.risks);
-    if (so.recommendedActions) allActions.push(...so.recommendedActions);
+  for (let i = 0; i < outputs.length; i++) {
+    const output = outputs[i];
+    const so = (output.structured_output ?? {}) as Record<string, any>;
+    if (Array.isArray(so.keyInsights)) allInsights.push(...so.keyInsights);
+    if (Array.isArray(so.risks)) allRisks.push(...so.risks);
+    if (Array.isArray(so.recommendedActions)) allActions.push(...so.recommendedActions);
     if (so.requiresHumanReview) requiresHumanApproval = true;
-    totalConfidence += so.confidenceScore || 50;
+    // Primary agent (index 0) gets weight 2; supporting agents get weight 1
+    const weight = i === 0 ? 2 : 1;
+    weightedConfidence += (so.confidenceScore ?? 50) * weight;
+    totalWeight += weight;
     contributions.push({
       agentName: output.agent_name,
       mainContribution: so.summary || "Analysis provided",
+      confidence: so.confidenceScore ?? 50,
     });
   }
 
-  // Deduplicate
-  const unique = (arr: string[]) => [...new Set(arr)].slice(0, 5);
+  // Deduplicate while preserving primary-agent priority
+  const unique = (arr: string[]) => [...new Set(arr.map(s => s.trim()).filter(Boolean))].slice(0, 6);
 
-  const overallConfidence = Math.round(totalConfidence / outputs.length);
+  const overallConfidence = Math.round(weightedConfidence / Math.max(totalWeight, 1));
   const summaryParts = contributions.map(c => c.mainContribution).filter(Boolean);
 
   const synthesis = {
-    summary: summaryParts.join(" ").slice(0, 500),
+    summary: summaryParts.join(" ").slice(0, 600),
     keyInsights: unique(allInsights),
     risks: unique(allRisks),
     recommendedActions: unique(allActions),

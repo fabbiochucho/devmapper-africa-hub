@@ -28,14 +28,19 @@ export const useNdovuMultiAgent = () => {
 
       const { sessionId, agentsToInvoke } = routingData;
 
-      // Step 2: Invoke each agent in parallel
-      await Promise.all(
+      // Step 2: Invoke each agent in parallel — tolerate partial failures
+      // (synthesizer will work as long as at least one agent succeeds)
+      const agentResults = await Promise.allSettled(
         agentsToInvoke.map((agentName: string) =>
           supabase.functions.invoke(`ndovu-${agentName}-agent`, {
             body: { sessionId, ...input }
           })
         )
       );
+      const failed = agentResults.filter(r => r.status === "rejected").length;
+      if (failed === agentsToInvoke.length) {
+        throw new Error("All Ndovu agents failed to respond. Please try again.");
+      }
 
       // Step 3: Synthesize
       const { data: synthesis, error: synthError } = await supabase.functions.invoke(

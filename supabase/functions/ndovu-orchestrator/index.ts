@@ -20,8 +20,16 @@ Deno.serve(async (req) => {
   }
 
   const verifiedUserId = user.id;
-  const body = await req.json();
-  const { userMessage, userRole, contextData, expertMode } = body;
+  let body: any;
+  try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+  const { userMessage, userRole, contextData, expertMode } = body ?? {};
+
+  // Input validation
+  if (typeof userMessage !== "string" || userMessage.length === 0 || userMessage.length > 4000) {
+    return new Response(JSON.stringify({ error: "userMessage must be a string of 1-4000 chars" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  const allowedRoles = new Set(["citizen_reporter", "change_maker", "ngo_representative", "company_representative", "government_official", "investor", "verifier", "admin", "platform_admin", "guest"]);
+  const safeRole = allowedRoles.has(userRole) ? userRole : "guest";
 
   // Re-derive organization server-side
   const supabaseUser = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
@@ -45,15 +53,15 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Daily multi-agent analysis limit reached. Upgrade your plan for more analyses." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
-  // Intent classification
+  // Intent classification (most-specific rules first)
   const msg = userMessage.toLowerCase();
   const intentRules: [string[], string][] = [
-    [["verify", "trust", "greenwash", "credib"], "verification"],
-    [["roi", "invest", "return", "payback", "fund"], "investment"],
-    [["gri", "csrd", "cdp", "ifrs", "gap", "compli", "regulat"], "compliance"],
-    [["design", "develop", "plan", "methodology"], "project_design"],
-    [["supplier", "scope 3", "supply chain", "vendor"], "scope3"],
-    [["buy", "sell", "trade", "retire", "credit", "marketplace"], "carbon_trade"],
+    [["greenwash", "credib", "trust score", "verify", "verification"], "verification"],
+    [["scope 3", "supply chain", "supplier", "vendor"], "scope3"],
+    [["buy credit", "sell credit", "trade", "retire", "marketplace", "offset price"], "carbon_trade"],
+    [["roi", "payback", "invest", "fund", "return on"], "investment"],
+    [["gri", "csrd", "cdp", "ifrs", "tcfd", "gap analysis", "compli", "regulat", "framework"], "compliance"],
+    [["design", "methodology", "baseline", "plan project", "project plan"], "project_design"],
   ];
 
   let intent = "general";
@@ -63,21 +71,24 @@ Deno.serve(async (req) => {
 
   // Role-based defaults
   if (intent === "general") {
-    if (userRole === "government_official") intent = "compliance";
-    if (userRole === "company_representative") intent = "compliance";
+    if (safeRole === "government_official" || safeRole === "company_representative") intent = "compliance";
+    else if (safeRole === "investor") intent = "investment";
+    else if (safeRole === "verifier") intent = "verification";
   }
 
+  // Multi-agent handoffs: each intent invokes a primary + supporting agents.
+  // Verifier is included in most flows because trust/credibility cross-cuts every decision.
   const agentMap: Record<string, string[]> = {
     verification: ["verifier"],
-    investment: ["investor"],
-    compliance: ["regulator"],
-    project_design: ["project"],
-    scope3: ["supplier"],
-    carbon_trade: ["trader"],
-    general: ["verifier"], // fallback
+    investment: ["investor", "verifier"],                  // ROI claims need trust check
+    compliance: ["regulator", "verifier"],                 // gap analysis grounded in evidence
+    project_design: ["project", "regulator", "verifier"],  // design must be compliant + verifiable
+    scope3: ["supplier", "verifier"],                      // supplier data needs verification
+    carbon_trade: ["trader", "verifier", "regulator"],     // credits need trust + regulatory standing
+    general: ["verifier"],
   };
 
-  const agentsToInvoke = agentMap[intent] || ["verifier"];
+  const agentsToInvoke = agentMap[intent] ?? ["verifier"];
 
   // Create session
   const { data: session, error: sessionError } = await supabaseAdmin.from("ai_agent_sessions").insert({
