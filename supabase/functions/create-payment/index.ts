@@ -43,9 +43,44 @@ const handler = async (req: Request): Promise<Response> => {
     // Handle donation payments (can be anonymous)
     if (payment_type === 'donation') {
       const { email, name, campaign_id, donation_id, redirect_url } = requestData;
-      
-      if (!email || !campaign_id || !donation_id) {
-        throw new Error('Missing required donation fields');
+
+      // Input validation
+      const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (
+        !email || !campaign_id || !donation_id ||
+        typeof email !== 'string' || email.length > 255 || !emailRe.test(email) ||
+        !uuidRe.test(campaign_id) || !uuidRe.test(donation_id) ||
+        typeof amount !== 'number' || !isFinite(amount) || amount <= 0 || amount > 1_000_000 ||
+        (name && (typeof name !== 'string' || name.length > 200)) ||
+        (currency && !/^[A-Z]{3}$/.test(currency))
+      ) {
+        return new Response(JSON.stringify({ error: 'Invalid donation payload' }), {
+          status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      // Verify the donation row exists, matches the request, and has not already been linked
+      const { data: existingDonation, error: donationLookupError } = await supabase
+        .from('campaign_donations')
+        .select('id, campaign_id, amount, status, payment_intent_id')
+        .eq('id', donation_id)
+        .maybeSingle();
+
+      if (donationLookupError || !existingDonation) {
+        return new Response(JSON.stringify({ error: 'Donation not found' }), {
+          status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+      if (
+        existingDonation.campaign_id !== campaign_id ||
+        Number(existingDonation.amount) !== Number(amount) ||
+        existingDonation.payment_intent_id !== null ||
+        (existingDonation.status && !['pending', 'created'].includes(existingDonation.status))
+      ) {
+        return new Response(JSON.stringify({ error: 'Donation cannot be processed' }), {
+          status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
       }
 
       const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
