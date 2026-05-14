@@ -58,39 +58,46 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Get the new password from request body
-    let newPassword = 'tester123'
-    try {
-      const body = await req.json()
-      if (body.password) {
-        newPassword = body.password
-      }
-    } catch {
-      // Use default password if no body provided
+    // Require an explicit list of target user IDs and a non-default password
+    let body: { password?: string; user_ids?: string[] } = {};
+    try { body = await req.json(); } catch { /* no body */ }
+
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const userIds = Array.isArray(body.user_ids) ? body.user_ids.filter(id => typeof id === 'string' && uuidRe.test(id)) : [];
+    const newPassword = typeof body.password === 'string' ? body.password : '';
+
+    if (userIds.length === 0 || userIds.length > 50) {
+      return new Response(JSON.stringify({ error: 'Provide between 1 and 50 user_ids' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      return new Response(JSON.stringify({ error: 'Password must be 8-128 characters' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // List all users
-    const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers()
-    if (listError) throw listError
+    let successCount = 0;
+    let failCount = 0;
 
-    let successCount = 0
-    let failCount = 0
-
-    for (const user of users.users) {
+    for (const id of userIds) {
       try {
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-          user.id,
-          { password: newPassword }
-        )
-        if (updateError) {
-          failCount++
-        } else {
-          successCount++
-        }
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(id, { password: newPassword });
+        if (updateError) failCount++; else successCount++;
       } catch {
-        failCount++
+        failCount++;
       }
     }
+
+    // Audit the bulk reset (no user emails, no passwords)
+    await supabaseAdmin.rpc('log_audit_event', {
+      p_actor_id: callerId,
+      p_actor_type: 'user',
+      p_org_id: null,
+      p_action: 'bulk_password_reset',
+      p_payload: { target_count: userIds.length, success_count: successCount, fail_count: failCount },
+    });
+
 
     // Return only counts — never leak user emails
     return new Response(
