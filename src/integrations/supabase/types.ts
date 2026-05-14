@@ -1076,6 +1076,42 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          source_url: string | null
+          status: string
+          subject: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          source_url?: string | null
+          status?: string
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          source_url?: string | null
+          status?: string
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -1304,6 +1340,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      emission_factors: {
+        Row: {
+          activity: string
+          category: string
+          created_at: string | null
+          factor_kgco2e: number
+          id: string
+          notes: string | null
+          region: string
+          scope: number
+          source: string
+          source_year: number | null
+          unit: string
+        }
+        Insert: {
+          activity: string
+          category: string
+          created_at?: string | null
+          factor_kgco2e: number
+          id?: string
+          notes?: string | null
+          region?: string
+          scope: number
+          source: string
+          source_year?: number | null
+          unit: string
+        }
+        Update: {
+          activity?: string
+          category?: string
+          created_at?: string | null
+          factor_kgco2e?: number
+          id?: string
+          notes?: string | null
+          region?: string
+          scope?: number
+          source?: string
+          source_year?: number | null
+          unit?: string
+        }
+        Relationships: []
       }
       entity_locations: {
         Row: {
