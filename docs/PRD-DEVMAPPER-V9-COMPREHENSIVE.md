@@ -1,4 +1,54 @@
-# DevMapper PRD V9.1 — Comprehensive Platform Roadmap
+# DevMapper PRD V9.2 — Comprehensive Platform Roadmap
+## Date: 2026-05-14 (supersedes V9.1 dated 2026-04-02)
+
+---
+
+## 0. V9.2 Status Corrections (audit 2026-05-14)
+
+End-to-end PRD-vs-code audit reclassified 17 items previously marked **Not Built / Partial** as **✅ Built**. Treat the following as shipped:
+
+| # | Feature | Evidence |
+|---|---|---|
+| 23 | Framework Gap Analysis | `src/components/esg/FrameworkGapAnalysis.tsx`, `ComplianceScoresDashboard.tsx` |
+| 30–44 | Ndovu prompt library / specialized agents | `NdovuQuickActions.tsx` + 7 `ndovu-*` edge functions |
+| 45 | Ndovu Orchestrator | `supabase/functions/ndovu-orchestrator` |
+| 46 | Ndovu Verifier agent | `supabase/functions/ndovu-verifier` |
+| 47 | Ndovu Investor agent | `supabase/functions/ndovu-investor` |
+| 48 | Ndovu Regulator agent | `supabase/functions/ndovu-regulator` |
+| 49 | Ndovu Project Developer agent | `supabase/functions/ndovu-project-developer` |
+| 50 | Ndovu Supplier agent | `supabase/functions/ndovu-supplier` |
+| 51 | Ndovu Carbon Trader agent | `supabase/functions/ndovu-carbon-trader` |
+| 52 | Multi-agent synthesis + audit logging | orchestrator + `audit_logs` table |
+| 72 | Audit trail export | `src/components/verification/AuditTrailExport.tsx` |
+| 73 | Verifier Marketplace | `src/pages/VerifierMarketplace.tsx`, migration `20260402135129` |
+| 74 | Verifier reputation system | `verifier_profiles.reputation_score` + `update_verifier_reputation` trigger |
+| 75 | Auto-assign verifier | `auto_assign_verifier()` RPC |
+| 78 | Carbon Marketplace lifecycle | `pages/CarbonMarketplace.tsx`, `marketplace_listings`, `update_listing_credits_on_order` |
+| 79 | Carbon Portfolio | `pages/CarbonPortfolio.tsx` |
+| 80 | Marketplace transactions | `marketplace_orders` table |
+| 81 | Listing status automation | `update_listing_credits_on_order` trigger |
+| 111 | Impact Credibility Score | `src/lib/impact-credibility.ts`, `ImpactCredibilityBadge.tsx` |
+
+**Revised completion estimate:** ~65–70% of PRD scope built (was 50% in V9.1).
+
+### Closed in V9.2 cycle
+- ✅ Frameworks + indicators seed (GRI, CDP, CSRD/ESRS, SBTi, TCFD, IFRS S1/S2, NG-FRC SRG1) — migration `20260514`.
+- ✅ Emission factors reference library (Scope 1/2/3, DEFRA 2024 / IEA 2024 / IPCC AR6) — unblocks PRD #92–94.
+- ✅ Contact form delivery (#117) — `send-contact-email` edge function + `contact_submissions` table.
+- ✅ Orphan `pages/api/**` Next.js routes removed (Vite project — never executed).
+- ✅ Docs hygiene: V2–V8 PRDs moved to `docs/archive/`, `docs/README.md` points to V9.2 as canonical.
+
+### Still open (priority order)
+1. **#82–83** — Smart pricing engine + purchase/retirement payment flow.
+2. **#85–86, #88** — Cross-entity workflows, shared workspaces, secure data exchange.
+3. **#92** — ERP connector framework (`emission_factors` table now available as join target).
+4. **#112–114** — Funding Readiness, Risk Flags, Funder Decision Dashboard.
+5. **PRD-to-code traceability** — embed feature IDs in component/function comments.
+6. **Test coverage** — only ~10 frontend tests against ~250 components.
+
+---
+
+# DevMapper PRD V9.1 — Comprehensive Platform Roadmap (historical)
 ## Date: 2026-04-02
 
 ---
