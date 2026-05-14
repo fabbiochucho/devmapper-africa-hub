@@ -1,0 +1,5 @@
+# DevMapper Docs
+
+**Canonical PRD:** [PRD-DEVMAPPER-V9-COMPREHENSIVE.md](./PRD-DEVMAPPER-V9-COMPREHENSIVE.md) (V9.2, supersedes all V2–V8 in `./archive/`).
+
+Other live docs: `AI-RULES-DOCUMENT.md`, `ARCHITECTURE-DOCUMENT.md`, `BUILD-INTENT-DOCUMENT.md`, `COMPETITIVE-STRATEGY.md`.
