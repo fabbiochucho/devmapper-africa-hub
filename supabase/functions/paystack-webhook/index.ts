@@ -74,11 +74,22 @@ serve(async (req: Request) => {
       const { metadata, amount, currency, reference } = event.data;
 
       if (metadata?.payment_type === 'subscription' && metadata?.organization_id) {
+        // Whitelist plan types to prevent arbitrary values from webhook payload
+        const VALID_PLANS = ['lite', 'pro', 'advanced', 'enterprise'];
+        const requestedPlan = metadata.plan_type;
+        if (!requestedPlan || !VALID_PLANS.includes(requestedPlan)) {
+          console.error('Invalid plan type in Paystack webhook:', requestedPlan);
+          return new Response(JSON.stringify({ error: 'Invalid plan type' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
+
         // Update organization plan
         await supabase
           .from('organizations')
           .update({
-            plan_type: metadata.plan_type || 'pro',
+            plan_type: requestedPlan,
             plan_started_at: new Date().toISOString(),
             plan_expires_at: metadata.interval === 'yearly'
               ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
