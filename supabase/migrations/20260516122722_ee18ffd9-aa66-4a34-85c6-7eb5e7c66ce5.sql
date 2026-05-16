@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Campaign creators and donors can update donations" ON public.campaign_donations;
