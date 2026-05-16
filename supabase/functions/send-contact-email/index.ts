@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error('send-contact-email error', err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
