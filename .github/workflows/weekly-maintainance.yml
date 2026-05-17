@@ -1,6 +1,6 @@
 # .github/workflows/weekly-maintenance.yml
+# 🔧 FIXED: Added fallback to npm install if lockfile out of sync
 # Non-blocking weekly maintenance checks
-# Runs independently of your main CI/CD pipeline
 
 name: 🔍 Weekly Dependency & Security Check
 
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write  # Required to create maintenance issues
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,8 +28,20 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies (safe, no lockfile changes)
-        run: npm ci --prefer-offline --no-audit --no-fund --legacy-peer-deps
+      # ✅ FIXED: Install with fallback logic (same as main CI)
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          if [ -f package-lock.json ]; then
+            npm ci --prefer-offline --no-audit --no-fund --legacy-peer-deps || \
+            (echo "::warning::Lockfile out of sync — falling back to npm install" && \
+             npm install --no-audit --no-fund --legacy-peer-deps)
+          else
+            echo "::warning::package-lock.json missing — using npm install"
+            npm install --no-audit --no-fund --legacy-peer-deps
+          fi
+        env:
+          npm_config_legacy_peer_deps: true
 
       - name: Update browserslist database
         run: npx update-browserslist-db@latest
@@ -41,7 +53,7 @@ jobs:
           if [ "$(cat outdated.json)" != "{}" ]; then
             echo "has_outdated=true" >> $GITHUB_OUTPUT
             echo "📦 Outdated packages detected:"
-            cat outdated.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('\n'.join([f'- {k} → {v.get(\"latest\",\"?\")} (current: {v.get(\"current\",\"?\")})' for k,v in d.items()]))"
+            cat outdated.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('\n'.join([f'- {k} → {v.get(\"latest\",\"?\")} (current: {v.get(\"current\",\"?\")})' for k,v in d.items()]))" || true
           else
             echo "has_outdated=false" >> $GITHUB_OUTPUT
             echo "✅ All dependencies up to date"
@@ -51,10 +63,9 @@ jobs:
         id: audit
         run: |
           npm audit --production --audit-level=high --json > audit.json 2>/dev/null || echo '{}' > audit.json
-          # Check if audit report has vulnerabilities
           if python3 -c "import json,sys; sys.exit(0 if json.load(sys.stdin).get('vulnerabilities') else 1)" < audit.json 2>/dev/null; then
             echo "has_vulns=true" >> $GITHUB_OUTPUT
-            echo "🔒 Security vulnerabilities detected (run 'npm audit' locally)"
+            echo "🔒 Security vulnerabilities detected"
           else
             echo "has_vulns=false" >> $GITHUB_OUTPUT
             echo "✅ No high-severity vulnerabilities found"
@@ -74,8 +85,10 @@ jobs:
             if (hasOutdated) {
               title += "Outdated Packages Detected";
               body += "📦 **Outdated Packages:**\n```\n";
-              const fs = require('fs');
-              body += fs.readFileSync('outdated.json', 'utf8') + "\n```\n\n";
+              try {
+                const fs = require('fs');
+                body += fs.readFileSync('outdated.json', 'utf8') + "\n```\n\n";
+              } catch(e) { body += "(Report unavailable)\n```\n"; }
             }
             if (hasVulns) {
               title += title.endsWith("Detected") ? " & Security Issues" : "Security Vulnerabilities Found";
@@ -96,4 +109,4 @@ jobs:
       - name: Summary
         run: |
           echo "✅ Weekly maintenance check complete"
-          echo "📄 Check the Actions tab or look for a new GitHub Issue if updates are needed"
+          echo "📄 Check Actions tab or look for a new GitHub Issue if updates are needed"
