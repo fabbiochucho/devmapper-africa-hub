@@ -1,6 +1,5 @@
 # .github/workflows/ci.yml
-# Self-healing CI/CD pipeline for Lovable.dev projects
-# Handles missing scripts, optional E2E, and proper server startup
+# ✅ FIXED: Added --legacy-peer-deps for React 18 compatibility
 
 name: CI/CD Pipeline
 
@@ -28,7 +27,6 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # 1️⃣ Checkout & Setup
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -38,21 +36,19 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      # 2️⃣ Install dependencies (with fallback)
+      # ✅ FIXED INSTALL STEP
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            npm ci --prefer-offline --no-audit --no-fund
+            npm ci --prefer-offline --no-audit --no-fund --legacy-peer-deps
           else
             echo "::warning::package-lock.json missing — using npm install"
-            npm install --no-audit --no-fund
+            npm install --no-audit --no-fund --legacy-peer-deps
           fi
 
-      # 3️⃣ Lint (optional)
       - name: Run linter
-        run: npm run lint --if-present || npx eslint . --ext .ts,.tsx --max-warnings=0 || echo "✓ Lint skipped or passed"
+        run: npm run lint --if-present || npx eslint . --ext .ts,.tsx --max-warnings=0 || echo "✓ Lint skipped"
 
-      # 4️⃣ Type Check (optional)
       - name: Run TypeScript check
         run: |
           if npm run typecheck --if-present 2>/dev/null; then
@@ -63,59 +59,42 @@ jobs:
             echo "✓ No TypeScript config — skipping typecheck"
           fi
 
-      # 5️⃣ Unit/Integration Tests (optional)
       - name: Run unit tests
         run: |
           npm test -- --passWithNoTests --coverage=false --reporters=default || \
           npm run test:unit -- --passWithNoTests || \
           echo "✓ No tests configured — skipping"
 
-      # 6️⃣ Security Audit (non-blocking)
       - name: Security audit
         continue-on-error: true
         run: npm audit --production --audit-level=high || echo "✓ Audit completed (non-blocking)"
 
-      # 7️⃣ Build (required for E2E)
       - name: Build application
         run: |
           npm run build --if-present || \
           npm run preview -- --build || \
           (echo "::error::Build failed — no 'build' or 'preview --build' script found" && exit 1)
 
-      # 8️⃣ E2E Tests with Playwright (optional, with server startup)
       - name: Run E2E tests (Playwright)
         if: hashFiles('playwright.config.*') != ''
         run: |
           echo "🔍 Playwright config detected — running E2E tests"
-          
-          # Install browsers
           npx playwright install --with-deps chromium
-          
-          # Start preview server in background
           echo "🚀 Starting preview server on port 4173..."
           npm run preview -- --port 4173 --host &
           SERVER_PID=$!
-          
-          # Wait for server to be ready
           echo "⏳ Waiting for server..."
           for i in {1..30}; do
             curl -s http://localhost:4173 > /dev/null && break || sleep 2
           done
-          
-          # Run tests
           echo "🧪 Running Playwright tests..."
           npx playwright test --project=chromium --reporter=list || TEST_EXIT=$?
-          
-          # Cleanup server
           kill $SERVER_PID 2>/dev/null || true
-          
-          # Exit with test result
           exit ${TEST_EXIT:-0}
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
           CI: "true"
 
-      # 9️⃣ Upload build artifacts (for deployment or debugging)
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -129,7 +108,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # 🔟 Summary step (always runs)
       - name: Pipeline summary
         if: always()
         run: |
