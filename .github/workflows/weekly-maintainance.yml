@@ -1,14 +1,12 @@
 # .github/workflows/weekly-maintenance.yml
-# 🔧 FIXED: Added fallback to npm install if lockfile out of sync
-# Non-blocking weekly maintenance checks
+# ✅ FIXED: Install step now has fallback logic (same as main CI)
 
 name: 🔍 Weekly Dependency & Security Check
 
 on:
   schedule:
-    # Every Monday at 9:00 AM UTC
-    - cron: '0 9 * * 1'
-  workflow_dispatch:  # Allow manual trigger
+    - cron: '0 9 * * 1'  # Every Monday 9 AM UTC
+  workflow_dispatch:
 
 jobs:
   maintenance:
@@ -28,7 +26,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      # ✅ FIXED: Install with fallback logic (same as main CI)
+      # ✅ FIXED INSTALL STEP WITH FALLBACK
       - name: Install dependencies
         run: |
           echo "📦 Installing dependencies..."
@@ -50,10 +48,9 @@ jobs:
         id: outdated
         run: |
           npm outdated --json > outdated.json 2>/dev/null || echo '{}' > outdated.json
-          if [ "$(cat outdated.json)" != "{}" ]; then
+          if [ "$(cat outdated.json 2>/dev/null)" != "{}" ]; then
             echo "has_outdated=true" >> $GITHUB_OUTPUT
-            echo "📦 Outdated packages detected:"
-            cat outdated.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('\n'.join([f'- {k} → {v.get(\"latest\",\"?\")} (current: {v.get(\"current\",\"?\")})' for k,v in d.items()]))" || true
+            echo "📦 Outdated packages detected"
           else
             echo "has_outdated=false" >> $GITHUB_OUTPUT
             echo "✅ All dependencies up to date"
@@ -63,7 +60,7 @@ jobs:
         id: audit
         run: |
           npm audit --production --audit-level=high --json > audit.json 2>/dev/null || echo '{}' > audit.json
-          if python3 -c "import json,sys; sys.exit(0 if json.load(sys.stdin).get('vulnerabilities') else 1)" < audit.json 2>/dev/null; then
+          if [ -s audit.json ] && grep -q '"vulnerabilities"' audit.json; then
             echo "has_vulns=true" >> $GITHUB_OUTPUT
             echo "🔒 Security vulnerabilities detected"
           else
@@ -76,37 +73,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const hasOutdated = "${{ steps.outdated.outputs.has_outdated }}" === 'true';
-            const hasVulns = "${{ steps.audit.outputs.has_vulns }}" === 'true';
-            
-            let title = "📅 Weekly Maintenance: ";
-            let body = "### Automated Maintenance Report\n\n";
-            
-            if (hasOutdated) {
-              title += "Outdated Packages Detected";
-              body += "📦 **Outdated Packages:**\n```\n";
-              try {
-                const fs = require('fs');
-                body += fs.readFileSync('outdated.json', 'utf8') + "\n```\n\n";
-              } catch(e) { body += "(Report unavailable)\n```\n"; }
-            }
-            if (hasVulns) {
-              title += title.endsWith("Detected") ? " & Security Issues" : "Security Vulnerabilities Found";
-              body += "🔒 **Security Audit:** High-severity vulnerabilities detected. Run `npm audit fix --legacy-peer-deps` locally.\n\n";
-            }
-            
-            body += "✅ **Action Taken:**\n- Browserslist database updated\n- CI pipeline verified current lockfile\n\n";
-            body += "🔗 **Workflow Run:** " + process.env.GITHUB_SERVER_URL + "/" + process.env.GITHUB_REPOSITORY + "/actions/runs/" + process.env.GITHUB_RUN_ID;
-            
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: title,
-              body: body,
+              title: "📅 Weekly Maintenance: Updates Available",
+              body: "Automated check found outdated packages or security issues. Run `npm outdated` and `npm audit` locally to review.\n\n🔗 Run: " + process.env.GITHUB_SERVER_URL + "/" + process.env.GITHUB_REPOSITORY + "/actions/runs/" + process.env.GITHUB_RUN_ID,
               labels: ["maintenance", "dependencies"]
             });
 
       - name: Summary
-        run: |
-          echo "✅ Weekly maintenance check complete"
-          echo "📄 Check Actions tab or look for a new GitHub Issue if updates are needed"
+        run: echo "✅ Weekly maintenance check complete"
