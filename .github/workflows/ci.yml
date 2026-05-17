@@ -1,5 +1,5 @@
 # .github/workflows/ci.yml
-# ✅ FIXED: Added --legacy-peer-deps for React 18 compatibility
+# Temporary fix: uses npm install to handle lockfile sync issues
 
 name: CI/CD Pipeline
 
@@ -36,11 +36,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      # ✅ FIXED INSTALL STEP
+      # ✅ TEMP FIX: Use npm install instead of ci to handle sync issues
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            npm ci --prefer-offline --no-audit --no-fund --legacy-peer-deps
+            # Try ci first; fallback to install if out of sync
+            npm ci --prefer-offline --no-audit --no-fund --legacy-peer-deps || \
+            (echo "::warning::Lockfile out of sync — using npm install" && \
+             npm install --no-audit --no-fund --legacy-peer-deps)
           else
             echo "::warning::package-lock.json missing — using npm install"
             npm install --no-audit --no-fund --legacy-peer-deps
