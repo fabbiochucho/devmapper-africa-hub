@@ -1,0 +1,42 @@
+# .github/dependabot.yml
+# Automated dependency updates via pull requests
+# Your CI pipeline will test each PR before you merge
+
+version: 2
+updates:
+  # 📦 NPM Dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+    reviewers:
+      - "fabbiochucho"
+    commit-message:
+      prefix: "chore(deps):"
+    # Only update production & dev dependencies
+    allow:
+      - dependency-type: "direct"
+    ignore:
+      # Ignore major version bumps automatically (review manually)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # 🤖 GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    labels:
+      - "ci-cd"
+      - "automated"
