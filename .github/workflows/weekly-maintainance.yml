@@ -1,5 +1,5 @@
 # .github/workflows/weekly-maintenance.yml
-# ✅ FIXED: Browserslist update now non-blocking
+# ✅ FINAL FIXED VERSION - All steps non-blocking where appropriate
 
 name: 🔍 Weekly Dependency & Security Check
 
@@ -26,7 +26,6 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      # ✅ Install with fallback (already working!)
       - name: Install dependencies
         run: |
           echo "📦 Installing dependencies..."
@@ -47,7 +46,7 @@ jobs:
           echo "🌐 Updating browserslist database..."
           npx update-browserslist-db@latest 2>/dev/null || \
           echo "::warning::Browserslist update skipped (bun not available) — run locally if needed"
-        continue-on-error: true  # Non-critical maintenance
+        continue-on-error: true
 
       - name: Check for outdated packages
         id: outdated
