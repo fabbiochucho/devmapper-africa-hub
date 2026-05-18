@@ -150,15 +150,26 @@ export function useMessages() {
     try {
       const { data, error } = await supabase
         .from('direct_messages')
-        .select(`
-          *,
-          profiles:sender_id (full_name, avatar_url)
-        `)
+        .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages((data as any[]) || []);
+
+      const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)));
+      const { data: profilesData } = senderIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('user_id, full_name, avatar_url')
+            .in('user_id', senderIds)
+        : { data: [] as any[] };
+      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+
+      const withProfiles = (data || []).map((m: any) => ({
+        ...m,
+        profiles: profileMap.get(m.sender_id) || null,
+      }));
+      setMessages(withProfiles as any);
 
       // Mark as read
       await supabase
