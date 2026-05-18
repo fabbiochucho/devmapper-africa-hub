@@ -311,7 +311,7 @@ export function useMessages() {
           const newMsg = payload.new as DirectMessage;
           // Fetch sender profile
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('full_name, avatar_url')
             .eq('user_id', newMsg.sender_id)
             .maybeSingle();
