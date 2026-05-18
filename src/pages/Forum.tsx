@@ -188,6 +188,14 @@ const Forum = () => {
       return;
     }
 
+    const violations = detectPrivacyViolations(
+      `${newPostData.title || ''}\n${newPostData.content || ''}`
+    );
+    if (violations.length > 0) {
+      toast.error(formatPrivacyError(violations));
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('forum_posts')
