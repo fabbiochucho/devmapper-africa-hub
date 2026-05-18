@@ -286,6 +286,8 @@ const Forum = () => {
 
   const handleReply = async (postId: string, content: string) => {
     if (!user) { toast.error('Please sign in to reply'); return; }
+    const violations = detectPrivacyViolations(content);
+    if (violations.length > 0) { toast.error(formatPrivacyError(violations)); return; }
     try {
       // Increment replies_count
       await supabase
