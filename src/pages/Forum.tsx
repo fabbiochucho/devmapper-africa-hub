@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
+import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
 
 interface ForumPostData {
   id: string;
