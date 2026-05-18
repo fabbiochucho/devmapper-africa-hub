@@ -70,14 +70,7 @@ const Forum = () => {
       // Batch posts + user likes in parallel
       const postsPromise = supabase
         .from('forum_posts')
-        .select(`
-          *,
-          profiles:author_id (
-            full_name,
-            avatar_url,
-            is_verified
-          )
-        `)
+        .select('*')
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -90,17 +83,29 @@ const Forum = () => {
 
       if (postsError) throw postsError;
 
+      // Fetch author profiles separately from the public_profiles view
+      const authorIds = Array.from(new Set((postsData || []).map((p: any) => p.author_id).filter(Boolean)));
+      const { data: authorProfiles } = authorIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('user_id, full_name, avatar_url, is_verified')
+            .in('user_id', authorIds)
+        : { data: [] as any[] };
+      const profileMap = new Map((authorProfiles || []).map((p: any) => [p.user_id, p]));
+
       const userLikes = likesData || [];
 
-      const formattedPosts = postsData?.map(post => ({
+      const formattedPosts = postsData?.map(post => {
+        const prof: any = profileMap.get(post.author_id);
+        return ({
         id: post.id,
         title: post.title,
         content: post.content,
         author: {
-          name: (post.profiles as any)?.full_name || 'Anonymous',
-          avatar: (post.profiles as any)?.avatar_url || '/placeholder.svg',
+          name: prof?.full_name || 'Anonymous',
+          avatar: prof?.avatar_url || '/placeholder.svg',
           role: 'Community Member',
-          verified: (post.profiles as any)?.is_verified || false
+          verified: prof?.is_verified || false
         },
         category: post.category,
         tags: post.tags || [],
