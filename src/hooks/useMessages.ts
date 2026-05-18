@@ -265,14 +265,14 @@ export function useMessages() {
     if (!query.trim() || !user) { setSearchResults([]); return; }
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, email')
+        .from('public_profiles')
+        .select('user_id, full_name, avatar_url, organization')
         .neq('user_id', user.id)
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .ilike('full_name', `%${query}%`)
         .limit(10);
 
       if (error) throw error;
-      setSearchResults(data || []);
+      setSearchResults((data || []).map((p: any) => ({ ...p, email: p.organization })));
     } catch (err) {
       console.error('Error searching users:', err);
     }
