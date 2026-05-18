@@ -115,7 +115,8 @@ const Forum = () => {
         createdAt: new Date(post.created_at).toLocaleDateString(),
         isPinned: post.is_pinned,
         isLiked: userLikes.some(like => like.post_id === post.id)
-      })) || [];
+        });
+      }) || [];
 
       if (pageNum === 0) {
         setPosts(formattedPosts);
