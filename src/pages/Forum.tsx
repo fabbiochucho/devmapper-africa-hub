@@ -70,14 +70,7 @@ const Forum = () => {
       // Batch posts + user likes in parallel
       const postsPromise = supabase
         .from('forum_posts')
-        .select(`
-          *,
-          profiles:author_id (
-            full_name,
-            avatar_url,
-            is_verified
-          )
-        `)
+        .select('*')
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -90,17 +83,29 @@ const Forum = () => {
 
       if (postsError) throw postsError;
 
+      // Fetch author profiles separately from the public_profiles view
+      const authorIds = Array.from(new Set((postsData || []).map((p: any) => p.author_id).filter(Boolean)));
+      const { data: authorProfiles } = authorIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('user_id, full_name, avatar_url, is_verified')
+            .in('user_id', authorIds)
+        : { data: [] as any[] };
+      const profileMap = new Map((authorProfiles || []).map((p: any) => [p.user_id, p]));
+
       const userLikes = likesData || [];
 
-      const formattedPosts = postsData?.map(post => ({
+      const formattedPosts = postsData?.map(post => {
+        const prof: any = profileMap.get(post.author_id);
+        return ({
         id: post.id,
         title: post.title,
         content: post.content,
         author: {
-          name: (post.profiles as any)?.full_name || 'Anonymous',
-          avatar: (post.profiles as any)?.avatar_url || '/placeholder.svg',
+          name: prof?.full_name || 'Anonymous',
+          avatar: prof?.avatar_url || '/placeholder.svg',
           role: 'Community Member',
-          verified: (post.profiles as any)?.is_verified || false
+          verified: prof?.is_verified || false
         },
         category: post.category,
         tags: post.tags || [],
@@ -110,7 +115,8 @@ const Forum = () => {
         createdAt: new Date(post.created_at).toLocaleDateString(),
         isPinned: post.is_pinned,
         isLiked: userLikes.some(like => like.post_id === post.id)
-      })) || [];
+        });
+      }) || [];
 
       if (pageNum === 0) {
         setPosts(formattedPosts);
@@ -191,27 +197,26 @@ const Forum = () => {
           category: newPostData.category || 'Discussion',
           tags: newPostData.tags || []
         }])
-        .select(`
-          *,
-          profiles:author_id (
-            full_name,
-            avatar_url,
-            is_verified
-          )
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
+
+      const { data: prof } = await supabase
+        .from('public_profiles')
+        .select('full_name, avatar_url, is_verified')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       const newPost = {
         id: data.id,
         title: data.title,
         content: data.content,
         author: {
-          name: (data.profiles as any)?.full_name || 'Anonymous',
-          avatar: (data.profiles as any)?.avatar_url || '/placeholder.svg',
+          name: (prof as any)?.full_name || 'Anonymous',
+          avatar: (prof as any)?.avatar_url || '/placeholder.svg',
           role: 'Community Member',
-          verified: (data.profiles as any)?.is_verified || false
+          verified: (prof as any)?.is_verified || false
         },
         category: data.category,
         tags: data.tags || [],

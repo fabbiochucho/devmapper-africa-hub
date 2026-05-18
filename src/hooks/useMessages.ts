@@ -72,22 +72,29 @@ export function useMessages() {
 
       if (convError) throw convError;
 
-      // Fetch all participants for these conversations with profiles
+      // Fetch all participants for these conversations
       const { data: allParts, error: allPartsError } = await supabase
         .from('conversation_participants')
-        .select(`
-          conversation_id, user_id, is_pinned, last_read_at,
-          profiles:user_id (full_name, avatar_url, email)
-        `)
+        .select('conversation_id, user_id, is_pinned, last_read_at')
         .in('conversation_id', convIds);
 
       if (allPartsError) throw allPartsError;
+
+      // Fetch profiles for all participants from the public_profiles view
+      const userIds = Array.from(new Set((allParts || []).map(p => p.user_id)));
+      const { data: profilesData } = userIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('user_id, full_name, avatar_url')
+            .in('user_id', userIds)
+        : { data: [] as any[] };
+      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
 
       // Fetch last message per conversation
       const lastMsgPromises = convIds.map(id =>
         supabase
           .from('direct_messages')
-          .select('*, profiles:sender_id(full_name, avatar_url)')
+          .select('*')
           .eq('conversation_id', id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -96,17 +103,19 @@ export function useMessages() {
       const lastMsgs = await Promise.all(lastMsgPromises);
 
       const formed: Conversation[] = (convData || []).map((conv, i) => {
-        const myPart = partData.find(p => p.conversation_id === conv.id);
         const parts = (allParts || [])
           .filter(p => p.conversation_id === conv.id)
-          .map(p => ({
-            user_id: p.user_id,
-            full_name: (p.profiles as any)?.full_name ?? null,
-            avatar_url: (p.profiles as any)?.avatar_url ?? null,
-            email: (p.profiles as any)?.email ?? null,
-            is_pinned: p.is_pinned,
-            last_read_at: p.last_read_at,
-          }));
+          .map(p => {
+            const prof: any = profileMap.get(p.user_id);
+            return {
+              user_id: p.user_id,
+              full_name: prof?.full_name ?? null,
+              avatar_url: prof?.avatar_url ?? null,
+              email: null,
+              is_pinned: p.is_pinned,
+              last_read_at: p.last_read_at,
+            };
+          });
 
         const lastMsg = lastMsgs[i]?.data as DirectMessage | null;
 
@@ -141,15 +150,26 @@ export function useMessages() {
     try {
       const { data, error } = await supabase
         .from('direct_messages')
-        .select(`
-          *,
-          profiles:sender_id (full_name, avatar_url)
-        `)
+        .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages((data as any[]) || []);
+
+      const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)));
+      const { data: profilesData } = senderIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('user_id, full_name, avatar_url')
+            .in('user_id', senderIds)
+        : { data: [] as any[] };
+      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+
+      const withProfiles = (data || []).map((m: any) => ({
+        ...m,
+        profiles: profileMap.get(m.sender_id) || null,
+      }));
+      setMessages(withProfiles as any);
 
       // Mark as read
       await supabase
@@ -245,14 +265,14 @@ export function useMessages() {
     if (!query.trim() || !user) { setSearchResults([]); return; }
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, email')
+        .from('public_profiles')
+        .select('user_id, full_name, avatar_url, organization')
         .neq('user_id', user.id)
-        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .ilike('full_name', `%${query}%`)
         .limit(10);
 
       if (error) throw error;
-      setSearchResults(data || []);
+      setSearchResults((data || []).map((p: any) => ({ ...p, email: p.organization })));
     } catch (err) {
       console.error('Error searching users:', err);
     }
@@ -291,7 +311,7 @@ export function useMessages() {
           const newMsg = payload.new as DirectMessage;
           // Fetch sender profile
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('full_name, avatar_url')
             .eq('user_id', newMsg.sender_id)
             .maybeSingle();
