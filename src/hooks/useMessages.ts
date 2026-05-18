@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
 
 export interface Participant {
   user_id: string;
@@ -186,6 +187,8 @@ export function useMessages() {
 
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
     if (!user || !content.trim()) return;
+    const violations = detectPrivacyViolations(content);
+    if (violations.length > 0) { toast.error(formatPrivacyError(violations)); return; }
     try {
       const { error } = await supabase
         .from('direct_messages')

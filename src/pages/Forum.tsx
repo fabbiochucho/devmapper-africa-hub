@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
+import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
 
 interface ForumPostData {
   id: string;
@@ -187,6 +188,14 @@ const Forum = () => {
       return;
     }
 
+    const violations = detectPrivacyViolations(
+      `${newPostData.title || ''}\n${newPostData.content || ''}`
+    );
+    if (violations.length > 0) {
+      toast.error(formatPrivacyError(violations));
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('forum_posts')
@@ -277,6 +286,8 @@ const Forum = () => {
 
   const handleReply = async (postId: string, content: string) => {
     if (!user) { toast.error('Please sign in to reply'); return; }
+    const violations = detectPrivacyViolations(content);
+    if (violations.length > 0) { toast.error(formatPrivacyError(violations)); return; }
     try {
       // Increment replies_count
       await supabase
