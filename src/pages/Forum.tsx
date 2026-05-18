@@ -197,27 +197,26 @@ const Forum = () => {
           category: newPostData.category || 'Discussion',
           tags: newPostData.tags || []
         }])
-        .select(`
-          *,
-          profiles:author_id (
-            full_name,
-            avatar_url,
-            is_verified
-          )
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
+
+      const { data: prof } = await supabase
+        .from('public_profiles')
+        .select('full_name, avatar_url, is_verified')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       const newPost = {
         id: data.id,
         title: data.title,
         content: data.content,
         author: {
-          name: (data.profiles as any)?.full_name || 'Anonymous',
-          avatar: (data.profiles as any)?.avatar_url || '/placeholder.svg',
+          name: (prof as any)?.full_name || 'Anonymous',
+          avatar: (prof as any)?.avatar_url || '/placeholder.svg',
           role: 'Community Member',
-          verified: (data.profiles as any)?.is_verified || false
+          verified: (prof as any)?.is_verified || false
         },
         category: data.category,
         tags: data.tags || [],
