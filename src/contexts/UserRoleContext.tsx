@@ -154,7 +154,8 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
       addRole, 
       removeRole,
       isAuthenticated,
-      loading
+      loading,
+      isLoading: loading
     }}>
       {children}
     </UserRoleContext.Provider>
