@@ -4431,6 +4431,10 @@ export type Database = {
         Returns: string
       }
       auto_assign_verifier: { Args: { p_report_id: string }; Returns: string }
+      block_contact_info_in_text: {
+        Args: { p_text: string }
+        Returns: undefined
+      }
       can_access_feature: {
         Args: { p_feature: string; p_user_id: string }
         Returns: boolean
