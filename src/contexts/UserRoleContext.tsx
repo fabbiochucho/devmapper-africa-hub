@@ -23,6 +23,7 @@ interface UserRoleContextType {
   removeRole: (role: UserRole) => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
+  isLoading: boolean;
 }
 
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
@@ -153,7 +154,8 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
       addRole, 
       removeRole,
       isAuthenticated,
-      loading
+      loading,
+      isLoading: loading
     }}>
       {children}
     </UserRoleContext.Provider>
