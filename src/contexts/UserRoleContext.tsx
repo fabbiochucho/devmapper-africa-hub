@@ -23,6 +23,7 @@ interface UserRoleContextType {
   removeRole: (role: UserRole) => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
+  isLoading: boolean;
 }
 
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
