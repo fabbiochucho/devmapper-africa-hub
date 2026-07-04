@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -11,9 +11,9 @@ import { UserRoleProvider } from "./contexts/UserRoleContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { PageSkeleton } from "./components/ui/loading-skeleton";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
+import { withSuspense as S } from "./components/withSuspense";
 
 // Lazy load heavy pages for better performance
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -87,6 +87,9 @@ const Guarded = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
 );
 
+const CORPORATE_ESG_ROLES = ["admin", "platform_admin", "company_representative", "ngo_member"];
+const CORPORATE_TARGETS_ROLES = ["admin", "platform_admin", "company_representative"];
+
 const App = () => (
   <ErrorBoundary>
     <HelmetProvider>
@@ -95,69 +98,88 @@ const App = () => (
           <AuthProvider>
             <UserRoleProvider>
               <BrowserRouter>
-                <Suspense fallback={<PageSkeleton />}>
-                  <Routes>
-                    <Route element={<Layout />}>
-                      <Route path="/" element={<Index />} />
-                      {/* Public routes */}
-                      <Route path="/search" element={<SearchPage />} />
-                      <Route path="/change-makers" element={<ChangeMakers />} />
-                      <Route path="/change-makers/:id" element={<ChangeMakerDetail />} />
-                      <Route path="/fundraising" element={<Fundraising />} />
-                      <Route path="/guidelines" element={<Guidelines />} />
-                      <Route path="/support" element={<Support />} />
-                      <Route path="/resources" element={<Resources />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/pricing" element={<Pricing />} />
-                      <Route path="/sdg-agenda2063" element={<SdgAgenda2063Alignment />} />
-                      <Route path="/sdg-overview" element={<SdgOverview />} />
-                      <Route path="/connect" element={<Connect />} />
-                      <Route path="/spvf-standards" element={<SPVFStandards />} />
-                      <Route path="/dspm-methodology" element={<DSPMMethodology />} />
-                      <Route path="/verify/:certNumber" element={<VerifyCertificate />} />
-                      <Route path="/verify" element={<VerifyCertificate />} />
-                      <Route path="/sdg-indicators" element={<SDGIndicatorRegistry />} />
-                      <Route path="/certification-workflow" element={<CertificationWorkflow />} />
-                      <Route path="/platform-overview" element={<PlatformOverview />} />
-                      <Route path="/project/:id" element={<ProjectDetail />} />
-                      {/* Protected routes */}
-                      <Route path="/analytics" element={<Guarded><Analytics /></Guarded>} />
-                      <Route path="/corporate-targets" element={<Guarded><CorporateTargets /></Guarded>} />
-                      <Route path="/settings" element={<Guarded><Settings /></Guarded>} />
-                      <Route path="/submit-report" element={<Guarded><SubmitReport /></Guarded>} />
-                      <Route path="/submit-change-maker" element={<Guarded><SubmitChangeMaker /></Guarded>} />
-                      <Route path="/change-maker-analytics" element={<Guarded><ChangeMakerAnalyticsPage /></Guarded>} />
-                      <Route path="/forum" element={<Guarded><Forum /></Guarded>} />
-                      <Route path="/messages" element={<Guarded><Messages /></Guarded>} />
-                      <Route path="/training" element={<Guarded><Training /></Guarded>} />
-                      <Route path="/esg" element={<Guarded><ESG /></Guarded>} />
-                      <Route path="/billing-upgrade" element={<Guarded><BillingUpgrade /></Guarded>} />
-                      <Route path="/advanced-analytics" element={<Guarded><AdvancedAnalyticsPage /></Guarded>} />
-                      <Route path="/my-analytics" element={<Guarded><ChangeMakerMyAnalytics /></Guarded>} />
-                      <Route path="/scholarship" element={<Guarded><Scholarship /></Guarded>} />
-                      <Route path="/my-projects" element={<Guarded><MyProjects /></Guarded>} />
-                      <Route path="/project-analytics" element={<Guarded><ProjectAnalytics /></Guarded>} />
-                      <Route path="/project-management" element={<Guarded><ProjectManagement /></Guarded>} />
-                      <Route path="/bulk-upload" element={<Guarded><BulkUpload /></Guarded>} />
-                      <Route path="/apply-certification" element={<Guarded><ApplyCertification /></Guarded>} />
-                      <Route path="/verifier-marketplace" element={<Guarded><VerifierMarketplace /></Guarded>} />
-                      <Route path="/carbon-marketplace" element={<CarbonMarketplace />} />
-                      <Route path="/carbon-portfolio" element={<Guarded><CarbonPortfolio /></Guarded>} />
-                      <Route path="/carbon-accounting" element={<Guarded><CarbonAccounting /></Guarded>} />
-                      {/* Role-protected routes */}
-                      <Route path="/admin-dashboard" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}><AdminDashboard /></RoleRoute></Guarded>} />
-                      <Route path="/admin-crm" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}><AdminCRM /></RoleRoute></Guarded>} />
-                      <Route path="/user-management" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}><UserManagement /></RoleRoute></Guarded>} />
-                      <Route path="/government-dashboard" element={<Guarded><RoleRoute roles={["admin", "government_official"]}><GovernmentDashboard /></RoleRoute></Guarded>} />
-                      <Route path="/corporate-dashboard" element={<Guarded><RoleRoute roles={["admin", "company_representative"]}><CorporateDashboard /></RoleRoute></Guarded>} />
-                      <Route path="/ngo-dashboard" element={<Guarded><RoleRoute roles={["admin", "ngo_member"]}><NgoDashboard /></RoleRoute></Guarded>} />
-                      {/* 404 inside Layout */}
-                      <Route path="*" element={<NotFound />} />
-                    </Route>
-                    <Route path="/auth" element={<Auth />} />
-                  </Routes>
-                </Suspense>
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<Index />} />
+                    {/* Public routes */}
+                    <Route path="/search" element={S(<SearchPage />)} />
+                    <Route path="/change-makers" element={S(<ChangeMakers />)} />
+                    <Route path="/change-makers/:id" element={S(<ChangeMakerDetail />)} />
+                    <Route path="/fundraising" element={S(<Fundraising />)} />
+                    <Route path="/guidelines" element={S(<Guidelines />)} />
+                    <Route path="/support" element={S(<Support />)} />
+                    <Route path="/resources" element={S(<Resources />)} />
+                    <Route path="/about" element={S(<About />)} />
+                    <Route path="/contact" element={S(<Contact />)} />
+                    <Route path="/pricing" element={S(<Pricing />)} />
+                    <Route path="/sdg-agenda2063" element={S(<SdgAgenda2063Alignment />)} />
+                    <Route path="/sdg-overview" element={S(<SdgOverview />)} />
+                    <Route path="/connect" element={S(<Connect />)} />
+                    <Route path="/spvf-standards" element={S(<SPVFStandards />)} />
+                    <Route path="/dspm-methodology" element={S(<DSPMMethodology />)} />
+                    <Route path="/verify/:certNumber" element={S(<VerifyCertificate />)} />
+                    <Route path="/verify" element={S(<VerifyCertificate />)} />
+                    <Route path="/sdg-indicators" element={S(<SDGIndicatorRegistry />)} />
+                    <Route path="/certification-workflow" element={S(<CertificationWorkflow />)} />
+                    <Route path="/platform-overview" element={S(<PlatformOverview />)} />
+                    <Route path="/project/:id" element={S(<ProjectDetail />)} />
+                    <Route path="/carbon-marketplace" element={S(<CarbonMarketplace />)} />
+                    {/* Protected routes */}
+                    <Route path="/analytics" element={<Guarded>{S(<Analytics />)}</Guarded>} />
+                    <Route
+                      path="/corporate-targets"
+                      element={
+                        <Guarded>
+                          <RoleRoute roles={CORPORATE_TARGETS_ROLES}>{S(<CorporateTargets />)}</RoleRoute>
+                        </Guarded>
+                      }
+                    />
+                    <Route path="/settings" element={<Guarded>{S(<Settings />)}</Guarded>} />
+                    <Route path="/submit-report" element={<Guarded>{S(<SubmitReport />)}</Guarded>} />
+                    <Route path="/submit-change-maker" element={<Guarded>{S(<SubmitChangeMaker />)}</Guarded>} />
+                    <Route path="/change-maker-analytics" element={<Guarded>{S(<ChangeMakerAnalyticsPage />)}</Guarded>} />
+                    <Route path="/forum" element={<Guarded>{S(<Forum />)}</Guarded>} />
+                    <Route path="/messages" element={<Guarded>{S(<Messages />)}</Guarded>} />
+                    <Route path="/training" element={<Guarded>{S(<Training />)}</Guarded>} />
+                    <Route
+                      path="/esg"
+                      element={
+                        <Guarded>
+                          <RoleRoute roles={CORPORATE_ESG_ROLES}>{S(<ESG />)}</RoleRoute>
+                        </Guarded>
+                      }
+                    />
+                    <Route path="/billing-upgrade" element={<Guarded>{S(<BillingUpgrade />)}</Guarded>} />
+                    <Route path="/advanced-analytics" element={<Guarded>{S(<AdvancedAnalyticsPage />)}</Guarded>} />
+                    <Route path="/my-analytics" element={<Guarded>{S(<ChangeMakerMyAnalytics />)}</Guarded>} />
+                    <Route path="/scholarship" element={<Guarded>{S(<Scholarship />)}</Guarded>} />
+                    <Route path="/my-projects" element={<Guarded>{S(<MyProjects />)}</Guarded>} />
+                    <Route path="/project-analytics" element={<Guarded>{S(<ProjectAnalytics />)}</Guarded>} />
+                    <Route path="/project-management" element={<Guarded>{S(<ProjectManagement />)}</Guarded>} />
+                    <Route path="/bulk-upload" element={<Guarded>{S(<BulkUpload />)}</Guarded>} />
+                    <Route path="/apply-certification" element={<Guarded>{S(<ApplyCertification />)}</Guarded>} />
+                    <Route path="/verifier-marketplace" element={<Guarded>{S(<VerifierMarketplace />)}</Guarded>} />
+                    <Route path="/carbon-portfolio" element={<Guarded>{S(<CarbonPortfolio />)}</Guarded>} />
+                    <Route
+                      path="/carbon-accounting"
+                      element={
+                        <Guarded>
+                          <RoleRoute roles={CORPORATE_ESG_ROLES}>{S(<CarbonAccounting />)}</RoleRoute>
+                        </Guarded>
+                      }
+                    />
+                    {/* Role-protected routes */}
+                    <Route path="/admin-dashboard" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}>{S(<AdminDashboard />)}</RoleRoute></Guarded>} />
+                    <Route path="/admin-crm" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}>{S(<AdminCRM />)}</RoleRoute></Guarded>} />
+                    <Route path="/user-management" element={<Guarded><RoleRoute roles={["admin", "platform_admin"]}>{S(<UserManagement />)}</RoleRoute></Guarded>} />
+                    <Route path="/government-dashboard" element={<Guarded><RoleRoute roles={["admin", "government_official"]}>{S(<GovernmentDashboard />)}</RoleRoute></Guarded>} />
+                    <Route path="/corporate-dashboard" element={<Guarded><RoleRoute roles={["admin", "company_representative"]}>{S(<CorporateDashboard />)}</RoleRoute></Guarded>} />
+                    <Route path="/ngo-dashboard" element={<Guarded><RoleRoute roles={["admin", "ngo_member"]}>{S(<NgoDashboard />)}</RoleRoute></Guarded>} />
+                    {/* 404 inside Layout */}
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                  <Route path="/auth" element={S(<Auth />)} />
+                </Routes>
                 <Sonner />
               </BrowserRouter>
             </UserRoleProvider>
