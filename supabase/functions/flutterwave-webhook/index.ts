@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
+import { constantTimeEqual } from "../_shared/webhookSignature.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,9 +15,9 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const webhookSecretKey = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
+    const secretHash = Deno.env.get("FLUTTERWAVE_SECRET_HASH");
 
-    if (!supabaseUrl || !supabaseServiceKey || !webhookSecretKey) {
+    if (!supabaseUrl || !supabaseServiceKey || !secretHash) {
       throw new Error("Missing required environment variables");
     }
 
@@ -27,7 +27,9 @@ serve(async (req) => {
     const rawBody = await req.text();
     const payload = JSON.parse(rawBody);
 
-    // 1. VERIFY WEBHOOK SIGNATURE using HMAC-SHA256
+    // 1. VERIFY WEBHOOK SIGNATURE
+    // Flutterwave's verif-hash is the static secret_hash configured in the
+    // dashboard, sent verbatim on every webhook — not an HMAC of the body.
     const verifHash = req.headers.get("verif-hash");
     if (!verifHash) {
       console.error("Missing verif-hash header");
@@ -37,15 +39,15 @@ serve(async (req) => {
       );
     }
 
-    const isValidSignature = await verifyHmacSignature(webhookSecretKey, rawBody, verifHash);
+    const isValidSignature = constantTimeEqual(verifHash, secretHash);
     if (!isValidSignature) {
-      console.error("Invalid webhook signature - HMAC verification failed");
+      console.error("Invalid webhook signature - verif-hash mismatch");
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    
+
     console.log("Webhook signature verified successfully");
 
     // 2. CHECK IDEMPOTENCY

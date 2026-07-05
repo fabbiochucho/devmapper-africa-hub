@@ -53,10 +53,12 @@ export const CreateCampaignDialog = ({ open, onOpenChange, onCreated, initialSdg
   }, [user]);
 
   useEffect(() => {
-    if (initialSdgGoals && initialSdgGoals.length > 0) {
+    // Re-applies on every reopen (not just the first time initialSdgGoals is
+    // set) so a Cancel + reopen still honors the SDGs carried in the URL.
+    if (open && initialSdgGoals && initialSdgGoals.length > 0) {
       setFormData(prev => ({ ...prev, sdg_goals: initialSdgGoals }));
     }
-  }, [initialSdgGoals]);
+  }, [initialSdgGoals, open]);
 
   const resetForm = () => {
     setFormData(emptyFormData);
@@ -78,14 +80,15 @@ export const CreateCampaignDialog = ({ open, onOpenChange, onCreated, initialSdg
     if (!formData.location.trim()) errors.location = 'Location is required';
     if (!formData.deadline) errors.deadline = 'Deadline is required';
 
-    const deadlineDate = new Date(formData.deadline);
-    const minDeadline = new Date();
-    minDeadline.setDate(minDeadline.getDate() + 7);
-    if (deadlineDate < minDeadline) errors.deadline = 'Deadline must be at least 7 days from now';
+    // Compare as UTC-day strings (not Date objects) so the check matches
+    // exactly what the date picker's min/max allow, regardless of the
+    // browser's local timezone or time-of-day.
+    if (formData.deadline < getMinDeadline()) errors.deadline = 'Deadline must be at least 7 days from now';
 
     const maxDeadline = new Date();
     maxDeadline.setFullYear(maxDeadline.getFullYear() + 1);
-    if (deadlineDate > maxDeadline) errors.deadline = 'Deadline cannot exceed 1 year';
+    const maxDeadlineStr = maxDeadline.toISOString().split('T')[0];
+    if (formData.deadline > maxDeadlineStr) errors.deadline = 'Deadline cannot exceed 1 year';
 
     if (formData.sdg_goals.length === 0) errors.sdg_goals = 'Select at least one SDG goal';
     if (formData.sdg_goals.length > 5) errors.sdg_goals = 'Maximum 5 SDG goals';

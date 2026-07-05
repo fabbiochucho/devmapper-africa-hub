@@ -24,8 +24,9 @@ const Fundraising = () => {
   const [initialSdgGoals, setInitialSdgGoals] = useState<number[]>([]);
 
   useEffect(() => {
-    fetchCampaigns();
-
+    // Data refresh is handled by the [filterStatus] effect below (which also
+    // fires on mount); this effect only handles the toast + deep-link, so it
+    // doesn't need to refetch on every unrelated searchParams change.
     const donationStatus = searchParams.get('donation');
     if (donationStatus === 'success') {
       toast.success('Thank you for your donation! Your contribution will make a real impact.');
