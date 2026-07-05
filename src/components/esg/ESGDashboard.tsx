@@ -31,7 +31,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getBenchmarkForOrg } from '@/lib/alphaearth';
+import { getBenchmark } from '@/lib/alphaearth-client';
 import ESGScenarioAnalysis from './ESGScenarioAnalysis';
 import ESGReportGenerator from './ESGReportGenerator';
 import ESGReportDialog from './ESGReportDialog';
@@ -130,8 +130,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       // Try to load benchmark data
       if (orgData.primary_sector) {
         try {
-          const benchmarkData = await getBenchmarkForOrg(
-            orgData.plan_type,
+          const benchmarkData = await getBenchmark(
             'US', // Default country
             orgData.primary_sector,
             orgData.reporting_year,
