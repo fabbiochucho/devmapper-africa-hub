@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,24 +33,11 @@ serve(async (req: Request) => {
     if (!signature) {
       return new Response('Missing signature', { status: 401, headers: corsHeaders });
     }
-    {
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(PAYSTACK_SECRET),
-        { name: 'HMAC', hash: 'SHA-512' },
-        false,
-        ['sign']
-      );
-      const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
-      const expectedSig = Array.from(new Uint8Array(sig))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
 
-      if (signature !== expectedSig) {
-        console.error('Invalid Paystack signature');
-        return new Response('Invalid signature', { status: 401, headers: corsHeaders });
-      }
+    const isValidSignature = await verifyHmacSignature(PAYSTACK_SECRET, body, signature, 'SHA-512');
+    if (!isValidSignature) {
+      console.error('Invalid Paystack signature');
+      return new Response('Invalid signature', { status: 401, headers: corsHeaders });
     }
 
     const event = JSON.parse(body);

@@ -1,37 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, verif-hash',
 };
-
-// HMAC-SHA256 signature verification using Web Crypto API
-async function verifyHmacSignature(secret: string, payload: string, signature: string): Promise<boolean> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const messageData = encoder.encode(payload);
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  
-  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
-  const hashArray = Array.from(new Uint8Array(signatureBuffer));
-  const expectedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  // Constant-time comparison to prevent timing attacks
-  if (signature.length !== expectedHash.length) return false;
-  let result = 0;
-  for (let i = 0; i < signature.length; i++) {
-    result |= signature.charCodeAt(i) ^ expectedHash.charCodeAt(i);
-  }
-  return result === 0;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
