@@ -70,7 +70,9 @@ export async function safeAsync<T>(
  * Type guard for network errors
  */
 export function isNetworkError(error: unknown): error is Error & { status?: number } {
-  return error instanceof Error && ('status' in error || error.message.includes('network'));
+  if (!(error instanceof Error)) return false;
+  if ('status' in error) return true;
+  return /network|failed to fetch/i.test(error.message);
 }
 
 /**
@@ -88,6 +90,10 @@ export async function retryAsync<T>(
   options: { maxAttempts?: number; delayMs?: number; backoff?: boolean } = {}
 ): Promise<T> {
   const { maxAttempts = 3, delayMs = 1000, backoff = true } = options;
+
+  if (maxAttempts < 1) {
+    throw new Error('retryAsync: maxAttempts must be >= 1');
+  }
 
   let lastError: Error | null = null;
 
