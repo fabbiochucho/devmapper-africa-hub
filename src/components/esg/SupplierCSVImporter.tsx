@@ -17,6 +17,9 @@ import {
   Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { enrichSuppliers } from '@/lib/alphaearth-client';
+import { ESGAuditHelpers } from '@/lib/esg-audit';
 
 interface ImportResult {
   success: boolean;
@@ -61,6 +64,52 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
     URL.revokeObjectURL(url);
   };
 
+  const parseCSVLine = (line: string): string[] => {
+    const values: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (inQuotes) {
+        if (char === '"') {
+          if (line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          current += char;
+        }
+      } else if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        values.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current);
+    return values.map((v) => v.trim());
+  };
+
+  const parseCSV = (text: string): Record<string, string>[] => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+    if (lines.length < 2) return [];
+
+    const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase());
+    return lines.slice(1).map((line) => {
+      const values = parseCSVLine(line);
+      const row: Record<string, string> = {};
+      headers.forEach((h, i) => {
+        row[h] = values[i] ?? '';
+      });
+      return row;
+    });
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile && selectedFile.type === 'text/csv') {
@@ -81,33 +130,131 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
     setResult(null);
 
     try {
-      // Read file content
       const csvContent = await file.text();
+      const rows = parseCSV(csvContent);
 
-      // Send to import API
-      const response = await fetch(`/api/organizations/${organizationId}/esg/suppliers/import`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          csvData: csvContent,
-          year: parseInt(year),
-          autoEnrich
-        }),
-      });
+      if (rows.length === 0) {
+        throw new Error('CSV file is empty or has no data rows');
+      }
 
-      const data = await response.json();
+      const reportingYear = parseInt(year, 10);
+      const errors: string[] = [];
+      let createdSuppliers = 0;
+      let createdEmissions = 0;
+      const suppliersToEnrich: Array<{
+        id: string;
+        name: string;
+        country_code: string;
+        sector: string;
+        annual_spend?: number;
+      }> = [];
 
-      if (response.ok) {
-        setResult(data);
-        toast.success(data.message || 'Import completed successfully');
-        
-        if (onImportComplete) {
-          onImportComplete(data);
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 2; // +1 for header, +1 for 1-indexing
+        const name = row.supplier_name?.trim();
+
+        if (!name) {
+          errors.push(`Row ${rowNum}: missing supplier_name`);
+          continue;
         }
+
+        const annualSpend = row.annual_spend ? parseFloat(row.annual_spend) : null;
+        const country_code = row.country_code?.toUpperCase() || null;
+        const sector = row.sector?.toLowerCase() || null;
+
+        const { data: supplier, error: supplierError } = await supabase
+          .from('esg_suppliers')
+          .insert([{
+            organization_id: organizationId,
+            name,
+            country_code,
+            sector,
+            contact_email: row.contact_email || null,
+            annual_spend: annualSpend !== null && !isNaN(annualSpend) ? annualSpend : null,
+            data_source: 'csv_import',
+          }])
+          .select('id')
+          .single();
+
+        if (supplierError || !supplier) {
+          errors.push(`Row ${rowNum} (${name}): ${supplierError?.message || 'failed to create supplier'}`);
+          continue;
+        }
+
+        createdSuppliers++;
+
+        const emissionsTonnes = row.emissions_tonnes ? parseFloat(row.emissions_tonnes) : null;
+
+        if (emissionsTonnes !== null && !isNaN(emissionsTonnes)) {
+          const { error: emissionsError } = await supabase
+            .from('esg_supplier_emissions')
+            .insert([{
+              supplier_id: supplier.id,
+              organization_id: organizationId,
+              reporting_year: reportingYear,
+              activity_description: row.activity_description || null,
+              emissions_tonnes: emissionsTonnes,
+              data_quality: row.data_quality || 'reported',
+            }]);
+
+          if (emissionsError) {
+            errors.push(`Row ${rowNum} (${name}): emissions data failed - ${emissionsError.message}`);
+          } else {
+            createdEmissions++;
+          }
+        } else if (autoEnrich && country_code && sector) {
+          suppliersToEnrich.push({
+            id: supplier.id,
+            name,
+            country_code,
+            sector,
+            annual_spend: annualSpend ?? undefined,
+          });
+        }
+      }
+
+      let enrichedCount = 0;
+      if (autoEnrich && suppliersToEnrich.length > 0) {
+        try {
+          const enrichResult = await enrichSuppliers(organizationId, suppliersToEnrich, reportingYear);
+          enrichedCount = enrichResult.enriched.filter((r) => !r.error).length;
+        } catch (enrichError: any) {
+          errors.push(`Auto-enrichment failed: ${enrichError.message}`);
+        }
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user && createdSuppliers > 0) {
+        await ESGAuditHelpers.logSupplierImported(organizationId, user.id, createdSuppliers, 'csv_import');
+      }
+
+      const data: ImportResult = {
+        success: createdSuppliers > 0,
+        results: {
+          processed: rows.length,
+          created_suppliers: createdSuppliers,
+          created_emissions: createdEmissions,
+          enriched: enrichedCount,
+          errors,
+        },
+        message:
+          createdSuppliers > 0
+            ? `Imported ${createdSuppliers} of ${rows.length} suppliers`
+            : 'No suppliers were imported',
+      };
+
+      setResult(data);
+      if (data.success) {
+        toast.success(data.message || 'Import completed successfully');
       } else {
-        throw new Error(data.error || 'Import failed');
+        toast.error(data.message || 'Import failed');
+      }
+
+      if (onImportComplete) {
+        onImportComplete(data);
       }
     } catch (error: any) {
       console.error('Import error:', error);
