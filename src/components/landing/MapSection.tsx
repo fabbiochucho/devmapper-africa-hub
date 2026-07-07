@@ -1,4 +1,4 @@
-import EnhancedProjectMap from "@/components/map/EnhancedProjectMap";
+import LazyEnhancedProjectMap from "@/components/map/LazyEnhancedProjectMap";
 import SdgDistributionChart from "@/components/SdgDistributionChart";
 import { useTranslation } from "react-i18next";
 
@@ -16,7 +16,7 @@ export default function MapSection() {
                 {t('map.subtitle')}
               </p>
             </div>
-            <EnhancedProjectMap showGeoLayers={false} />
+            <LazyEnhancedProjectMap showGeoLayers={false} />
           </div>
           <div>
             <SdgDistributionChart />

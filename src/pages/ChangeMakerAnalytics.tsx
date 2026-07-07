@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { mockChangeMakers } from "@/data/mockChangeMakers";
 import { useMemo } from "react";
 import ChangeMakerAnalytics from "@/components/changemaker/ChangeMakerAnalytics";
-import ChangeMakerMap from "@/components/changemaker/ChangeMakerMap";
+import LazyChangeMakerMap from "@/components/changemaker/LazyChangeMakerMap";
 import ChangeMakerReportsView from "@/components/changemaker/ChangeMakerReportsView";
 import ShareableChangeMakerAnalytics from "@/components/changemaker/ShareableChangeMakerAnalytics";
 
@@ -60,7 +60,7 @@ const ChangeMakerAnalyticsPage = () => {
           <ChangeMakerAnalytics changeMakers={mockChangeMakers} />
         </TabsContent>
         <TabsContent value="map" className="mt-4">
-          <ChangeMakerMap changeMakers={mockChangeMakers} />
+          <LazyChangeMakerMap changeMakers={mockChangeMakers} />
         </TabsContent>
         <TabsContent value="reports" className="mt-4">
           <ChangeMakerReportsView selectedChangeMakerId={changeMakerId} />
