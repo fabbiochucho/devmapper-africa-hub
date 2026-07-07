@@ -2,18 +2,29 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Trash2, Save } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 import { SBTI_SECTORS, computeSbtiPathway, type SbtiTemperatureScenario } from '@/lib/sbti-pathways';
 import { VERRA_METHODOLOGIES, assessVerraEligibility, type AfoluRiskRating } from '@/lib/verra-methodologies';
 import { CDP_QUESTIONS, autoFillCdpResponses, computeCdpReadiness } from '@/lib/cdp-questionnaire';
 import { estimateGlecTransportEmissions, type TransportMode } from '@/lib/glec-transport';
-import { LCA_STAGES, characterizeInventory } from '@/lib/lca-lifecycle';
+import { LCA_STAGES, characterizeInventory, characterizeOdpInventory } from '@/lib/lca-lifecycle';
 import { summarizeGpcInventory, type GpcSectorEmissions } from '@/lib/gpc-city-aggregation';
+import {
+  saveSbtiPathway, listSbtiPathways, deleteSbtiPathway, type SbtiPathwayRecord,
+  saveCdpResponses, listCdpResponses, type CdpResponseRecord,
+  saveGlecCalculation, listGlecCalculations, deleteGlecCalculation, type GlecRecord,
+  saveLcaAssessment, listLcaAssessments, deleteLcaAssessment, type LcaRecord,
+  saveGpcInventory, listGpcInventories, deleteGpcInventory, type GpcRecord,
+} from '@/lib/standards-persistence';
 
 interface StandardsPhase2PanelProps {
   organizationId: string;
@@ -31,9 +42,9 @@ interface EsgSnapshot {
  * "Standards" tab on the ESG page. Each sub-tab wires real methodology
  * logic (see src/lib/{sbti-pathways,verra-methodologies,cdp-questionnaire,
  * glec-transport,lca-lifecycle,gpc-city-aggregation}.ts) to actual
- * organization data where available. Every module carries its own
- * TODO(business-logic) notes on precisely what's unverified/incomplete -
- * this panel surfaces that logic working end-to-end, not a mockup.
+ * organization data where available, and persists results to the matching
+ * table (see src/lib/standards-persistence.ts). Every module carries its
+ * own TODO(business-logic) notes on precisely what's unverified/incomplete.
  */
 export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2PanelProps) {
   const [esg, setEsg] = useState<EsgSnapshot | null>(null);
@@ -45,6 +56,19 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const [glecDistance, setGlecDistance] = useState('500');
   const [glecWeight, setGlecWeight] = useState('10');
 
+  const [sbtiRecords, setSbtiRecords] = useState<SbtiPathwayRecord[]>([]);
+  const [cdpRecords, setCdpRecords] = useState<CdpResponseRecord[]>([]);
+  const [glecRecords, setGlecRecords] = useState<GlecRecord[]>([]);
+  const [lcaRecords, setLcaRecords] = useState<LcaRecord[]>([]);
+  const [gpcRecords, setGpcRecords] = useState<GpcRecord[]>([]);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const refreshSbti = () => listSbtiPathways(organizationId).then(setSbtiRecords).catch(() => {});
+  const refreshCdp = () => listCdpResponses(organizationId).then(setCdpRecords).catch(() => {});
+  const refreshGlec = () => listGlecCalculations(organizationId).then(setGlecRecords).catch(() => {});
+  const refreshLca = () => listLcaAssessments(organizationId).then(setLcaRecords).catch(() => {});
+  const refreshGpc = () => listGpcInventories(organizationId).then(setGpcRecords).catch(() => {});
+
   useEffect(() => {
     supabase
       .from('esg_indicators')
@@ -54,6 +78,13 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setEsg(data));
+
+    refreshSbti();
+    refreshCdp();
+    refreshGlec();
+    refreshLca();
+    refreshGpc();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
   const baselineYear = new Date().getFullYear();
@@ -88,9 +119,11 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     weightTonnes: parseFloat(glecWeight) || 0,
   }), [glecMode, glecDistance, glecWeight]);
 
-  const lcaExample = useMemo(() => characterizeInventory([
+  const lcaGwpResult = useMemo(() => characterizeInventory([
     { substance: 'co2', amountKg: baselineEmissions * 1000, direction: 'output', stage: 'use' },
   ]), [baselineEmissions]);
+
+  const lcaOdpResult = useMemo(() => characterizeOdpInventory([]), []);
 
   const gpcSummary = useMemo(() => {
     const gpcExample: GpcSectorEmissions[] = [
@@ -100,12 +133,25 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     return summarizeGpcInventory(gpcExample);
   }, [esg]);
 
+  const withSaving = async (key: string, fn: () => Promise<void>, refresh: () => void) => {
+    setSaving(key);
+    try {
+      await fn();
+      toast.success('Saved');
+      refresh();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save');
+    } finally {
+      setSaving(null);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Standards (Beta)</CardTitle>
         <CardDescription>
-          CDP, SBTi, Verra/Gold Standard, GLEC, LCA, and GPC — real published methodology where it's publicly specifiable, clearly flagged where a piece requires a live sandbox, licensed dataset, or expert review.
+          CDP, SBTi, Verra/Gold Standard, GLEC, LCA, and GPC — real published methodology where it's publicly specifiable, clearly flagged where a piece requires a live sandbox, licensed dataset, or expert review. Results can be saved per organization.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -148,7 +194,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             </div>
             {SBTI_SECTORS.find((s) => s.sector === sbtiSector)?.requiresSda && (
               <p className="text-xs text-yellow-600">
-                This sector requires SBTi's Sectoral Decarbonization Approach for a fully compliant target — not implemented here (needs licensed IEA sector data). Showing the cross-sector Absolute Contraction Approach instead.
+                This sector requires SBTi's Sectoral Decarbonization Approach for a fully compliant target. computeSdaPathway() implements the real convergence formula, but needs a licensed sector benchmark intensity as input (see sbti-pathways.ts) — showing the cross-sector Absolute Contraction Approach here instead, which needs no external data.
               </p>
             )}
             <div className="text-sm space-y-1">
@@ -159,6 +205,27 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             <div className="text-xs text-muted-foreground">
               {sbtiPathway.points.map((p) => `${p.year}: ${p.emissions.toLocaleString()}t`).join(' → ')}
             </div>
+            <Button
+              size="sm"
+              disabled={saving === 'sbti'}
+              onClick={() => withSaving('sbti', () => saveSbtiPathway(organizationId, sbtiSector, 'near_term', baselineYear, sbtiTargetYear, sbtiPathway), refreshSbti)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'sbti' ? 'Saving…' : 'Save pathway'}
+            </Button>
+
+            {sbtiRecords.length > 0 && (
+              <div className="space-y-1 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Saved pathways</p>
+                {sbtiRecords.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between text-sm">
+                    <span>{r.sector} — {r.baseline_year}→{r.target_year} ({r.target_type})</span>
+                    <Button size="icon" variant="ghost" onClick={() => deleteSbtiPathway(r.id).then(refreshSbti)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Verra/GS */}
@@ -187,6 +254,9 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <p>Verification cycle: every <span className="font-medium">{verraAssessment.verificationCycleYears} years</span></p>
               <p className="text-xs text-muted-foreground">{verraAssessment.monitoringPeriodNote}</p>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Verra methodology mappings are a shared reference registry (verra_methodology_mappings table), not per-organization data — nothing to save here per-org.
+            </p>
           </TabsContent>
 
           {/* CDP */}
@@ -208,6 +278,19 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
                 );
               })}
             </ul>
+            <Button
+              size="sm"
+              disabled={saving === 'cdp'}
+              onClick={() => withSaving('cdp', () => saveCdpResponses(organizationId, cdpResponses), refreshCdp)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'cdp' ? 'Saving…' : 'Save responses'}
+            </Button>
+            {cdpRecords.length > 0 && (
+              <div className="space-y-1 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Saved responses ({cdpRecords.length})</p>
+                <p className="text-xs text-muted-foreground">Last saved: {new Date(cdpRecords[0]?.updated_at).toLocaleString()}</p>
+              </div>
+            )}
           </TabsContent>
 
           {/* GLEC */}
@@ -237,6 +320,29 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             </div>
             <p className="text-sm">Estimated emissions: <span className="font-medium">{glecResult.emissionsKgCo2e.toLocaleString()} kgCO2e</span></p>
             <p className="text-xs text-muted-foreground">{glecResult.note}</p>
+            <Button
+              size="sm"
+              disabled={saving === 'glec'}
+              onClick={() => withSaving('glec', () => saveGlecCalculation(organizationId, glecMode, parseFloat(glecDistance) || 0, parseFloat(glecWeight) || 0, glecResult), refreshGlec)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'glec' ? 'Saving…' : 'Save calculation'}
+            </Button>
+            {glecRecords.length > 0 && (
+              <div className="space-y-1 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Saved calculations</p>
+                {glecRecords.map((r) => {
+                  const p = r.payload as any;
+                  return (
+                    <div key={r.id} className="flex items-center justify-between text-sm">
+                      <span>{p?.mode}: {p?.distanceKm}km × {p?.weightTonnes}t → {p?.result?.emissionsKgCo2e?.toLocaleString()} kgCO2e</span>
+                      <Button size="icon" variant="ghost" onClick={() => deleteGlecCalculation(r.id).then(refreshGlec)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           {/* LCA */}
@@ -247,10 +353,39 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               ))}
             </div>
             <p className="text-sm">
-              Example GWP100 characterization of the org's Scope 1+2 baseline as a single CO2 flow:{' '}
-              <span className="font-medium">{lcaExample.totalKgCo2e.toLocaleString()} kgCO2e</span>
+              GWP100 characterization of the org's Scope 1+2 baseline as a single CO2 flow:{' '}
+              <span className="font-medium">{lcaGwpResult.totalKgCo2e.toLocaleString()} kgCO2e</span>
             </p>
-            <p className="text-xs text-muted-foreground">{lcaExample.note}</p>
+            <p className="text-xs text-muted-foreground">{lcaGwpResult.note}</p>
+            <Separator />
+            <p className="text-sm">
+              Ozone Depletion Potential (no ODS flows entered — 0 by default):{' '}
+              <span className="font-medium">{lcaOdpResult.totalKgCfc11e} kg CFC-11-eq</span>
+            </p>
+            <p className="text-xs text-muted-foreground">{lcaOdpResult.note}</p>
+            <Button
+              size="sm"
+              disabled={saving === 'lca'}
+              onClick={() => withSaving('lca', () => saveLcaAssessment(organizationId, lcaGwpResult, lcaOdpResult), refreshLca)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'lca' ? 'Saving…' : 'Save assessment'}
+            </Button>
+            {lcaRecords.length > 0 && (
+              <div className="space-y-1 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Saved assessments</p>
+                {lcaRecords.map((r) => {
+                  const p = r.payload as any;
+                  return (
+                    <div key={r.id} className="flex items-center justify-between text-sm">
+                      <span>{new Date(r.created_at).toLocaleDateString()}: {p?.gwp?.totalKgCo2e?.toLocaleString()} kgCO2e, {p?.odp?.totalKgCfc11e} kg CFC-11-eq</span>
+                      <Button size="icon" variant="ghost" onClick={() => deleteLcaAssessment(r.id).then(refreshLca)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           {/* GPC */}
@@ -269,6 +404,29 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <p className="text-xs text-yellow-600">
                 {gpcSummary.missingRequiredEntries.length} required sector/scope combination(s) not yet reported (eg. Transportation, Waste — this demo only wires Stationary Energy from ESG indicators).
               </p>
+            )}
+            <Button
+              size="sm"
+              disabled={saving === 'gpc'}
+              onClick={() => withSaving('gpc', () => saveGpcInventory(organizationId, gpcSummary), refreshGpc)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'gpc' ? 'Saving…' : 'Save inventory'}
+            </Button>
+            {gpcRecords.length > 0 && (
+              <div className="space-y-1 pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground">Saved inventories</p>
+                {gpcRecords.map((r) => {
+                  const p = r.payload as any;
+                  return (
+                    <div key={r.id} className="flex items-center justify-between text-sm">
+                      <span>{new Date(r.created_at).toLocaleDateString()}: BASIC {p?.byLevel?.BASIC?.toLocaleString()}t, BASIC+ {p?.byLevel?.['BASIC+']?.toLocaleString()}t</span>
+                      <Button size="icon" variant="ghost" onClick={() => deleteGpcInventory(r.id).then(refreshGpc)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </TabsContent>
         </Tabs>

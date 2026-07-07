@@ -9,14 +9,24 @@
  * from the base year to the target year. This is the correct, citable
  * formula for ACA and is implemented faithfully below.
  *
- * NOT implemented: the **Sectoral Decarbonization Approach (SDA)**, SBTi's
- * other near-term method, which converges each company's emissions
- * intensity toward a sector-specific 1.5°C pathway. SDA requires SBTi's/
- * IEA's licensed sector decarbonization datasets (via SBTi's own SDA tool)
- * - there is no public formula to embed here, and this environment has no
- * access to that dataset. Do not represent computeSbtiPathway's output as
- * SDA-equivalent for sectors where SBTi requires SDA (power, iron & steel,
- * aluminium, cement, pulp & paper, transport, buildings).
+ * The **Sectoral Decarbonization Approach (SDA)** convergence formula is
+ * also implemented (computeSdaPathway), per the standard SDA structure
+ * (SBTi's "Sectoral Decarbonization Approach" report, and the equivalent
+ * formulation used by PACTA/r2dii.analysis for financial-sector alignment):
+ * a company's target intensity converges *linearly* from its own baseline
+ * intensity toward the sector's benchmark convergence intensity, reaching
+ * full convergence by the sector's convergence year (SBTi's default: 2050).
+ *
+ *   I_target(t) = I_company(t0) - [I_company(t0) - I_sector_benchmark] x (t - t0) / (t_convergence - t0)
+ *
+ * This is the real convergence *shape*; what it can't include is the
+ * sector benchmark intensity itself (I_sector_benchmark, above), which
+ * comes from SBTi's/IEA's licensed sector decarbonization pathway data
+ * (their SDA tool). computeSdaPathway therefore REQUIRES that benchmark as
+ * an input parameter rather than embedding a guessed number - the caller
+ * (or a future integration with SBTi's tool) must supply it from a real
+ * licensed source. Sectors where SBTi requires SDA rather than ACA: power,
+ * iron & steel, aluminium, cement, pulp & paper, transport, buildings.
  *
  * TODO(business-logic): the long-term net-zero pathway below (≥90%
  * reduction, ≤10% residual by the target year) is per SBTi's Corporate
@@ -112,6 +122,64 @@ export function computeSbtiPathway(input: SbtiPathwayInput): SbtiPathwayResult {
     methodology: 'ACA',
     withinRecommendedHorizon: years >= 5 && years <= 10,
   };
+}
+
+export interface SdaPathwayInput {
+  baselineYear: number;
+  /** Company's own emissions intensity in the baseline year (e.g. tCO2e per tonne of product, or per unit of activity - units must match sectorBenchmarkIntensity). */
+  companyBaselineIntensity: number;
+  /**
+   * The sector's benchmark/convergence intensity, in the same units as
+   * companyBaselineIntensity. This is licensed IEA/SBTi sector pathway
+   * data (via SBTi's SDA tool) - there is no public default here. The
+   * caller must supply a real value from a licensed source.
+   */
+  sectorBenchmarkIntensity: number;
+  /** Projected annual activity (production volume, floor area, tonne-km, etc.) used to convert intensity back to absolute emissions. */
+  projectedActivityByYear: Record<number, number>;
+  /** SBTi's SDA convergence year default is 2050. */
+  convergenceYear?: number;
+}
+
+export interface SdaPathwayPoint {
+  year: number;
+  targetIntensity: number;
+  projectedActivity: number;
+  targetAbsoluteEmissions: number;
+}
+
+export interface SdaPathwayResult {
+  points: SdaPathwayPoint[];
+  methodology: 'SDA';
+  convergenceYear: number;
+}
+
+/**
+ * Computes an SDA linear intensity-convergence pathway. See module-level
+ * docs for the formula and the licensed-data caveat on
+ * sectorBenchmarkIntensity.
+ */
+export function computeSdaPathway(input: SdaPathwayInput): SdaPathwayResult {
+  const convergenceYear = input.convergenceYear ?? 2050;
+  const years = Object.keys(input.projectedActivityByYear).map(Number).sort((a, b) => a - b);
+
+  const points: SdaPathwayPoint[] = years.map((year) => {
+    const progress = convergenceYear === input.baselineYear
+      ? 1
+      : Math.min(1, Math.max(0, (year - input.baselineYear) / (convergenceYear - input.baselineYear)));
+    const targetIntensity = input.companyBaselineIntensity
+      - (input.companyBaselineIntensity - input.sectorBenchmarkIntensity) * progress;
+    const projectedActivity = input.projectedActivityByYear[year];
+
+    return {
+      year,
+      targetIntensity,
+      projectedActivity,
+      targetAbsoluteEmissions: Math.round(targetIntensity * projectedActivity),
+    };
+  });
+
+  return { points, methodology: 'SDA', convergenceYear };
 }
 
 export interface RenewableEnergyTargetResult {

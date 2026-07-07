@@ -14,14 +14,22 @@ interface SyncRequest {
 
 /**
  * Pulls Odoo vendor bill lines (account.move.line on in_invoice moves) and
- * estimates Scope 3 emissions per line by matching against emission_factors
- * (category/region), writing one esg_supplier_emissions row per line item.
+ * estimates Scope 3 emissions per line by matching against emission_factors,
+ * writing one esg_supplier_emissions row per line item.
  *
- * TODO(business-logic, unverified): field names for Odoo's account.move.line
- * JSON-RPC schema (partner_id, product_id.categ_id, price_subtotal, etc.)
- * are best-effort from public Odoo API documentation and have NOT been
- * checked against a live Odoo sandbox. Verify the exact field/model shape
- * for the target Odoo version before relying on this in production.
+ * Field names below (partner_id, name, price_subtotal, product_id,
+ * quantity, display_type, move_id.move_type) are confirmed against public
+ * Odoo developer documentation and community references (account.move.line
+ * model reference; display_type='line_section'/'line_note' marks
+ * section/note rows with no debit/credit, filtered out via
+ * `display_type = false` rather than the less-documented
+ * `exclude_from_invoice_tab`, which an earlier version of this file used).
+ *
+ * TODO(business-logic, unverified): field *documentation* is confirmed, but
+ * this has still NOT been exercised against a live Odoo sandbox - exact
+ * behavior can still vary by Odoo version/localization (eg. some
+ * installations customize account.move.line with extra required fields).
+ * Verify against a real instance before production use.
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -115,12 +123,17 @@ serve(async (req) => {
       return json.result;
     };
 
-    const uid = await rpc('common', 'login', [db, username, apiKey]);
+    // 'authenticate' is the current documented method name (Odoo external
+    // API docs); 'login' is an older alias that also works on most
+    // versions. Odoo 19+ is introducing a newer JSON-2 API that will
+    // eventually supersede this JSON-RPC interface - re-check against the
+    // target instance's version before relying on this long-term.
+    const uid = await rpc('common', 'authenticate', [db, username, apiKey]);
     if (!uid) throw new Error('Odoo authentication failed');
 
     const lines: any[] = await rpc('object', 'execute_kw', [
       db, uid, apiKey, 'account.move.line', 'search_read',
-      [[['move_id.move_type', '=', 'in_invoice'], ['exclude_from_invoice_tab', '=', false]]],
+      [[['move_id.move_type', '=', 'in_invoice'], ['display_type', '=', false]]],
       { fields: ['id', 'partner_id', 'name', 'quantity', 'price_subtotal', 'product_id'], limit: 200 },
     ]);
 

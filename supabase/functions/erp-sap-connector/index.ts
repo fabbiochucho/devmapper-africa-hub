@@ -22,13 +22,24 @@ interface SyncRequest {
  * an assumption about which "SAP" product is in use, not a verified fact
  * about any specific customer's landscape.
  *
- * TODO(business-logic, unverified): the Service Layer login/cookie flow and
- * PurchaseInvoices/DocumentLines field names below are correct per SAP's
- * published Service Layer documentation, but have NOT been exercised
- * against a live SAP B1 instance from this environment. Verify against a
- * real sandbox (session timeout behavior, ROUTEID load-balancer cookie
- * handling, and exact field availability can vary by SAP B1 version)
- * before relying on this in production.
+ * Confirmed against SAP's published Service Layer documentation and
+ * community reference material: the Login request shape (POST /Login with
+ * {CompanyDB, UserName, Password}), the dual Set-Cookie response
+ * (B1SESSION + ROUTEID for load-balanced deployments), and the
+ * PurchaseInvoices/DocumentLines field names used below (CardCode,
+ * CardName, DocEntry, ItemCode, LineTotal, Quantity). One operational
+ * detail worth knowing: B1SESSION is documented as expiring after 30
+ * minutes, with production integrations typically catching SAP's -5002
+ * "session expired" error code and re-authenticating - this function's
+ * single sync pass is short enough that mid-sync expiry is unlikely, but
+ * isn't handled if it does happen.
+ *
+ * TODO(business-logic, unverified): field *documentation* is confirmed,
+ * but this has still NOT been exercised against a live SAP B1 instance -
+ * exact field availability/behavior can vary by SAP B1 version and
+ * localization. ItemDescription specifically was not strongly confirmed in
+ * research (falls back to ItemCode if absent, so this degrades safely
+ * either way). Verify against a real sandbox before production use.
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

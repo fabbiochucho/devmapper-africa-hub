@@ -28,7 +28,10 @@ CREATE TABLE public.cdp_questionnaire_responses (
   question_code TEXT NOT NULL,
   response JSONB DEFAULT '{}',
   auto_filled BOOLEAN NOT NULL DEFAULT false,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- One row per question per org - re-saving auto-fill results upserts
+  -- rather than accumulating duplicate rows per question code.
+  UNIQUE (organization_id, question_code)
 );
 
 CREATE TABLE public.glec_transport_factors (

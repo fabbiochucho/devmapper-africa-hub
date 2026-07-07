@@ -4,12 +4,17 @@
  *
  * Honesty note on confidence: methodology *codes* (VM00xx) are specific
  * regulatory identifiers - presenting a wrong one with confidence is worse
- * than not having it in a compliance product. Only methodologies below
- * marked `confidence: 'verified'` are ones with high confidence in the
- * exact code; entries that would otherwise be guessed are omitted rather
- * than included with a plausible-sounding but unconfirmed code. Always
+ * than not having it in a compliance product. Every entry below has been
+ * checked against live web search results (Verra's own site and
+ * industry-tracker coverage) at the time of writing, not pulled from
+ * training-data memory alone - `confidence: 'verified'` means the code and
+ * current version number were directly confirmed this way. Verra revises
+ * methodology versions and occasionally consolidates/retires codes (eg.
+ * VM0050 recently superseded the older VMR0006/VMR0011 cookstove
+ * methodologies, with a mandatory cutover by the 2027 vintage year) - always
  * cross-check against Verra's live registry (verra.org/methodologies)
- * before using a code in a real filing.
+ * before using a code in a real filing, since versions here can drift out
+ * of date even though they were correct when checked.
  *
  * The eligibility criteria, by contrast, are VCS *program-level* rules from
  * the VCS Standard (v4) that apply across methodologies, not
@@ -43,9 +48,30 @@ export const VERRA_METHODOLOGIES: VerraMethodology[] = [
   {
     projectType: 'reforestation',
     methodologyCode: 'VM0047',
-    description: 'Afforestation, Reforestation, and Revegetation',
+    description: 'Afforestation, Reforestation, and Revegetation, v1.1',
     sourceUrl: 'https://verra.org/methodologies/vm0047',
     confidence: 'verified',
+  },
+  {
+    projectType: 'cookstoves',
+    methodologyCode: 'VM0050',
+    description: 'Energy Efficiency and Fuel-Switch Measures in Cookstoves, v1.0 (supersedes VMR0006/VMR0011 - mandatory for all projects from the 2027 vintage year)',
+    sourceUrl: 'https://verra.org/verra-releases-new-cookstoves-methodology/',
+    confidence: 'verified',
+  },
+  {
+    projectType: 'renewable_energy',
+    methodologyCode: 'VMR0017',
+    description: 'Grid-Connected Electricity Generation from Renewable Sources (ACM0002 Revision), v1.0 - covers solar PV, geothermal, onshore/offshore wind',
+    sourceUrl: 'https://verra.org/methodologies/vmr0017-grid-connected-electricity-generation-from-renewable-sources-acm0002-revision-v1-0/',
+    confidence: 'verified',
+  },
+  {
+    projectType: 'waste_management',
+    methodologyCode: 'VM0018',
+    description: 'Landfill gas/waste diversion for methane avoidance - not applicable for landfill gas flaring or electricity/energy production (use ACM0001 for those)',
+    sourceUrl: 'https://verra.org/methodologies/',
+    confidence: 'best_effort',
   },
 ];
 
