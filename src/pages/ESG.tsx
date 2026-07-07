@@ -14,12 +14,14 @@ import {
   FileText,
   Settings,
   Crown,
-  Shield
+  Shield,
+  Award
 } from 'lucide-react';
 import ESGDashboard from '@/components/esg/ESGDashboard';
 import ComplianceScoresDashboard from '@/components/esg/ComplianceScoresDashboard';
 import SupplierCSVImporter from '@/components/esg/SupplierCSVImporter';
 import { GrantVerifierAccessDialog } from '@/components/compliance/GrantVerifierAccessDialog';
+import StandardsPhase2Panel from '@/components/esg/StandardsPhase2Panel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -193,7 +195,7 @@ const ESGPage = () => {
         {/* Main Content */}
         {selectedOrgId ? (
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Dashboard
@@ -209,6 +211,10 @@ const ESGPage = () => {
               <TabsTrigger value="reports" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Reports
+              </TabsTrigger>
+              <TabsTrigger value="standards" className="flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                Standards
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -301,6 +307,10 @@ const ESGPage = () => {
                   <Button>Generate Report</Button>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="standards" className="space-y-6">
+              {selectedOrgId && <StandardsPhase2Panel organizationId={selectedOrgId} />}
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-6">

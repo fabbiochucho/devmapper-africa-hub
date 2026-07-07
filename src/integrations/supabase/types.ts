@@ -3856,6 +3856,151 @@ export type Database = {
         }
         Relationships: []
       }
+      sbti_pathways: {
+        Row: {
+          baseline_year: number | null
+          created_at: string
+          id: string
+          organization_id: string
+          pathway_data: Json | null
+          sector: string
+          target_type: string | null
+          target_year: number | null
+        }
+        Insert: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          pathway_data?: Json | null
+          sector: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Update: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          pathway_data?: Json | null
+          sector?: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sbti_pathways_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verra_methodology_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          methodology_code: string
+          project_type: string
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code: string
+          project_type: string
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code?: string
+          project_type?: string
+          source_url?: string | null
+        }
+        Relationships: []
+      }
+      cdp_questionnaire_responses: {
+        Row: {
+          auto_filled: boolean
+          id: string
+          organization_id: string
+          question_code: string
+          response: Json | null
+          updated_at: string
+        }
+        Insert: {
+          auto_filled?: boolean
+          id?: string
+          organization_id: string
+          question_code: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          auto_filled?: boolean
+          id?: string
+          organization_id?: string
+          question_code?: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cdp_questionnaire_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      glec_transport_factors: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "glec_transport_factors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lca_assessments: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "lca_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gpc_city_inventories: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "gpc_city_inventories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standards_metadata: {
         Row: {
           confidence_score: number | null
