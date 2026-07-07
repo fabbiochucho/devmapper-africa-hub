@@ -1,6 +1,8 @@
--- ERP connector settings (PRD #92). Odoo gets a real sync implementation;
--- SAP is a selectable provider that stays permanently 'not_connected' with
--- "coming soon" UI copy - no SAP connector code in this pass.
+-- ERP connector settings (PRD #92). Both Odoo (JSON-RPC) and SAP Business
+-- One (Service Layer REST API) have real sync implementations - see
+-- supabase/functions/erp-odoo-connector and erp-sap-connector. Neither has
+-- been exercised against a live sandbox from this environment; see each
+-- function's module-level TODO(business-logic) comment for specifics.
 
 CREATE TABLE public.erp_connections (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,

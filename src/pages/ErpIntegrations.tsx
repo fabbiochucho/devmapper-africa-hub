@@ -15,6 +15,7 @@ interface ErpConnection {
   organization_id: string;
   provider: string;
   base_url: string;
+  api_key_secret_name: string | null;
   sync_status: string;
   last_synced_at: string | null;
   last_error: string | null;
@@ -26,6 +27,7 @@ export default function ErpIntegrations() {
   const [connections, setConnections] = useState<ErpConnection[]>([]);
   const [provider, setProvider] = useState<'odoo' | 'sap'>('odoo');
   const [baseUrl, setBaseUrl] = useState('');
+  const [secretName, setSecretName] = useState('');
   const [creating, setCreating] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
 
@@ -56,11 +58,13 @@ export default function ErpIntegrations() {
         organization_id: organizationId,
         provider,
         base_url: baseUrl.trim(),
+        api_key_secret_name: secretName.trim() || null,
         created_by: user!.id,
       }]);
       if (error) throw error;
       toast.success('Connection created');
       setBaseUrl('');
+      setSecretName('');
       await loadConnections(organizationId);
     } catch (error: any) {
       toast.error(error.message || 'Failed to create connection');
@@ -70,13 +74,10 @@ export default function ErpIntegrations() {
   };
 
   const handleSync = async (connection: ErpConnection) => {
-    if (connection.provider !== 'odoo') {
-      toast.info('SAP sync is coming soon');
-      return;
-    }
+    const functionName = connection.provider === 'sap' ? 'erp-sap-connector' : 'erp-odoo-connector';
     setSyncingId(connection.id);
     try {
-      const { data, error } = await supabase.functions.invoke('erp-odoo-connector', {
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: { connectionId: connection.id },
       });
       if (error) throw error;
@@ -108,7 +109,9 @@ export default function ErpIntegrations() {
       <Card>
         <CardHeader>
           <CardTitle>Add Connection</CardTitle>
-          <CardDescription>Odoo sync is implemented; SAP is coming soon.</CardDescription>
+          <CardDescription>
+            Odoo syncs via JSON-RPC; SAP syncs via the Business One Service Layer REST API. Both are unverified against a live sandbox — see the sync error field if something doesn't match your instance's schema.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -116,15 +119,32 @@ export default function ErpIntegrations() {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="odoo">Odoo</SelectItem>
-                <SelectItem value="sap">SAP (coming soon)</SelectItem>
+                <SelectItem value="sap">SAP Business One</SelectItem>
               </SelectContent>
             </Select>
-            <Input placeholder="Base URL (e.g. https://yourcompany.odoo.com)" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
+            <Input
+              placeholder={provider === 'sap' ? 'Base URL (e.g. https://yourserver:50000/b1s/v1)' : 'Base URL (e.g. https://yourcompany.odoo.com)'}
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+            />
           </div>
+          <Input
+            placeholder="Credentials secret name (e.g. ERP_ODOO_MAIN)"
+            value={secretName}
+            onChange={(e) => setSecretName(e.target.value)}
+          />
           {provider === 'odoo' && (
             <p className="text-xs text-muted-foreground">
-              After creating the connection, set an <code>ERP_ODOO_&lt;id&gt;</code>-style Supabase secret containing
-              <code>{'{"db":"...","username":"...","apiKey":"..."}'}</code> and reference its name from the connection record before syncing.
+              Before syncing, set a Supabase secret with the name above containing
+              <code>{' {"db":"...","username":"...","apiKey":"..."} '}</code>
+              (Supabase Dashboard → Edge Functions → Secrets, or <code>supabase secrets set</code>).
+            </p>
+          )}
+          {provider === 'sap' && (
+            <p className="text-xs text-muted-foreground">
+              Before syncing, set a Supabase secret with the name above containing
+              <code>{' {"companyDb":"...","username":"...","password":"..."} '}</code>
+              (Supabase Dashboard → Edge Functions → Secrets, or <code>supabase secrets set</code>).
             </p>
           )}
           <Button onClick={handleCreate} disabled={creating || !organizationId}>

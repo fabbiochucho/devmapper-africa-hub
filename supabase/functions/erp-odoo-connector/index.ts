@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { syncErpLineItems, type ErpLineItem } from "../_shared/erpEmissionsSync.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -123,72 +124,23 @@ serve(async (req) => {
       { fields: ['id', 'partner_id', 'name', 'quantity', 'price_subtotal', 'product_id'], limit: 200 },
     ]);
 
-    let processed = 0;
-    let matched = 0;
-    const errors: string[] = [];
+    const lineItems: ErpLineItem[] = lines.map((line) => ({
+      vendorName: Array.isArray(line.partner_id) ? line.partner_id[1] : 'Unknown vendor',
+      description: line.name || '',
+      amount: Number(line.price_subtotal || 0),
+      categoryHint: line.name || '',
+    }));
 
-    for (const line of lines) {
-      try {
-        const vendorName: string = Array.isArray(line.partner_id) ? line.partner_id[1] : 'Unknown vendor';
-
-        let { data: supplier } = await supabase
-          .from('esg_suppliers')
-          .select('id')
-          .eq('organization_id', connection.organization_id)
-          .eq('name', vendorName)
-          .maybeSingle();
-
-        if (!supplier) {
-          const { data: newSupplier, error: supplierError } = await supabase
-            .from('esg_suppliers')
-            .insert([{ organization_id: connection.organization_id, name: vendorName, data_source: 'erp_odoo' }])
-            .select('id')
-            .single();
-          if (supplierError || !newSupplier) throw new Error(supplierError?.message || 'Failed to create supplier');
-          supplier = newSupplier;
-        }
-
-        // Heuristic category match against emission_factors - real Odoo
-        // product/account taxonomy likely needs an explicit mapping table
-        // in a follow-up pass rather than this simplified string match.
-        const category = (line.name || '').split(' ')[0].toLowerCase();
-        const { data: factor } = await supabase
-          .from('emission_factors')
-          .select('factor_kgco2e, source')
-          .ilike('category', `%${category}%`)
-          .limit(1)
-          .maybeSingle();
-
-        const estimatedTonnes = factor
-          ? (Number(line.price_subtotal || 0) * factor.factor_kgco2e) / 1000
-          : 0;
-        if (factor) matched++;
-
-        await supabase.from('esg_supplier_emissions').insert([{
-          supplier_id: supplier.id,
-          organization_id: connection.organization_id,
-          reporting_year: new Date().getFullYear(),
-          activity_description: line.name || null,
-          emissions_tonnes: estimatedTonnes,
-          emission_factor: factor?.factor_kgco2e ?? null,
-          emission_factor_source: factor?.source ?? 'unmatched',
-          data_quality: factor ? 'estimated' : 'unverified',
-        }]);
-
-        processed++;
-      } catch (lineError) {
-        errors.push(`Line ${line.id}: ${lineError instanceof Error ? lineError.message : 'unknown error'}`);
-      }
-    }
+    const result = await syncErpLineItems(supabase, connection.organization_id, 'odoo', lineItems);
 
     await supabase.from('erp_connections').update({
       sync_status: 'connected',
       last_synced_at: new Date().toISOString(),
-      last_error: errors.length > 0 ? errors.slice(0, 5).join('; ') : null,
+      last_error: result.errors.length > 0 ? result.errors.slice(0, 5).join('; ') : null,
     }).eq('id', connectionId);
 
     return new Response(
-      JSON.stringify({ success: true, processed, matched, errors }),
+      JSON.stringify({ success: true, ...result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
