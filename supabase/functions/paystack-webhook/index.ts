@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
+import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
+import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,13 +81,8 @@ serve(async (req: Request) => {
           .update({
             plan_type: requestedPlan,
             plan_started_at: new Date().toISOString(),
-            plan_expires_at: metadata.interval === 'yearly'
-              ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            // Update quotas based on plan
-            project_cap: metadata.plan_type === 'advanced' ? 150 : metadata.plan_type === 'pro' ? 40 : 10,
-            monthly_addition: metadata.plan_type === 'advanced' ? 15 : metadata.plan_type === 'pro' ? 5 : 3,
-            rollover_allowed: metadata.plan_type !== 'lite' && metadata.plan_type !== 'free',
+            plan_expires_at: computePlanExpiry(metadata.interval),
+            ...getPlanQuotas(requestedPlan),
           })
           .eq('id', metadata.organization_id);
 
@@ -106,6 +103,32 @@ serve(async (req: Request) => {
           .from('campaign_donations')
           .update({ status: 'completed', payment_intent_id: reference })
           .eq('id', metadata.donation_id);
+      }
+    }
+
+    // Paystack's refund payload nests the original transaction (and its
+    // metadata) under data.transaction — fall back to top-level fields in
+    // case the shape differs; verify against a real test webhook once live.
+    if (event.event === 'refund.processed') {
+      const refundData = event.data || {};
+      const transaction = refundData.transaction || {};
+      const metadata = transaction.metadata || refundData.metadata || {};
+      const organizationId = metadata.organization_id || metadata.organizationId;
+
+      if (!organizationId) {
+        console.warn('Refund event received without organization_id in metadata:', eventId);
+      } else {
+        const result = await downgradeOrganizationForRefund(supabase, {
+          organizationId,
+          provider: 'paystack',
+          amount: refundData.amount != null ? refundData.amount / 100 : undefined,
+          currency: refundData.currency,
+          externalId: transaction.reference || refundData.transaction_reference,
+        });
+
+        if (!result.success) {
+          console.error('Refund downgrade failed:', result.reason);
+        }
       }
     }
 

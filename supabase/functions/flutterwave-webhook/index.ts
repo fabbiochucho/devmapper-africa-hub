@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { constantTimeEqual } from "../_shared/webhookSignature.ts";
+import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
+import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -89,6 +91,7 @@ serve(async (req) => {
     if (event === "charge.completed" && data.status === "successful") {
       const metadata = data.meta || data.metadata || {};
       const organizationId = metadata.organizationId || metadata.organization_id;
+      const interval = metadata.interval;
       const VALID_PLANS = ['lite', 'pro', 'advanced', 'enterprise'];
       const requestedPlan = metadata.planType || metadata.plan_type || 'pro';
       if (!VALID_PLANS.includes(requestedPlan)) {
@@ -144,7 +147,12 @@ serve(async (req) => {
       // 5. UPDATE PLAN
       const { error: updateError } = await supabase
         .from("organizations")
-        .update({ plan_type: newPlan })
+        .update({
+          plan_type: newPlan,
+          plan_started_at: new Date().toISOString(),
+          plan_expires_at: computePlanExpiry(interval),
+          ...getPlanQuotas(newPlan),
+        })
         .eq("id", organizationId);
 
       if (updateError) {
@@ -209,6 +217,48 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ message: "Webhook processed successfully" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Flutterwave's refund event is documented as "refund.completed"; some
+    // accounts instead report the refund via "charge.completed" with the
+    // original transaction's status flipped to "refunded"/"reversed". Handle
+    // both shapes — verify against a real test webhook (Settings > Webhooks >
+    // Resend) once live, since exact field names aren't verifiable from here.
+    if (
+      event === "refund.completed" ||
+      (event === "charge.completed" && (data.status === "refunded" || data.status === "reversed"))
+    ) {
+      const metadata = data.meta || data.metadata || {};
+      const organizationId = metadata.organizationId || metadata.organization_id;
+
+      if (!organizationId) {
+        console.warn("Refund event received without organizationId in meta:", eventId);
+      } else {
+        const result = await downgradeOrganizationForRefund(supabase, {
+          organizationId,
+          provider: "flutterwave",
+          amount: data.amount_refunded ?? data.amount,
+          currency: data.currency,
+          externalId: (data.id ?? data.tx_ref)?.toString(),
+        });
+
+        if (!result.success) {
+          console.error("Refund downgrade failed:", result.reason);
+        }
+      }
+
+      await supabase.rpc('record_webhook_event', {
+        p_event_id: eventId,
+        p_provider: 'flutterwave',
+        p_event_type: event,
+        p_payload: payload,
+        p_status: 'success'
+      });
+
+      return new Response(
+        JSON.stringify({ message: "Refund processed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
