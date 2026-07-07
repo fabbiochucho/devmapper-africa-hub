@@ -2269,6 +2269,50 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_data_shares: {
+        Row: {
+          created_at: string
+          expires_at: string
+          grantee_user_id: string
+          granted_by: string
+          grantor_org_id: string
+          id: string
+          purpose: string | null
+          revoked_at: string | null
+          scope: string[]
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          grantee_user_id: string
+          granted_by: string
+          grantor_org_id: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope: string[]
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          grantee_user_id?: string
+          granted_by?: string
+          grantor_org_id?: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_data_shares_grantor_org_id_fkey"
+            columns: ["grantor_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -4486,6 +4530,10 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
           user_id: string
         }[]
+      }
+      has_active_org_share: {
+        Args: { _org_id: string; _scope: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

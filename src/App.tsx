@@ -63,6 +63,7 @@ const ApplyCertification = lazy(() => import("./pages/ApplyCertification"));
 const AdminCRM = lazy(() => import("./pages/AdminCRM"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const VerifierMarketplace = lazy(() => import("./pages/VerifierMarketplace"));
+const SharedWithMe = lazy(() => import("./pages/SharedWithMe"));
 const CarbonMarketplace = lazy(() => import("./pages/CarbonMarketplace"));
 const CarbonPortfolio = lazy(() => import("./pages/CarbonPortfolio"));
 const CarbonAccounting = lazy(() => import("./pages/CarbonAccounting"));
@@ -159,6 +160,7 @@ const App = () => (
                     <Route path="/bulk-upload" element={<Guarded>{S(<BulkUpload />)}</Guarded>} />
                     <Route path="/apply-certification" element={<Guarded>{S(<ApplyCertification />)}</Guarded>} />
                     <Route path="/verifier-marketplace" element={<Guarded>{S(<VerifierMarketplace />)}</Guarded>} />
+                    <Route path="/shared-with-me" element={<Guarded>{S(<SharedWithMe />)}</Guarded>} />
                     <Route path="/carbon-portfolio" element={<Guarded>{S(<CarbonPortfolio />)}</Guarded>} />
                     <Route
                       path="/carbon-accounting"

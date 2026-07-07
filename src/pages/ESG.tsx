@@ -19,6 +19,7 @@ import {
 import ESGDashboard from '@/components/esg/ESGDashboard';
 import ComplianceScoresDashboard from '@/components/esg/ComplianceScoresDashboard';
 import SupplierCSVImporter from '@/components/esg/SupplierCSVImporter';
+import { GrantVerifierAccessDialog } from '@/components/compliance/GrantVerifierAccessDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -334,6 +335,16 @@ const ESGPage = () => {
                       </Button>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-1">Verifier Audit Access</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Grant a verifier scoped, time-limited read access to this organization's ESG data for an audit engagement.
+                  </p>
+                  {selectedOrgId && <GrantVerifierAccessDialog organizationId={selectedOrgId} />}
                 </CardContent>
               </Card>
             </TabsContent>
