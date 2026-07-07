@@ -51,6 +51,7 @@ interface EsgSnapshot {
  */
 export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2PanelProps) {
   const [esg, setEsg] = useState<EsgSnapshot | null>(null);
+  const [hasActiveTarget, setHasActiveTarget] = useState(false);
   const [sbtiSector, setSbtiSector] = useState(SBTI_SECTORS[0].sector);
   const [sbtiScenario, setSbtiScenario] = useState<SbtiTemperatureScenario>('1.5C');
   const [sbtiTargetYear, setSbtiTargetYear] = useState(new Date().getFullYear() + 7);
@@ -86,6 +87,26 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
       .maybeSingle()
       .then(({ data }) => setEsg(data));
 
+    // corporate_targets is keyed by company_id -> profiles.user_id (an
+    // older, user-centric data model that predates the org-centric ESG
+    // system this panel lives in) rather than organization_id directly.
+    // Bridge via organizations.created_by, the closest real link between
+    // the two: does the org's creator have any non-completed target?
+    supabase
+      .from('organizations')
+      .select('created_by')
+      .eq('id', organizationId)
+      .maybeSingle()
+      .then(({ data: org }) => {
+        if (!org?.created_by) return;
+        supabase
+          .from('corporate_targets')
+          .select('id', { count: 'exact', head: true })
+          .eq('company_id', org.created_by)
+          .neq('status', 'completed')
+          .then(({ count }) => setHasActiveTarget((count ?? 0) > 0));
+      });
+
     refreshSbti();
     refreshCdp();
     refreshGlec();
@@ -115,9 +136,9 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     scope2Tonnes: esg?.carbon_scope2_tonnes ?? null,
     scope3Tonnes: esg?.carbon_scope3_tonnes ?? null,
     renewableEnergyPercentage: esg?.renewable_energy_percentage ?? null,
-    hasActiveTarget: false,
+    hasActiveTarget,
     verificationStatus: esg?.verification_status ?? null,
-  }), [esg]);
+  }), [esg, hasActiveTarget]);
   const cdpReadiness = computeCdpReadiness(cdpResponses);
 
   const glecResult = useMemo(() => estimateGlecTransportEmissions({

@@ -3710,6 +3710,56 @@ export type Database = {
         }
         Relationships: []
       }
+      retirement_certificates: {
+        Row: {
+          buyer_id: string
+          certificate_number: string
+          country_code: string | null
+          created_at: string
+          id: string
+          methodology: string | null
+          order_id: string
+          project_title: string
+          project_type: string | null
+          quantity: number
+          retired_at: string
+        }
+        Insert: {
+          buyer_id: string
+          certificate_number: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          methodology?: string | null
+          order_id: string
+          project_title: string
+          project_type?: string | null
+          quantity: number
+          retired_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          certificate_number?: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          methodology?: string | null
+          order_id?: string
+          project_title?: string
+          project_type?: string | null
+          quantity?: number
+          retired_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retirement_certificates_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "carbon_credit_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scholarships: {
         Row: {
           approved_at: string | null
