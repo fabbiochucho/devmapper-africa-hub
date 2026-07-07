@@ -14,19 +14,46 @@ export interface SuggestedPriceRange {
   confidence: number;
 }
 
-// Typical real-world per-tonne price anchors by project type (nature-based
-// projects generally trade lower than tech-based removal credits).
-// TODO(business-logic): these anchors are illustrative market ranges, not
-// calibrated against a live carbon-price index (eg. a Verra/Gold Standard
-// secondary-market feed) - revisit before relying on this commercially.
+// Per-tonne price anchors by project type, sourced from Ecosystem
+// Marketplace's "State of the Voluntary Carbon Market" 2024/2025 reports
+// and S&P Global Commodity Insights' dedicated Blue Carbon price
+// assessments (launched March 2024) - real published secondary-market
+// averages, not guessed ranges. Confidence varies by category (see
+// PROJECT_TYPE_PRICE_CONFIDENCE below); this still isn't a live feed, so
+// treat it as a periodically-refreshed anchor, not real-time pricing.
+//
+//   reforestation:     $14/t  - SOVCM 2024, "restoration credits averaged $14/t"
+//   cookstoves:        $17.3/t - 2023 VCM average (range $1.3-$31); notably
+//                                HIGHER than the old placeholder guess of $8
+//   renewable_energy:  $5.8/t - SOVCM 2024, "energy efficiency credits $5.80/t"
+//   soil_carbon:       $20/t  - midpoint of the confirmed $10-35 agricultural
+//                                credit range (VM0042-methodology projects)
+//   mangrove:          $27/t  - blue carbon: multiple sources converge on
+//                                mid-$20s-$32/t (S&P Global Blue Carbon index:
+//                                $25.25/t Dec 2024, $29.30/t Aug 2025 record)
+//   waste_management:  $6.37/t - no landfill-gas-specific figure found with
+//                                confidence; anchored to the overall VCM
+//                                average instead of guessing a category number
+//   other:             $6.37/t - overall VCM 2024 average (Ecosystem Marketplace)
 const PROJECT_TYPE_BASE_PRICE: Record<string, number> = {
-  reforestation: 12,
-  cookstoves: 8,
-  renewable_energy: 6,
-  waste_management: 10,
-  mangrove: 15,
-  soil_carbon: 14,
-  other: 10,
+  reforestation: 14,
+  cookstoves: 17.3,
+  renewable_energy: 5.8,
+  waste_management: 6.37,
+  mangrove: 27,
+  soil_carbon: 20,
+  other: 6.37,
+};
+
+/** Lower confidence = wider suggested range. waste_management/other are anchored to the market-wide average rather than a category-specific figure. */
+const PROJECT_TYPE_PRICE_CONFIDENCE: Record<string, number> = {
+  reforestation: 0.7,
+  cookstoves: 0.7,
+  renewable_energy: 0.7,
+  soil_carbon: 0.55,
+  mangrove: 0.75,
+  waste_management: 0.4,
+  other: 0.3,
 };
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -56,15 +83,26 @@ export function computeSuggestedPriceRange(
 
   const mid = Math.round(base * intensityMultiplier * vintageMultiplier * 100) / 100;
 
-  // Lower confidence in the underlying benchmark widens the suggested range.
-  const confidence = benchmark.confidence_score ?? 0.5;
+  // Overall confidence blends two independent sources: how solid the
+  // underlying AlphaEarth/GEE benchmark reading is, and how solid the
+  // price anchor itself is (some project types have a directly-cited
+  // market average; others are anchored to the market-wide average
+  // because no category-specific figure was found - see
+  // PROJECT_TYPE_PRICE_CONFIDENCE above). Lower confidence widens the
+  // suggested range.
+  const benchmarkConfidence = benchmark.confidence_score ?? 0.5;
+  const priceAnchorConfidence = PROJECT_TYPE_PRICE_CONFIDENCE[input.projectType] ?? PROJECT_TYPE_PRICE_CONFIDENCE.other;
+  const confidence = Math.round((benchmarkConfidence * 0.4 + priceAnchorConfidence * 0.6) * 100) / 100;
   const spread = mid * (0.35 - confidence * 0.2);
 
   return {
     low: Math.max(1, Math.round((mid - spread) * 100) / 100),
     mid,
     high: Math.round((mid + spread) * 100) / 100,
-    source: benchmark.source,
+    // Kept short for inline UI display; see module comments above for the
+    // full attribution (Ecosystem Marketplace SOVCM 2024/2025, S&P Global
+    // Blue Carbon index) behind the per-type price anchors.
+    source: `VCM market average + ${benchmark.source}`,
     confidence,
   };
 }

@@ -3,7 +3,7 @@ import type { Json } from '@/integrations/supabase/types';
 import type { SbtiPathwayResult, SbtiTargetType } from '@/lib/sbti-pathways';
 import type { CdpAutoFillResponse } from '@/lib/cdp-questionnaire';
 import type { GlecTransportResult, TransportMode } from '@/lib/glec-transport';
-import type { LcaImpactAssessmentResult, OdpAssessmentResult } from '@/lib/lca-lifecycle';
+import type { LcaImpactAssessmentResult, OdpAssessmentResult, ApAssessmentResult } from '@/lib/lca-lifecycle';
 import type { GpcAggregationResult } from '@/lib/gpc-city-aggregation';
 
 // ---- SBTi pathways ----
@@ -135,10 +135,11 @@ export async function saveLcaAssessment(
   organizationId: string,
   gwpResult: LcaImpactAssessmentResult,
   odpResult: OdpAssessmentResult,
+  apResult: ApAssessmentResult,
 ) {
   const { error } = await supabase.from('lca_assessments').insert([{
     organization_id: organizationId,
-    payload: { gwp: gwpResult, odp: odpResult } as unknown as Json,
+    payload: { gwp: gwpResult, odp: odpResult, ap: apResult } as unknown as Json,
   }]);
   if (error) throw error;
 }

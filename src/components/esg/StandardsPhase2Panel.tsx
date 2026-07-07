@@ -15,8 +15,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { SBTI_SECTORS, computeSbtiPathway, type SbtiTemperatureScenario } from '@/lib/sbti-pathways';
 import { VERRA_METHODOLOGIES, assessVerraEligibility, type AfoluRiskRating } from '@/lib/verra-methodologies';
 import { CDP_QUESTIONS, autoFillCdpResponses, computeCdpReadiness } from '@/lib/cdp-questionnaire';
-import { estimateGlecTransportEmissions, type TransportMode } from '@/lib/glec-transport';
-import { LCA_STAGES, characterizeInventory, characterizeOdpInventory } from '@/lib/lca-lifecycle';
+import {
+  estimateGlecTransportEmissions,
+  type TransportMode, type RoadVehicleClass, type RailTraction, type SeaVesselClass, type AirCargoClass,
+} from '@/lib/glec-transport';
+import { LCA_STAGES, characterizeInventory, characterizeOdpInventory, characterizeAcidificationInventory } from '@/lib/lca-lifecycle';
 import { summarizeGpcInventory, type GpcSectorEmissions } from '@/lib/gpc-city-aggregation';
 import {
   saveSbtiPathway, listSbtiPathways, deleteSbtiPathway, type SbtiPathwayRecord,
@@ -55,6 +58,10 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const [glecMode, setGlecMode] = useState<TransportMode>('road');
   const [glecDistance, setGlecDistance] = useState('500');
   const [glecWeight, setGlecWeight] = useState('10');
+  const [glecRoadClass, setGlecRoadClass] = useState<RoadVehicleClass>('articulated_34_40t');
+  const [glecRailTraction, setGlecRailTraction] = useState<RailTraction>('diesel');
+  const [glecSeaClass, setGlecSeaClass] = useState<SeaVesselClass>('bulk_medium_60_100kdwt');
+  const [glecAirClass, setGlecAirClass] = useState<AirCargoClass>('belly_cargo_long_haul');
 
   const [sbtiRecords, setSbtiRecords] = useState<SbtiPathwayRecord[]>([]);
   const [cdpRecords, setCdpRecords] = useState<CdpResponseRecord[]>([]);
@@ -117,13 +124,18 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     mode: glecMode,
     distanceKm: parseFloat(glecDistance) || 0,
     weightTonnes: parseFloat(glecWeight) || 0,
-  }), [glecMode, glecDistance, glecWeight]);
+    roadVehicleClass: glecRoadClass,
+    railTraction: glecRailTraction,
+    seaVesselClass: glecSeaClass,
+    airCargoClass: glecAirClass,
+  }), [glecMode, glecDistance, glecWeight, glecRoadClass, glecRailTraction, glecSeaClass, glecAirClass]);
 
   const lcaGwpResult = useMemo(() => characterizeInventory([
     { substance: 'co2', amountKg: baselineEmissions * 1000, direction: 'output', stage: 'use' },
   ]), [baselineEmissions]);
 
   const lcaOdpResult = useMemo(() => characterizeOdpInventory([]), []);
+  const lcaApResult = useMemo(() => characterizeAcidificationInventory([]), []);
 
   const gpcSummary = useMemo(() => {
     const gpcExample: GpcSectorEmissions[] = [
@@ -295,7 +307,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
 
           {/* GLEC */}
           <TabsContent value="glec" className="space-y-4 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="space-y-1">
                 <Label>Mode</Label>
                 <Select value={glecMode} onValueChange={(v) => setGlecMode(v as TransportMode)}>
@@ -309,6 +321,58 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
                   </SelectContent>
                 </Select>
               </div>
+              {glecMode === 'road' && (
+                <div className="space-y-1">
+                  <Label>Vehicle class</Label>
+                  <Select value={glecRoadClass} onValueChange={(v) => setGlecRoadClass(v as RoadVehicleClass)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rigid_12_20t">Rigid truck, 12-20t</SelectItem>
+                      <SelectItem value="articulated_18_27t">Articulated, 18-27t</SelectItem>
+                      <SelectItem value="articulated_34_40t">Articulated, 34-40t</SelectItem>
+                      <SelectItem value="articulated_49t_plus">Articulated, &gt;49t</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {glecMode === 'rail' && (
+                <div className="space-y-1">
+                  <Label>Traction</Label>
+                  <Select value={glecRailTraction} onValueChange={(v) => setGlecRailTraction(v as RailTraction)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="diesel">Diesel</SelectItem>
+                      <SelectItem value="electric">Electric</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {glecMode === 'sea' && (
+                <div className="space-y-1">
+                  <Label>Vessel class</Label>
+                  <Select value={glecSeaClass} onValueChange={(v) => setGlecSeaClass(v as SeaVesselClass)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bulk_small_0_10kdwt">Bulk carrier, 0-10k dwt</SelectItem>
+                      <SelectItem value="bulk_medium_60_100kdwt">Bulk carrier, 60-100k dwt</SelectItem>
+                      <SelectItem value="bulk_large_200kdwt_plus">Bulk carrier, &gt;200k dwt</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {glecMode === 'air' && (
+                <div className="space-y-1">
+                  <Label>Cargo class</Label>
+                  <Select value={glecAirClass} onValueChange={(v) => setGlecAirClass(v as AirCargoClass)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="freighter_short_haul">Freighter, short-haul</SelectItem>
+                      <SelectItem value="freighter_long_haul">Freighter, long-haul</SelectItem>
+                      <SelectItem value="belly_cargo_long_haul">Belly cargo, long-haul</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label>Distance (km)</Label>
                 <Input type="number" value={glecDistance} onChange={(e) => setGlecDistance(e.target.value)} />
@@ -318,7 +382,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
                 <Input type="number" value={glecWeight} onChange={(e) => setGlecWeight(e.target.value)} />
               </div>
             </div>
-            <p className="text-sm">Estimated emissions: <span className="font-medium">{glecResult.emissionsKgCo2e.toLocaleString()} kgCO2e</span></p>
+            <p className="text-sm">Estimated emissions: <span className="font-medium">{glecResult.emissionsKgCo2e.toLocaleString()} kgCO2e</span> ({glecResult.classUsed})</p>
             <p className="text-xs text-muted-foreground">{glecResult.note}</p>
             <Button
               size="sm"
@@ -363,10 +427,16 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <span className="font-medium">{lcaOdpResult.totalKgCfc11e} kg CFC-11-eq</span>
             </p>
             <p className="text-xs text-muted-foreground">{lcaOdpResult.note}</p>
+            <Separator />
+            <p className="text-sm">
+              Acidification Potential (no acidifying flows entered — 0 by default):{' '}
+              <span className="font-medium">{lcaApResult.totalKgSo2e} kg SO2-eq</span>
+            </p>
+            <p className="text-xs text-muted-foreground">{lcaApResult.note}</p>
             <Button
               size="sm"
               disabled={saving === 'lca'}
-              onClick={() => withSaving('lca', () => saveLcaAssessment(organizationId, lcaGwpResult, lcaOdpResult), refreshLca)}
+              onClick={() => withSaving('lca', () => saveLcaAssessment(organizationId, lcaGwpResult, lcaOdpResult, lcaApResult), refreshLca)}
             >
               <Save className="w-3 h-3 mr-1" />{saving === 'lca' ? 'Saving…' : 'Save assessment'}
             </Button>
@@ -377,7 +447,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
                   const p = r.payload as any;
                   return (
                     <div key={r.id} className="flex items-center justify-between text-sm">
-                      <span>{new Date(r.created_at).toLocaleDateString()}: {p?.gwp?.totalKgCo2e?.toLocaleString()} kgCO2e, {p?.odp?.totalKgCfc11e} kg CFC-11-eq</span>
+                      <span>{new Date(r.created_at).toLocaleDateString()}: {p?.gwp?.totalKgCo2e?.toLocaleString()} kgCO2e, {p?.odp?.totalKgCfc11e} kg CFC-11-eq, {p?.ap?.totalKgSo2e ?? 0} kg SO2-eq</span>
                       <Button size="icon" variant="ghost" onClick={() => deleteLcaAssessment(r.id).then(refreshLca)}>
                         <Trash2 className="w-3 h-3" />
                       </Button>

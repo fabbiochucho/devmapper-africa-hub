@@ -21,8 +21,8 @@ describe("computeSuggestedPriceRange", () => {
       { projectType: "renewable_energy", countryCode: "NG", vintageYear: currentYear },
       makeBenchmark({ avg_carbon_intensity: 1 }),
     );
-    // base(6) * intensityMultiplier(0.85 + 1*0.15 = 1.0) * vintageMultiplier(1) = 6
-    expect(range.mid).toBe(6);
+    // base(5.8) * intensityMultiplier(0.85 + 1*0.15 = 1.0) * vintageMultiplier(1) = 5.8
+    expect(range.mid).toBe(5.8);
   });
 
   it("widens the range when benchmark confidence is low", () => {
@@ -71,12 +71,34 @@ describe("computeSuggestedPriceRange", () => {
     expect(range.low).toBeGreaterThanOrEqual(1);
   });
 
-  it("passes through the benchmark source and confidence", () => {
+  it("includes the benchmark source alongside the price-anchor source", () => {
     const range = computeSuggestedPriceRange(
       { projectType: "mangrove", countryCode: "NG", vintageYear: currentYear },
       makeBenchmark({ source: "AlphaEarth (Commercial)", confidence_score: 0.6 }),
     );
-    expect(range.source).toBe("AlphaEarth (Commercial)");
-    expect(range.confidence).toBe(0.6);
+    expect(range.source).toContain("AlphaEarth (Commercial)");
+    expect(range.source).toContain("VCM market average");
+  });
+
+  it("blends benchmark confidence and price-anchor confidence rather than passing either through directly", () => {
+    // mangrove has a directly-cited price anchor (confidence 0.75); benchmark confidence here is 0.6.
+    // blended = 0.6*0.4 + 0.75*0.6 = 0.69
+    const range = computeSuggestedPriceRange(
+      { projectType: "mangrove", countryCode: "NG", vintageYear: currentYear },
+      makeBenchmark({ confidence_score: 0.6 }),
+    );
+    expect(range.confidence).toBe(0.69);
+  });
+
+  it("gives category-specific price anchors (cookstoves) higher confidence than the market-average fallback (waste_management)", () => {
+    const cookstoves = computeSuggestedPriceRange(
+      { projectType: "cookstoves", countryCode: "NG", vintageYear: currentYear },
+      makeBenchmark({ confidence_score: 0.5 }),
+    );
+    const waste = computeSuggestedPriceRange(
+      { projectType: "waste_management", countryCode: "NG", vintageYear: currentYear },
+      makeBenchmark({ confidence_score: 0.5 }),
+    );
+    expect(cookstoves.confidence).toBeGreaterThan(waste.confidence);
   });
 });
