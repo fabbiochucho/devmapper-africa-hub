@@ -13,7 +13,7 @@ interface PaymentRequest {
   planType?: 'lite' | 'pro' | 'advanced' | 'enterprise';
   interval?: 'monthly' | 'yearly';
   // Donation payment
-  payment_type?: 'subscription' | 'donation';
+  payment_type?: 'subscription' | 'donation' | 'marketplace_purchase';
   amount: number;
   currency?: string;
   email?: string;
@@ -21,6 +21,8 @@ interface PaymentRequest {
   campaign_id?: string;
   donation_id?: string;
   redirect_url?: string;
+  // Marketplace purchase payment
+  order_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -166,6 +168,105 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (authError || !user) {
       throw new Error('Invalid authorization');
+    }
+
+    // Handle carbon marketplace purchases
+    if (payment_type === 'marketplace_purchase') {
+      const { order_id, provider } = requestData;
+
+      if (!order_id) {
+        return new Response(JSON.stringify({ error: 'Missing order_id' }), {
+          status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      const { data: order, error: orderLookupError } = await supabase
+        .from('carbon_credit_orders')
+        .select('id, buyer_id, listing_id, total_amount, currency, status, payment_reference')
+        .eq('id', order_id)
+        .maybeSingle();
+
+      if (
+        orderLookupError || !order ||
+        order.buyer_id !== user.id ||
+        order.status !== 'pending' ||
+        order.payment_reference !== null
+      ) {
+        return new Response(JSON.stringify({ error: 'Order cannot be processed' }), {
+          status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      const { data: listing } = await supabase
+        .from('marketplace_listings')
+        .select('title')
+        .eq('id', order.listing_id)
+        .maybeSingle();
+
+      const tx_ref = `mkt_${order_id}_${Date.now()}`;
+      const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
+      const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
+
+      if (provider === 'paystack' && PAYSTACK_SECRET) {
+        const paystackPayload = {
+          email: user.email,
+          amount: Math.round(order.total_amount * 100),
+          currency: order.currency || 'NGN',
+          reference: tx_ref,
+          callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
+          metadata: { order_id, payment_type: 'marketplace_purchase' },
+        };
+
+        const response = await fetch('https://api.paystack.co/transaction/initialize', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(paystackPayload),
+        });
+
+        const paystackData = await response.json();
+        if (paystackData.status && paystackData.data?.authorization_url) {
+          return new Response(
+            JSON.stringify({ success: true, url: paystackData.data.authorization_url }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+        throw new Error(paystackData.message || 'Failed to create Paystack payment link');
+      }
+
+      if (FLUTTERWAVE_SECRET) {
+        const flutterwavePayload = {
+          tx_ref,
+          amount: order.total_amount,
+          currency: order.currency || 'USD',
+          redirect_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
+          customer: { email: user.email, name: user.user_metadata?.full_name || 'DevMapper User' },
+          customizations: {
+            title: 'DevMapper Carbon Credit Purchase',
+            description: listing?.title || 'Carbon credit purchase',
+            logo: 'https://devmapper.africa/logo.png'
+          },
+          meta: { order_id, payment_type: 'marketplace_purchase' }
+        };
+
+        const response = await fetch('https://api.flutterwave.com/v3/payments', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${FLUTTERWAVE_SECRET}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(flutterwavePayload)
+        });
+
+        const flutterwaveData = await response.json();
+        if (flutterwaveData.status === 'success' && flutterwaveData.data?.link) {
+          return new Response(
+            JSON.stringify({ success: true, url: flutterwaveData.data.link, tx_ref }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+        throw new Error(flutterwaveData.message || 'Failed to create Flutterwave payment link');
+      }
+
+      return new Response(JSON.stringify({ error: 'No payment provider configured' }), {
+        status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
     }
 
     const { organizationId, provider, planType, interval } = requestData;

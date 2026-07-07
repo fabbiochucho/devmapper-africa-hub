@@ -4524,6 +4524,7 @@ export type Database = {
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       reset_monthly_quotas: { Args: never; Returns: undefined }
+      retire_carbon_credit_order: { Args: { p_order_id: string }; Returns: undefined }
       sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {

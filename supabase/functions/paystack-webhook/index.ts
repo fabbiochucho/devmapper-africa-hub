@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
 import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
 import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
+import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -103,6 +104,13 @@ serve(async (req: Request) => {
           .from('campaign_donations')
           .update({ status: 'completed', payment_intent_id: reference })
           .eq('id', metadata.donation_id);
+      }
+
+      if (metadata?.payment_type === 'marketplace_purchase' && metadata?.order_id) {
+        const result = await confirmOrderPaid(supabase, metadata.order_id, reference);
+        if (!result.success) {
+          console.error('Marketplace purchase confirmation failed:', result.reason);
+        }
       }
     }
 
