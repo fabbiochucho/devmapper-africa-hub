@@ -1,37 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { constantTimeEqual } from "../_shared/webhookSignature.ts";
+import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
+import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
+import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, verif-hash',
 };
-
-// HMAC-SHA256 signature verification using Web Crypto API
-async function verifyHmacSignature(secret: string, payload: string, signature: string): Promise<boolean> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const messageData = encoder.encode(payload);
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  
-  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
-  const hashArray = Array.from(new Uint8Array(signatureBuffer));
-  const expectedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  // Constant-time comparison to prevent timing attacks
-  if (signature.length !== expectedHash.length) return false;
-  let result = 0;
-  for (let i = 0; i < signature.length; i++) {
-    result |= signature.charCodeAt(i) ^ expectedHash.charCodeAt(i);
-  }
-  return result === 0;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,9 +18,9 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const webhookSecretKey = Deno.env.get("FLUTTERWAVE_SECRET_KEY");
+    const secretHash = Deno.env.get("FLUTTERWAVE_SECRET_HASH");
 
-    if (!supabaseUrl || !supabaseServiceKey || !webhookSecretKey) {
+    if (!supabaseUrl || !supabaseServiceKey || !secretHash) {
       throw new Error("Missing required environment variables");
     }
 
@@ -53,7 +30,9 @@ serve(async (req) => {
     const rawBody = await req.text();
     const payload = JSON.parse(rawBody);
 
-    // 1. VERIFY WEBHOOK SIGNATURE using HMAC-SHA256
+    // 1. VERIFY WEBHOOK SIGNATURE
+    // Flutterwave's verif-hash is the static secret_hash configured in the
+    // dashboard, sent verbatim on every webhook — not an HMAC of the body.
     const verifHash = req.headers.get("verif-hash");
     if (!verifHash) {
       console.error("Missing verif-hash header");
@@ -63,15 +42,15 @@ serve(async (req) => {
       );
     }
 
-    const isValidSignature = await verifyHmacSignature(webhookSecretKey, rawBody, verifHash);
+    const isValidSignature = constantTimeEqual(verifHash, secretHash);
     if (!isValidSignature) {
-      console.error("Invalid webhook signature - HMAC verification failed");
+      console.error("Invalid webhook signature - verif-hash mismatch");
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    
+
     console.log("Webhook signature verified successfully");
 
     // 2. CHECK IDEMPOTENCY
@@ -112,7 +91,71 @@ serve(async (req) => {
 
     if (event === "charge.completed" && data.status === "successful") {
       const metadata = data.meta || data.metadata || {};
+      const paymentType = metadata.payment_type || metadata.paymentType;
+      const externalId = (data.id ?? data.tx_ref)?.toString();
+
+      // Marketplace credit purchases and donations are keyed off payment_type
+      // in the charge's meta - anything else falls through to the existing
+      // subscription-upgrade handling below (which never checked payment_type
+      // itself, so it stays the default for backward compatibility).
+      if (paymentType === 'marketplace_purchase') {
+        const orderId = metadata.order_id;
+        if (!orderId) {
+          console.error("Missing order_id in metadata");
+          await supabase.rpc('record_webhook_event', {
+            p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+            p_payload: payload, p_status: 'failed', p_error_message: 'Missing order_id in metadata'
+          });
+          return new Response(
+            JSON.stringify({ error: "Missing order_id" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const result = await confirmOrderPaid(supabase, orderId, externalId);
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+          p_payload: payload, p_status: result.success ? 'success' : 'failed',
+          p_error_message: result.success ? null : result.reason,
+        });
+        return new Response(
+          JSON.stringify({ message: result.success ? "Marketplace purchase processed" : "Marketplace purchase processing failed" }),
+          { status: result.success ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (paymentType === 'donation') {
+        const donationId = metadata.donation_id;
+        if (!donationId) {
+          console.error("Missing donation_id in metadata");
+          await supabase.rpc('record_webhook_event', {
+            p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+            p_payload: payload, p_status: 'failed', p_error_message: 'Missing donation_id in metadata'
+          });
+          return new Response(
+            JSON.stringify({ error: "Missing donation_id" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const { error: donationError } = await supabase
+          .from('campaign_donations')
+          .update({ status: 'completed', payment_intent_id: externalId })
+          .eq('id', donationId);
+
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+          p_payload: payload, p_status: donationError ? 'failed' : 'success',
+          p_error_message: donationError?.message ?? null,
+        });
+        return new Response(
+          JSON.stringify({ message: donationError ? "Donation processing failed" : "Donation processed" }),
+          { status: donationError ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const organizationId = metadata.organizationId || metadata.organization_id;
+      const interval = metadata.interval;
       const VALID_PLANS = ['lite', 'pro', 'advanced', 'enterprise'];
       const requestedPlan = metadata.planType || metadata.plan_type || 'pro';
       if (!VALID_PLANS.includes(requestedPlan)) {
@@ -168,7 +211,12 @@ serve(async (req) => {
       // 5. UPDATE PLAN
       const { error: updateError } = await supabase
         .from("organizations")
-        .update({ plan_type: newPlan })
+        .update({
+          plan_type: newPlan,
+          plan_started_at: new Date().toISOString(),
+          plan_expires_at: computePlanExpiry(interval),
+          ...getPlanQuotas(newPlan),
+        })
         .eq("id", organizationId);
 
       if (updateError) {
@@ -233,6 +281,48 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ message: "Webhook processed successfully" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Flutterwave's refund event is documented as "refund.completed"; some
+    // accounts instead report the refund via "charge.completed" with the
+    // original transaction's status flipped to "refunded"/"reversed". Handle
+    // both shapes — verify against a real test webhook (Settings > Webhooks >
+    // Resend) once live, since exact field names aren't verifiable from here.
+    if (
+      event === "refund.completed" ||
+      (event === "charge.completed" && (data.status === "refunded" || data.status === "reversed"))
+    ) {
+      const metadata = data.meta || data.metadata || {};
+      const organizationId = metadata.organizationId || metadata.organization_id;
+
+      if (!organizationId) {
+        console.warn("Refund event received without organizationId in meta:", eventId);
+      } else {
+        const result = await downgradeOrganizationForRefund(supabase, {
+          organizationId,
+          provider: "flutterwave",
+          amount: data.amount_refunded ?? data.amount,
+          currency: data.currency,
+          externalId: (data.id ?? data.tx_ref)?.toString(),
+        });
+
+        if (!result.success) {
+          console.error("Refund downgrade failed:", result.reason);
+        }
+      }
+
+      await supabase.rpc('record_webhook_event', {
+        p_event_id: eventId,
+        p_provider: 'flutterwave',
+        p_event_type: event,
+        p_payload: payload,
+        p_status: 'success'
+      });
+
+      return new Response(
+        JSON.stringify({ message: "Refund processed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

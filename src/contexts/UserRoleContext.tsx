@@ -3,9 +3,9 @@ import React, { createContext, useState, useContext, ReactNode, useMemo, useEffe
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'citizen_reporter' | 'ngo_member' | 'government_official' | 'company_representative' | 'country_admin' | 'platform_admin' | 'change_maker' | 'admin';
+export type UserRole = 'citizen_reporter' | 'ngo_member' | 'government_official' | 'company_representative' | 'country_admin' | 'platform_admin' | 'change_maker' | 'admin' | 'funder';
 
-export const ALL_ROLES: UserRole[] = ['citizen_reporter', 'ngo_member', 'government_official', 'company_representative', 'country_admin', 'platform_admin', 'change_maker', 'admin'];
+export const ALL_ROLES: UserRole[] = ['citizen_reporter', 'ngo_member', 'government_official', 'company_representative', 'country_admin', 'platform_admin', 'change_maker', 'admin', 'funder'];
 
 export interface UserRoleData {
   role: UserRole;

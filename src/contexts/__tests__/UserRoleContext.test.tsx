@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import React from "react";
+import { render, renderWithAuth, screen } from "@/test/test-utils";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -23,8 +19,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { UserRoleProvider, useUserRole } from "@/contexts/UserRoleContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 // Helper component to expose context values
 function RoleDisplay() {
@@ -40,41 +35,26 @@ function RoleDisplay() {
   );
 }
 
-function Wrapper({ children }: { children: React.ReactNode }) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return (
-    <QueryClientProvider client={qc}>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <BrowserRouter>
-          <AuthProvider>
-            <UserRoleProvider>{children}</UserRoleProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
-
 describe("UserRoleContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("defaults to citizen_reporter when not authenticated", async () => {
-    render(<RoleDisplay />, { wrapper: Wrapper });
+    renderWithAuth(<RoleDisplay />);
 
     expect(await screen.findByTestId("current-role")).toHaveTextContent("citizen_reporter");
     expect(screen.getByTestId("is-auth")).toHaveTextContent("false");
   });
 
   it("reports no admin role for unauthenticated user", async () => {
-    render(<RoleDisplay />, { wrapper: Wrapper });
+    renderWithAuth(<RoleDisplay />);
 
     expect(await screen.findByTestId("has-admin")).toHaveTextContent("false");
   });
 
   it("has empty roles array when unauthenticated", async () => {
-    render(<RoleDisplay />, { wrapper: Wrapper });
+    renderWithAuth(<RoleDisplay />);
 
     expect(await screen.findByTestId("role-count")).toHaveTextContent("0");
   });

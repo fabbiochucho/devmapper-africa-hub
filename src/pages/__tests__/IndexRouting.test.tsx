@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import React from "react";
+import { renderWithAuth, screen, waitFor } from "@/test/test-utils";
 
 // Mock supabase
 vi.mock("@/integrations/supabase/client", () => ({
@@ -47,23 +43,6 @@ vi.mock("@/components/map/MapShell", () => ({ default: () => <div data-testid="m
 vi.mock("@/components/map/EnhancedProjectMap", () => ({ default: () => <div data-testid="mock-enhanced-map" /> }));
 
 import Index from "@/pages/Index";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { UserRoleProvider } from "@/contexts/UserRoleContext";
-
-function TestWrapper({ children }: { children: React.ReactNode }) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return (
-    <QueryClientProvider client={qc}>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <MemoryRouter initialEntries={["/"]}>
-          <AuthProvider>
-            <UserRoleProvider>{children}</UserRoleProvider>
-          </AuthProvider>
-        </MemoryRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
 
 describe("Index page routing", () => {
   beforeEach(() => {
@@ -71,7 +50,7 @@ describe("Index page routing", () => {
   });
 
   it("shows the landing page for unauthenticated users", async () => {
-    render(<Index />, { wrapper: TestWrapper });
+    renderWithAuth(<Index />);
 
     await waitFor(() => {
       // Should NOT show dashboard sign-in prompt (that's UnifiedDashboard)
@@ -80,7 +59,7 @@ describe("Index page routing", () => {
   });
 
   it("does NOT show dashboard content when not authenticated", async () => {
-    render(<Index />, { wrapper: TestWrapper });
+    renderWithAuth(<Index />);
 
     await waitFor(() => {
       expect(screen.queryByText(/welcome back/i)).not.toBeInTheDocument();

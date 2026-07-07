@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Package, CheckCircle, Filter, ArrowUpDown, Briefcase } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
+import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";
 
 const PROJECT_TYPES = [
   { value: "reforestation", label: "Reforestation" },
@@ -115,19 +116,33 @@ const CarbonMarketplace = () => {
       if (!user || !selectedListing) throw new Error("Missing data");
       const qty = parseFloat(purchaseQty);
       if (qty <= 0 || qty > (selectedListing.available_credits || 0)) throw new Error("Invalid quantity");
-      const { error } = await supabase.from("carbon_credit_orders").insert({
+
+      const totalAmount = qty * selectedListing.price_per_tonne;
+      const { data: order, error } = await supabase.from("carbon_credit_orders").insert({
         buyer_id: user.id,
         listing_id: selectedListing.id,
         quantity: qty,
         price_per_tonne: selectedListing.price_per_tonne,
-        total_amount: qty * selectedListing.price_per_tonne,
+        total_amount: totalAmount,
         currency: selectedListing.currency,
         status: "pending",
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke("create-payment", {
+        body: {
+          payment_type: "marketplace_purchase",
+          order_id: order.id,
+          amount: totalAmount,
+          currency: selectedListing.currency,
+        },
+      });
+      if (paymentError) throw paymentError;
+      if (!paymentData?.url) throw new Error("Payment link not received");
+
+      window.location.href = paymentData.url;
     },
     onSuccess: () => {
-      toast.success("Purchase order created!");
       setShowPurchaseDialog(false);
       setPurchaseQty("");
       setSelectedListing(null);
@@ -139,13 +154,14 @@ const CarbonMarketplace = () => {
 
   const retireCredits = useMutation({
     mutationFn: async (orderId: string) => {
-      const { error } = await supabase.from("carbon_credit_orders").update({ status: "retired", retirement_date: new Date().toISOString() }).eq("id", orderId);
+      const { error } = await supabase.rpc("retire_carbon_credit_order", { p_order_id: orderId });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Credits retired successfully!");
       queryClient.invalidateQueries({ queryKey: ["my-carbon-orders"] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const verificationBadge = (status: string) => {
@@ -199,6 +215,13 @@ const CarbonMarketplace = () => {
                   <Input type="number" placeholder="Total Credits (tCO2e) *" value={listingForm.total_credits} onChange={e => setListingForm(p => ({ ...p, total_credits: e.target.value }))} />
                   <Input type="number" placeholder="Price per tonne *" value={listingForm.price_per_tonne} onChange={e => setListingForm(p => ({ ...p, price_per_tonne: e.target.value }))} />
                 </div>
+                {listingForm.country_code && (
+                  <SuggestedPriceHint
+                    projectType={listingForm.project_type}
+                    countryCode={listingForm.country_code}
+                    vintageYear={parseInt(listingForm.vintage_year) || new Date().getFullYear()}
+                  />
+                )}
                 <Button onClick={() => createListing.mutate()} disabled={!listingForm.title || !listingForm.total_credits || !listingForm.price_per_tonne || createListing.isPending} className="w-full">
                   {createListing.isPending ? "Creating..." : "Create Listing"}
                 </Button>

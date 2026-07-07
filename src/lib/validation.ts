@@ -9,11 +9,6 @@
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
- * Password validation - requires uppercase, lowercase, number, and minimum length
- */
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
-
-/**
  * Validate email format
  */
 export function validateEmail(email: string): { valid: boolean; message: string } {
@@ -77,20 +72,22 @@ export function validatePassword(password: string): {
 /**
  * Validate full name
  */
-export function validateFullName(name: string): { valid: boolean; message: string } {
+export function validateFullName(name: string): { valid: boolean; message: string; value?: string } {
   if (!name || !name.trim()) {
     return { valid: false, message: 'Full name is required' };
   }
 
-  if (name.trim().length < 2) {
+  const trimmed = name.trim();
+
+  if (trimmed.length < 2) {
     return { valid: false, message: 'Full name must be at least 2 characters' };
   }
 
-  if (name.length > 100) {
+  if (trimmed.length > 100) {
     return { valid: false, message: 'Full name must be less than 100 characters' };
   }
 
-  return { valid: true, message: '' };
+  return { valid: true, message: '', value: trimmed };
 }
 
 /**
@@ -168,9 +165,12 @@ export function validateCoordinate(lat: number, lng: number): {
 }
 
 /**
- * Sanitize string input to prevent injection attacks
+ * Strips literal angle brackets and the javascript: scheme from a string.
+ * NOT an XSS defense — does not protect against HTML-entity encoding, URL
+ * encoding, data:/vbscript: schemes, or attribute-based injection. For HTML
+ * contexts use DOMPurify; for URLs validate with `new URL()` and a scheme allowlist.
  */
-export function sanitizeInput(input: string): string {
+export function stripAngleBracketsAndJsScheme(input: string): string {
   return input
     .replace(/[<>]/g, '') // Remove angle brackets
     .replace(/javascript:/gi, '') // Remove javascript: protocol

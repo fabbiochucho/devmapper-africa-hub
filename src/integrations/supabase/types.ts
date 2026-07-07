@@ -1587,6 +1587,56 @@ export type Database = {
           },
         ]
       }
+      erp_connections: {
+        Row: {
+          api_key_secret_name: string | null
+          base_url: string
+          created_at: string
+          created_by: string
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          organization_id: string
+          provider: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          base_url: string
+          created_at?: string
+          created_by: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id: string
+          provider: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          base_url?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id?: string
+          provider?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       esg_supplier_emissions: {
         Row: {
           activity_description: string | null
@@ -2268,6 +2318,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organization_data_shares: {
+        Row: {
+          created_at: string
+          expires_at: string
+          grantee_user_id: string
+          granted_by: string
+          grantor_org_id: string
+          id: string
+          purpose: string | null
+          revoked_at: string | null
+          scope: string[]
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          grantee_user_id: string
+          granted_by: string
+          grantor_org_id: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope: string[]
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          grantee_user_id?: string
+          granted_by?: string
+          grantor_org_id?: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_data_shares_grantor_org_id_fkey"
+            columns: ["grantor_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_members: {
         Row: {
@@ -3762,6 +3856,151 @@ export type Database = {
         }
         Relationships: []
       }
+      sbti_pathways: {
+        Row: {
+          baseline_year: number | null
+          created_at: string
+          id: string
+          organization_id: string
+          pathway_data: Json | null
+          sector: string
+          target_type: string | null
+          target_year: number | null
+        }
+        Insert: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          pathway_data?: Json | null
+          sector: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Update: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          pathway_data?: Json | null
+          sector?: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sbti_pathways_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verra_methodology_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          methodology_code: string
+          project_type: string
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code: string
+          project_type: string
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code?: string
+          project_type?: string
+          source_url?: string | null
+        }
+        Relationships: []
+      }
+      cdp_questionnaire_responses: {
+        Row: {
+          auto_filled: boolean
+          id: string
+          organization_id: string
+          question_code: string
+          response: Json | null
+          updated_at: string
+        }
+        Insert: {
+          auto_filled?: boolean
+          id?: string
+          organization_id: string
+          question_code: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          auto_filled?: boolean
+          id?: string
+          organization_id?: string
+          question_code?: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cdp_questionnaire_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      glec_transport_factors: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "glec_transport_factors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lca_assessments: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "lca_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gpc_city_inventories: {
+        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
+        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
+        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
+        Relationships: [
+          {
+            foreignKeyName: "gpc_city_inventories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standards_metadata: {
         Row: {
           confidence_score: number | null
@@ -4487,6 +4726,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_active_org_share: {
+        Args: { _org_id: string; _scope: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -4524,6 +4767,7 @@ export type Database = {
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       reset_monthly_quotas: { Args: never; Returns: undefined }
+      retire_carbon_credit_order: { Args: { p_order_id: string }; Returns: undefined }
       sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
@@ -4536,6 +4780,7 @@ export type Database = {
         | "platform_admin"
         | "change_maker"
         | "citizen_reporter"
+        | "funder"
       plan_type: "free" | "lite" | "pro" | "advanced" | "enterprise"
     }
     CompositeTypes: {
@@ -4673,6 +4918,7 @@ export const Constants = {
         "platform_admin",
         "change_maker",
         "citizen_reporter",
+        "funder",
       ],
       plan_type: ["free", "lite", "pro", "advanced", "enterprise"],
     },

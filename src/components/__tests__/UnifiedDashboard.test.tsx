@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import React from "react";
+import { renderWithAuth, screen } from "@/test/test-utils";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -24,23 +20,6 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import UnifiedDashboard from "@/components/UnifiedDashboard";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { UserRoleProvider } from "@/contexts/UserRoleContext";
-
-function Wrapper({ children }: { children: React.ReactNode }) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return (
-    <QueryClientProvider client={qc}>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <BrowserRouter>
-          <AuthProvider>
-            <UserRoleProvider>{children}</UserRoleProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
 
 describe("UnifiedDashboard", () => {
   beforeEach(() => {
@@ -48,18 +27,18 @@ describe("UnifiedDashboard", () => {
   });
 
   it("shows sign-in prompt when user is not authenticated", async () => {
-    render(<UnifiedDashboard />, { wrapper: Wrapper });
+    renderWithAuth(<UnifiedDashboard />);
     expect(await screen.findByText("Please sign in to access your dashboard")).toBeInTheDocument();
   });
 
   it("contains a link to /auth for unauthenticated users", async () => {
-    render(<UnifiedDashboard />, { wrapper: Wrapper });
+    renderWithAuth(<UnifiedDashboard />);
     const link = await screen.findByRole("link", { name: "Sign In" });
     expect(link).toHaveAttribute("href", "/auth");
   });
 
   it("does not show role-specific cards when unauthenticated", async () => {
-    render(<UnifiedDashboard />, { wrapper: Wrapper });
+    renderWithAuth(<UnifiedDashboard />);
     await screen.findByText("Please sign in to access your dashboard");
     expect(screen.queryByText(/welcome back/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/citizen reporter/i)).not.toBeInTheDocument();
