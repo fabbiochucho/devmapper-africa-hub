@@ -65,6 +65,7 @@ const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const VerifierMarketplace = lazy(() => import("./pages/VerifierMarketplace"));
 const SharedWithMe = lazy(() => import("./pages/SharedWithMe"));
 const ErpIntegrations = lazy(() => import("./pages/ErpIntegrations"));
+const FunderDashboard = lazy(() => import("./pages/FunderDashboard"));
 const CarbonMarketplace = lazy(() => import("./pages/CarbonMarketplace"));
 const CarbonPortfolio = lazy(() => import("./pages/CarbonPortfolio"));
 const CarbonAccounting = lazy(() => import("./pages/CarbonAccounting"));
@@ -186,6 +187,7 @@ const App = () => (
                     <Route path="/government-dashboard" element={<Guarded><RoleRoute roles={["admin", "government_official"]}>{S(<GovernmentDashboard />)}</RoleRoute></Guarded>} />
                     <Route path="/corporate-dashboard" element={<Guarded><RoleRoute roles={["admin", "company_representative"]}>{S(<CorporateDashboard />)}</RoleRoute></Guarded>} />
                     <Route path="/ngo-dashboard" element={<Guarded><RoleRoute roles={["admin", "ngo_member"]}>{S(<NgoDashboard />)}</RoleRoute></Guarded>} />
+                    <Route path="/funder-dashboard" element={<Guarded><RoleRoute roles={["admin", "funder"]}>{S(<FunderDashboard />)}</RoleRoute></Guarded>} />
                     {/* 404 inside Layout */}
                     <Route path="*" element={<NotFound />} />
                   </Route>

@@ -11,6 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import CitizenFeedbackPanel from "@/components/pm/CitizenFeedbackPanel";
 import ImpactCredibilityBadge from "@/components/scoring/ImpactCredibilityBadge";
 import { calculateCredibilityScore } from "@/lib/impact-credibility";
+import FundingReadinessBadge from "@/components/scoring/FundingReadinessBadge";
+import RiskFlagsList from "@/components/scoring/RiskFlagsList";
+import { calculateFundingReadinessScore } from "@/lib/funding-readiness";
+import { deriveRiskFlags } from "@/lib/risk-flags";
 import { sdgGoals } from "@/lib/constants";
 import {
   MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Clock,
@@ -103,6 +107,32 @@ export default function ProjectDetail() {
     lastUpdated: report.updated_at || report.created_at,
   });
 
+  // Funding Readiness + Risk Flags - computed from the same already-fetched
+  // report/verifications/milestones data (no project_financial_impact or
+  // fundraising_campaigns fetch added here for this page, so those inputs
+  // are conservatively null/false; the Funder Dashboard fetches them fully).
+  const fundingReadinessScore = calculateFundingReadinessScore({
+    reportCost: report.cost ?? null,
+    roiPercentage: null,
+    revenueGenerated: null,
+    operationalCostSavings: null,
+    carbonCreditValue: null,
+    fundraisingTargetAmount: null,
+    fundraisingRaisedAmount: null,
+    hasVerifiedFinancials: false,
+    timelineOnTrack: true,
+  });
+
+  const riskFlags = deriveRiskFlags({
+    hasFinancialData: report.cost != null,
+    reportCost: report.cost ?? null,
+    verificationStatus: bestVerification ? "approved" : "none",
+    evidenceCount: updates.length,
+    deadline: report.end_date ?? null,
+    milestonesTotal: milestones.length,
+    milestonesCompleted: milestones.filter((m: any) => m.completed).length,
+  });
+
   const getVerificationStatus = (level: string) => {
     const v = verifications.find((vr: any) => vr.verification_level === level);
     return v?.status || "pending";
@@ -118,10 +148,20 @@ export default function ProjectDetail() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{report.title}</h1>
             <ImpactCredibilityBadge score={credibilityScore} />
+            <FundingReadinessBadge score={fundingReadinessScore} />
           </div>
           <p className="text-muted-foreground">{report.description}</p>
         </div>
       </div>
+
+      {riskFlags.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-sm font-semibold mb-2">Risk Flags</h3>
+            <RiskFlagsList flags={riskFlags} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Project Info */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

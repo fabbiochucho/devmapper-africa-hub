@@ -4635,6 +4635,7 @@ export type Database = {
         | "platform_admin"
         | "change_maker"
         | "citizen_reporter"
+        | "funder"
       plan_type: "free" | "lite" | "pro" | "advanced" | "enterprise"
     }
     CompositeTypes: {
@@ -4772,6 +4773,7 @@ export const Constants = {
         "platform_admin",
         "change_maker",
         "citizen_reporter",
+        "funder",
       ],
       plan_type: ["free", "lite", "pro", "advanced", "enterprise"],
     },
