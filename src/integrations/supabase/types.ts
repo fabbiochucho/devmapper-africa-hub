@@ -1587,6 +1587,56 @@ export type Database = {
           },
         ]
       }
+      erp_connections: {
+        Row: {
+          api_key_secret_name: string | null
+          base_url: string
+          created_at: string
+          created_by: string
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          organization_id: string
+          provider: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          base_url: string
+          created_at?: string
+          created_by: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id: string
+          provider: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          base_url?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id?: string
+          provider?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       esg_supplier_emissions: {
         Row: {
           activity_description: string | null
