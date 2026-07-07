@@ -133,7 +133,7 @@ export function initWebVitals() {
       if (lastEntry) onMetric('LCP', lastEntry, navigationType);
     });
     lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-  } catch (e) { /* Observer not supported */ }
+  } catch { /* Observer not supported */ }
 
   // FID - First Input Delay
   try {
@@ -146,7 +146,7 @@ export function initWebVitals() {
       }
     });
     fidObserver.observe({ type: 'first-input', buffered: true });
-  } catch (e) { /* Observer not supported */ }
+  } catch { /* Observer not supported */ }
 
   // CLS - Cumulative Layout Shift
   try {
@@ -193,7 +193,7 @@ export function initWebVitals() {
       }
     });
     clsObserver.observe({ type: 'layout-shift', buffered: true });
-  } catch (e) { /* Observer not supported */ }
+  } catch { /* Observer not supported */ }
 
   // FCP - First Contentful Paint
   try {
@@ -206,7 +206,7 @@ export function initWebVitals() {
       }
     });
     fcpObserver.observe({ type: 'paint', buffered: true });
-  } catch (e) { /* Observer not supported */ }
+  } catch { /* Observer not supported */ }
 
   // TTFB - Time to First Byte
   try {
@@ -216,7 +216,7 @@ export function initWebVitals() {
       const ttfbEntry = { ...navEntry, startTime: navEntry.responseStart } as any;
       onMetric('TTFB', ttfbEntry, navigationType);
     }
-  } catch (e) { /* Not available */ }
+  } catch { /* Not available */ }
 
   // INP - Interaction to Next Paint (experimental)
   try {
@@ -229,7 +229,7 @@ export function initWebVitals() {
       if (worstEntry) onMetric('INP', worstEntry, navigationType);
     });
     inpObserver.observe({ type: 'event', buffered: true } as any);
-  } catch (e) { /* Observer not supported */ }
+  } catch { /* Observer not supported */ }
 
   // Flush remaining metrics when page is unloaded
   window.addEventListener('visibilitychange', () => {

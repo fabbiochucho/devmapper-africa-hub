@@ -99,30 +99,20 @@ jobs:
           echo "✓ Lint skipped or passed with warnings"
 
       # ─────────────────────────────────────────────────────
-      # 5️⃣ TYPECHECK: TypeScript validation
+      # 5️⃣ TYPECHECK: TypeScript validation (blocking)
       # ─────────────────────────────────────────────────────
       - name: Run TypeScript check
         run: |
           echo "🔤 Running TypeScript check..."
-          if npm run typecheck --if-present 2>/dev/null; then
-            echo "✓ Typecheck passed via npm script"
-          elif [ -f tsconfig.json ]; then
-            npx tsc --noEmit --incremental || echo "✓ Typecheck completed with warnings"
-          else
-            echo "✓ No TypeScript config — skipping typecheck"
-          fi
+          npm run typecheck
 
       # ─────────────────────────────────────────────────────
-      # 6️⃣ UNIT TESTS: Vitest/Jest with graceful fallback
+      # 6️⃣ UNIT TESTS: Vitest (blocking)
       # ─────────────────────────────────────────────────────
       - name: Run unit tests
         run: |
           echo "🧪 Running unit tests..."
-          npm test -- --passWithNoTests --coverage=false --reporters=default 2>/dev/null || \
-          npm run test:unit -- --passWithNoTests 2>/dev/null || \
-          npx vitest run --passWithNoTests --coverage=false 2>/dev/null || \
-          echo "✓ No tests configured — skipping"
-        continue-on-error: true  # Don't block deploy on test failures (adjust per policy)
+          npm test -- --passWithNoTests --coverage=false --reporters=default
 
       # ─────────────────────────────────────────────────────
       # 7️⃣ SECURITY AUDIT: Non-blocking vulnerability scan
