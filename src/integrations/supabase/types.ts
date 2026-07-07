@@ -2324,7 +2324,7 @@ export type Database = {
           created_at: string
           expires_at: string
           grantee_user_id: string
-          granted_by: string
+          granted_by: string | null
           grantor_org_id: string
           id: string
           purpose: string | null
@@ -2335,7 +2335,7 @@ export type Database = {
           created_at?: string
           expires_at: string
           grantee_user_id: string
-          granted_by: string
+          granted_by?: string | null
           grantor_org_id: string
           id?: string
           purpose?: string | null
@@ -2346,7 +2346,7 @@ export type Database = {
           created_at?: string
           expires_at?: string
           grantee_user_id?: string
-          granted_by?: string
+          granted_by?: string | null
           grantor_org_id?: string
           id?: string
           purpose?: string | null
