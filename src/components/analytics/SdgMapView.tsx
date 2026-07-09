@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Filter, BarChart3 } from "lucide-react"
-import EnhancedProjectMap from "@/components/map/EnhancedProjectMap"
+import LazyEnhancedProjectMap from "@/components/map/LazyEnhancedProjectMap"
 import { mockReports, Report } from "@/data/mockReports"
 import { sdgGoalColors, projectStatusColors } from "@/lib/constants"
 
@@ -166,7 +166,7 @@ export default function SdgMapView() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EnhancedProjectMap />
+            <LazyEnhancedProjectMap />
           </CardContent>
         </Card>
 

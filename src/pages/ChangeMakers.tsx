@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Users, MapPin, Target, Search, Grid, Map, BarChart3, UserPlus } from "lucide-react";
 import { mockChangeMakers, ChangeMaker } from "@/data/mockChangeMakers";
 import { sdgGoals } from "@/lib/constants";
-import ChangeMakerMap from "@/components/changemaker/ChangeMakerMap";
+import LazyChangeMakerMap from "@/components/changemaker/LazyChangeMakerMap";
 import ChangeMakerAnalytics from "@/components/changemaker/ChangeMakerAnalytics";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
@@ -294,7 +294,7 @@ const ChangeMakers = () => {
         </TabsContent>
 
         <TabsContent value="map" className="mt-4">
-          <ChangeMakerMap changeMakers={filteredChangeMakers} />
+          <LazyChangeMakerMap changeMakers={filteredChangeMakers} />
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4">

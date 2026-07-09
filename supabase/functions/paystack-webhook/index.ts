@@ -76,6 +76,34 @@ serve(async (req: Request) => {
           });
         }
 
+        // Validate organization exists before updating - matches
+        // flutterwave-webhook's parity check (previously missing here,
+        // meaning a bad/stale organization_id in the webhook metadata
+        // would silently no-op the update instead of being caught).
+        const { data: org, error: orgError } = await supabase
+          .from('organizations')
+          .select('id, plan_type')
+          .eq('id', metadata.organization_id)
+          .single();
+
+        if (orgError || !org) {
+          console.error('Organization not found:', metadata.organization_id);
+          await supabase.rpc('record_webhook_event', {
+            p_event_id: eventId,
+            p_provider: 'paystack',
+            p_event_type: event.event,
+            p_payload: event,
+            p_status: 'failed',
+            p_error_message: `Organization not found: ${metadata.organization_id}`
+          });
+          return new Response(JSON.stringify({ error: 'Organization not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
+
+        const oldPlan = org.plan_type;
+
         // Update organization plan
         await supabase
           .from('organizations')
@@ -87,10 +115,30 @@ serve(async (req: Request) => {
           })
           .eq('id', metadata.organization_id);
 
+        // Log audit event - matches flutterwave-webhook's parity step,
+        // previously missing here.
+        await supabase.rpc('log_audit_event', {
+          p_actor_id: null,
+          p_actor_type: 'webhook',
+          p_org_id: metadata.organization_id,
+          p_action: 'plan_upgraded',
+          p_target_table: 'organizations',
+          p_target_id: metadata.organization_id,
+          p_payload: {
+            old_plan: oldPlan,
+            new_plan: requestedPlan,
+            amount: amount / 100,
+            currency: currency || 'NGN',
+            transaction_id: reference,
+            provider: 'paystack'
+          }
+        });
+
         // Log billing event
         await supabase.from('billing_events').insert([{
           organization_id: metadata.organization_id,
           event_type: 'payment_success',
+          old_plan: oldPlan,
           new_plan: metadata.plan_type,
           provider: 'paystack',
           amount: amount / 100, // Paystack amounts are in kobo/cents

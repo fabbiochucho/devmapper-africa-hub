@@ -9,18 +9,19 @@
  * - Ozone Depletion Potential (ODP) - stratospheric ozone depletion
  *   category, using EPA-published values from the Montreal Protocol's
  *   original reference list (ODP1) alongside the WMO 2011 Scientific
- *   Assessment update (ODP2) for comparison. Unlike CML/ReCiPe
- *   acidification/eutrophication factors (which are complex multi-substance
- *   datasets not embedded here with confidence), ODP values are simple,
- *   stable, treaty-referenced constants - genuinely solid ground to
- *   implement directly.
+ *   Assessment update (ODP2) for comparison.
+ * - Acidification Potential (AP) - using US EPA TRACI 2.1 characterization
+ *   factors (kg SO2-eq basis), confirmed via multiple independent public
+ *   sources for the three major acidifying air emissions: SO2 (the
+ *   reference substance, =1.0 by definition), NOx (~0.7), and NH3 (1.88,
+ *   directly sourced from EPA's published TRACI 2.1/FEDEFL factor list).
  *
- * TODO(business-logic): full ISO 14044 impact assessment covers further
- * categories (acidification, eutrophication, resource depletion, etc.),
- * each needing its own characterization factor set (eg. CML, ReCiPe,
- * TRACI) that would require sourcing complex per-substance datasets with
- * real confidence - not implemented here to avoid presenting guessed
- * factors as authoritative in a compliance-adjacent tool.
+ * NOT implemented: Eutrophication Potential. TRACI's *current* (2.2)
+ * eutrophication factors are spatially-resolved (Henderson et al. 2021) -
+ * public search did not turn up confident single numeric kg-N-eq factors
+ * for NOx/NH3/phosphorus to cite directly, so rather than guess a plausible
+ * number, this category is left out entirely. Same reasoning applies to
+ * further categories (ozone formation/smog, resource depletion, etc.).
  */
 
 export type LcaStage = 'goal_and_scope' | 'inventory_analysis' | 'impact_assessment' | 'interpretation';
@@ -141,6 +142,52 @@ export function characterizeOdpInventory(
     breakdownBySubstance: breakdown,
     referenceStandard,
     note: `Ozone Depletion Potential relative to CFC-11=1.0, ${referenceStandard === 'wmo_2011' ? 'WMO 2011 Scientific Assessment' : 'Montreal Protocol original reference'} values (source: US EPA Ozone-Depleting Substances tables).`,
+  };
+}
+
+export type AcidifyingSubstance = 'so2' | 'nox' | 'nh3';
+
+export interface AcidificationInventoryFlow {
+  substance: AcidifyingSubstance;
+  amountKg: number;
+  direction: 'input' | 'output';
+  stage: string;
+}
+
+/**
+ * Acidification Potential, kg SO2-eq basis, US EPA TRACI 2.1
+ * characterization factors. SO2 is the reference substance (=1.0 by
+ * definition); NOx (~0.7) and NH3 (1.88) are the other two major
+ * acidifying air emissions, both confirmed against public TRACI 2.1/FEDEFL
+ * sources.
+ */
+const AP_TRACI_2_1: Record<AcidifyingSubstance, number> = {
+  so2: 1,
+  nox: 0.7,
+  nh3: 1.88,
+};
+
+export interface ApAssessmentResult {
+  totalKgSo2e: number;
+  breakdownBySubstance: Record<string, number>;
+  note: string;
+}
+
+export function characterizeAcidificationInventory(flows: AcidificationInventoryFlow[]): ApAssessmentResult {
+  const breakdown: Record<string, number> = {};
+  let total = 0;
+
+  for (const flow of flows) {
+    const sign = flow.direction === 'output' ? 1 : -1;
+    const so2e = sign * flow.amountKg * AP_TRACI_2_1[flow.substance];
+    breakdown[flow.substance] = (breakdown[flow.substance] ?? 0) + so2e;
+    total += so2e;
+  }
+
+  return {
+    totalKgSo2e: Math.round(total * 1000) / 1000,
+    breakdownBySubstance: breakdown,
+    note: 'Acidification Potential (kg SO2-eq), US EPA TRACI 2.1 characterization factors.',
   };
 }
 

@@ -23,6 +23,7 @@ const UserManagement = lazy(() => import("./pages/UserManagement"));
 const CorporateTargets = lazy(() => import("./pages/CorporateTargets"));
 const GovernmentDashboard = lazy(() => import("./pages/GovernmentDashboard"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
+const CertificateVerification = lazy(() => import("./pages/CertificateVerification"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Forum = lazy(() => import("./pages/Forum"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -106,6 +107,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     {/* Public routes */}
                     <Route path="/search" element={S(<SearchPage />)} />
+                    <Route path="/certificates/:certificateNumber" element={S(<CertificateVerification />)} />
                     <Route path="/change-makers" element={S(<ChangeMakers />)} />
                     <Route path="/change-makers/:id" element={S(<ChangeMakerDetail />)} />
                     <Route path="/fundraising" element={S(<Fundraising />)} />
