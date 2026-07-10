@@ -30,6 +30,7 @@ const roleIcons: Record<UserRole, typeof User> = {
   admin: User,
   country_admin: User,
   platform_admin: User,
+  funder: User,
 };
 
 const roleFeatures: Record<UserRole, string[]> = {
@@ -41,6 +42,7 @@ const roleFeatures: Record<UserRole, string[]> = {
   admin: ["Admin Dashboard", "User Management", "All Features"],
   country_admin: ["Country Admin", "Regional Data", "All Features"],
   platform_admin: ["Platform Admin", "System Settings", "All Features"],
+  funder: ["Funder Dashboard", "Portfolio", "Impact Reports"],
 };
 
 const RoleSelector = ({ value, onChange, email = '' }: RoleSelectorProps) => {

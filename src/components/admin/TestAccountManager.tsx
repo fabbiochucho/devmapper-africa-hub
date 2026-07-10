@@ -61,6 +61,12 @@ const roleConfig: Record<UserRole, { label: string; color: string; icon: any; de
     icon: Shield,
     description: 'Administrative access to all features'
   },
+  funder: {
+    label: 'Funder',
+    color: 'bg-emerald-600',
+    icon: Heart,
+    description: 'Funder profile with portfolio access'
+  },
 };
 
 // Test account templates
