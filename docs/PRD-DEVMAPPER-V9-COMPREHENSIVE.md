@@ -48,6 +48,54 @@ End-to-end PRD-vs-code audit reclassified 17 items previously marked **Not Built
 
 ---
 
+## 0.1 V9.3 Status Corrections (audit 2026-07-10)
+
+Full 117-feature + Appendix re-audit against current code (static analysis: existence + import-chain reachability, not live testing). **43 of 117 features (37%) changed status.** Net direction: the PRD has been *underselling* progress — the multi-agent AI layer, carbon marketplace, and standards engine (CDP/SBTi/GLEC/LCA/GPC) are substantially more built than this document indicates. A handful of items went the other way: some V9.2-cited evidence pointed at components that turned out to be dead code.
+
+**Revised completion estimate: 79% built, 13% partial, 5% not built, 3% future** (was 65–70% under V9.2's own estimate, 50% in the original V9.1 table below).
+
+### Upgraded to ✅ Built (previously ❌/🟡, now confirmed wired to a reachable route)
+#20 CDP framework alignment, #21 CSRD module (🟡, checklist only), #22 SBTi target validation, #30–33/#35–42/#44 Ndovu prompt library (real path is `AICopilotQuickActions.tsx`, not the V9.2-cited `NdovuQuickActions.tsx` — see dead code below), #45–52 full multi-agent architecture (orchestrator + 6 specialized agents + synthesizer — deployed function names differ from PRD: `ndovu-verifier-agent`/`ndovu-project-agent`/`ndovu-trader-agent`, not `ndovu-verifier`/`-project-developer`/`-carbon-trader`), #73–75 Verifier Marketplace/reputation/auto-assign (V9.2 claim confirmed accurate), #78 project listing, #81 credit lifecycle, #83 purchase/retirement flow, #86 shared workspaces, #88 data exchange layer, #92/#94 ERP connector UI + local emission factor tables, #111–113 Impact Credibility/Funding Readiness/Risk Flags (V9.2 already had #111; #112–113 are new), #117 contact form (V9.2 claim confirmed accurate), and all 6 Standards Engine Phase 2/3 items (CDP questionnaire, SBTi pathway generator, Verra/Gold Standard mapping, GLEC transport, ISO 14040/44 LCA, GPC city aggregation) — all converge on one mount point, `StandardsPhase2Panel.tsx` in `ESG.tsx`.
+
+### Downgraded / newly-flagged as dead code (component exists, was cited as evidence, but has zero importers anywhere in the app)
+| Component | Cited for | Real (working) path instead |
+|---|---|---|
+| `src/components/pm/VerificationPanel.tsx` | #3, #71 | `SPVFVerificationPanel.tsx` |
+| `src/components/realtime/RealtimeForumUpdates.tsx` | #5 | none — Forum has **no live realtime subscription at all**; #5 downgraded to 🟡 |
+| `src/components/messages/ConversationList.tsx`, `MessageThread.tsx` | #6 | `Messages.tsx` (duplicates the logic inline) |
+| `src/components/ai/NdovuQuickActions.tsx` | V9.2's #30–44 | `AICopilotQuickActions.tsx` |
+| `src/components/verification/AuditTrailExport.tsx` | V9.2's #72 | **none — still unreachable.** V9.2 marked #72 built based on this component's existence, but it was never mounted anywhere; users cannot actually export an audit trail today. #72 reverts to 🟡. |
+
+Also downgraded: **#9 Evidence upload** → 🟡 (SubmitReport.tsx uses a raw storage upload path that bypasses the `evidence_items`/`FileUpload` flow used elsewhere — two divergent, inconsistent upload paths, not one unified feature as implied).
+
+### Corrected Section 8 summary (see full table replacing the one below)
+| Category | Total | ✅ Built | 🟡 Partial | ❌ Not Built | 🔮 Future |
+|---|---|---|---|---|---|
+| Core Platform (V1-V3) | 10 | 8 | 2 | 0 | 0 |
+| ESG & Compliance (V4-V5) | 14 | 11 | 2 | 1 | 0 |
+| AI Layer (V6 + Prompts) | 20 | 18 | 0 | 2 | 0 |
+| Multi-Agent Architecture | 10 | 8 | 1 | 0 | 1 |
+| Project Management (V7) | 9 | 9 | 0 | 0 | 0 |
+| Carbon Evolution (V8) | 6 | 6 | 0 | 0 | 0 |
+| Verification & Trust | 8 | 5 | 3 | 0 | 0 |
+| Carbon Marketplace | 6 | 3 | 2 | 1 | 0 |
+| Multi-Stakeholder | 5 | 3 | 2 | 0 | 0 |
+| Integration Layer | 9 | 5 | 1 | 0 | 3 |
+| Platform & UX | 20 | 16 | 2 | 2 | 0 |
+| **TOTAL** | **117** | **92** | **15** | **6** | **4** |
+
+### Still genuinely absent (confirmed, no PRD change)
+#19 GRI native indicator mapping, #34 Satellite Validation prompts, #43 Guided Workflow prompts, #82 Smart pricing (AI-driven), #95–97 World Bank/IATI/satellite auto-validation, #115 Badge & Reputation System, #116 Social Proof.
+
+### Recommended next actions (priority order)
+1. Delete or re-wire the 5 dead-code components above — `AuditTrailExport` and `RealtimeForumUpdates` are the most user-visible gaps (no working audit-export button; no live forum updates despite the feature name implying otherwise).
+2. Reconcile #9's two divergent evidence-upload code paths.
+3. #93 ERP sync only maps fuel/electricity/heat — Scope 3 procurement categories remain unmapped (per the sync module's own docstring).
+4. Correct Ndovu edge function names in this doc (`ndovu-verifier-agent` etc., not the V9.2-listed names) to prevent future audit drift.
+5. #82, #115, #116 are the lowest-risk items to leave as-is (genuinely not built, low ambiguity).
+
+---
+
 # DevMapper PRD V9.1 — Comprehensive Platform Roadmap (historical)
 ## Date: 2026-04-02
 
