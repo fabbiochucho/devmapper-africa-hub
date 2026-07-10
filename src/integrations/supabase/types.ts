@@ -769,6 +769,41 @@ export type Database = {
           },
         ]
       }
+      cdp_questionnaire_responses: {
+        Row: {
+          auto_filled: boolean
+          id: string
+          organization_id: string
+          question_code: string
+          response: Json | null
+          updated_at: string
+        }
+        Insert: {
+          auto_filled?: boolean
+          id?: string
+          organization_id: string
+          question_code: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          auto_filled?: boolean
+          id?: string
+          organization_id?: string
+          question_code?: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cdp_questionnaire_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certification_applications: {
         Row: {
           applicant_id: string
@@ -1422,6 +1457,56 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_connections: {
+        Row: {
+          api_key_secret_name: string | null
+          base_url: string
+          created_at: string
+          created_by: string
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          organization_id: string
+          provider: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          base_url: string
+          created_at?: string
+          created_by: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id: string
+          provider: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          base_url?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id?: string
+          provider?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       esg_audit_logs: {
         Row: {
           action: string
@@ -1580,56 +1665,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "esg_scenarios_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      erp_connections: {
-        Row: {
-          api_key_secret_name: string | null
-          base_url: string
-          created_at: string
-          created_by: string
-          id: string
-          last_error: string | null
-          last_synced_at: string | null
-          organization_id: string
-          provider: string
-          sync_status: string
-          updated_at: string
-        }
-        Insert: {
-          api_key_secret_name?: string | null
-          base_url: string
-          created_at?: string
-          created_by: string
-          id?: string
-          last_error?: string | null
-          last_synced_at?: string | null
-          organization_id: string
-          provider: string
-          sync_status?: string
-          updated_at?: string
-        }
-        Update: {
-          api_key_secret_name?: string | null
-          base_url?: string
-          created_at?: string
-          created_by?: string
-          id?: string
-          last_error?: string | null
-          last_synced_at?: string | null
-          organization_id?: string
-          provider?: string
-          sync_status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "erp_connections_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -2065,6 +2100,35 @@ export type Database = {
           },
         ]
       }
+      glec_transport_factors: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "glec_transport_factors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       government_projects: {
         Row: {
           admin_area_id: string | null
@@ -2144,6 +2208,64 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      gpc_city_inventories: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gpc_city_inventories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lca_assessments: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lca_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2323,8 +2445,8 @@ export type Database = {
         Row: {
           created_at: string
           expires_at: string
-          grantee_user_id: string
           granted_by: string | null
+          grantee_user_id: string
           grantor_org_id: string
           id: string
           purpose: string | null
@@ -2334,8 +2456,8 @@ export type Database = {
         Insert: {
           created_at?: string
           expires_at: string
-          grantee_user_id: string
           granted_by?: string | null
+          grantee_user_id: string
           grantor_org_id: string
           id?: string
           purpose?: string | null
@@ -2345,8 +2467,8 @@ export type Database = {
         Update: {
           created_at?: string
           expires_at?: string
-          grantee_user_id?: string
           granted_by?: string | null
+          grantee_user_id?: string
           grantor_org_id?: string
           id?: string
           purpose?: string | null
@@ -3760,6 +3882,47 @@ export type Database = {
           },
         ]
       }
+      sbti_pathways: {
+        Row: {
+          baseline_year: number | null
+          created_at: string
+          id: string
+          organization_id: string
+          pathway_data: Json | null
+          sector: string
+          target_type: string | null
+          target_year: number | null
+        }
+        Insert: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          pathway_data?: Json | null
+          sector: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Update: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          pathway_data?: Json | null
+          sector?: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sbti_pathways_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scholarships: {
         Row: {
           approved_at: string | null
@@ -3905,151 +4068,6 @@ export type Database = {
           verification_requirement?: string | null
         }
         Relationships: []
-      }
-      sbti_pathways: {
-        Row: {
-          baseline_year: number | null
-          created_at: string
-          id: string
-          organization_id: string
-          pathway_data: Json | null
-          sector: string
-          target_type: string | null
-          target_year: number | null
-        }
-        Insert: {
-          baseline_year?: number | null
-          created_at?: string
-          id?: string
-          organization_id: string
-          pathway_data?: Json | null
-          sector: string
-          target_type?: string | null
-          target_year?: number | null
-        }
-        Update: {
-          baseline_year?: number | null
-          created_at?: string
-          id?: string
-          organization_id?: string
-          pathway_data?: Json | null
-          sector?: string
-          target_type?: string | null
-          target_year?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sbti_pathways_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      verra_methodology_mappings: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          methodology_code: string
-          project_type: string
-          source_url: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          methodology_code: string
-          project_type: string
-          source_url?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          methodology_code?: string
-          project_type?: string
-          source_url?: string | null
-        }
-        Relationships: []
-      }
-      cdp_questionnaire_responses: {
-        Row: {
-          auto_filled: boolean
-          id: string
-          organization_id: string
-          question_code: string
-          response: Json | null
-          updated_at: string
-        }
-        Insert: {
-          auto_filled?: boolean
-          id?: string
-          organization_id: string
-          question_code: string
-          response?: Json | null
-          updated_at?: string
-        }
-        Update: {
-          auto_filled?: boolean
-          id?: string
-          organization_id?: string
-          question_code?: string
-          response?: Json | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cdp_questionnaire_responses_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      glec_transport_factors: {
-        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
-        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
-        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
-        Relationships: [
-          {
-            foreignKeyName: "glec_transport_factors_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lca_assessments: {
-        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
-        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
-        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
-        Relationships: [
-          {
-            foreignKeyName: "lca_assessments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      gpc_city_inventories: {
-        Row: { created_at: string; id: string; organization_id: string; payload: Json | null }
-        Insert: { created_at?: string; id?: string; organization_id: string; payload?: Json | null }
-        Update: { created_at?: string; id?: string; organization_id?: string; payload?: Json | null }
-        Relationships: [
-          {
-            foreignKeyName: "gpc_city_inventories_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       standards_metadata: {
         Row: {
@@ -4615,6 +4633,33 @@ export type Database = {
           },
         ]
       }
+      verra_methodology_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          methodology_code: string
+          project_type: string
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code: string
+          project_type: string
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code?: string
+          project_type?: string
+          source_url?: string | null
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -4791,6 +4836,18 @@ export type Database = {
         Args: { _report_id: string; _user_id: string }
         Returns: boolean
       }
+      is_conversation_participant: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_owner: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
       log_audit_event: {
         Args: {
@@ -4817,7 +4874,10 @@ export type Database = {
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       reset_monthly_quotas: { Args: never; Returns: undefined }
-      retire_carbon_credit_order: { Args: { p_order_id: string }; Returns: undefined }
+      retire_carbon_credit_order: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
       sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
