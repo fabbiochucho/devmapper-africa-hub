@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ interface ChangeMakerReportsViewProps {
 }
 
 const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selectedChangeMakerId }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterVerification, setFilterVerification] = useState<string>("all");
@@ -52,8 +54,7 @@ const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selecte
   };
 
   const handleViewDetails = (changeMaker: ChangeMaker) => {
-    console.log("View change maker details:", changeMaker.id);
-    // TODO: Navigate to change maker detail page
+    navigate(`/change-makers/${changeMaker.id}`);
   };
 
   const handleExportReport = (changeMaker: ChangeMaker) => {

@@ -60,28 +60,37 @@ export default function MyReportsTracker() {
     const fetchReports = async () => {
       const { data, error } = await supabase
         .from('reports')
-        .select('id, title, description, sdg_goal, project_status, location, submitted_at')
+        .select('id, title, description, sdg_goal, project_status, location, submitted_at, issue_type, issue_severity, escalation_status')
         .eq('user_id', user.id)
         .order('submitted_at', { ascending: false });
 
       if (!error && data) {
-        // Fetch verification and feedback counts
-        const enrichedReports = await Promise.all(
-          data.map(async (report: any) => {
-            const [verifications, feedback] = await Promise.all([
-              supabase.from('project_verifications').select('id', { count: 'exact' }).eq('report_id', report.id),
-              supabase.from('citizen_project_feedback').select('id', { count: 'exact' }).eq('report_id', report.id),
-            ]);
-            return {
-              ...report,
-              issue_type: null, // Will be available after migration
-              issue_severity: null,
-              escalation_status: 'none',
-              verification_count: verifications.count || 0,
-              feedback_count: feedback.count || 0,
-            };
-          })
-        );
+        const reportIds = data.map((report: any) => report.id);
+
+        // Two queries total instead of two per report: fetch all verification/feedback
+        // rows for every report at once, then tally counts client-side.
+        const [verifications, feedback] = reportIds.length
+          ? await Promise.all([
+              supabase.from('project_verifications').select('report_id').in('report_id', reportIds),
+              supabase.from('citizen_project_feedback').select('report_id').in('report_id', reportIds),
+            ])
+          : [{ data: [] as { report_id: string }[] }, { data: [] as { report_id: string }[] }];
+
+        const countByReportId = (rows: { report_id: string }[] | null) => {
+          const counts = new Map<string, number>();
+          for (const row of rows || []) {
+            counts.set(row.report_id, (counts.get(row.report_id) || 0) + 1);
+          }
+          return counts;
+        };
+        const verificationCounts = countByReportId(verifications.data);
+        const feedbackCounts = countByReportId(feedback.data);
+
+        const enrichedReports = data.map((report: any) => ({
+          ...report,
+          verification_count: verificationCounts.get(report.id) || 0,
+          feedback_count: feedbackCounts.get(report.id) || 0,
+        }));
         setReports(enrichedReports as MyReport[]);
       }
       setLoading(false);

@@ -3,8 +3,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  User, Users, Building2, Briefcase, Heart, 
+import {
+  User, Users, Building2, Briefcase, Heart,
   AlertCircle, CheckCircle2, Info
 } from "lucide-react";
 import type { UserRole } from "@/contexts/UserRoleContext";

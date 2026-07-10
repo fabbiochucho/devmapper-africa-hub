@@ -149,6 +149,27 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
         annual_spend?: number;
       }> = [];
 
+      const CHUNK_SIZE = 50;
+      const chunk = <T,>(arr: T[], size: number): T[][] => {
+        const chunks: T[][] = [];
+        for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+        return chunks;
+      };
+
+      interface ParsedRow {
+        rowNum: number;
+        clientId: string;
+        name: string;
+        country_code: string | null;
+        sector: string | null;
+        contact_email: string | null;
+        annual_spend: number | null;
+        emissions_tonnes: number | null;
+        activity_description: string | null;
+        data_quality: string | null;
+      }
+
+      const parsedRows: ParsedRow[] = [];
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const rowNum = i + 2; // +1 for header, +1 for 1-indexing
@@ -160,56 +181,111 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
         }
 
         const annualSpend = row.annual_spend ? parseFloat(row.annual_spend) : null;
-        const country_code = row.country_code?.toUpperCase() || null;
-        const sector = row.sector?.toLowerCase() || null;
+        const emissionsTonnes = row.emissions_tonnes ? parseFloat(row.emissions_tonnes) : null;
 
-        const { data: supplier, error: supplierError } = await supabase
-          .from('esg_suppliers')
-          .insert([{
+        parsedRows.push({
+          rowNum,
+          clientId: crypto.randomUUID(),
+          name,
+          country_code: row.country_code?.toUpperCase() || null,
+          sector: row.sector?.toLowerCase() || null,
+          contact_email: row.contact_email || null,
+          annual_spend: annualSpend !== null && !isNaN(annualSpend) ? annualSpend : null,
+          emissions_tonnes: emissionsTonnes !== null && !isNaN(emissionsTonnes) ? emissionsTonnes : null,
+          activity_description: row.activity_description || null,
+          data_quality: row.data_quality || 'reported',
+        });
+      }
+
+      // Client-assigns each supplier's id so success can be tracked without
+      // depending on RETURNING row order. Chunked batch insert per network
+      // round trip; a chunk that fails falls back to per-row inserts so one
+      // bad row doesn't sink the whole chunk and errors stay row-attributable.
+      const createdRows: ParsedRow[] = [];
+      for (const rowChunk of chunk(parsedRows, CHUNK_SIZE)) {
+        const { error: chunkError } = await supabase.from('esg_suppliers').insert(
+          rowChunk.map((r) => ({
+            id: r.clientId,
             organization_id: organizationId,
-            name,
-            country_code,
-            sector,
-            contact_email: row.contact_email || null,
-            annual_spend: annualSpend !== null && !isNaN(annualSpend) ? annualSpend : null,
+            name: r.name,
+            country_code: r.country_code,
+            sector: r.sector,
+            contact_email: r.contact_email,
+            annual_spend: r.annual_spend,
             data_source: 'csv_import',
-          }])
-          .select('id')
-          .single();
+          }))
+        );
 
-        if (supplierError || !supplier) {
-          errors.push(`Row ${rowNum} (${name}): ${supplierError?.message || 'failed to create supplier'}`);
+        if (!chunkError) {
+          createdRows.push(...rowChunk);
           continue;
         }
 
-        createdSuppliers++;
+        for (const r of rowChunk) {
+          const { error: supplierError } = await supabase.from('esg_suppliers').insert([{
+            id: r.clientId,
+            organization_id: organizationId,
+            name: r.name,
+            country_code: r.country_code,
+            sector: r.sector,
+            contact_email: r.contact_email,
+            annual_spend: r.annual_spend,
+            data_source: 'csv_import',
+          }]);
 
-        const emissionsTonnes = row.emissions_tonnes ? parseFloat(row.emissions_tonnes) : null;
+          if (supplierError) {
+            errors.push(`Row ${r.rowNum} (${r.name}): ${supplierError.message}`);
+          } else {
+            createdRows.push(r);
+          }
+        }
+      }
+      createdSuppliers = createdRows.length;
 
-        if (emissionsTonnes !== null && !isNaN(emissionsTonnes)) {
-          const { error: emissionsError } = await supabase
-            .from('esg_supplier_emissions')
-            .insert([{
-              supplier_id: supplier.id,
-              organization_id: organizationId,
-              reporting_year: reportingYear,
-              activity_description: row.activity_description || null,
-              emissions_tonnes: emissionsTonnes,
-              data_quality: row.data_quality || 'reported',
-            }]);
+      const rowsWithEmissions = createdRows.filter((r) => r.emissions_tonnes !== null);
+      for (const rowChunk of chunk(rowsWithEmissions, CHUNK_SIZE)) {
+        const { error: chunkError } = await supabase.from('esg_supplier_emissions').insert(
+          rowChunk.map((r) => ({
+            supplier_id: r.clientId,
+            organization_id: organizationId,
+            reporting_year: reportingYear,
+            activity_description: r.activity_description,
+            emissions_tonnes: r.emissions_tonnes,
+            data_quality: r.data_quality,
+          }))
+        );
+
+        if (!chunkError) {
+          createdEmissions += rowChunk.length;
+          continue;
+        }
+
+        for (const r of rowChunk) {
+          const { error: emissionsError } = await supabase.from('esg_supplier_emissions').insert([{
+            supplier_id: r.clientId,
+            organization_id: organizationId,
+            reporting_year: reportingYear,
+            activity_description: r.activity_description,
+            emissions_tonnes: r.emissions_tonnes,
+            data_quality: r.data_quality,
+          }]);
 
           if (emissionsError) {
-            errors.push(`Row ${rowNum} (${name}): emissions data failed - ${emissionsError.message}`);
+            errors.push(`Row ${r.rowNum} (${r.name}): emissions data failed - ${emissionsError.message}`);
           } else {
             createdEmissions++;
           }
-        } else if (autoEnrich && country_code && sector) {
+        }
+      }
+
+      for (const r of createdRows) {
+        if (r.emissions_tonnes === null && autoEnrich && r.country_code && r.sector) {
           suppliersToEnrich.push({
-            id: supplier.id,
-            name,
-            country_code,
-            sector,
-            annual_spend: annualSpend ?? undefined,
+            id: r.clientId,
+            name: r.name,
+            country_code: r.country_code,
+            sector: r.sector,
+            annual_spend: r.annual_spend ?? undefined,
           });
         }
       }

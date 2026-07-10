@@ -55,9 +55,9 @@ const roleConfig: Record<UserRole, { label: string; color: string; icon: any; de
     icon: Heart,
     description: 'Verified change maker with impact profile'
   },
-  admin: { 
-    label: 'Admin', 
-    color: 'bg-red-600', 
+  admin: {
+    label: 'Admin',
+    color: 'bg-red-600',
     icon: Shield,
     description: 'Administrative access to all features'
   },
