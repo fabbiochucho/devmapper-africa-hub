@@ -2720,6 +2720,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portfolio_holdings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_credit_orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portfolio_holdings_portfolio_id_fkey"
             columns: ["portfolio_id"]
             isOneToOne: false
@@ -3880,6 +3887,13 @@ export type Database = {
             referencedRelation: "carbon_credit_orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "retirement_certificates_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "carbon_credit_orders_seller_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       sbti_pathways: {
@@ -4698,6 +4712,59 @@ export type Database = {
       }
     }
     Views: {
+      carbon_credit_orders_seller_view: {
+        Row: {
+          buyer_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          listing_id: string | null
+          price_per_tonne: number | null
+          quantity: number | null
+          retirement_certificate_url: string | null
+          retirement_date: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          listing_id?: string | null
+          price_per_tonne?: number | null
+          quantity?: number | null
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          listing_id?: string | null
+          price_per_tonne?: number | null
+          quantity?: number | null
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_credit_orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dashboard_stats: {
         Row: {
           countries_count: number | null
