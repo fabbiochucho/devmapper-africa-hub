@@ -158,9 +158,6 @@ enabled = false
 authorization_url_path = "/oauth/consent"
 allow_dynamic_registration = false
 
-[functions]
-verify_jwt = true
-
 [functions.create-payment]
 verify_jwt = false
 
