@@ -36,6 +36,7 @@ const roleConfig: Record<UserRole, { label: string; color: string; icon: any }> 
   platform_admin: { label: 'Platform Admin', color: 'bg-red-500', icon: Shield },
   change_maker: { label: 'Change Maker', color: 'bg-pink-500', icon: Heart },
   admin: { label: 'Admin', color: 'bg-red-600', icon: Shield },
+  funder: { label: 'Funder', color: 'bg-emerald-600', icon: Briefcase },
 };
 
 // Core items - always visible, minimal
