@@ -51,7 +51,8 @@ export const AddRoleDialog = ({ onClose }: AddRoleDialogProps) => {
       'country_admin': 'Country Admin',
       'platform_admin': 'Platform Admin',
       'change_maker': 'Change Maker',
-      'admin': 'Administrator'
+      'admin': 'Administrator',
+      'funder': 'Funder'
     };
     return roleMap[role] || role;
   };
