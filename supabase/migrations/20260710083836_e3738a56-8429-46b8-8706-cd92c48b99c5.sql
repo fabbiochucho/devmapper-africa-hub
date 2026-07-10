@@ -1,15 +1,10 @@
--- PLACEHOLDER: this migration version was applied directly to the remote
--- database (outside this local checkout, likely via Lovable Cloud) on
--- 2026-07-10 and was never captured as a local migration file, causing
--- migration history drift.
---
--- Its actual DDL could not be recovered: reconstructing it requires
--- `supabase db pull`, which needs Docker (for the shadow-DB diff) and
--- Docker was not available in the environment that reconciled this drift.
--- This file intentionally contains no DDL - it exists only so
--- `supabase migration repair --status applied` has a local file to point
--- at, keeping local/remote migration history in sync.
---
--- If you need the real change this version represents, either inspect the
--- live database directly, or run `supabase db pull` with Docker available
--- to regenerate this file with genuine content.
+DROP POLICY IF EXISTS "Anyone can view active listings" ON public.marketplace_listings;
+
+CREATE POLICY "View active or own listings"
+  ON public.marketplace_listings FOR SELECT TO authenticated
+  USING (
+    (listing_status = 'active' AND COALESCE(verification_status, 'verified') <> 'rejected')
+    OR seller_id = (SELECT auth.uid())
+    OR public.has_role((SELECT auth.uid()), 'admin')
+    OR public.has_role((SELECT auth.uid()), 'platform_admin')
+  );
