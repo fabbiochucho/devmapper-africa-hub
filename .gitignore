@@ -34,3 +34,6 @@ dist-ssr
 
 # OS files
 Thumbs.db
+
+# Supabase CLI local link state
+supabase/.temp/
