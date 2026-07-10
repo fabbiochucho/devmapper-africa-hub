@@ -82,9 +82,9 @@ Deno.serve(async (req) => {
     verification: ["verifier"],
     investment: ["investor", "verifier"],                  // ROI claims need trust check
     compliance: ["regulator", "verifier"],                 // gap analysis grounded in evidence
-    project_design: ["project", "regulator", "verifier"],  // design must be compliant + verifiable
+    project_design: ["project_developer", "regulator", "verifier"],  // design must be compliant + verifiable
     scope3: ["supplier", "verifier"],                      // supplier data needs verification
-    carbon_trade: ["trader", "verifier", "regulator"],     // credits need trust + regulatory standing
+    carbon_trade: ["carbon_trader", "verifier", "regulator"],     // credits need trust + regulatory standing
     general: ["verifier"],
   };
 

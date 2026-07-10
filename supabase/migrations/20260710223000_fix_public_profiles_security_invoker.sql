@@ -1,0 +1,19 @@
+-- CRITICAL FIX: messaging's "New Conversation" user search has been
+-- completely broken for every account (including admin) - searching for
+-- any other user returns zero results.
+--
+-- 20260415131600 restricted profiles SELECT to own-row-or-admin only, with
+-- an explicit comment: "Other users should use the public_profiles view
+-- for non-sensitive data." But public_profiles was left as
+-- security_invoker=true, meaning it inherits the querying role's RLS on
+-- the underlying profiles table - so a non-admin querying the view still
+-- only sees their own row, exactly as if they'd queried profiles directly.
+-- The view's entire reason to exist (exposing a safe, limited column set
+-- broadly) never actually worked once profiles was locked down.
+--
+-- Fix: make the view security_invoker=false (Postgres default) so it runs
+-- with its owner's privileges and bypasses the restrictive base-table RLS.
+-- This is safe because the view already projects only non-sensitive
+-- columns (full_name, avatar_url, organization, country, is_verified,
+-- created_at - no email or other PII).
+ALTER VIEW public.public_profiles SET (security_invoker = false);

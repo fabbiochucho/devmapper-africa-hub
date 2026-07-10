@@ -1,0 +1,13 @@
+-- CRITICAL FIX: forum post creation and direct messaging have been
+-- completely broken since 20260710081725's security hardening pass.
+-- That migration revoked EXECUTE on ALL functions in the public/private
+-- schemas from anon/authenticated, then re-granted a curated allowlist of
+-- "safe public RPC wrapper" functions - but missed block_contact_info_in_text,
+-- a shared helper called internally (via PERFORM) by the SECURITY INVOKER
+-- trigger functions forum_posts_block_contact_info and
+-- direct_messages_block_contact_info. Since those triggers run as the
+-- invoking role (authenticated), every forum post and direct message insert
+-- has failed with "permission denied for function
+-- block_contact_info_in_text". Confirmed live via Playwright: 403 on every
+-- forum post attempt regardless of content.
+GRANT EXECUTE ON FUNCTION public.block_contact_info_in_text(text) TO authenticated;

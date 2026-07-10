@@ -134,15 +134,33 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Fetch user roles when authenticated
+  // Fetch user roles when authenticated. `loading` must only clear once
+  // fetchUserRoles has actually resolved - RoleRoute treats isLoading=false
+  // as "roles are final" and redirects away if the required role isn't
+  // present yet, so setting loading=false before the fetch completes was
+  // causing authorized users to be bounced off role-gated routes.
   useEffect(() => {
-    if (authUser && !authLoading) {
-      fetchUserRoles(authUser.id);
-    } else if (!authUser) {
+    let cancelled = false;
+
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
+    if (authUser) {
+      setLoading(true);
+      fetchUserRoles(authUser.id).finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    } else {
       setRoles([]);
       setCurrentRole('citizen_reporter');
+      setLoading(false);
     }
-    setLoading(authLoading);
+
+    return () => {
+      cancelled = true;
+    };
   }, [authUser, authLoading, fetchUserRoles]);
 
   return (
