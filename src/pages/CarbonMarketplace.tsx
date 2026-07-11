@@ -17,6 +17,7 @@ import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Pac
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";
+import { sdgGoals } from "@/lib/constants";
 
 const PROJECT_TYPES = [
   { value: "reforestation", label: "Reforestation" },
@@ -33,6 +34,7 @@ const CarbonMarketplace = () => {
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("");
+  const [sdgFilter, setSdgFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
@@ -42,15 +44,23 @@ const CarbonMarketplace = () => {
   const [listingForm, setListingForm] = useState({
     title: "", description: "", project_type: "reforestation", methodology: "",
     vintage_year: new Date().getFullYear().toString(), country_code: "", location: "",
-    total_credits: "", price_per_tonne: "", currency: "USD",
+    total_credits: "", price_per_tonne: "", currency: "USD", sdg_goals: [] as number[],
   });
 
+  const toggleListingSdgGoal = (goal: number) => {
+    setListingForm(p => ({
+      ...p,
+      sdg_goals: p.sdg_goals.includes(goal) ? p.sdg_goals.filter(g => g !== goal) : [...p.sdg_goals, goal],
+    }));
+  };
+
   const { data: listings, isLoading } = useQuery({
-    queryKey: ["marketplace-listings", typeFilter, countryFilter, sortBy],
+    queryKey: ["marketplace-listings", typeFilter, countryFilter, sdgFilter, sortBy],
     queryFn: async () => {
       let query = supabase.from("marketplace_listings").select("*").in("listing_status", ["active", "sold_out"]);
       if (typeFilter !== "all") query = query.eq("project_type", typeFilter);
       if (countryFilter) query = query.ilike("country_code", `%${countryFilter}%`);
+      if (sdgFilter !== "all") query = query.contains("sdg_goals", [parseInt(sdgFilter, 10)]);
       if (sortBy === "price_low") query = query.order("price_per_tonne", { ascending: true });
       else if (sortBy === "price_high") query = query.order("price_per_tonne", { ascending: false });
       else query = query.order("created_at", { ascending: false });
@@ -98,13 +108,14 @@ const CarbonMarketplace = () => {
         price_per_tonne: parseFloat(listingForm.price_per_tonne),
         currency: listingForm.currency,
         listing_status: "active",
+        sdg_goals: listingForm.sdg_goals.length > 0 ? listingForm.sdg_goals : null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Listing created!");
       setShowCreateListing(false);
-      setListingForm({ title: "", description: "", project_type: "reforestation", methodology: "", vintage_year: new Date().getFullYear().toString(), country_code: "", location: "", total_credits: "", price_per_tonne: "", currency: "USD" });
+      setListingForm({ title: "", description: "", project_type: "reforestation", methodology: "", vintage_year: new Date().getFullYear().toString(), country_code: "", location: "", total_credits: "", price_per_tonne: "", currency: "USD", sdg_goals: [] });
       queryClient.invalidateQueries({ queryKey: ["marketplace-listings"] });
       queryClient.invalidateQueries({ queryKey: ["my-marketplace-listings"] });
     },
@@ -205,6 +216,21 @@ const CarbonMarketplace = () => {
                   </SelectContent>
                 </Select>
                 <Input placeholder="Methodology (e.g., Verra VM0042)" value={listingForm.methodology} onChange={e => setListingForm(p => ({ ...p, methodology: e.target.value }))} />
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">SDG Goals (optional, helps buyers filter)</p>
+                  <div className="flex flex-wrap gap-1">
+                    {sdgGoals.map(g => (
+                      <Badge
+                        key={g.number}
+                        variant={listingForm.sdg_goals.includes(g.number) ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => toggleListingSdgGoal(g.number)}
+                      >
+                        {g.number}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input type="number" placeholder="Vintage Year" value={listingForm.vintage_year} onChange={e => setListingForm(p => ({ ...p, vintage_year: e.target.value }))} />
                   <Input placeholder="Country Code (e.g., NG)" value={listingForm.country_code} onChange={e => setListingForm(p => ({ ...p, country_code: e.target.value }))} />
@@ -248,6 +274,13 @@ const CarbonMarketplace = () => {
               </SelectContent>
             </Select>
             <Input placeholder="Filter by country..." value={countryFilter} onChange={e => setCountryFilter(e.target.value)} className="max-w-[180px]" />
+            <Select value={sdgFilter} onValueChange={setSdgFilter}>
+              <SelectTrigger className="w-[200px]"><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="SDG Goal" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All SDG Goals</SelectItem>
+                {sdgGoals.map(g => <SelectItem key={g.number} value={String(g.number)}>{g.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[160px]"><ArrowUpDown className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
               <SelectContent>
