@@ -20,9 +20,11 @@ import { reportSchema } from "@/lib/reportSchema";
 import ReportStep1 from '@/components/report/ReportStep1';
 import ReportStep2 from '@/components/report/ReportStep2';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useEarthIntelligence } from '@/hooks/useEarthIntelligence';
+import { submitReportToServer } from '@/lib/report-submission';
+import { queueReport, flushQueuedReports, listQueuedReports } from '@/lib/offline-report-queue';
+import { WifiOff, RefreshCw } from 'lucide-react';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
@@ -31,6 +33,33 @@ const SubmitReport = () => {
   const { user } = useAuth();
   const { fetchGEEData } = useEarthIntelligence();
   const navigate = useNavigate();
+  const [pendingCount, setPendingCount] = React.useState(0);
+  const [syncing, setSyncing] = React.useState(false);
+
+  const refreshPendingCount = React.useCallback(() => {
+    listQueuedReports().then((q) => setPendingCount(q.length)).catch(() => {});
+  }, []);
+
+  const syncQueuedReports = React.useCallback(async () => {
+    if (!user || !navigator.onLine) return;
+    setSyncing(true);
+    try {
+      const { succeeded, failed } = await flushQueuedReports((payload, photos) =>
+        submitReportToServer(payload as any, photos, user.id, fetchGEEData)
+      );
+      if (succeeded > 0) toast.success(`${succeeded} offline report${succeeded > 1 ? 's' : ''} synced`);
+      if (failed > 0) toast.warning(`${failed} queued report${failed > 1 ? 's' : ''} still pending sync`);
+    } finally {
+      setSyncing(false);
+      refreshPendingCount();
+    }
+  }, [user, fetchGEEData, refreshPendingCount]);
+
+  React.useEffect(() => {
+    refreshPendingCount();
+    window.addEventListener('online', syncQueuedReports);
+    return () => window.removeEventListener('online', syncQueuedReports);
+  }, [syncQueuedReports, refreshPendingCount]);
 
   const form = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
@@ -77,105 +106,29 @@ const SubmitReport = () => {
       return;
     }
 
-    try {
-      // Insert report into Supabase
-      const { data: report, error: reportError } = await supabase
-        .from('reports')
-        .insert({
-          title: values.title,
-          description: values.description,
-          sdg_goal: parseInt(values.sdg_goal),
-          project_status: values.project_status || 'planned',
-          location: values.location,
-          country_code: values.country_code || null,
-          user_id: user.id,
-          lat: values.lat || null,
-          lng: values.lng || null,
-          cost: values.cost || null,
-          cost_currency: values.costCurrency || 'USD',
-          usd_exchange_rate: values.usd_exchange_rate || null,
-          issue_type: values.issue_type && values.issue_type !== 'none' ? values.issue_type : null,
-          issue_severity: values.issue_severity || 'low',
-          evidence_type: values.evidence_type && values.evidence_type !== 'none' ? values.evidence_type : null,
-          start_date: values.startDate?.toISOString().split('T')[0] || null,
-          end_date: values.endDate?.toISOString().split('T')[0] || null,
-          sponsor: values.sponsor || null,
-          funder: values.funder || null,
-          contractor: values.contractor || null,
-          beneficiaries: null,
-        })
-        .select('id')
-        .single();
+    const photos = values.photos ? Array.from(values.photos as FileList) : [];
 
-      if (reportError) throw reportError;
-
-      // Create owner affiliation
-      if (report) {
-        await supabase.from('project_affiliations').insert({
-          report_id: report.id,
-          user_id: user.id,
-          relationship_type: 'owner',
+    // Offline: queue the whole submission (including any photo Files, which
+    // IndexedDB can store directly) instead of attempting - and failing - a
+    // network request. Flushed automatically once the 'online' event fires.
+    if (!navigator.onLine) {
+      try {
+        await queueReport(values as unknown as Record<string, unknown>, photos);
+        toast.success("You're offline - report saved on this device", {
+          description: "It will sync automatically once you're back online.",
         });
+        form.reset();
+        setStep(1);
+        refreshPendingCount();
+        navigate('/my-projects');
+      } catch (error: any) {
+        toast.error("Failed to save report offline", { description: error.message || "Please try again." });
       }
+      return;
+    }
 
-      // Link a satellite (Google Earth Engine) reading as proof-of-impact
-      // evidence when the report is geotagged. Best-effort: a GEE failure
-      // (or no coordinates) should never block report submission itself.
-      if (report && values.lat != null && values.lng != null) {
-        try {
-          const buffer = 0.01; // ~1km bounding box around the point
-          const geeResult = await fetchGEEData({
-            type: 'ndvi',
-            bounds: { north: values.lat + buffer, south: values.lat - buffer, east: values.lng + buffer, west: values.lng - buffer },
-          });
-          const reading = geeResult?.data?.[0];
-          await supabase.from('evidence_items').insert({
-            report_id: report.id,
-            uploaded_by: user.id,
-            evidence_type: 'satellite',
-            title: 'Satellite vegetation index (NDVI) at reported location',
-            description: reading
-              ? `NDVI reading: ${reading.value.toFixed(3)} at (${reading.lat.toFixed(4)}, ${reading.lng.toFixed(4)}). Source: ${geeResult.metadata?.source ?? 'Google Earth Engine'}.`
-              : 'No satellite reading available for this location.',
-            verification_status: 'pending',
-          });
-        } catch (geeError) {
-          console.error('Satellite evidence linking failed:', geeError);
-        }
-      }
-
-      // Upload photos to storage and register them as verifiable evidence,
-      // so they show up in the same evidence_items-backed review/audit
-      // trail flows as verifier-uploaded evidence (VerificationReviewDialog,
-      // AuditTrailExport), instead of only existing as untracked storage objects.
-      let failedUploads = 0;
-      if (values.photos && report) {
-        const files = Array.from(values.photos as FileList);
-        for (const file of files) {
-          const filePath = `${user.id}/${report.id}/${file.name}`;
-          const { error: uploadError } = await supabase.storage.from('project-files').upload(filePath, file);
-          if (uploadError) {
-            console.error('Photo upload failed:', uploadError);
-            failedUploads++;
-            continue;
-          }
-
-          // project-files is a private bucket - a signed URL (not
-          // getPublicUrl, which would produce a link that 403s) is what
-          // VerificationReviewDialog's plain <a href> expects to work.
-          const { data: signedData } = await supabase.storage
-            .from('project-files')
-            .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 10);
-          await supabase.from('evidence_items').insert({
-            report_id: report.id,
-            uploaded_by: user.id,
-            evidence_type: 'photo',
-            title: file.name,
-            file_url: signedData?.signedUrl ?? null,
-            verification_status: 'pending',
-          });
-        }
-      }
+    try {
+      const { failedUploads } = await submitReportToServer(values, photos, user.id, fetchGEEData);
 
       // Handle exchange rate logging
       if (values.exchangeRateMode === 'auto' && values.startDate) {
@@ -214,7 +167,21 @@ const SubmitReport = () => {
   };
 
   return (
-    <div className="flex justify-center items-start pt-8">
+    <div className="flex flex-col items-center pt-8 gap-4">
+      {pendingCount > 0 && (
+        <Card className="w-full max-w-2xl border-yellow-500/40 bg-yellow-500/5">
+          <CardContent className="pt-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <WifiOff className="h-4 w-4 text-yellow-600 shrink-0" />
+              <span>{pendingCount} report{pendingCount > 1 ? 's' : ''} saved offline, pending sync</span>
+            </div>
+            <Button size="sm" variant="outline" onClick={syncQueuedReports} disabled={syncing || !navigator.onLine}>
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? "Syncing..." : "Sync Now"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Submit a Project Report (Step {step} of 2)</CardTitle>
