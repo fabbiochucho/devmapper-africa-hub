@@ -16,17 +16,16 @@ export interface ErpSyncResult {
 
 /**
  * Keyword -> (category, activity) lookup built from the actual seeded rows
- * in emission_factors (migration 20260514131308). This only covers Scope 1
- * fuel/electricity purchases, because that's genuinely all that's seeded
- * today - emission_factors has no Scope 3 procurement categories (raw
- * materials, professional services, IT equipment, etc.) yet. That's a real
- * data gap, not a matching-algorithm gap: no string-matching improvement
- * here can match a line item to a category that doesn't exist in the
- * reference table. A production rollout needs Scope 3 category/activity
- * rows added to emission_factors before ERP procurement lines outside
- * fuel/electricity/heat can ever match.
+ * in emission_factors (migration 20260514131308). Scope 1 entries (fuel,
+ * electricity) come first because they describe the org buying fuel/power
+ * for its OWN combustion/vehicles; the Scope 3 entries below them describe
+ * paying a third party for goods or a transport/travel/waste SERVICE, and
+ * use distinct enough phrases (e.g. "logistics service" vs "freight truck")
+ * that the two shouldn't collide on a real ERP line item's account
+ * description or category hint.
  */
 const KEYWORD_TO_FACTOR: Array<{ keywords: string[]; category: string; activity: string }> = [
+  // Scope 1: fuel/electricity purchased for the org's own combustion or fleet.
   { keywords: ['diesel'], category: 'stationary_combustion', activity: 'diesel' },
   { keywords: ['natural gas', 'natgas', 'methane'], category: 'stationary_combustion', activity: 'natural_gas' },
   { keywords: ['lpg', 'propane', 'butane'], category: 'stationary_combustion', activity: 'lpg' },
@@ -35,9 +34,25 @@ const KEYWORD_TO_FACTOR: Array<{ keywords: string[]; category: string; activity:
   { keywords: ['district heat', 'steam', 'heating'], category: 'heat_steam', activity: 'district_heat' },
   { keywords: ['petrol', 'gasoline'], category: 'mobile_combustion', activity: 'petrol_car_avg' },
   { keywords: ['heavy truck', 'freight truck', 'lorry'], category: 'mobile_combustion', activity: 'heavy_truck' },
+  // Scope 3 category 4: paying a third-party carrier/logistics provider.
+  { keywords: ['air freight', 'air cargo'], category: 'cat4_upstream_transport', activity: 'air_freight_long' },
+  { keywords: ['sea freight', 'ocean freight', 'container shipping'], category: 'cat4_upstream_transport', activity: 'sea_freight_container' },
+  { keywords: ['road freight', 'trucking service', 'freight forwarding', 'logistics service', 'courier'], category: 'cat4_upstream_transport', activity: 'road_freight_avg' },
+  // Scope 3 category 5: paying for waste disposal/recycling services.
+  { keywords: ['recycling', 'recycled waste'], category: 'cat5_waste', activity: 'recycling_mixed' },
+  { keywords: ['waste disposal', 'landfill', 'refuse collection', 'garbage collection'], category: 'cat5_waste', activity: 'landfill_mixed' },
+  // Scope 3 category 6: business travel purchased through a vendor (airline, hotel, travel agency).
+  { keywords: ['hotel', 'lodging', 'accommodation'], category: 'cat6_business_travel', activity: 'hotel_stay_avg' },
+  { keywords: ['flight', 'airfare', 'air ticket', 'airline ticket'], category: 'cat6_business_travel', activity: 'flight_short_haul_eco' },
+  // Scope 3 category 7: employee commute benefits/reimbursements paid through the ERP.
+  { keywords: ['bus pass', 'bus fare'], category: 'cat7_employee_commute', activity: 'public_bus' },
+  { keywords: ['train ticket', 'rail pass', 'subway', 'metro pass'], category: 'cat7_employee_commute', activity: 'rail' },
+  { keywords: ['mileage reimbursement', 'car allowance', 'employee commute'], category: 'cat7_employee_commute', activity: 'car_avg' },
+  // Scope 3 category 1: catch-all for purchased goods/services with no more specific match above.
+  { keywords: ['goods', 'materials', 'supplies', 'merchandise', 'raw material'], category: 'cat1_purchased_goods', activity: 'generic_goods_spend' },
 ];
 
-function matchEmissionFactorKeyword(text: string): { category: string; activity: string } | null {
+export function matchEmissionFactorKeyword(text: string): { category: string; activity: string } | null {
   const lower = text.toLowerCase();
   for (const entry of KEYWORD_TO_FACTOR) {
     if (entry.keywords.some((kw) => lower.includes(kw))) {

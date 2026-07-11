@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { syncErpLineItems, type ErpLineItem } from "../erpEmissionsSync";
+import { syncErpLineItems, matchEmissionFactorKeyword, type ErpLineItem } from "../erpEmissionsSync";
 
 /**
  * Minimal fluent mock of the Supabase query builder, keyed by table name.
@@ -70,6 +70,42 @@ function makeLine(overrides: Partial<ErpLineItem> = {}): ErpLineItem {
   };
 }
 
+describe("matchEmissionFactorKeyword", () => {
+  it("matches Scope 1 fuel purchases (owned fleet/combustion)", () => {
+    expect(matchEmissionFactorKeyword("Diesel fuel top-up")).toEqual({ category: "stationary_combustion", activity: "diesel" });
+    expect(matchEmissionFactorKeyword("Heavy Truck fuel purchase")).toEqual({ category: "mobile_combustion", activity: "heavy_truck" });
+  });
+
+  it("matches Scope 3 category 4 (upstream transport) for third-party carrier services", () => {
+    expect(matchEmissionFactorKeyword("Logistics service - Q1 invoice")).toEqual({ category: "cat4_upstream_transport", activity: "road_freight_avg" });
+    expect(matchEmissionFactorKeyword("Air Freight charges")).toEqual({ category: "cat4_upstream_transport", activity: "air_freight_long" });
+    expect(matchEmissionFactorKeyword("Ocean Freight - container booking")).toEqual({ category: "cat4_upstream_transport", activity: "sea_freight_container" });
+  });
+
+  it("matches Scope 3 category 5 (waste) and distinguishes recycling from landfill disposal", () => {
+    expect(matchEmissionFactorKeyword("Recycling services - monthly")).toEqual({ category: "cat5_waste", activity: "recycling_mixed" });
+    expect(matchEmissionFactorKeyword("Waste Disposal Ltd invoice")).toEqual({ category: "cat5_waste", activity: "landfill_mixed" });
+  });
+
+  it("matches Scope 3 category 6 (business travel) for airline/hotel vendor spend", () => {
+    expect(matchEmissionFactorKeyword("Airfare - conference trip")).toEqual({ category: "cat6_business_travel", activity: "flight_short_haul_eco" });
+    expect(matchEmissionFactorKeyword("Hotel accommodation invoice")).toEqual({ category: "cat6_business_travel", activity: "hotel_stay_avg" });
+  });
+
+  it("matches Scope 3 category 7 (employee commute) for commute benefit line items", () => {
+    expect(matchEmissionFactorKeyword("Mileage Reimbursement - Sales team")).toEqual({ category: "cat7_employee_commute", activity: "car_avg" });
+    expect(matchEmissionFactorKeyword("Monthly Bus Pass subsidy")).toEqual({ category: "cat7_employee_commute", activity: "public_bus" });
+  });
+
+  it("falls back to the Scope 3 category 1 catch-all for generic purchased goods", () => {
+    expect(matchEmissionFactorKeyword("Office Supplies purchase order")).toEqual({ category: "cat1_purchased_goods", activity: "generic_goods_spend" });
+  });
+
+  it("returns null when nothing matches", () => {
+    expect(matchEmissionFactorKeyword("Office furniture")).toBeNull();
+  });
+});
+
 describe("syncErpLineItems", () => {
   it("matches a diesel line item to the stationary_combustion/diesel factor and estimates emissions", async () => {
     const { supabase, inserted } = makeMockSupabase({
@@ -132,6 +168,20 @@ describe("syncErpLineItems", () => {
     ]);
 
     expect(inserted.esg_supplier_emissions[0].emissions_tonnes).toBeCloseTo((500 * 0.45) / 1000);
+  });
+
+  it("matches a Scope 3 upstream-transport line item (third-party logistics vendor) end to end", async () => {
+    const { supabase, inserted } = makeMockSupabase({
+      existingSupplier: { id: "s1" },
+      emissionFactor: { factor_kgco2e: 0.1057, source: "DEFRA" },
+    });
+
+    await syncErpLineItems(supabase as any, "org-1", "sap", [
+      makeLine({ vendorName: "Global Logistics Co", description: "Logistics service - Q1 invoice", categoryHint: "freight", amount: 2000 }),
+    ]);
+
+    expect(inserted.esg_supplier_emissions[0].emissions_tonnes).toBeCloseTo((2000 * 0.1057) / 1000);
+    expect(inserted.esg_supplier_emissions[0].data_quality).toBe("estimated");
   });
 
   it("continues processing remaining line items after one fails", async () => {
