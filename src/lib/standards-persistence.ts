@@ -5,6 +5,7 @@ import type { CdpAutoFillResponse } from '@/lib/cdp-questionnaire';
 import type { GlecTransportResult, TransportMode } from '@/lib/glec-transport';
 import type { LcaImpactAssessmentResult, OdpAssessmentResult, ApAssessmentResult } from '@/lib/lca-lifecycle';
 import type { GpcAggregationResult } from '@/lib/gpc-city-aggregation';
+import type { EsgIndicatorsRow, FrameworkIndicatorSeed, FrameworkMappingResult } from '@/lib/framework-indicator-mapping';
 
 // ---- SBTi pathways ----
 
@@ -188,4 +189,76 @@ export async function listGpcInventories(organizationId: string): Promise<GpcRec
 export async function deleteGpcInventory(id: string) {
   const { error } = await supabase.from('gpc_city_inventories').delete().eq('id', id);
   if (error) throw error;
+}
+
+// ---- Framework indicator mapping (GRI, CSRD - both read/write compliance_scores) ----
+
+/** Fetches an organization's most recent esg_indicators row, or null if it has never reported. */
+export async function fetchLatestEsgIndicators(organizationId: string): Promise<EsgIndicatorsRow | null> {
+  const { data, error } = await supabase
+    .from('esg_indicators')
+    .select('carbon_scope1_tonnes, carbon_scope2_tonnes, carbon_scope3_tonnes, energy_consumption_kwh, water_consumption_m3, waste_generated_tonnes, renewable_energy_percentage, community_investment')
+    .eq('organization_id', organizationId)
+    .order('reporting_year', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/** Fetches the seeded indicator list for a framework code (e.g. 'GRI', 'CSRD') from reporting_frameworks/framework_indicators. */
+export async function fetchFrameworkIndicators(frameworkCode: string): Promise<FrameworkIndicatorSeed[]> {
+  const { data: framework, error: fwError } = await supabase
+    .from('reporting_frameworks')
+    .select('id')
+    .eq('code', frameworkCode)
+    .maybeSingle();
+  if (fwError) throw fwError;
+  if (!framework) return [];
+
+  const { data, error } = await supabase
+    .from('framework_indicators')
+    .select('indicator_code, indicator_name, description, unit_of_measure, metric_key')
+    .eq('framework_id', framework.id)
+    .order('indicator_code');
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Upserts a framework mapping result into compliance_scores (one row per org+framework). */
+export async function saveComplianceScore(organizationId: string, result: FrameworkMappingResult) {
+  const { error } = await supabase.from('compliance_scores').upsert(
+    {
+      organization_id: organizationId,
+      framework_code: result.frameworkCode,
+      score_percentage: result.completenessPercentage,
+      total_indicators: result.trackableCount,
+      reported_indicators: result.satisfiedCount,
+      gaps: result.indicators.filter((i) => i.dataAvailable && !i.satisfied).map((i) => ({ code: i.indicatorCode, name: i.indicatorName })) as unknown as Json,
+      assessed_at: new Date().toISOString(),
+    },
+    { onConflict: 'organization_id,framework_code' },
+  );
+  if (error) throw error;
+}
+
+export interface ComplianceScoreRecord {
+  id: string;
+  framework_code: string;
+  score_percentage: number;
+  total_indicators: number;
+  reported_indicators: number;
+  gaps: unknown;
+  assessed_at: string;
+}
+
+export async function getComplianceScore(organizationId: string, frameworkCode: string): Promise<ComplianceScoreRecord | null> {
+  const { data, error } = await supabase
+    .from('compliance_scores')
+    .select('id, framework_code, score_percentage, total_indicators, reported_indicators, gaps, assessed_at')
+    .eq('organization_id', organizationId)
+    .eq('framework_code', frameworkCode)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }

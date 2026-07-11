@@ -27,7 +27,9 @@ import {
   saveGlecCalculation, listGlecCalculations, deleteGlecCalculation, type GlecRecord,
   saveLcaAssessment, listLcaAssessments, deleteLcaAssessment, type LcaRecord,
   saveGpcInventory, listGpcInventories, deleteGpcInventory, type GpcRecord,
+  fetchLatestEsgIndicators, fetchFrameworkIndicators, saveComplianceScore, getComplianceScore, type ComplianceScoreRecord,
 } from '@/lib/standards-persistence';
+import { mapEsgIndicatorsToFramework, type EsgIndicatorsRow, type FrameworkIndicatorSeed } from '@/lib/framework-indicator-mapping';
 
 interface StandardsPhase2PanelProps {
   organizationId: string;
@@ -69,6 +71,9 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const [glecRecords, setGlecRecords] = useState<GlecRecord[]>([]);
   const [lcaRecords, setLcaRecords] = useState<LcaRecord[]>([]);
   const [gpcRecords, setGpcRecords] = useState<GpcRecord[]>([]);
+  const [csrdIndicators, setCsrdIndicators] = useState<FrameworkIndicatorSeed[]>([]);
+  const [csrdEsgRow, setCsrdEsgRow] = useState<EsgIndicatorsRow | null>(null);
+  const [csrdSavedScore, setCsrdSavedScore] = useState<ComplianceScoreRecord | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
 
   const refreshSbti = () => listSbtiPathways(organizationId).then(setSbtiRecords).catch(() => {});
@@ -76,6 +81,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const refreshGlec = () => listGlecCalculations(organizationId).then(setGlecRecords).catch(() => {});
   const refreshLca = () => listLcaAssessments(organizationId).then(setLcaRecords).catch(() => {});
   const refreshGpc = () => listGpcInventories(organizationId).then(setGpcRecords).catch(() => {});
+  const refreshCsrd = () => getComplianceScore(organizationId, 'CSRD').then(setCsrdSavedScore).catch(() => {});
 
   useEffect(() => {
     supabase
@@ -107,11 +113,15 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
           .then(({ count }) => setHasActiveTarget((count ?? 0) > 0));
       });
 
+    fetchFrameworkIndicators('CSRD').then(setCsrdIndicators).catch(() => {});
+    fetchLatestEsgIndicators(organizationId).then(setCsrdEsgRow).catch(() => {});
+
     refreshSbti();
     refreshCdp();
     refreshGlec();
     refreshLca();
     refreshGpc();
+    refreshCsrd();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
@@ -158,6 +168,11 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const lcaOdpResult = useMemo(() => characterizeOdpInventory([]), []);
   const lcaApResult = useMemo(() => characterizeAcidificationInventory([]), []);
 
+  const csrdMapping = useMemo(
+    () => mapEsgIndicatorsToFramework('CSRD', csrdIndicators, csrdEsgRow, baselineYear),
+    [csrdIndicators, csrdEsgRow, baselineYear],
+  );
+
   const gpcSummary = useMemo(() => {
     const gpcExample: GpcSectorEmissions[] = [
       { sector: 'stationary_energy', scope: 1, emissionsTonnesCo2e: esg?.carbon_scope1_tonnes ?? null, notationKey: esg?.carbon_scope1_tonnes == null ? 'NE' : undefined },
@@ -193,6 +208,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             <TabsTrigger value="sbti">SBTi</TabsTrigger>
             <TabsTrigger value="verra">Verra/GS</TabsTrigger>
             <TabsTrigger value="cdp">CDP</TabsTrigger>
+            <TabsTrigger value="csrd">CSRD</TabsTrigger>
             <TabsTrigger value="glec">GLEC</TabsTrigger>
             <TabsTrigger value="lca">LCA</TabsTrigger>
             <TabsTrigger value="gpc">GPC</TabsTrigger>
@@ -323,6 +339,44 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
                 <p className="text-xs font-medium text-muted-foreground">Saved responses ({cdpRecords.length})</p>
                 <p className="text-xs text-muted-foreground">Last saved: {new Date(cdpRecords[0]?.updated_at).toLocaleString()}</p>
               </div>
+            )}
+          </TabsContent>
+
+          {/* CSRD */}
+          <TabsContent value="csrd" className="space-y-4 pt-4">
+            <p className="text-xs text-muted-foreground">
+              Maps this organization's reported ESG data against the 5 ESRS indicators seeded for CSRD (public.framework_indicators). Some CSRD indicators (workforce/social disclosures) aren't tracked by this schema at all — those are excluded from the completeness % rather than counted as gaps, since this system has no data source for them.
+            </p>
+            <div className="flex items-center gap-3">
+              <Progress value={csrdMapping.completenessPercentage} className="flex-1" />
+              <span className="text-sm font-medium">{csrdMapping.completenessPercentage}% ({csrdMapping.satisfiedCount}/{csrdMapping.trackableCount} trackable indicators)</span>
+            </div>
+            <ul className="text-sm space-y-1">
+              {csrdMapping.indicators.map((i) => (
+                <li key={i.indicatorCode} className="flex items-center justify-between gap-2">
+                  <span>
+                    <span className="font-medium">{i.indicatorCode}</span>: {i.indicatorName}
+                    {i.dataAvailable && i.reportedValue != null && (
+                      <span className="text-muted-foreground"> — {i.reportedValue.toLocaleString()} {i.unitOfMeasure}</span>
+                    )}
+                  </span>
+                  <Badge variant={!i.dataAvailable ? 'outline' : i.satisfied ? 'default' : 'destructive'} className="shrink-0 text-xs">
+                    {!i.dataAvailable ? 'Not tracked by this system' : i.satisfied ? 'Reported' : 'Gap'}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+            <Button
+              size="sm"
+              disabled={saving === 'csrd'}
+              onClick={() => withSaving('csrd', () => saveComplianceScore(organizationId, csrdMapping), refreshCsrd)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'csrd' ? 'Saving…' : 'Save compliance score'}
+            </Button>
+            {csrdSavedScore && (
+              <p className="text-xs text-muted-foreground pt-2 border-t">
+                Last saved: {csrdSavedScore.score_percentage}% ({csrdSavedScore.reported_indicators}/{csrdSavedScore.total_indicators}) on {new Date(csrdSavedScore.assessed_at).toLocaleString()}
+              </p>
             )}
           </TabsContent>
 
