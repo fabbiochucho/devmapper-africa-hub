@@ -17,17 +17,7 @@ import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Pac
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";
-import { sdgGoals } from "@/lib/constants";
-
-const PROJECT_TYPES = [
-  { value: "reforestation", label: "Reforestation" },
-  { value: "cookstoves", label: "Clean Cookstoves" },
-  { value: "renewable_energy", label: "Renewable Energy" },
-  { value: "waste_management", label: "Waste Management" },
-  { value: "mangrove", label: "Mangrove Restoration" },
-  { value: "soil_carbon", label: "Soil Carbon" },
-  { value: "other", label: "Other" },
-];
+import { sdgGoals, carbonProjectTypes as PROJECT_TYPES } from "@/lib/constants";
 
 const CarbonMarketplace = () => {
   const { user } = useAuth();

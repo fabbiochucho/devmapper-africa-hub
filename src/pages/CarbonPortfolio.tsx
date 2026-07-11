@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Briefcase, Plus, TrendingUp, Leaf, DollarSign, Target } from "lucide-react";
+import { Briefcase, Plus, TrendingUp, Leaf, DollarSign, Target, AlertTriangle, ShieldCheck } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { analyzePortfolioDiversification } from "@/lib/portfolio-diversification";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
@@ -215,6 +216,13 @@ const CarbonPortfolio = () => {
             const pHoldings = holdings?.filter(h => h.portfolio_id === p.id) || [];
             const pTonnes = pHoldings.reduce((s, h) => s + (Number(h.quantity) || 0), 0);
             const progress = p.target_tonnes ? (pTonnes / Number(p.target_tonnes)) * 100 : 0;
+            const diversification = analyzePortfolioDiversification(
+              pHoldings.map((h: any) => ({
+                projectType: h.marketplace_listings?.project_type ?? null,
+                quantity: Number(h.quantity) || 0,
+                status: h.status,
+              }))
+            );
             return (
               <Card key={p.id}>
                 <CardHeader>
@@ -242,6 +250,26 @@ const CarbonPortfolio = () => {
                         <span>{Math.min(progress, 100).toFixed(0)}%</span>
                       </div>
                       <Progress value={Math.min(progress, 100)} className="h-2" />
+                    </div>
+                  )}
+                  {pTonnes > 0 && (
+                    <div className="flex items-start gap-2 rounded-md border p-2.5 text-xs">
+                      {diversification.concentrationRisk === "high" ? (
+                        <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                      ) : diversification.concentrationRisk === "moderate" ? (
+                        <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                      )}
+                      <div className="space-y-1">
+                        <Badge
+                          variant={diversification.concentrationRisk === "high" ? "destructive" : diversification.concentrationRisk === "moderate" ? "secondary" : "default"}
+                          className="text-[10px]"
+                        >
+                          {diversification.concentrationRisk} concentration risk
+                        </Badge>
+                        <p className="text-muted-foreground">{diversification.suggestion}</p>
+                      </div>
                     </div>
                   )}
                 </CardContent>

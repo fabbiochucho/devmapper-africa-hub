@@ -120,6 +120,16 @@ export const projectStatusChartColors: { [key: string]: string } = {
   cancelled: '#EF4444'
 };
 
+export const carbonProjectTypes = [
+  { value: "reforestation", label: "Reforestation" },
+  { value: "cookstoves", label: "Clean Cookstoves" },
+  { value: "renewable_energy", label: "Renewable Energy" },
+  { value: "waste_management", label: "Waste Management" },
+  { value: "mangrove", label: "Mangrove Restoration" },
+  { value: "soil_carbon", label: "Soil Carbon" },
+  { value: "other", label: "Other" },
+];
+
 export const sdgTargets = [
   { id: 1, title: "No Poverty", description: "End poverty in all its forms everywhere" },
   { id: 2, title: "Zero Hunger", description: "End hunger, achieve food security and improved nutrition and promote sustainable agriculture" },
