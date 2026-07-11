@@ -22,12 +22,14 @@ import ReportStep2 from '@/components/report/ReportStep2';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useEarthIntelligence } from '@/hooks/useEarthIntelligence';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
   const [sdgTargets, setSdgTargets] = React.useState<string[]>([]);
   type ReportFormValues = z.infer<typeof reportSchema>;
   const { user } = useAuth();
+  const { fetchGEEData } = useEarthIntelligence();
   const navigate = useNavigate();
 
   const form = useForm<ReportFormValues>({
@@ -114,6 +116,32 @@ const SubmitReport = () => {
           user_id: user.id,
           relationship_type: 'owner',
         });
+      }
+
+      // Link a satellite (Google Earth Engine) reading as proof-of-impact
+      // evidence when the report is geotagged. Best-effort: a GEE failure
+      // (or no coordinates) should never block report submission itself.
+      if (report && values.lat != null && values.lng != null) {
+        try {
+          const buffer = 0.01; // ~1km bounding box around the point
+          const geeResult = await fetchGEEData({
+            type: 'ndvi',
+            bounds: { north: values.lat + buffer, south: values.lat - buffer, east: values.lng + buffer, west: values.lng - buffer },
+          });
+          const reading = geeResult?.data?.[0];
+          await supabase.from('evidence_items').insert({
+            report_id: report.id,
+            uploaded_by: user.id,
+            evidence_type: 'satellite',
+            title: 'Satellite vegetation index (NDVI) at reported location',
+            description: reading
+              ? `NDVI reading: ${reading.value.toFixed(3)} at (${reading.lat.toFixed(4)}, ${reading.lng.toFixed(4)}). Source: ${geeResult.metadata?.source ?? 'Google Earth Engine'}.`
+              : 'No satellite reading available for this location.',
+            verification_status: 'pending',
+          });
+        } catch (geeError) {
+          console.error('Satellite evidence linking failed:', geeError);
+        }
       }
 
       // Upload photos to storage and register them as verifiable evidence,
