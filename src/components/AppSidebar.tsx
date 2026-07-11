@@ -45,23 +45,20 @@ const coreItems = [
   { title: "Search", url: "/search", icon: Search },
 ];
 
-// Get role-specific quick actions (most used)
-const getQuickActions = (hasRole: (role: UserRole) => boolean, isAuth: boolean) => {
+// Role-specific quick links with no other nav path anywhere in the sidebar.
+// "My Projects"/"Submit Report" are deliberately not duplicated here - they
+// already live in the "Projects" group below via getSubmissionItems().
+const getQuickActions = (hasRole: (role: UserRole) => boolean) => {
   const items = [];
-  
-  if (isAuth) {
-    items.push({ title: "My Projects", url: "/my-projects", icon: Target });
-    items.push({ title: "Submit Report", url: "/submit-report", icon: FileText });
-  }
-  
+
   if (hasRole('change_maker')) {
     items.push({ title: "My Analytics", url: "/my-analytics", icon: TrendingUp });
   }
-  
+
   if (hasRole('company_representative')) {
     items.push({ title: "ESG Module", url: "/esg", icon: Leaf });
   }
-  
+
   return items;
 };
 
@@ -183,7 +180,7 @@ export function AppSidebar() {
   // Prefetch on hover for instant navigation
   const handlePrefetch = useCallback((url: string) => () => prefetchRoute(url), []);
 
-  const quickActions = getQuickActions(hasRole, isAuthenticated);
+  const quickActions = getQuickActions(hasRole);
   const primaryDashboard = getPrimaryDashboard(hasRole);
   const submissionItems = getSubmissionItems(hasRole);
   const currentRoleConfig = roleConfig[currentRole] || roleConfig.citizen_reporter;
@@ -274,6 +271,27 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {primaryDashboard.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className={getNavCls} onMouseEnter={handlePrefetch(item.url)}>
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span className="ml-2">{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Quick Actions - role-specific links with no other sidebar path */}
+        {quickActions.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {quickActions.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink to={item.url} className={getNavCls} onMouseEnter={handlePrefetch(item.url)}>

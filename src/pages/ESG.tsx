@@ -5,13 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Leaf, 
+import {
+  Leaf,
   Factory,
   Users,
-  Target,
   BarChart3,
-  FileText,
   Settings,
   Crown,
   Shield,
@@ -195,7 +193,7 @@ const ESGPage = () => {
         {/* Main Content */}
         {selectedOrgId ? (
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Dashboard
@@ -203,14 +201,6 @@ const ESGPage = () => {
               <TabsTrigger value="suppliers" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 Suppliers
-              </TabsTrigger>
-              <TabsTrigger value="scenarios" className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                Scenarios
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                Reports
               </TabsTrigger>
               <TabsTrigger value="standards" className="flex items-center gap-2">
                 <Award className="w-4 h-4" />
@@ -281,32 +271,6 @@ const ESGPage = () => {
                   </Card>
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="scenarios" className="space-y-6">
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Scenario Modeling</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create what-if scenarios to model your ESG performance under different conditions.
-                  </p>
-                  <Button>Create First Scenario</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="reports" className="space-y-6">
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">ESG Reports</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Generate comprehensive ESG reports for stakeholders and compliance.
-                  </p>
-                  <Button>Generate Report</Button>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="standards" className="space-y-6">

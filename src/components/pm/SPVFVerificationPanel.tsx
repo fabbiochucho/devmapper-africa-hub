@@ -31,6 +31,7 @@ import {
   type VerificationStageKey,
 } from '@/lib/spvf-engine';
 import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
+import AuditTrailExport from '@/components/verification/AuditTrailExport';
 
 interface SPVFVerificationPanelProps {
   reportId: string;
@@ -567,8 +568,9 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
         </TabsContent>
 
         {/* TAB 5: Audit Trail */}
-        <TabsContent value="ledger">
+        <TabsContent value="ledger" className="space-y-6">
           <VerificationLedgerView reportId={reportId} />
+          <AuditTrailExport reportId={reportId} />
         </TabsContent>
       </Tabs>
     </div>

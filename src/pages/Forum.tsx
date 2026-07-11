@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, TrendingUp, Users, MessageCircle, Pin } from 'lucide-react';
 import ForumPost from '@/components/forum/ForumPost';
 import CreatePostDialog from '@/components/forum/CreatePostDialog';
+import { RealtimeForumUpdates } from '@/components/realtime/RealtimeForumUpdates';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
@@ -352,6 +353,7 @@ const Forum = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
+      <RealtimeForumUpdates />
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <div>

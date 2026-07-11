@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Users } from 'lucide-react';
+import { MessageSquare, Heart } from 'lucide-react';
 
 interface ForumPost {
   id: string;
@@ -14,7 +14,6 @@ interface ForumPost {
 
 export function RealtimeForumUpdates() {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<number>(0);
 
   // Listen for new forum posts
   useRealtime<{ new: ForumPost }>(
@@ -52,16 +51,6 @@ export function RealtimeForumUpdates() {
     }
   );
 
-  // Simulate online user presence
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineUsers(Math.floor(Math.random() * 50) + 10);
-    }, 30000);
-    
-    setOnlineUsers(Math.floor(Math.random() * 50) + 10);
-    return () => clearInterval(interval);
-  }, []);
-
   if (recentActivity.length === 0) return null;
 
   return (
@@ -70,8 +59,7 @@ export function RealtimeForumUpdates() {
         <h3 className="text-sm font-medium">Live Activity</h3>
         <Badge variant="secondary" className="flex items-center gap-1">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <Users className="w-3 h-3" />
-          {onlineUsers}
+          Live
         </Badge>
       </div>
       

@@ -61,38 +61,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    // `loading` must only clear once fetchProfile has actually resolved -
+    // RoleRoute/consumers treat loading=false as "profile/roles are final",
+    // so clearing it before the fetch settles bounces authorized users off
+    // role-gated routes (the same bug already fixed in UserRoleContext.tsx).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         if (!mounted) return;
-        
+
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Use setTimeout to avoid blocking the auth state change
+          // Still deferred via setTimeout to avoid calling further Supabase
+          // methods synchronously inside onAuthStateChange (documented
+          // deadlock risk), but loading now waits for the deferred fetch.
           setTimeout(() => {
-            if (mounted) fetchProfile(session.user.id);
+            if (!mounted) return;
+            fetchProfile(session.user.id).finally(() => {
+              if (mounted) setLoading(false);
+            });
           }, 0);
         } else {
           setProfile(null);
           setUserRoles([]);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      
+
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user.id).finally(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
