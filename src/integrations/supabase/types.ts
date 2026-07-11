@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_areas: {
@@ -3497,6 +3522,7 @@ export type Database = {
       }
       project_verifications: {
         Row: {
+          assigned_reviewer_id: string | null
           comments: string | null
           created_at: string
           evidence_url: string | null
@@ -3508,6 +3534,7 @@ export type Database = {
           verifier_id: string
         }
         Insert: {
+          assigned_reviewer_id?: string | null
           comments?: string | null
           created_at?: string
           evidence_url?: string | null
@@ -3519,6 +3546,7 @@ export type Database = {
           verifier_id: string
         }
         Update: {
+          assigned_reviewer_id?: string | null
           comments?: string | null
           created_at?: string
           evidence_url?: string | null
@@ -4916,6 +4944,14 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
+      list_users_by_role: {
+        Args: { p_role: Database["public"]["Enums"]["app_role"] }
+        Returns: {
+          full_name: string
+          organization: string
+          user_id: string
+        }[]
+      }
       log_audit_event: {
         Args: {
           p_action: string
@@ -5084,6 +5120,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [

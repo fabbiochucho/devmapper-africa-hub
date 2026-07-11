@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot } from "lucide-react";
+import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot, ClipboardCheck, XCircle } from "lucide-react";
 import GovernmentSdgHeatmap from '@/components/government/GovernmentSdgHeatmap';
 import AICopilot from '@/components/ai/AICopilot';
 import BudgetAnalyticsDashboard from '@/components/government/BudgetAnalyticsDashboard';
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { fetchGovernmentReviewQueue, submitGovernmentDecision, type GovernmentReviewQueueItem } from "@/lib/report-workflow";
 
 type GovProject = {
   id: string;
@@ -53,7 +54,29 @@ const GovernmentDashboard = () => {
   const [editStatus, setEditStatus] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [regionFilter, setRegionFilter] = useState('all');
+  const [reviewQueue, setReviewQueue] = useState<GovernmentReviewQueueItem[]>([]);
+  const [decidingId, setDecidingId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const loadReviewQueue = () => {
+    if (!authUser) return;
+    fetchGovernmentReviewQueue(authUser.id).then(setReviewQueue).catch(() => {});
+  };
+
+  useEffect(() => { if (!authLoading) loadReviewQueue(); }, [authUser, authLoading]);
+
+  const handleReviewDecision = async (item: GovernmentReviewQueueItem, decision: 'approved' | 'rejected') => {
+    setDecidingId(item.id);
+    try {
+      await submitGovernmentDecision(item.id, decision);
+      toast.success(`Project ${decision}`);
+      loadReviewQueue();
+    } catch (e: any) {
+      toast.error('Failed to submit decision', { description: e.message });
+    } finally {
+      setDecidingId(null);
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: '', description: '', budget: '', currency: 'USD', location: '',
@@ -337,6 +360,34 @@ const GovernmentDashboard = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {reviewQueue.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ClipboardCheck className="h-5 w-5 text-primary" />Awaiting Your Review</CardTitle>
+            <CardDescription>Projects routed to you by a verifier for a final government decision.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {reviewQueue.map((item) => (
+              <div key={item.id} className="flex items-center justify-between border rounded-lg p-3 gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{item.reports?.title}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{item.reports?.description}</p>
+                  {item.comments && <p className="text-xs text-muted-foreground mt-1 italic">"{item.comments}"</p>}
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button size="sm" variant="outline" disabled={decidingId === item.id} onClick={() => handleReviewDecision(item, 'rejected')}>
+                    <XCircle className="h-3.5 w-3.5 mr-1" />Reject
+                  </Button>
+                  <Button size="sm" disabled={decidingId === item.id} onClick={() => handleReviewDecision(item, 'approved')}>
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Approve
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Projects</CardTitle><ListChecks className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{overview.totalProjects}</div></CardContent></Card>

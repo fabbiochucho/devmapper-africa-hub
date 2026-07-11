@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import CitizenFeedbackPanel from "@/components/pm/CitizenFeedbackPanel";
@@ -17,8 +19,12 @@ import { calculateFundingReadinessScore } from "@/lib/funding-readiness";
 import { deriveRiskFlags } from "@/lib/risk-flags";
 import { sdgGoals } from "@/lib/constants";
 import {
+  fetchAvailableVerifiers, fetchReportAssignments, assignVerifierToReport,
+  type VerifierProfileOption, type ReportAssignment,
+} from "@/lib/report-workflow";
+import {
   MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Clock,
-  Shield, ArrowLeft, FileText, Star, AlertTriangle, Eye
+  Shield, ArrowLeft, FileText, Star, AlertTriangle, Eye, Send
 } from "lucide-react";
 
 const VERIFICATION_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -49,6 +55,15 @@ export default function ProjectDetail() {
   const [verifications, setVerifications] = useState<any[]>([]);
   const [feedback, setFeedback] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState<ReportAssignment[]>([]);
+  const [availableVerifiers, setAvailableVerifiers] = useState<VerifierProfileOption[]>([]);
+  const [selectedVerifierId, setSelectedVerifierId] = useState<string>("");
+  const [routingSubmitting, setRoutingSubmitting] = useState(false);
+
+  const loadAssignments = () => {
+    if (!id) return;
+    fetchReportAssignments(id).then(setAssignments).catch(() => {});
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -66,7 +81,28 @@ export default function ProjectDetail() {
       if (f.data) setFeedback(f.data);
       setLoading(false);
     });
+    loadAssignments();
   }, [id]);
+
+  useEffect(() => {
+    if (!user || !report || user.id !== report.user_id) return;
+    fetchAvailableVerifiers().then(setAvailableVerifiers).catch(() => {});
+  }, [user, report]);
+
+  const handleRouteToVerifier = async () => {
+    if (!id || !user || !selectedVerifierId) return;
+    setRoutingSubmitting(true);
+    try {
+      await assignVerifierToReport(id, selectedVerifierId, user.id);
+      toast.success("Routed to verifier for review");
+      setSelectedVerifierId("");
+      loadAssignments();
+    } catch (e: any) {
+      toast.error("Failed to route report", { description: e.message });
+    } finally {
+      setRoutingSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -270,6 +306,53 @@ export default function ProjectDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Cross-entity review routing (owner-only) */}
+      {user && report.user_id === user.id && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Send className="h-4 w-4" />Review Workflow
+            </CardTitle>
+            <CardDescription>Route this project to a specific verifier for review.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {assignments.length > 0 && (
+              <div className="space-y-2">
+                {assignments.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between text-sm border rounded-lg p-2.5">
+                    <div>
+                      <span className="font-medium">{a.verifier_profiles?.display_name || "Verifier"}</span>
+                      {a.verifier_profiles?.organization_name && (
+                        <span className="text-muted-foreground"> · {a.verifier_profiles.organization_name}</span>
+                      )}
+                    </div>
+                    <Badge variant={a.status === "completed" ? "default" : "secondary"} className="capitalize">{a.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Select value={selectedVerifierId} onValueChange={setSelectedVerifierId}>
+                <SelectTrigger className="flex-1"><SelectValue placeholder="Select a verifier..." /></SelectTrigger>
+                <SelectContent>
+                  {availableVerifiers.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.display_name}{v.organization_name ? ` (${v.organization_name})` : ""}
+                    </SelectItem>
+                  ))}
+                  {availableVerifiers.length === 0 && (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">No verifiers available yet</div>
+                  )}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleRouteToVerifier} disabled={!selectedVerifierId || routingSubmitting}>
+                {routingSubmitting ? "Routing..." : "Route for Review"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Milestones */}
       {milestones.length > 0 && (

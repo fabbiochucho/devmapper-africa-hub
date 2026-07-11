@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Shield, Star, Award, Users, CheckCircle, Clock, MapPin, Search, Plus, TrendingUp } from "lucide-react";
+import { Shield, Star, Award, Users, CheckCircle, Clock, MapPin, Search, Plus, TrendingUp, Send } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { listUsersByRole, routeToGovernmentReviewer, type RoleUserOption } from "@/lib/report-workflow";
 
 const VerifierMarketplace = () => {
   const { user } = useAuth();
@@ -22,6 +23,10 @@ const VerifierMarketplace = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [regionFilter, setRegionFilter] = useState("all");
   const [showCreateProfile, setShowCreateProfile] = useState(false);
+  const [routingAssignment, setRoutingAssignment] = useState<{ id: string; report_id: string } | null>(null);
+  const [governmentReviewers, setGovernmentReviewers] = useState<RoleUserOption[]>([]);
+  const [selectedGovReviewerId, setSelectedGovReviewerId] = useState("");
+  const [routingSubmitting, setRoutingSubmitting] = useState(false);
 
   // Form state for creating verifier profile
   const [profileForm, setProfileForm] = useState({
@@ -119,6 +124,37 @@ const VerifierMarketplace = () => {
       queryClient.invalidateQueries({ queryKey: ["my-verification-assignments"] });
     },
   });
+
+  const openRoutingDialog = async (assignment: { id: string; report_id: string }) => {
+    setRoutingAssignment(assignment);
+    setSelectedGovReviewerId("");
+    try {
+      const reviewers = await listUsersByRole("government_official");
+      setGovernmentReviewers(reviewers);
+    } catch {
+      setGovernmentReviewers([]);
+    }
+  };
+
+  const completeAndRoute = async () => {
+    if (!user || !routingAssignment || !selectedGovReviewerId) return;
+    setRoutingSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("verification_assignments")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", routingAssignment.id);
+      if (error) throw error;
+      await routeToGovernmentReviewer(routingAssignment.report_id, user.id, selectedGovReviewerId);
+      toast.success("Assignment completed and routed to government reviewer");
+      setRoutingAssignment(null);
+      queryClient.invalidateQueries({ queryKey: ["my-verification-assignments"] });
+    } catch (e: any) {
+      toast.error("Failed to route to government reviewer", { description: e.message });
+    } finally {
+      setRoutingSubmitting(false);
+    }
+  };
 
   const filteredVerifiers = verifiers?.filter(v => {
     if (regionFilter !== "all" && !v.regions?.includes(regionFilter)) return false;
@@ -331,7 +367,9 @@ const VerifierMarketplace = () => {
                                 <Button size="sm" variant="outline" onClick={() => updateAssignment.mutate({ id: a.id, status: "in_progress" })}>Start</Button>
                               )}
                               {a.status === "in_progress" && (
-                                <Button size="sm" onClick={() => updateAssignment.mutate({ id: a.id, status: "completed" })}>Complete</Button>
+                                <Button size="sm" onClick={() => openRoutingDialog({ id: a.id, report_id: a.report_id })}>
+                                  <Send className="h-3 w-3 mr-1" />Complete & Route
+                                </Button>
                               )}
                             </div>
                           </TableCell>
@@ -347,6 +385,36 @@ const VerifierMarketplace = () => {
           </TabsContent>
         )}
       </Tabs>
+
+      <Dialog open={!!routingAssignment} onOpenChange={(open) => !open && setRoutingAssignment(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Assignment & Route to Government Reviewer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This marks your verification assignment as completed and sends the project to a specific
+              government official's review queue.
+            </p>
+            <Select value={selectedGovReviewerId} onValueChange={setSelectedGovReviewerId}>
+              <SelectTrigger><SelectValue placeholder="Select a government reviewer..." /></SelectTrigger>
+              <SelectContent>
+                {governmentReviewers.map((r) => (
+                  <SelectItem key={r.user_id} value={r.user_id}>
+                    {r.full_name || "Government Official"}{r.organization ? ` (${r.organization})` : ""}
+                  </SelectItem>
+                ))}
+                {governmentReviewers.length === 0 && (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">No government officials registered yet</div>
+                )}
+              </SelectContent>
+            </Select>
+            <Button onClick={completeAndRoute} disabled={!selectedGovReviewerId || routingSubmitting} className="w-full">
+              {routingSubmitting ? "Submitting..." : "Complete & Route"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
