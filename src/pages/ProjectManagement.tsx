@@ -29,6 +29,7 @@ import {
 import KanbanBoard from "@/components/pm/KanbanBoard";
 import ProcurementTracker from "@/components/pm/ProcurementTracker";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
+import { fetchAssignableUsers, fetchUserNames, type AssignableUser } from "@/lib/task-assignees";
 
 interface ProjectTask {
   id: string;
@@ -99,6 +100,8 @@ export default function ProjectManagement() {
   const [newStartDate, setNewStartDate] = useState("");
   const [newAssignee, setNewAssignee] = useState("");
   const [newEstHours, setNewEstHours] = useState("");
+  const [assignableUsers, setAssignableUsers] = useState<AssignableUser[]>([]);
+  const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({});
 
   // Feature tier gates
   const hasGantt = userPlan !== "free";
@@ -137,7 +140,12 @@ export default function ProjectManagement() {
       .from("project_tasks").select("*")
       .eq("report_id", selectedProject)
       .order("sort_order", { ascending: true });
-    if (!error) setTasks((data as ProjectTask[]) || []);
+    if (!error) {
+      const rows = (data as ProjectTask[]) || [];
+      setTasks(rows);
+      const assignedIds = rows.map(t => t.assigned_to).filter(Boolean) as string[];
+      if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
+    }
   };
 
   const createTask = async () => {
@@ -173,6 +181,11 @@ export default function ProjectManagement() {
 
   const selectedReport = projects.find(p => p.id === selectedProject);
   const isOwner = selectedReport?.user_id === user?.id;
+
+  useEffect(() => {
+    if (!selectedProject || !isOwner || !selectedReport?.user_id) { setAssignableUsers([]); return; }
+    fetchAssignableUsers(selectedProject, selectedReport.user_id).then(setAssignableUsers).catch(() => {});
+  }, [selectedProject, isOwner, selectedReport?.user_id]);
 
   const filteredTasks = filterStatus === "all" ? tasks : tasks.filter(t => t.status === filterStatus);
   const tasksByStatus = {
@@ -234,7 +247,24 @@ export default function ProjectManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div><Label>Due Date</Label><Input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} /></div>
                   {hasAssignment ? (
-                    <div><Label>Assign To (User ID)</Label><Input value={newAssignee} onChange={e => setNewAssignee(e.target.value)} placeholder="User ID" /></div>
+                    <div>
+                      <Label>Assign To</Label>
+                      <Select value={newAssignee} onValueChange={setNewAssignee}>
+                        <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                        <SelectContent>
+                          {assignableUsers.map(a => (
+                            <SelectItem key={a.user_id} value={a.user_id}>
+                              {a.name}{a.source === "org_share" ? " (cross-org access)" : ""}
+                            </SelectItem>
+                          ))}
+                          {assignableUsers.length === 0 && (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              No assignable users yet
+                            </div>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />Upgrade to Lite+ for assignments</div>
                   )}
@@ -328,6 +358,7 @@ export default function ProjectManagement() {
             tasks={tasks}
             onStatusChange={updateTaskStatus}
             hasAssignment={hasAssignment}
+            assigneeNames={assigneeNames}
           />
         </TabsContent>
 

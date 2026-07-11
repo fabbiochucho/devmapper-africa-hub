@@ -20,6 +20,7 @@ interface KanbanBoardProps {
   tasks: KanbanTask[];
   onStatusChange: (taskId: string, newStatus: string) => void;
   hasAssignment: boolean;
+  assigneeNames?: Record<string, string>;
 }
 
 const COLUMNS = [
@@ -37,7 +38,7 @@ const priorityColors: Record<string, string> = {
   urgent: "bg-destructive/10 text-destructive",
 };
 
-export default function KanbanBoard({ tasks, onStatusChange, hasAssignment }: KanbanBoardProps) {
+export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assigneeNames }: KanbanBoardProps) {
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
 
   const tasksByStatus = COLUMNS.reduce((acc, col) => {
@@ -119,7 +120,7 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment }: Ka
                     )}
                     {task.assigned_to && hasAssignment && (
                       <Badge variant="outline" className="text-xs gap-0.5">
-                        <Users className="h-3 w-3" />Assigned
+                        <Users className="h-3 w-3" />{assigneeNames?.[task.assigned_to] || "Assigned"}
                       </Badge>
                     )}
                   </div>

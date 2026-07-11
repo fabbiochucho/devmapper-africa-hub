@@ -18,6 +18,7 @@ import CitizenFeedbackPanel from "./CitizenFeedbackPanel";
 import ProjectLifecycleManager from "./ProjectLifecycleManager";
 import StakeholderAffiliation from "./StakeholderAffiliation";
 import KanbanBoard from "./KanbanBoard";
+import { fetchAssignableUsers, fetchUserNames, type AssignableUser } from "@/lib/task-assignees";
 import DonorReportExport from "@/components/report/DonorReportExport";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 import ProcurementTracker from "./ProcurementTracker";
@@ -61,6 +62,9 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("medium");
+  const [newTaskAssignee, setNewTaskAssignee] = useState<string>("");
+  const [assignableUsers, setAssignableUsers] = useState<AssignableUser[]>([]);
+  const [assigneeNames, setAssigneeNames] = useState<Record<string, string>>({});
 
   const isOwner = user?.id === report?.user_id;
 
@@ -79,9 +83,18 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       if (b.data) setBudgets(b.data);
       if (u.data) setUpdates(u.data);
       if (ind.data) setIndicators(ind.data);
-      if (t.data) setTasks(t.data);
+      if (t.data) {
+        setTasks(t.data);
+        const assignedIds = t.data.map((task: any) => task.assigned_to).filter(Boolean);
+        if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
+      }
     });
   }, [reportId]);
+
+  useEffect(() => {
+    if (!reportId || !report?.user_id || !isOwner) return;
+    fetchAssignableUsers(reportId, report.user_id).then(setAssignableUsers).catch(() => {});
+  }, [reportId, report?.user_id, isOwner]);
 
   const addTask = async () => {
     if (!newTaskTitle.trim() || !user) return;
@@ -90,13 +103,19 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       title: newTaskTitle.trim(),
       priority: newTaskPriority,
       created_by: user.id,
+      assigned_to: newTaskAssignee || null,
     } as any);
     if (error) { toast.error("Failed to add task"); return; }
     toast.success("Task added");
     setNewTaskTitle("");
+    setNewTaskAssignee("");
     setAddTaskOpen(false);
     const { data } = await supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at");
-    if (data) setTasks(data);
+    if (data) {
+      setTasks(data);
+      const assignedIds = data.map((task: any) => task.assigned_to).filter(Boolean);
+      if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
+    }
   };
 
   const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
@@ -222,6 +241,24 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                             </SelectContent>
                           </Select>
                         </div>
+                        <div>
+                          <Label>Assign To (optional)</Label>
+                          <Select value={newTaskAssignee} onValueChange={setNewTaskAssignee}>
+                            <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                            <SelectContent>
+                              {assignableUsers.map((a) => (
+                                <SelectItem key={a.user_id} value={a.user_id}>
+                                  {a.name}{a.source === "org_share" ? " (cross-org access)" : ""}
+                                </SelectItem>
+                              ))}
+                              {assignableUsers.length === 0 && (
+                                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                  No assignable users yet - add a stakeholder or grant data-share access first
+                                </div>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <Button onClick={addTask} disabled={!newTaskTitle.trim()}>Add Task</Button>
                       </div>
                     </DialogContent>
@@ -236,7 +273,8 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                 <KanbanBoard
                   tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: t.tags || [] }))}
                   onStatusChange={handleTaskStatusChange}
-                  hasAssignment={false}
+                  hasAssignment={tasks.some(t => t.assigned_to)}
+                  assigneeNames={assigneeNames}
                 />
               )}
             </CardContent>
