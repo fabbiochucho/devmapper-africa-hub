@@ -116,12 +116,36 @@ const SubmitReport = () => {
         });
       }
 
-      // Upload photos to storage if provided
+      // Upload photos to storage and register them as verifiable evidence,
+      // so they show up in the same evidence_items-backed review/audit
+      // trail flows as verifier-uploaded evidence (VerificationReviewDialog,
+      // AuditTrailExport), instead of only existing as untracked storage objects.
+      let failedUploads = 0;
       if (values.photos && report) {
         const files = Array.from(values.photos as FileList);
         for (const file of files) {
           const filePath = `${user.id}/${report.id}/${file.name}`;
-          await supabase.storage.from('project-files').upload(filePath, file);
+          const { error: uploadError } = await supabase.storage.from('project-files').upload(filePath, file);
+          if (uploadError) {
+            console.error('Photo upload failed:', uploadError);
+            failedUploads++;
+            continue;
+          }
+
+          // project-files is a private bucket - a signed URL (not
+          // getPublicUrl, which would produce a link that 403s) is what
+          // VerificationReviewDialog's plain <a href> expects to work.
+          const { data: signedData } = await supabase.storage
+            .from('project-files')
+            .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 10);
+          await supabase.from('evidence_items').insert({
+            report_id: report.id,
+            uploaded_by: user.id,
+            evidence_type: 'photo',
+            title: file.name,
+            file_url: signedData?.signedUrl ?? null,
+            verification_status: 'pending',
+          });
         }
       }
 
@@ -133,6 +157,11 @@ const SubmitReport = () => {
       toast.success("Report submitted successfully!", {
         description: "Your report has been saved. You can now track progress via milestones.",
       });
+      if (failedUploads > 0) {
+        toast.warning(`${failedUploads} photo${failedUploads > 1 ? 's' : ''} failed to upload`, {
+          description: "The report was saved, but you can try re-uploading the photo(s) later.",
+        });
+      }
       form.reset();
       setStep(1);
       navigate('/my-projects');
