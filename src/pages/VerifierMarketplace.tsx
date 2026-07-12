@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Shield, Star, Award, Users, CheckCircle, Clock, MapPin, Search, Plus, TrendingUp, Send } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { listUsersByRole, routeToGovernmentReviewer, type RoleUserOption } from "@/lib/report-workflow";
+import { UserBadgeList } from "@/components/badges/UserBadgeList";
 
 const VerifierMarketplace = () => {
   const { user } = useAuth();
@@ -233,7 +234,10 @@ const VerifierMarketplace = () => {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">{v.display_name}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-1.5 flex-wrap">
+                          {v.display_name}
+                          <UserBadgeList userId={v.user_id} max={2} />
+                        </CardTitle>
                         {v.organization_name && <CardDescription>{v.organization_name}</CardDescription>}
                       </div>
                       <div className="flex items-center gap-1">

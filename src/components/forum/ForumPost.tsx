@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { UserBadgeList } from '@/components/badges/UserBadgeList';
 
 interface ForumPostProps {
   post: {
@@ -34,6 +35,7 @@ interface ForumPostProps {
     title: string;
     content: string;
     author: {
+      id?: string;
       name: string;
       avatar?: string;
       role: string;
@@ -112,6 +114,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
                   <Badge className="bg-primary/10 text-primary text-xs px-1 py-0 border-0">✓ Verified</Badge>
                 )}
                 <Badge variant="outline" className="text-xs">{post.author.role}</Badge>
+                <UserBadgeList userId={post.author.id} max={2} />
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />

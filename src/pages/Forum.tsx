@@ -20,6 +20,7 @@ interface ForumPostData {
   title: string;
   content: string;
   author: {
+    id?: string;
     name: string;
     avatar: string;
     role: string;
@@ -104,6 +105,7 @@ const Forum = () => {
         title: post.title,
         content: post.content,
         author: {
+          id: post.author_id,
           name: prof?.full_name || 'Anonymous',
           avatar: prof?.avatar_url || '/placeholder.svg',
           role: 'Community Member',
@@ -223,6 +225,7 @@ const Forum = () => {
         title: data.title,
         content: data.content,
         author: {
+          id: user.id,
           name: (prof as any)?.full_name || 'Anonymous',
           avatar: (prof as any)?.avatar_url || '/placeholder.svg',
           role: 'Community Member',

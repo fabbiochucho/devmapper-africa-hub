@@ -4330,6 +4330,27 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_tier: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_tier: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_tier?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           country: string | null
@@ -4914,6 +4935,7 @@ export type Database = {
         Args: { p_event_id: string; p_provider: string }
         Returns: boolean
       }
+      evaluate_user_badges: { Args: { p_user_id: string }; Returns: undefined }
       get_agenda2063_for_sdg: {
         Args: { p_sdg_goal: number }
         Returns: {
