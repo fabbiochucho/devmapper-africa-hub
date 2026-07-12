@@ -338,14 +338,22 @@ const handler = async (req: Request): Promise<Response> => {
           }]);
 
         return new Response(
-          JSON.stringify({ 
-            success: true, 
+          JSON.stringify({
+            success: true,
             url: flutterwaveData.data.link,
             message: 'Redirecting to Flutterwave checkout...'
           }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
+
+      // The gateway was configured and called, but didn't return a usable
+      // checkout link - this must surface as a real error, not silently
+      // fall through to the mock-payment fallback below (which would
+      // otherwise hand back a fake "success" demo URL for a real,
+      // failed payment attempt).
+      console.error('Flutterwave subscription payment failed:', flutterwaveData);
+      throw new Error(flutterwaveData.message || 'Flutterwave declined the subscription payment request');
     }
 
     // Handle Paystack subscription payments
@@ -394,9 +402,17 @@ const handler = async (req: Request): Promise<Response> => {
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
+
+      // Same principle as the Flutterwave branch above: a configured
+      // provider that fails must surface as an error, never fall through
+      // to the mock fallback as a fake success.
+      console.error('Paystack subscription payment failed:', paystackData);
+      throw new Error(paystackData.message || 'Paystack declined the subscription payment request');
     }
 
-    // Fallback to mock payment for development
+    // Fallback to mock payment for development (only reached when NEITHER
+    // provider has a secret configured at all - a configured provider that
+    // fails throws above instead of reaching here).
     const paymentUrl = provider === 'flutterwave' 
       ? `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`
       : `https://checkout.paystack.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`;
@@ -424,9 +440,17 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error) {
+    // Every throw in this function is a deliberately-authored Error with a
+    // human-readable message describing what actually went wrong (auth,
+    // validation, or a payment gateway rejecting the request) - previously
+    // this was discarded in favor of a generic "Internal server error",
+    // making every real failure (e.g. an invalid/expired gateway API key)
+    // indistinguishable from an actual bug. Full detail is still logged
+    // server-side either way.
     console.error('Error in create-payment function:', error);
+    const message = error instanceof Error ? error.message : 'Internal server error';
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
