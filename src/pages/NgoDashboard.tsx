@@ -7,6 +7,7 @@ import { Heart, Users, TrendingUp, DollarSign, Target, Plus, FolderOpen, MapPin,
 import AICopilot from '@/components/ai/AICopilot';
 import ComplianceAssessment from '@/components/compliance/ComplianceAssessment';
 import VerificationReviewDialog from '@/components/ngo/VerificationReviewDialog';
+import { AidFlowDataCard } from '@/components/ngo/AidFlowDataCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyProjects } from '@/hooks/useMyProjects';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +43,21 @@ const NgoDashboard = () => {
     const totalBeneficiaries = ownProjects.reduce((sum, p) => sum + (p.beneficiaries || 0), 0);
     const active = ownProjects.filter(p => p.project_status === 'in_progress').length;
     return { totalBudget, totalBeneficiaries, active };
+  }, [ownProjects]);
+
+  // Most common country among this NGO's projects, as the default context
+  // for IATI aid-flow lookups (#96).
+  const primaryCountryCode = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of ownProjects) {
+      if (p.country_code) counts.set(p.country_code, (counts.get(p.country_code) || 0) + 1);
+    }
+    let best: string | null = null;
+    let bestCount = 0;
+    for (const [code, count] of counts) {
+      if (count > bestCount) { best = code; bestCount = count; }
+    }
+    return best;
   }, [ownProjects]);
 
   if (!hasRole('ngo_member')) {
@@ -238,6 +254,9 @@ const NgoDashboard = () => {
           <Button variant="outline" onClick={() => navigate('/my-projects')}>Go to My Projects</Button>
         </CardContent>
       </Card>
+
+      {/* Aid Flow Data (IATI) */}
+      <AidFlowDataCard countryCode={primaryCountryCode} />
 
       {/* Compliance Assessment */}
       <ComplianceAssessment actorType="ngo" />
