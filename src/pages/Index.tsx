@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import UnifiedDashboard from "@/components/UnifiedDashboard";
 import { useState } from "react";
 import HeroSection from "@/components/landing/HeroSection";
+import SocialProofBanner from "@/components/landing/SocialProofBanner";
 import SdgCarousel from "@/components/landing/SdgCarousel";
 import FeaturesGridSection from "@/components/landing/FeaturesGridSection";
 const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
@@ -52,6 +53,7 @@ export default function Index() {
     <div className="space-y-0">
       {/* Above-the-fold: loaded eagerly */}
       <HeroSection user={null} setShowAuthModal={setShowAuthModal} />
+      <SocialProofBanner />
       <SdgCarousel />
       <FeaturesGridSection />
 
