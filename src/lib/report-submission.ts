@@ -57,6 +57,13 @@ export async function submitReportToServer(
       user_id: userId,
       relationship_type: 'owner',
     });
+
+    // #53 RAG pipeline: index this report's text so future Ndovu agent
+    // sessions can retrieve it as a semantically-similar prior project.
+    // Best-effort and fire-and-forget - the embeddings backend being
+    // unavailable should never block or slow down report submission.
+    supabase.functions.invoke('report-embeddings', { body: { action: 'index', reportId: report.id } })
+      .catch((err) => console.error('Report embedding indexing failed:', err));
   }
 
   if (report && values.lat != null && values.lng != null) {

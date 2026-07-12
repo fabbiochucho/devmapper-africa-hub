@@ -39,6 +39,78 @@ async function callLLM(systemPrompt: string, userPrompt: string): Promise<{ text
   return { text: content };
 }
 
+// #53 RAG pipeline: embeds arbitrary text via the same Lovable AI Gateway
+// used for chat completions. openai/text-embedding-3-small (1536 dims,
+// matching report_embeddings.embedding's declared width) confirmed working
+// live against the gateway's /v1/embeddings endpoint - no prior code in
+// this repo had called it before this feature.
+async function embedText(text: string): Promise<{ vector: number[] | null; error?: string }> {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) return { vector: null, error: "AI service not configured (LOVABLE_API_KEY missing)." };
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "openai/text-embedding-3-small",
+      input: text.slice(0, 8000),
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text().catch(() => "");
+    return { vector: null, error: `Embeddings gateway error ${resp.status}: ${body.slice(0, 300)}` };
+  }
+
+  const data = await resp.json();
+  const embedding = data?.data?.[0]?.embedding;
+  if (!Array.isArray(embedding)) return { vector: null, error: "Embeddings gateway returned no vector." };
+  return { vector: embedding };
+}
+
+/** Generates and upserts an embedding for a single report's title+description. Best-effort. */
+async function indexReportEmbedding(supabaseAdmin: any, reportId: string): Promise<{ ok: boolean; error?: string }> {
+  const { data: report, error: fetchError } = await supabaseAdmin
+    .from("reports")
+    .select("id, title, description")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (fetchError || !report) return { ok: false, error: fetchError?.message || "Report not found" };
+
+  const sourceText = `${report.title}\n\n${report.description}`;
+  const { vector, error } = await embedText(sourceText);
+  if (!vector) return { ok: false, error };
+
+  const { error: upsertError } = await supabaseAdmin
+    .from("report_embeddings")
+    .upsert({ report_id: report.id, embedding: vector, source_text: sourceText, updated_at: new Date().toISOString() });
+  if (upsertError) return { ok: false, error: upsertError.message };
+
+  return { ok: true };
+}
+
+/** Embeds a free-text query and returns the top-K semantically similar reports the given user can access. */
+async function fetchSimilarReports(
+  supabaseAdmin: any,
+  queryText: string,
+  requestingUserId: string,
+  matchCount = 5,
+): Promise<{ matches: Array<{ report_id: string; title: string; description: string; similarity: number }>; error?: string }> {
+  const { vector, error } = await embedText(queryText);
+  if (!vector) return { matches: [], error };
+
+  const { data, error: rpcError } = await supabaseAdmin.rpc("match_report_embeddings", {
+    query_embedding: vector,
+    match_count: matchCount,
+    requesting_user_id: requestingUserId,
+  });
+  if (rpcError) return { matches: [], error: rpcError.message };
+  return { matches: data ?? [] };
+}
+
 function parseAgentOutput(raw: string, agentName: string, dataSources: string[]) {
   const sections = { summary: "", keyInsights: [] as string[], risks: [] as string[], recommendedActions: [] as string[] };
   const lines = raw.split("\n").filter(l => l.trim());
@@ -169,4 +241,4 @@ function jsonError(message: string, status: number) {
   });
 }
 
-export { handleAgent, callLLM, parseAgentOutput, corsHeaders, jsonError };
+export { handleAgent, callLLM, parseAgentOutput, corsHeaders, jsonError, embedText, indexReportEmbedding, fetchSimilarReports };

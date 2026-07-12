@@ -3732,6 +3732,35 @@ export type Database = {
           },
         ]
       }
+      report_embeddings: {
+        Row: {
+          embedding: string
+          report_id: string
+          source_text: string
+          updated_at: string
+        }
+        Insert: {
+          embedding: string
+          report_id: string
+          source_text: string
+          updated_at?: string
+        }
+        Update: {
+          embedding?: string
+          report_id?: string
+          source_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_embeddings_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_flags: {
         Row: {
           created_at: string
@@ -5026,6 +5055,19 @@ export type Database = {
           p_target_table?: string
         }
         Returns: string
+      }
+      match_report_embeddings: {
+        Args: {
+          match_count: number
+          query_embedding: string
+          requesting_user_id: string
+        }
+        Returns: {
+          description: string
+          report_id: string
+          similarity: number
+          title: string
+        }[]
       }
       record_webhook_event: {
         Args: {

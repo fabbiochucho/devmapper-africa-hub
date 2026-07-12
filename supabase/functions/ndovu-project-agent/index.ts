@@ -1,4 +1,4 @@
-import { handleAgent } from "../_shared/agent-utils.ts";
+import { handleAgent, fetchSimilarReports } from "../_shared/agent-utils.ts";
 
 const SYSTEM_PROMPT = `You are the Project Developer AI agent for Ndovu Akili, DevMapper's AI copilot.
 Your role: guide users through structured carbon and development project design.
@@ -20,7 +20,31 @@ Deno.serve((req) => handleAgent(req, "project_developer_ai", SYSTEM_PROMPT, asyn
 
   if (ctx.projectId) {
     const { data: report } = await supabase.from("reports").select("*").eq("id", ctx.projectId).maybeSingle();
-    if (report) contextStr += `Project: ${JSON.stringify(report)}\n`;
+    if (report) {
+      contextStr += `Project: ${JSON.stringify(report)}\n`;
+
+      // #53 RAG retrieval step: ground advice in semantically similar prior
+      // reports (not just this one project), instead of only ever looking
+      // up a single exact project_id. Best-effort - a missing/misconfigured
+      // embeddings backend should never block the agent's core response.
+      const { matches, error: ragError } = await fetchSimilarReports(
+        supabase,
+        `${report.title}\n\n${report.description}`,
+        ctx.userId,
+        5,
+      );
+      if (matches.length > 0) {
+        const similarOthers = matches.filter((m) => m.report_id !== ctx.projectId);
+        if (similarOthers.length > 0) {
+          dataSources.push("report_embeddings");
+          contextStr += `Similar prior projects (for reference/precedent, most similar first):\n${
+            similarOthers.map((m) => `- "${m.title}" (similarity ${m.similarity.toFixed(2)}): ${m.description.slice(0, 200)}`).join("\n")
+          }\n`;
+        }
+      } else if (ragError) {
+        contextStr += `(Similar-project retrieval unavailable: ${ragError})\n`;
+      }
+    }
   }
 
   const { data: agenda } = await supabase.from("agenda2063_links").select("*").limit(20);
