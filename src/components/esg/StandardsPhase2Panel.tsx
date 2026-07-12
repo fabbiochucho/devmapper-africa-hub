@@ -74,6 +74,9 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const [csrdIndicators, setCsrdIndicators] = useState<FrameworkIndicatorSeed[]>([]);
   const [csrdEsgRow, setCsrdEsgRow] = useState<EsgIndicatorsRow | null>(null);
   const [csrdSavedScore, setCsrdSavedScore] = useState<ComplianceScoreRecord | null>(null);
+  const [griIndicators, setGriIndicators] = useState<FrameworkIndicatorSeed[]>([]);
+  const [griEsgRow, setGriEsgRow] = useState<EsgIndicatorsRow | null>(null);
+  const [griSavedScore, setGriSavedScore] = useState<ComplianceScoreRecord | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
 
   const refreshSbti = () => listSbtiPathways(organizationId).then(setSbtiRecords).catch(() => {});
@@ -82,6 +85,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
   const refreshLca = () => listLcaAssessments(organizationId).then(setLcaRecords).catch(() => {});
   const refreshGpc = () => listGpcInventories(organizationId).then(setGpcRecords).catch(() => {});
   const refreshCsrd = () => getComplianceScore(organizationId, 'CSRD').then(setCsrdSavedScore).catch(() => {});
+  const refreshGri = () => getComplianceScore(organizationId, 'GRI').then(setGriSavedScore).catch(() => {});
 
   useEffect(() => {
     supabase
@@ -115,6 +119,8 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
 
     fetchFrameworkIndicators('CSRD').then(setCsrdIndicators).catch(() => {});
     fetchLatestEsgIndicators(organizationId).then(setCsrdEsgRow).catch(() => {});
+    fetchFrameworkIndicators('GRI').then(setGriIndicators).catch(() => {});
+    fetchLatestEsgIndicators(organizationId).then(setGriEsgRow).catch(() => {});
 
     refreshSbti();
     refreshCdp();
@@ -122,6 +128,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     refreshLca();
     refreshGpc();
     refreshCsrd();
+    refreshGri();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
@@ -173,6 +180,11 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
     [csrdIndicators, csrdEsgRow, baselineYear],
   );
 
+  const griMapping = useMemo(
+    () => mapEsgIndicatorsToFramework('GRI', griIndicators, griEsgRow, baselineYear),
+    [griIndicators, griEsgRow, baselineYear],
+  );
+
   const gpcSummary = useMemo(() => {
     const gpcExample: GpcSectorEmissions[] = [
       { sector: 'stationary_energy', scope: 1, emissionsTonnesCo2e: esg?.carbon_scope1_tonnes ?? null, notationKey: esg?.carbon_scope1_tonnes == null ? 'NE' : undefined },
@@ -209,6 +221,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             <TabsTrigger value="verra">Verra/GS</TabsTrigger>
             <TabsTrigger value="cdp">CDP</TabsTrigger>
             <TabsTrigger value="csrd">CSRD</TabsTrigger>
+            <TabsTrigger value="gri">GRI</TabsTrigger>
             <TabsTrigger value="glec">GLEC</TabsTrigger>
             <TabsTrigger value="lca">LCA</TabsTrigger>
             <TabsTrigger value="gpc">GPC</TabsTrigger>
@@ -376,6 +389,44 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
             {csrdSavedScore && (
               <p className="text-xs text-muted-foreground pt-2 border-t">
                 Last saved: {csrdSavedScore.score_percentage}% ({csrdSavedScore.reported_indicators}/{csrdSavedScore.total_indicators}) on {new Date(csrdSavedScore.assessed_at).toLocaleString()}
+              </p>
+            )}
+          </TabsContent>
+
+          {/* GRI */}
+          <TabsContent value="gri" className="space-y-4 pt-4">
+            <p className="text-xs text-muted-foreground">
+              Maps this organization's reported ESG data against the GRI Standards indicators seeded for GRI (public.framework_indicators). Some seeded indicators reference metrics this schema doesn't track (e.g. GJ-denominated energy, employee turnover) - those are excluded from the completeness % rather than counted as gaps, same policy as the CSRD mapping.
+            </p>
+            <div className="flex items-center gap-3">
+              <Progress value={griMapping.completenessPercentage} className="flex-1" />
+              <span className="text-sm font-medium">{griMapping.completenessPercentage}% ({griMapping.satisfiedCount}/{griMapping.trackableCount} trackable indicators)</span>
+            </div>
+            <ul className="text-sm space-y-1">
+              {griMapping.indicators.map((i) => (
+                <li key={i.indicatorCode} className="flex items-center justify-between gap-2">
+                  <span>
+                    <span className="font-medium">{i.indicatorCode}</span>: {i.indicatorName}
+                    {i.dataAvailable && i.reportedValue != null && (
+                      <span className="text-muted-foreground"> — {i.reportedValue.toLocaleString()} {i.unitOfMeasure}</span>
+                    )}
+                  </span>
+                  <Badge variant={!i.dataAvailable ? 'outline' : i.satisfied ? 'default' : 'destructive'} className="shrink-0 text-xs">
+                    {!i.dataAvailable ? 'Not tracked by this system' : i.satisfied ? 'Reported' : 'Gap'}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+            <Button
+              size="sm"
+              disabled={saving === 'gri'}
+              onClick={() => withSaving('gri', () => saveComplianceScore(organizationId, griMapping), refreshGri)}
+            >
+              <Save className="w-3 h-3 mr-1" />{saving === 'gri' ? 'Saving…' : 'Save compliance score'}
+            </Button>
+            {griSavedScore && (
+              <p className="text-xs text-muted-foreground pt-2 border-t">
+                Last saved: {griSavedScore.score_percentage}% ({griSavedScore.reported_indicators}/{griSavedScore.total_indicators}) on {new Date(griSavedScore.assessed_at).toLocaleString()}
               </p>
             )}
           </TabsContent>
