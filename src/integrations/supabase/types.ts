@@ -2040,6 +2040,47 @@ export type Database = {
           },
         ]
       }
+      funder_decisions: {
+        Row: {
+          amount_committed: number | null
+          created_at: string
+          decision: string
+          funder_id: string
+          id: string
+          notes: string | null
+          report_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_committed?: number | null
+          created_at?: string
+          decision: string
+          funder_id: string
+          id?: string
+          notes?: string | null
+          report_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_committed?: number | null
+          created_at?: string
+          decision?: string
+          funder_id?: string
+          id?: string
+          notes?: string | null
+          report_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funder_decisions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fundraising_campaigns: {
         Row: {
           category: string

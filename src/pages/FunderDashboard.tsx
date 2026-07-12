@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import FundingReadinessBadge from '@/components/scoring/FundingReadinessBadge';
 import RiskFlagsList from '@/components/scoring/RiskFlagsList';
 import { calculateFundingReadinessScore } from '@/lib/funding-readiness';
 import { deriveRiskFlags } from '@/lib/risk-flags';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReportRow {
   id: string;
@@ -36,9 +41,31 @@ interface ReportRow {
  * from that agent's LLM-driven answer to the same question and the two are
  * not reconciled - a known follow-up, not a bug.
  */
+interface FunderDecision {
+  decision: 'interested' | 'passed';
+  amount_committed: number | null;
+}
+
 export default function FunderDashboard() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [decisions, setDecisions] = useState<Record<string, FunderDecision>>({});
+  const [amountDrafts, setAmountDrafts] = useState<Record<string, string>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const loadDecisions = () => {
+    if (!user) return;
+    supabase
+      .from('funder_decisions')
+      .select('report_id, decision, amount_committed')
+      .eq('funder_id', user.id)
+      .then(({ data }) => {
+        const map: Record<string, FunderDecision> = {};
+        (data ?? []).forEach((d: any) => { map[d.report_id] = { decision: d.decision, amount_committed: d.amount_committed }; });
+        setDecisions(map);
+      });
+  };
 
   useEffect(() => {
     supabase
@@ -50,7 +77,33 @@ export default function FunderDashboard() {
         setReports((data as unknown as ReportRow[]) ?? []);
         setLoading(false);
       });
-  }, []);
+    loadDecisions();
+  }, [user]);
+
+  const recordDecision = async (reportId: string, decision: 'interested' | 'passed') => {
+    if (!user) return;
+    setSavingId(reportId);
+    try {
+      const amountRaw = amountDrafts[reportId];
+      const { error } = await supabase.from('funder_decisions').upsert(
+        {
+          funder_id: user.id,
+          report_id: reportId,
+          decision,
+          amount_committed: decision === 'interested' && amountRaw ? parseFloat(amountRaw) : null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'funder_id,report_id' },
+      );
+      if (error) throw error;
+      toast.success(decision === 'interested' ? 'Marked as interested' : 'Passed on this project');
+      loadDecisions();
+    } catch (e: any) {
+      toast.error('Failed to save decision', { description: e.message });
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -104,9 +157,38 @@ export default function FunderDashboard() {
                     <CardDescription>Cost: ${report.cost.toLocaleString()}</CardDescription>
                   )}
                 </CardHeader>
-                <CardContent>
-                  <Separator className="mb-3" />
+                <CardContent className="space-y-3">
+                  <Separator />
                   <RiskFlagsList flags={flags} />
+                  <Separator />
+                  {decisions[report.id] ? (
+                    <div className="flex items-center justify-between text-sm">
+                      <Badge variant={decisions[report.id].decision === 'interested' ? 'default' : 'secondary'}>
+                        {decisions[report.id].decision === 'interested' ? 'Interested' : 'Passed'}
+                      </Badge>
+                      {decisions[report.id].amount_committed != null && (
+                        <span className="text-muted-foreground">
+                          Committed: ${decisions[report.id].amount_committed!.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Amount (optional)"
+                        className="h-8 text-sm"
+                        value={amountDrafts[report.id] ?? ''}
+                        onChange={(e) => setAmountDrafts((p) => ({ ...p, [report.id]: e.target.value }))}
+                      />
+                      <Button size="sm" variant="outline" disabled={savingId === report.id} onClick={() => recordDecision(report.id, 'passed')}>
+                        <ThumbsDown className="h-3.5 w-3.5 mr-1" />Pass
+                      </Button>
+                      <Button size="sm" disabled={savingId === report.id} onClick={() => recordDecision(report.id, 'interested')}>
+                        <ThumbsUp className="h-3.5 w-3.5 mr-1" />Interested
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

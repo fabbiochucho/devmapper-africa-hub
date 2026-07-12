@@ -83,6 +83,9 @@ const getPrimaryDashboard = (hasRole: (role: UserRole) => boolean) => {
   if (hasRole('ngo_member')) {
     return [{ title: "NGO Dashboard", url: "/ngo-dashboard", icon: Users }];
   }
+  if (hasRole('funder')) {
+    return [{ title: "Funder Dashboard", url: "/funder-dashboard", icon: TrendingUp }];
+  }
   if (hasRole('change_maker')) {
     return [{ title: "Change Maker Profile", url: "/submit-change-maker", icon: Heart }];
   }
