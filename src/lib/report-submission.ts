@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { z } from 'zod';
 import type { reportSchema } from '@/lib/reportSchema';
+import { validateSatelliteReading } from '@/lib/satellite-validation';
 
 export type ReportFormValues = z.infer<typeof reportSchema>;
 
@@ -66,14 +67,21 @@ export async function submitReportToServer(
         bounds: { north: values.lat + buffer, south: values.lat - buffer, east: values.lng + buffer, west: values.lng - buffer },
       });
       const reading = geeResult?.data?.[0];
+      const validation = validateSatelliteReading({
+        sdgGoal: parseInt(values.sdg_goal) || null,
+        ndviValue: reading?.value ?? null,
+      });
       await supabase.from('evidence_items').insert({
         report_id: report.id,
         uploaded_by: userId,
         evidence_type: 'satellite',
         title: 'Satellite vegetation index (NDVI) at reported location',
         description: reading
-          ? `NDVI reading: ${reading.value.toFixed(3)} at (${reading.lat.toFixed(4)}, ${reading.lng.toFixed(4)}). Source: ${geeResult.metadata?.source ?? 'Google Earth Engine'}.`
+          ? `NDVI reading: ${reading.value.toFixed(3)} at (${reading.lat.toFixed(4)}, ${reading.lng.toFixed(4)}). Source: ${geeResult.metadata?.source ?? 'Google Earth Engine'}. Auto-validation (${validation.verdict}): ${validation.message}`
           : 'No satellite reading available for this location.',
+        // evidence_items.verification_status only allows pending/verified/rejected
+        // (no "flagged" state) - a possible_mismatch verdict is surfaced via the
+        // description text instead, for a human verifier to act on.
         verification_status: 'pending',
       });
     } catch (geeError) {

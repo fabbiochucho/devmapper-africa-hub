@@ -451,11 +451,23 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {evidenceItems.map(ev => (
+                      {evidenceItems.map(ev => {
+                        const isSatelliteMismatch = ev.evidence_type === 'satellite' && ev.description?.includes('(possible_mismatch)');
+                        return (
                         <TableRow key={ev.id}>
-                          <TableCell className="font-medium text-sm">{ev.title}</TableCell>
+                          <TableCell className="font-medium text-sm">
+                            {ev.title}
+                            {ev.evidence_type === 'satellite' && ev.description && (
+                              <p className="text-xs text-muted-foreground font-normal mt-0.5 max-w-md">{ev.description}</p>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">{ev.evidence_type}</Badge>
+                            {isSatelliteMismatch && (
+                              <Badge variant="destructive" className="text-xs ml-1">
+                                <AlertTriangle className="h-3 w-3 mr-1" />Mismatch
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-xs">{ev.verification_stage || '—'}</TableCell>
                           <TableCell>
@@ -467,7 +479,8 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
                             {new Date(ev.created_at).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </ScrollArea>
