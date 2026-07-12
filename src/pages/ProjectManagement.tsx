@@ -61,6 +61,7 @@ interface Report {
   start_date: string | null;
   end_date: string | null;
   user_id: string | null;
+  country_code: string | null;
 }
 
 const priorityColors: Record<string, string> = {
@@ -115,9 +116,9 @@ export default function ProjectManagement() {
   const fetchProjects = async () => {
     // Fetch user's own projects AND projects they're affiliated with
     const [ownResult, affResult] = await Promise.all([
-      supabase.from("reports").select("id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id")
+      supabase.from("reports").select("id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id, country_code")
         .eq("user_id", user!.id).order("submitted_at", { ascending: false }),
-      supabase.from("project_affiliations").select("report_id, reports(id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id)")
+      supabase.from("project_affiliations").select("report_id, reports(id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id, country_code)")
         .eq("user_id", user!.id),
     ]);
 
