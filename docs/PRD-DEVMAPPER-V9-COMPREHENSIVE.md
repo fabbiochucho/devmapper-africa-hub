@@ -163,8 +163,8 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 20 | CDP framework alignment | ❌ Not Built | Template exists in AI prompts but no structured mapping |
 | 21 | CSRD compliance module | ❌ Not Built | Referenced in docs, not implemented |
 | 22 | SBTi target validation | ❌ Not Built | No SBTi-specific validation logic |
-| 23 | Compliance dashboard with visual gap analysis | 🟡 Partial | ComplianceAssessment exists but no visual gap chart |
-| 24 | Auto-generated ESG reports from esg_metrics | 🟡 Partial | Report dialog exists but doesn't auto-pull all metrics |
+| 23 | Compliance dashboard with visual gap analysis | ✅ Built | FrameworkGapAnalysis (ESG Dashboard "Frameworks" tab), wired to real esg_indicators data via ESGDashboard.tsx |
+| 24 | Auto-generated ESG reports from esg_metrics | ✅ Built | ESGReportGenerator (ESG Dashboard "Reports" tab), pulls real indicators/suppliers/scenarios/benchmark data |
 
 ### 3.3 AI Layer — Ndovu Akili AI (V6 + Ndovu Prompt Library)
 
