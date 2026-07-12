@@ -249,10 +249,10 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
 | 78 | **Project listing system** (rich metadata, verification badge) | ❌ Not Built | No marketplace UI |
-| 79 | **Buyer interface** (filter by SDG, geography, certification) | ❌ Not Built | |
-| 80 | **Portfolio builder** (diversified carbon portfolios) | ❌ Not Built | |
+| 79 | **Buyer interface** (filter by SDG, geography, certification) | ✅ Built | Type/country/SDG filters + sort in CarbonMarketplace.tsx |
+| 80 | **Portfolio builder** (diversified carbon portfolios) | ✅ Built | CarbonPortfolio.tsx + concentration-risk analysis (portfolio-diversification.ts) |
 | 81 | **Credit lifecycle tracking** (issuance → listing → purchase → retirement) | 🟡 Partial | carbon_assets tracks credits but no marketplace flow |
-| 82 | **Smart pricing** (AI-driven pricing suggestions) | ❌ Not Built | |
+| 82 | **Smart pricing** (AI-driven pricing suggestions) | ✅ Built | marketplace-pricing.ts + SuggestedPriceHint, mounted in the listing-creation form |
 | 83 | **Carbon credit purchase/retirement flow** | ❌ Not Built | |
 
 ### 3.9 Multi-Stakeholder Ecosystem (New — Pillar 4)
