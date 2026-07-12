@@ -32,6 +32,7 @@ import {
 } from '@/lib/spvf-engine';
 import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
 import AuditTrailExport from '@/components/verification/AuditTrailExport';
+import AICopilot from '@/components/ai/AICopilot';
 
 interface SPVFVerificationPanelProps {
   reportId: string;
@@ -486,6 +487,11 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
               </div>
             </CardContent>
           </Card>
+
+          <AICopilot
+            projectData={{ id: reportId, evidenceItems: evidenceItems.map(ev => ({ type: ev.evidence_type, title: ev.title, description: ev.description, status: ev.verification_status })) }}
+            pageContextOverride="verification"
+          />
         </TabsContent>
 
         {/* TAB 4: Certification */}

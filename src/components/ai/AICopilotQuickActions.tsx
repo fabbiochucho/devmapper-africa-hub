@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FileText, Shield, Leaf, Sparkles, TrendingUp, AlertTriangle, Users, BarChart3, Zap, Target } from "lucide-react";
+import { FileText, Shield, Leaf, Sparkles, TrendingUp, AlertTriangle, Users, BarChart3, Zap, Target, Satellite } from "lucide-react";
 
 interface QuickActionsProps {
   onAction: (prompt: string, context: string) => void;
@@ -36,6 +36,10 @@ const ALL_QUICK_ACTIONS = [
     prompt: "Evaluate the credibility of this carbon/sustainability project. Assess methodology validity, data completeness, alignment with recognized standards (Verra, Gold Standard), and satellite verification signals if available. Flag any risks of greenwashing or missing verification elements.", requiresProject: true },
   { label: "Verification Assistant", icon: <Shield className="h-3 w-3" />, context: "compliance", category: "verification",
     prompt: "You are assisting a certified verifier. Review this project submission and identify missing documentation, highlight inconsistencies, suggest verification steps. Then provide an approval recommendation (Approve / Needs Revision / Reject) with justification.", requiresProject: true },
+  { label: "Satellite Cross-Check", icon: <Satellite className="h-3 w-3" />, context: "compliance", category: "verification",
+    prompt: "Review the satellite evidence (NDVI vegetation index and any other GEE/AlphaEarth benchmark readings) included in this project's evidence context alongside its stated location and project type. Does the satellite signal plausibly support the claimed activity (e.g. reforestation should show positive/increasing vegetation index, not bare land)? Flag any mismatch between the claimed project type and what the satellite data suggests, and note explicitly if no satellite reading is available to check against.", requiresProject: true },
+  { label: "Evidence Completeness Check", icon: <Satellite className="h-3 w-3" />, context: "compliance", category: "verification",
+    prompt: "List every evidence item attached to this project (photos, satellite readings, documents) and assess whether the evidence base is sufficient to support the verification decision. Call out specifically whether a satellite/GEE benchmark reading is present for a geotagged project, and if not, recommend requesting one before approving.", requiresProject: true },
 
   // Marketplace & Investment (show on marketplace pages)
   { label: "Carbon Credit Recommendation", icon: <Leaf className="h-3 w-3" />, context: "carbon", category: "marketplace",

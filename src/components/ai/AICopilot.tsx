@@ -28,7 +28,17 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
   { value: "carbon", label: "Carbon", icon: <Leaf className="h-3 w-3" /> },
 ];
 
-export default function AICopilot({ projectData }: { projectData?: any }) {
+type PageContext = "general" | "emissions" | "verification" | "marketplace" | "compliance" | "government" | "investor";
+
+interface AICopilotProps {
+  projectData?: any;
+  /** Overrides the route-derived page context - for callers embedded on a
+   * page whose URL doesn't reflect what's actually being worked on (e.g. a
+   * verification panel mounted inside /project-management's tabs). */
+  pageContextOverride?: PageContext;
+}
+
+export default function AICopilot({ projectData, pageContextOverride }: AICopilotProps) {
   const { user } = useAuth();
   const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,8 +50,11 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
   const [showMultiAgent, setShowMultiAgent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Derive page context for quick actions based on current route
+  // Derive page context for quick actions based on current route, unless the
+  // caller knows better (e.g. a verification panel embedded on a page whose
+  // URL doesn't say "verification" at all).
   const pageContext = useMemo(() => {
+    if (pageContextOverride) return pageContextOverride;
     const path = location.pathname;
     if (path.includes("esg") || path.includes("carbon-accounting")) return "emissions" as const;
     if (path.includes("verif") || path.includes("certification")) return "verification" as const;
@@ -50,7 +63,7 @@ export default function AICopilot({ projectData }: { projectData?: any }) {
     if (path.includes("government")) return "government" as const;
     if (path.includes("investor") || path.includes("portfolio")) return "investor" as const;
     return "general" as const;
-  }, [location.pathname]);
+  }, [location.pathname, pageContextOverride]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
