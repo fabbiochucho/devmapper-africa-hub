@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
+import StatsSection from '@/components/landing/StatsSection';
 
 const PLATFORM_LAYERS = [
   {
@@ -78,7 +79,7 @@ const PlatformOverview = () => {
         description="DevMapper verifies, scores, and certifies Sustainable Development Goal projects with UN-aligned governance and tamper-evident audit trails."
       />
 
-      <div className="container max-w-5xl mx-auto px-4 py-8 space-y-12">
+      <div className="container max-w-5xl mx-auto px-4 pt-8 space-y-12">
         {/* Hero */}
         <div className="text-center space-y-4">
           <Globe className="h-16 w-16 mx-auto text-primary" />
@@ -105,7 +106,11 @@ const PlatformOverview = () => {
         </div>
 
         <Separator />
+      </div>
 
+      <StatsSection />
+
+      <div className="container max-w-5xl mx-auto px-4 pb-8 space-y-12">
         {/* Platform Architecture */}
         <div className="space-y-6">
           <div className="text-center">

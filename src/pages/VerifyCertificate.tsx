@@ -9,6 +9,7 @@ import { Shield, Award, CheckCircle2, XCircle, Search, ExternalLink } from 'luci
 import { supabase } from '@/integrations/supabase/client';
 import { RATING_CONFIG, type CertificationRating } from '@/lib/spvf-engine';
 import { SEOHead } from '@/components/seo/SEOHead';
+import StatsSection from '@/components/StatsSection';
 
 interface CertificateData {
   id: string;
@@ -70,6 +71,7 @@ const VerifyCertificate = () => {
         description="Verify the authenticity of an SDG project certification issued through DevMapper's SPVF verification framework."
       />
       <div className="min-h-screen bg-background">
+        <StatsSection />
         <div className="container max-w-2xl mx-auto py-16 px-4 space-y-8">
           {/* Header */}
           <div className="text-center space-y-3">
