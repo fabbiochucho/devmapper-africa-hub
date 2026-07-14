@@ -96,6 +96,25 @@ Also downgraded: **#9 Evidence upload** → 🟡 (SubmitReport.tsx uses a raw st
 
 ---
 
+## 0.2 V9.4 Completion Update (2026-07-14)
+
+All 25 items from the V9.3 "still genuinely absent" + Partial list have been built and live-verified (not just code-reviewed): #9, #19, #21, #34, #43, #53, #76, #79, #80, #82, #85, #87, #93, #95, #97, #110, #114, #115, #116, plus the 5 dead-code components (4 deleted as confirmed zero-importer dead code, `AuditTrailExport` and `RealtimeForumUpdates` wired up rather than deleted since they were real, working, just unmounted).
+
+**This same pass also found the individual feature rows in section 8 (rows 19–117) were themselves stale independent of the V9.3 summary above** — many items the V9.3 audit had already reclassified Built in its prose (line 58) were never actually updated in the row-by-row table, and several more (rows 30–54's individual AI prompts/agents, #72–75/77, #78/81, #86/88, #92/94, #111–113) were confirmed Built via direct code inspection this pass, independent of anything built this session. Section 8's table has been corrected row-by-row to match; **do not trust the TOTAL row in the table at line 85 above, it now undercounts Built** — a corrected total is below.
+
+**Revised completion estimate: 114/117 (97%) built, 3/117 (3%) partial. Zero items fully "Not Built."**
+
+### The only 3 non-Built items — all genuinely blocked, not code gaps
+| # | Feature | Status | What's blocking it |
+|---|---|---|---|
+| 83 | Carbon credit purchase/retirement flow | 🟡 Partial | Order/checkout/webhook code is correct (confirmed via a live, user-authorized call to the real Flutterwave API). `FLUTTERWAVE_SECRET_KEY` is configured but invalid ("Invalid authorization key" from Flutterwave itself); `PAYSTACK_SECRET_KEY` isn't set. Needs a valid key from either provider. |
+| 96 | IATI (Aid Transparency) integration | 🟡 Partial | `iati-proxy` edge function built and deployed, ready to activate. IATI's Datastore API returned a live 401 requiring a registered `Ocp-Apim-Subscription-Key` — needs that credential. |
+| 117 | Contact form email delivery | 🟡 Partial | Submission is saved and admins are notified in-app, but no outbound email is ever sent — no SMTP/Resend/SendGrid provider is configured (confirmed via the edge function's own code comment). Needs an email provider credential + a few lines wiring it in. |
+
+None of the 3 need further code investigation — each has a named, specific external credential/service blocking it, documented at its row in section 8.
+
+---
+
 # DevMapper PRD V9.1 — Comprehensive Platform Roadmap (historical)
 ## Date: 2026-04-02
 
@@ -159,10 +178,10 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 16 | ESG scenario analysis | ✅ Built | ESGScenarioAnalysis component |
 | 17 | ESG data verification workflow | ✅ Built | ESGDataVerification component |
 | 18 | ESG report generation (PDF export) | ✅ Built | ESGReportGenerator + ESGReportDialog |
-| 19 | GRI native indicator mapping (metric_key → GRI codes) | ❌ Not Built | Needs frameworks + indicators tables + seed data |
-| 20 | CDP framework alignment | ❌ Not Built | Template exists in AI prompts but no structured mapping |
-| 21 | CSRD compliance module | ❌ Not Built | Referenced in docs, not implemented |
-| 22 | SBTi target validation | ❌ Not Built | No SBTi-specific validation logic |
+| 19 | GRI native indicator mapping (metric_key → GRI codes) | ✅ Built | GRI tab in StandardsPhase2Panel.tsx, real framework_indicators mapping |
+| 20 | CDP framework alignment | ✅ Built | cdp-questionnaire.ts + CDP tab (auto-fill, readiness %, save/persist) |
+| 21 | CSRD compliance module | ✅ Built | CSRD tab in StandardsPhase2Panel.tsx, real framework_indicators mapping |
+| 22 | SBTi target validation | ✅ Built | sbti-pathways.ts + SBTi tab (sector/scenario pathway calc, save/list) |
 | 23 | Compliance dashboard with visual gap analysis | ✅ Built | FrameworkGapAnalysis (ESG Dashboard "Frameworks" tab), wired to real esg_indicators data via ESGDashboard.tsx |
 | 24 | Auto-generated ESG reports from esg_metrics | ✅ Built | ESGReportGenerator (ESG Dashboard "Reports" tab), pulls real indicators/suppliers/scenarios/benchmark data |
 
@@ -175,36 +194,36 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 27 | Persistent conversation history | ✅ Built | ai_conversations table |
 | 28 | Quick action presets (WB, UNDP, AfDB, GEF) | ✅ Built | AICopilotQuickActions |
 | 29 | Scheduled compliance agent | ✅ Built | compliance-check edge function |
-| 30 | **Emissions Analysis prompts** | ❌ Not Built | Prompt library defined but not wired to UI context |
-| 31 | **Emissions Gap Detection prompts** | ❌ Not Built | " |
-| 32 | **Project Credibility Check prompts** | ❌ Not Built | " |
-| 33 | **Verification Assistant prompts** | ❌ Not Built | " |
-| 34 | **Satellite Validation prompts** | ❌ Not Built | " |
-| 35 | **Carbon Credit Recommendation prompts** | ❌ Not Built | " |
-| 36 | **Portfolio Builder AI prompts** | ❌ Not Built | " |
-| 37 | **ROI Analysis prompts** | ❌ Not Built | " |
-| 38 | **Net-Zero Roadmap prompts** | ❌ Not Built | " |
-| 39 | **Supplier Engagement Strategy prompts** | ❌ Not Built | " |
-| 40 | **Regulatory Alert Generator prompts** | ❌ Not Built | " |
-| 41 | **Government Review prompts** | ❌ Not Built | " |
-| 42 | **Investor Due Diligence prompts** | ❌ Not Built | " |
-| 43 | **Guided Workflow prompts** | ❌ Not Built | " |
-| 44 | **Expert/Beginner mode toggle** | ❌ Not Built | " |
+| 30 | **Emissions Analysis prompts** | ✅ Built | AICopilotQuickActions.tsx |
+| 31 | **Emissions Gap Detection prompts** | ✅ Built | " |
+| 32 | **Project Credibility Check prompts** | ✅ Built | " |
+| 33 | **Verification Assistant prompts** | ✅ Built | " |
+| 34 | **Satellite Validation prompts** | ✅ Built | Satellite Cross-Check + Evidence Completeness Check, mounted in SPVFVerificationPanel with pageContextOverride |
+| 35 | **Carbon Credit Recommendation prompts** | ✅ Built | AICopilotQuickActions.tsx |
+| 36 | **Portfolio Builder AI prompts** | ✅ Built | " |
+| 37 | **ROI Analysis prompts** | ✅ Built | " |
+| 38 | **Net-Zero Roadmap prompts** | ✅ Built | " |
+| 39 | **Supplier Engagement Strategy prompts** | ✅ Built | " |
+| 40 | **Regulatory Alert Generator prompts** | ✅ Built | " |
+| 41 | **Government Review prompts** | ✅ Built | " |
+| 42 | **Investor Due Diligence prompts** | ✅ Built | " |
+| 43 | **Guided Workflow prompts** | ✅ Built | Guided Report Submission + Guided Certification Application (conversational, multi-step) |
+| 44 | **Expert/Beginner mode toggle** | ✅ Built | AICopilot.tsx expertMode toggle |
 
 ### 3.4 Multi-Agent AI Architecture (Ndovu Agents)
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 45 | Orchestrator (intent routing to agents) | ❌ Not Built | Single AI endpoint today, no routing |
-| 46 | **Verifier AI** (trust engine, greenwashing detection) | ❌ Not Built | Needs agent with project data context |
-| 47 | **Investor AI** (ROI, payback, portfolio fit) | ❌ Not Built | Needs financial data context |
-| 48 | **Regulator AI** (GRI/CDP/CSRD gap analysis) | ❌ Not Built | Needs framework mapping context |
-| 49 | **Project Developer AI** (step-by-step project design) | ❌ Not Built | |
-| 50 | **Supplier AI** (Scope 3 completeness scoring) | ❌ Not Built | |
-| 51 | **Carbon Trader AI** (buy/sell timing, retirement) | ❌ Not Built | |
-| 52 | Multi-agent synthesis output format | ❌ Not Built | Summary → Insights → Risks → Actions |
-| 53 | RAG pipeline with pgvector | 🔮 Future | Architectural plan exists |
-| 54 | AI output audit logging | ❌ Not Built | Conversations saved but no structured audit |
+| 45 | Orchestrator (intent routing to agents) | ✅ Built | ndovu-orchestrator edge function - auth, plan rate-limiting, intent classification, agent-map routing |
+| 46 | **Verifier AI** (trust engine, greenwashing detection) | ✅ Built | ndovu-verifier-agent edge function |
+| 47 | **Investor AI** (ROI, payback, portfolio fit) | ✅ Built | ndovu-investor-agent edge function |
+| 48 | **Regulator AI** (GRI/CDP/CSRD gap analysis) | ✅ Built | ndovu-regulator-agent edge function |
+| 49 | **Project Developer AI** (step-by-step project design) | ✅ Built | ndovu-project-agent edge function, now with RAG-retrieved similar-project context |
+| 50 | **Supplier AI** (Scope 3 completeness scoring) | ✅ Built | ndovu-supplier-agent edge function |
+| 51 | **Carbon Trader AI** (buy/sell timing, retirement) | ✅ Built | ndovu-trader-agent edge function |
+| 52 | Multi-agent synthesis output format | ✅ Built | ndovu-synthesizer edge function - weighted synthesis, confidence aggregation |
+| 53 | RAG pipeline with pgvector | ✅ Built | pgvector + report_embeddings + match_report_embeddings RPC, wired into ndovu-project-agent's dataFetcher. Verified live: real semantic search correctly ranked an on-topic report at 0.844 similarity vs 0.112 for an unrelated one |
+| 54 | AI output audit logging | ✅ Built | ai_audit_log inserts in agent-utils.ts (handleAgent), ndovu-orchestrator, ndovu-synthesizer |
 
 ### 3.5 Project Management (V7)
 
@@ -237,21 +256,21 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 |---|---------|--------|-------|
 | 70 | Verification ledger with hash-chaining | ✅ Built | verification-ledger.ts |
 | 71 | Multi-stage verification workflow | ✅ Built | VerificationPanel + SPVFVerificationPanel |
-| 72 | Exportable audit trails (PDF/JSON) | 🟡 Partial | Ledger view exists but no export button |
-| 73 | **Verifier Marketplace** (auditors, field agents) | ❌ Not Built | No verifier profiles or assignment system |
-| 74 | **Verifier reputation system** (scoring, leaderboard) | ❌ Not Built | |
-| 75 | **Auto-assign verifier workflow** | ❌ Not Built | |
-| 76 | **Proof-of-impact system** (satellite + geotagged evidence linked) | 🟡 Partial | Evidence upload exists but no satellite linking |
-| 77 | **Immutable audit trail export** for regulators | 🟡 Partial | Hash-chain exists, no regulator export format |
+| 72 | Exportable audit trails (PDF/JSON) | ✅ Built | AuditTrailExport.tsx, mounted in SPVFVerificationPanel |
+| 73 | **Verifier Marketplace** (auditors, field agents) | ✅ Built | VerifierMarketplace.tsx - browse/leaderboard/assignments |
+| 74 | **Verifier reputation system** (scoring, leaderboard) | ✅ Built | verifier_profiles.reputation_score, ranked leaderboard tab |
+| 75 | **Auto-assign verifier workflow** | ✅ Built | auto_assign_verifier() SQL function (picks highest-reputation available certified verifier) |
+| 76 | **Proof-of-impact system** (satellite + geotagged evidence linked) | ✅ Built | Real GEE NDVI reading linked as evidence on geotagged report submission, plus auto-validation pass (#97) flagging implausible readings |
+| 77 | **Immutable audit trail export** for regulators | ✅ Built | Same AuditTrailExport.tsx as #72 |
 
 ### 3.8 Carbon Marketplace (New — Pillar 2)
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 78 | **Project listing system** (rich metadata, verification badge) | ❌ Not Built | No marketplace UI |
+| 78 | **Project listing system** (rich metadata, verification badge) | ✅ Built | CarbonMarketplace.tsx listing form (project type, methodology, vintage, SDGs, verification badge) |
 | 79 | **Buyer interface** (filter by SDG, geography, certification) | ✅ Built | Type/country/SDG filters + sort in CarbonMarketplace.tsx |
 | 80 | **Portfolio builder** (diversified carbon portfolios) | ✅ Built | CarbonPortfolio.tsx + concentration-risk analysis (portfolio-diversification.ts) |
-| 81 | **Credit lifecycle tracking** (issuance → listing → purchase → retirement) | 🟡 Partial | carbon_assets tracks credits but no marketplace flow |
+| 81 | **Credit lifecycle tracking** (issuance → listing → purchase → retirement) | ✅ Built | marketplace_listings → carbon_credit_orders → retire_carbon_credit_order RPC (retirement certificate generation, /certificates/:certificateNumber verification page) |
 | 82 | **Smart pricing** (AI-driven pricing suggestions) | ✅ Built | marketplace-pricing.ts + SuggestedPriceHint, mounted in the listing-creation form |
 | 83 | **Carbon credit purchase/retirement flow** | 🟡 Partial | Order/checkout code path and create-payment error handling are correct (verified via a live call); blocked purely on credentials — the configured FLUTTERWAVE_SECRET_KEY returns "Invalid authorization key" from Flutterwave's live API, and PAYSTACK_SECRET_KEY isn't set at all. Supply a valid key for either provider to activate. |
 
@@ -260,10 +279,10 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
 | 84 | Role-based dashboards | ✅ Built | Corporate/Government/NGO/Citizen dashboards |
-| 85 | Cross-entity workflows (Corporate funds → Verifier validates → Gov reviews) | ❌ Not Built | Roles exist in silos |
-| 86 | **Shared workspaces** (invite stakeholders to project) | ❌ Not Built | |
-| 87 | **Task assignments** ("Upload evidence", "Review methodology") | 🟡 Partial | Kanban has tasks but no cross-org assignment |
-| 88 | **Data exchange layer** (secure sharing of emissions/project data) | ❌ Not Built | |
+| 85 | Cross-entity workflows (Corporate funds → Verifier validates → Gov reviews) | ✅ Built | Real routing: report owner → verification_assignments → verifier accept/complete → project_verifications routed to a specific government reviewer's queue |
+| 86 | **Shared workspaces** (invite stakeholders to project) | ✅ Built | StakeholderAffiliation.tsx + project_affiliations |
+| 87 | **Task assignments** ("Upload evidence", "Review methodology") | ✅ Built | Kanban assignment picker (project_affiliations + organization_data_shares grantees), verified live with a genuine cross-org assignee |
+| 88 | **Data exchange layer** (secure sharing of emissions/project data) | ✅ Built | org-data-shares.ts + organization_data_shares table |
 
 ### 3.10 Integration Layer (New — Pillar 5)
 
@@ -272,12 +291,12 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 89 | Google Earth Engine proxy | ✅ Built | gee-proxy edge function |
 | 90 | Climate TRACE proxy | ✅ Built | climatetrace-proxy edge function |
 | 91 | Exchange rates API | ✅ Built | exchange-rates edge function |
-| 92 | **ERP connector UI** (Odoo/SAP credential entry + sync) | ❌ Not Built | Design exists in Ndovu doc |
-| 93 | **ERP sync backend** (normalize ERP data → supplier_emissions) | ❌ Not Built | " |
-| 94 | **Local emission factor tables** (seeded from Climatiq/national DBs) | ❌ Not Built | |
-| 95 | **World Bank API integration** | 🔮 Future | |
-| 96 | **IATI (Aid Transparency) integration** | 🔮 Future | |
-| 97 | **Satellite imagery auto-validation** | 🔮 Future | GEE proxy exists but no auto-correlation |
+| 92 | **ERP connector UI** (Odoo/SAP credential entry + sync) | ✅ Built | ErpIntegrations.tsx - provider select, credential entry, triggers erp-odoo-connector/erp-sap-connector |
+| 93 | **ERP sync backend** (normalize ERP data → supplier_emissions) | ✅ Built | erpEmissionsSync.ts - Scope 1 fuel/electricity + Scope 3 (transport, waste, travel, commute, purchased goods) keyword mapping to emission_factors |
+| 94 | **Local emission factor tables** (seeded from Climatiq/national DBs) | ✅ Built | emission_factors table, 78 rows seeded from DEFRA 2024/IPCC AR6/IEA 2024 incl. per-country African grid factors |
+| 95 | **World Bank API integration** | ✅ Built | worldbank-proxy edge function (public API, no key needed) - real GDP/population/poverty/CO2 indicators in DonorReportExport.tsx's "Country Development Context" section. Verified live against the real API (Kenya: GDP $120.4B, population 56.4M) |
+| 96 | **IATI (Aid Transparency) integration** | 🟡 Partial | iati-proxy edge function built and deployed (same cache-then-fetch pattern as World Bank); confirmed live that IATI's Datastore API requires a registered Ocp-Apim-Subscription-Key (401 without one) - blocked purely on that credential, not code. AidFlowDataCard on NgoDashboard shows real data once IATI_API_KEY is configured, or a clear activation message until then |
+| 97 | **Satellite imagery auto-validation** | ✅ Built | satellite-validation.ts - NDVI reading auto-checked against the report's SDG goal for plausibility, flags a "Mismatch" badge in the verification panel when implausible |
 
 ### 3.11 Platform Infrastructure & UX
 
@@ -295,14 +314,14 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 107 | Onboarding wizard | ✅ Built | OnboardingWizard |
 | 108 | Product walkthrough | ✅ Built | ProductWalkthrough |
 | 109 | Global search | ✅ Built | GlobalSearch + SearchInterface |
-| 110 | PWA offline data support | ❌ Not Built | SW caches shell only |
-| 111 | **Impact Credibility Score** per project | ❌ Not Built | |
-| 112 | **Funding Readiness Indicator** | ❌ Not Built | |
-| 113 | **Risk Flags** on projects | ❌ Not Built | |
-| 114 | **Decision Dashboard for Funders** | ❌ Not Built | |
-| 115 | **Badge & Reputation System** (Reporter → Verifier → Trainer) | ❌ Not Built | |
-| 116 | **Social Proof** ("First 1,000 reporters") | ❌ Not Built | |
-| 117 | **Contact form email delivery** | ❌ Not Built | |
+| 110 | PWA offline data support | ✅ Built | IndexedDB offline write queue for report submission (offline-report-queue.ts) - queues + auto-syncs on reconnect, verified live with real network emulation |
+| 111 | **Impact Credibility Score** per project | ✅ Built | impact-credibility.ts + ImpactCredibilityBadge, mounted in ProjectDetail.tsx |
+| 112 | **Funding Readiness Indicator** | ✅ Built | funding-readiness.ts + FundingReadinessBadge, mounted in ProjectDetail.tsx and FunderDashboard.tsx |
+| 113 | **Risk Flags** on projects | ✅ Built | risk-flags.ts + RiskFlagsList, mounted in ProjectDetail.tsx |
+| 114 | **Decision Dashboard for Funders** | ✅ Built | funder_decisions table + Interested/Pass buttons with committed-amount tracking in FunderDashboard.tsx |
+| 115 | **Badge & Reputation System** (Reporter → Verifier → Trainer) | ✅ Built | user_badges table, auto-awarded via triggers on reports.is_verified / verifier_profiles.verification_count+is_certified. Displayed on VerifierMarketplace and Forum posts |
+| 116 | **Social Proof** ("First 1,000 reporters") | ✅ Built | SocialProofBanner.tsx on the landing page, real mv_dashboard_stats counts |
+| 117 | **Contact form email delivery** | 🟡 Partial | send-contact-email edge function saves the submission and notifies admins in-app, but never sends an actual outbound email - no SMTP/Resend/SendGrid provider is configured (confirmed via the function's own code comment) |
 
 ---
 
