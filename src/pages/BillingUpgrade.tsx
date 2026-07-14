@@ -121,6 +121,7 @@ const BillingUpgrade = () => {
           planType,
           interval,
           amount,
+          redirect_url: `${window.location.origin}/payment-callback?type=subscription&organization_id=${organization.id}&plan_type=${planType}`,
         },
       });
 

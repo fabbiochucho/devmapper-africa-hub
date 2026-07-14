@@ -148,10 +148,28 @@ serve(async (req: Request) => {
       }
 
       if (metadata?.payment_type === 'donation' && metadata?.donation_id) {
-        await supabase
+        // Guard on status != 'completed' so a duplicate webhook delivery
+        // (on top of the idempotency check already done above) can't
+        // double-increment the campaign total. Use the donation's own
+        // stored amount (not the gateway's amount field) since it's
+        // already in the campaign's currency/unit.
+        const { data: donation } = await supabase
           .from('campaign_donations')
           .update({ status: 'completed', payment_intent_id: reference })
-          .eq('id', metadata.donation_id);
+          .eq('id', metadata.donation_id)
+          .neq('status', 'completed')
+          .select('campaign_id, amount')
+          .maybeSingle();
+
+        if (donation) {
+          const { error: incrementError } = await supabase.rpc('increment_campaign_raised_amount', {
+            p_campaign_id: donation.campaign_id,
+            p_amount: donation.amount,
+          });
+          if (incrementError) {
+            console.error('Failed to increment campaign raised_amount:', incrementError);
+          }
+        }
       }
 
       if (metadata?.payment_type === 'marketplace_purchase' && metadata?.order_id) {

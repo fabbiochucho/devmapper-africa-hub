@@ -172,7 +172,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Handle carbon marketplace purchases
     if (payment_type === 'marketplace_purchase') {
-      const { order_id, provider } = requestData;
+      const { order_id, provider, redirect_url: purchaseRedirectUrl } = requestData;
 
       if (!order_id) {
         return new Response(JSON.stringify({ error: 'Missing order_id' }), {
@@ -213,7 +213,10 @@ const handler = async (req: Request): Promise<Response> => {
           amount: Math.round(order.total_amount * 100),
           currency: order.currency || 'NGN',
           reference: tx_ref,
-          callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
+          // Paystack's callback_url is a browser redirect after checkout, not
+          // the webhook - the webhook URL is configured separately in the
+          // Paystack dashboard and fires server-to-server regardless of this.
+          callback_url: purchaseRedirectUrl || `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
           metadata: { order_id, payment_type: 'marketplace_purchase' },
         };
 
@@ -238,7 +241,11 @@ const handler = async (req: Request): Promise<Response> => {
           tx_ref,
           amount: order.total_amount,
           currency: order.currency || 'USD',
-          redirect_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
+          // Flutterwave's redirect_url is only the post-checkout browser
+          // landing page - the actual webhook is configured separately in
+          // the Flutterwave dashboard and fires server-to-server regardless
+          // of this value.
+          redirect_url: purchaseRedirectUrl || `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
           customer: { email: user.email, name: user.user_metadata?.full_name || 'DevMapper User' },
           customizations: {
             title: 'DevMapper Carbon Credit Purchase',
@@ -269,7 +276,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { organizationId, provider, planType, interval } = requestData;
+    const { organizationId, provider, planType, interval, redirect_url: subscriptionRedirectUrl } = requestData;
 
     // Verify user has access to the organization
     const { data: org, error: orgError } = await supabase
@@ -293,7 +300,9 @@ const handler = async (req: Request): Promise<Response> => {
         tx_ref,
         amount,
         currency: 'USD',
-        redirect_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
+        // Post-checkout browser landing page only - the real webhook is
+        // configured separately in the Flutterwave dashboard.
+        redirect_url: subscriptionRedirectUrl || `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
         customer: {
           email: user.email,
           name: user.user_metadata?.full_name || 'DevMapper User'
@@ -365,7 +374,9 @@ const handler = async (req: Request): Promise<Response> => {
         amount: amount * 100, // Paystack uses kobo/cents
         currency: 'NGN',
         reference: tx_ref,
-        callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
+        // Post-checkout browser landing page only - the real webhook is
+        // configured separately in the Paystack dashboard.
+        callback_url: subscriptionRedirectUrl || `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
         metadata: {
           organization_id: organizationId,
           plan_type: planType,

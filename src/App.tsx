@@ -45,6 +45,7 @@ const NgoDashboard = lazy(() => import("./pages/NgoDashboard"));
 const SdgAgenda2063Alignment = lazy(() => import("./pages/SdgAgenda2063"));
 const ESG = lazy(() => import("./pages/ESG"));
 const BillingUpgrade = lazy(() => import("./pages/BillingUpgrade"));
+const PaymentCallback = lazy(() => import("./pages/PaymentCallback"));
 const AdvancedAnalyticsPage = lazy(() => import("./pages/AdvancedAnalyticsPage"));
 const ChangeMakerMyAnalytics = lazy(() => import("./pages/ChangeMakerMyAnalytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -155,6 +156,7 @@ const App = () => (
                       }
                     />
                     <Route path="/billing-upgrade" element={<Guarded>{S(<BillingUpgrade />)}</Guarded>} />
+                    <Route path="/payment-callback" element={<Guarded>{S(<PaymentCallback />)}</Guarded>} />
                     <Route path="/advanced-analytics" element={<Guarded>{S(<AdvancedAnalyticsPage />)}</Guarded>} />
                     <Route path="/my-analytics" element={<Guarded>{S(<ChangeMakerMyAnalytics />)}</Guarded>} />
                     <Route path="/scholarship" element={<Guarded>{S(<Scholarship />)}</Guarded>} />

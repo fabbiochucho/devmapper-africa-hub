@@ -136,6 +136,7 @@ const CarbonMarketplace = () => {
           order_id: order.id,
           amount: totalAmount,
           currency: selectedListing.currency,
+          redirect_url: `${window.location.origin}/payment-callback?type=marketplace_purchase&order_id=${order.id}`,
         },
       });
       if (paymentError) throw paymentError;

@@ -27,9 +27,19 @@ const Fundraising = () => {
     // Data refresh is handled by the [filterStatus] effect below (which also
     // fires on mount); this effect only handles the toast + deep-link, so it
     // doesn't need to refetch on every unrelated searchParams change.
+    // Flutterwave appends its own `status` param to our redirect_url on top
+    // of the `donation=success` marker we set ourselves - checking only our
+    // own marker (as before) would show a success toast even for a
+    // cancelled/failed checkout, since we set that marker before knowing
+    // the real outcome.
     const donationStatus = searchParams.get('donation');
+    const gatewayStatus = searchParams.get('status');
     if (donationStatus === 'success') {
-      toast.success('Thank you for your donation! Your contribution will make a real impact.');
+      if (gatewayStatus === 'cancelled' || gatewayStatus === 'failed') {
+        toast.error('Your donation was not completed.', { description: 'No charge was made. Feel free to try again.' });
+      } else {
+        toast.success('Thank you for your donation! Your contribution will make a real impact.');
+      }
     }
 
     // Deep-link: open create dialog + prefill SDGs

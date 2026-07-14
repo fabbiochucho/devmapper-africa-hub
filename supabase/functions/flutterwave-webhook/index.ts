@@ -138,10 +138,28 @@ serve(async (req) => {
           );
         }
 
-        const { error: donationError } = await supabase
+        // Guard on status != 'completed' so a duplicate webhook delivery
+        // (on top of the idempotency check already done above) can't
+        // double-increment the campaign total. Use the donation's own
+        // stored amount (not the gateway's amount field) since it's
+        // already in the campaign's currency/unit.
+        const { data: donation, error: donationError } = await supabase
           .from('campaign_donations')
           .update({ status: 'completed', payment_intent_id: externalId })
-          .eq('id', donationId);
+          .eq('id', donationId)
+          .neq('status', 'completed')
+          .select('campaign_id, amount')
+          .maybeSingle();
+
+        if (donation) {
+          const { error: incrementError } = await supabase.rpc('increment_campaign_raised_amount', {
+            p_campaign_id: donation.campaign_id,
+            p_amount: donation.amount,
+          });
+          if (incrementError) {
+            console.error('Failed to increment campaign raised_amount:', incrementError);
+          }
+        }
 
         await supabase.rpc('record_webhook_event', {
           p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
