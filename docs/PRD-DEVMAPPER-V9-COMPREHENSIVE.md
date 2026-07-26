@@ -115,6 +115,28 @@ None of the 3 need further code investigation — each has a named, specific ext
 
 ---
 
+## 0.3 V9.5 Completion Update (2026-07-26)
+
+**#96 IATI (Aid Transparency) integration is now fully built and live-verified**, closing the credential gap documented in V9.4. `IATI_API_KEY` was registered and configured (Exploratory tier first, then upgraded to a Full Access subscription — the Exploratory tier's rate limit proved too tight for concurrent dashboard traffic). Live-verified end to end:
+- Direct call to `iati-proxy` for Kenya returned real activities (Zoological Society of London, FSD Africa, Slovak Foreign Ministry programs, etc.), not placeholder data.
+- `AidFlowDataCard` on `NgoDashboard` renders that same real data once an NGO has a project with a `country_code` set — confirmed via a live UI render (screenshot), not just API inspection.
+
+**Bug found and fixed during this verification:** `iati-proxy` treated IATI's `429 Rate limit exceeded` the same as any other upstream failure, surfacing a generic HTTP 500 to the client (visible as a browser console error). Fixed in both files:
+- `supabase/functions/iati-proxy/index.ts` — a 429 now returns `HTTP 200` with `{ configured: true, activities: [], rateLimited: true, message: "..." }` instead of throwing.
+- `src/components/ngo/AidFlowDataCard.tsx` — tracks the `rateLimited` flag and shows the friendly retry message instead of the misleading "No IATI-reported activities found for this country."
+
+Re-verified live after the fix and the key upgrade: a 20-request concurrent burst against fresh, uncached countries returned zero 500s — requests either returned real data or gracefully degraded to the rate-limited message. (Even Full Access has a concurrency ceiling — 8/20 succeeded in that artificial burst — but a real dashboard load only ever fires one request at a time, so this is expected to be a non-issue in practice.)
+
+**Revised completion estimate: 115/117 (98%) built, 2/117 (2%) partial. Zero items fully "Not Built."**
+
+### The only 2 remaining non-Built items — both genuinely blocked, not code gaps
+| # | Feature | Status | What's blocking it |
+|---|---|---|---|
+| 83 | Carbon credit purchase/retirement flow | 🟡 Partial | Order/checkout/webhook code is correct (confirmed via a live, user-authorized call to the real Flutterwave API). `FLUTTERWAVE_SECRET_KEY` is configured but invalid ("Invalid authorization key" from Flutterwave itself); `PAYSTACK_SECRET_KEY` isn't set. Needs a valid key from either provider. |
+| 117 | Contact form email delivery | 🟡 Partial | Submission is saved and admins are notified in-app, but no outbound email is ever sent — no SMTP/Resend/SendGrid provider is configured (confirmed via the edge function's own code comment). Needs an email provider credential + a few lines wiring it in. |
+
+---
+
 # DevMapper PRD V9.1 — Comprehensive Platform Roadmap (historical)
 ## Date: 2026-04-02
 
@@ -295,7 +317,7 @@ DevMapper is Africa's Carbon Economy Operating System — not just a reporting t
 | 93 | **ERP sync backend** (normalize ERP data → supplier_emissions) | ✅ Built | erpEmissionsSync.ts - Scope 1 fuel/electricity + Scope 3 (transport, waste, travel, commute, purchased goods) keyword mapping to emission_factors |
 | 94 | **Local emission factor tables** (seeded from Climatiq/national DBs) | ✅ Built | emission_factors table, 78 rows seeded from DEFRA 2024/IPCC AR6/IEA 2024 incl. per-country African grid factors |
 | 95 | **World Bank API integration** | ✅ Built | worldbank-proxy edge function (public API, no key needed) - real GDP/population/poverty/CO2 indicators in DonorReportExport.tsx's "Country Development Context" section. Verified live against the real API (Kenya: GDP $120.4B, population 56.4M) |
-| 96 | **IATI (Aid Transparency) integration** | 🟡 Partial | iati-proxy edge function built and deployed (same cache-then-fetch pattern as World Bank); confirmed live that IATI's Datastore API requires a registered Ocp-Apim-Subscription-Key (401 without one) - blocked purely on that credential, not code. AidFlowDataCard on NgoDashboard shows real data once IATI_API_KEY is configured, or a clear activation message until then |
+| 96 | **IATI (Aid Transparency) integration** | ✅ Built | iati-proxy edge function live with a Full Access IATI_API_KEY - verified live: real activity data returned for multiple countries and confirmed rendering in AidFlowDataCard on NgoDashboard. 429 rate-limit responses now degrade gracefully (200 + retry message) instead of surfacing as a 500 (fixed 2026-07-26) |
 | 97 | **Satellite imagery auto-validation** | ✅ Built | satellite-validation.ts - NDVI reading auto-checked against the report's SDG goal for plausibility, flags a "Mismatch" badge in the verification panel when implausible |
 
 ### 3.11 Platform Infrastructure & UX

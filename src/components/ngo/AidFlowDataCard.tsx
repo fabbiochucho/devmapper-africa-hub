@@ -24,6 +24,7 @@ export function AidFlowDataCard({ countryCode }: { countryCode: string | null })
   const [loading, setLoading] = useState(true);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [rateLimited, setRateLimited] = useState(false);
   const [activities, setActivities] = useState<IatiActivity[]>([]);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export function AidFlowDataCard({ countryCode }: { countryCode: string | null })
         if (error) { setMessage('Aid-flow data temporarily unavailable.'); return; }
         setConfigured(data?.configured ?? false);
         setMessage(data?.message ?? null);
+        setRateLimited(data?.rateLimited ?? false);
         setActivities(data?.activities ?? []);
       })
       .finally(() => setLoading(false));
@@ -51,7 +53,7 @@ export function AidFlowDataCard({ countryCode }: { countryCode: string | null })
       <CardContent>
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading...</p>
-        ) : configured === false ? (
+        ) : configured === false || rateLimited ? (
           <div className="flex gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-yellow-600" />
             <p>{message}</p>

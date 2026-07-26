@@ -73,6 +73,22 @@ serve(async (req) => {
       headers: { "Ocp-Apim-Subscription-Key": apiKey, Accept: "application/json" },
     });
 
+    if (resp.status === 429) {
+      // Exploratory-tier subscriptions rate-limit at ~1 req/sec; this is expected
+      // under concurrent traffic, not a real failure - degrade gracefully like the
+      // "not configured" case instead of surfacing a 500 to the client.
+      return new Response(JSON.stringify({
+        configured: true,
+        countryCode: code,
+        activities: [],
+        rateLimited: true,
+        message: "Aid-flow data is refreshing, please try again in a moment.",
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!resp.ok) {
       const body = await resp.text().catch(() => "");
       throw new Error(`IATI API error ${resp.status}: ${body.slice(0, 300)}`);
