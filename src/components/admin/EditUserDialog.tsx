@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,15 +36,16 @@ const EditUserDialog = ({ user, open, onOpenChange, onSaved }: EditUserDialogPro
     country: user?.country || "",
   });
 
-  // Sync form when user changes
-  if (user && formData.full_name === "" && formData.email === "" && user.full_name) {
+  // Sync form whenever a different user is opened
+  useEffect(() => {
+    if (!user) return;
     setFormData({
       full_name: user.full_name || "",
       email: user.email || "",
       organization: user.organization || "",
       country: user.country || "",
     });
-  }
+  }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
