@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +38,21 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+
+  // Profile loads asynchronously - sync form state once it arrives so edits
+  // aren't made against (and saved from) an empty initial snapshot.
+  useEffect(() => {
+    if (!profile) return;
+    setFullName(profile.full_name || "");
+    setCountry(profile.country || "");
+    setOrganization(profile.organization || "");
+    setBio(profile.bio || "");
+    setPhone(profile.phone || "");
+    setLegalCapacity((profile as any).legal_capacity || "");
+    setSectorClassification((profile as any).sector_classification || "");
+    setVerificationTier((profile as any).verification_tier || "");
+    setImpactArea((profile as any).impact_area || "");
+  }, [profile]);
 
   const handleSaveProfile = async () => {
     setSaving(true);

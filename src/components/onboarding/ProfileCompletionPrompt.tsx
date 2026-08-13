@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,15 @@ const ProfileCompletionPrompt = () => {
   const [organization, setOrganization] = useState(profile?.organization || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [phone, setPhone] = useState(profile?.phone || '');
+
+  // Profile loads asynchronously - hydrate fields once it arrives
+  useEffect(() => {
+    if (!profile) return;
+    setCountry(profile.country || '');
+    setOrganization(profile.organization || '');
+    setBio(profile.bio || '');
+    setPhone(profile.phone || '');
+  }, [profile]);
 
   // Don't show if profile is already complete or dismissed
   const isComplete = profile?.country && profile?.organization;
