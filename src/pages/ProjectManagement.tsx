@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,10 +110,7 @@ export default function ProjectManagement() {
   const hasResourceAlloc = ["pro", "advanced", "enterprise"].includes(userPlan);
   const hasAICopilot = ["pro", "advanced", "enterprise"].includes(userPlan);
 
-  useEffect(() => { if (user) fetchProjects(); }, [user]);
-  useEffect(() => { if (selectedProject) fetchTasks(); }, [selectedProject]);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     // Fetch user's own projects AND projects they're affiliated with
     const [ownResult, affResult] = await Promise.all([
       supabase.from("reports").select("id, title, description, location, sdg_goal, project_status, beneficiaries, start_date, end_date, user_id, country_code")
@@ -132,11 +129,15 @@ export default function ProjectManagement() {
 
     const allProjects = Array.from(projectMap.values());
     setProjects(allProjects);
-    if (!selectedProject && allProjects.length > 0) setSelectedProject(allProjects[0].id);
+    // Functional update - avoids needing `selectedProject` in this
+    // callback's closure/deps, which would otherwise change identity (and
+    // re-trigger the fetch effect below) every time the user just picks a
+    // different project.
+    setSelectedProject(prev => prev ?? allProjects[0]?.id);
     setLoading(false);
-  };
+  }, [user]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     const { data, error } = await supabase
       .from("project_tasks").select("*")
       .eq("report_id", selectedProject)
@@ -147,7 +148,10 @@ export default function ProjectManagement() {
       const assignedIds = rows.map(t => t.assigned_to).filter(Boolean) as string[];
       if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
     }
-  };
+  }, [selectedProject]);
+
+  useEffect(() => { if (user) fetchProjects(); }, [user, fetchProjects]);
+  useEffect(() => { if (selectedProject) fetchTasks(); }, [selectedProject, fetchTasks]);
 
   const createTask = async () => {
     if (!newTitle.trim() || !selectedProject || !user) return;

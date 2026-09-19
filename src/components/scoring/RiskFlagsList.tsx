@@ -19,16 +19,21 @@ export default function RiskFlagsList({ flags }: { flags: RiskFlag[] }) {
   }
 
   return (
-    <ul className="space-y-1.5">
-      {flags.map((flag, i) => {
-        const Icon = SEVERITY_ICON[flag.severity];
-        return (
-          <li key={i} className={`flex items-start gap-2 text-sm ${SEVERITY_CLASS[flag.severity]}`}>
-            <Icon className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{flag.message}</span>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground italic">
+        Preliminary risk detection - severity thresholds are pending review and not yet validated against real outcomes.
+      </p>
+      <ul className="space-y-1.5">
+        {flags.map((flag, i) => {
+          const Icon = SEVERITY_ICON[flag.severity];
+          return (
+            <li key={i} className={`flex items-start gap-2 text-sm ${SEVERITY_CLASS[flag.severity]}`}>
+              <Icon className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{flag.message}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

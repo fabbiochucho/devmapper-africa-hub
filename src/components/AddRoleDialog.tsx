@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUserRole, UserRole, ALL_ROLES } from "@/contexts/UserRoleContext";
+import { useUserRole, UserRole, SELF_ASSIGNABLE_ROLES } from "@/contexts/UserRoleContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ export const AddRoleDialog = ({ onClose }: AddRoleDialogProps) => {
   const [organization, setOrganization] = useState("");
   const [country, setCountry] = useState("");
 
-  const availableRoles = ALL_ROLES.filter(role => !hasRole(role));
+  const availableRoles = SELF_ASSIGNABLE_ROLES.filter(role => !hasRole(role));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

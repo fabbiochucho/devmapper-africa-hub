@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense } from "react";
-import { Outlet, useNavigate, Link, createSearchParams } from "react-router-dom";
+import { Outlet, useNavigate, useLocation, Link, createSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Report } from "@/data/mockReports";
@@ -11,6 +11,7 @@ import NotificationCenter from "./notifications/NotificationCenter";
 import GlobalSearch from "./search/GlobalSearch";
 import OnboardingWizard from "./onboarding/OnboardingWizard";
 import SessionTimeoutWarning from "./SessionTimeoutWarning";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -121,11 +122,21 @@ LayoutHeader.displayName = 'LayoutHeader';
 
 const Layout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile, signOut, session, isAdmin } = useAuth();
   const { currentRole, setCurrentRole } = useUserRole();
-  
+  const { trackPageView } = useAnalytics();
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Layout persists across route changes (it wraps <Outlet />), so real
+  // site-wide page views are only captured by tracking each navigation
+  // here - useAnalytics' own mount-time tracking would otherwise fire once
+  // per session, not once per page.
+  useEffect(() => {
+    trackPageView();
+  }, [location.pathname, trackPageView]);
 
   // Optimized onboarding check - single batched query
   useEffect(() => {

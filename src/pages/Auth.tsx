@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import RoleSelector from '@/components/auth/RoleSelector';
 import type { UserRole } from '@/contexts/UserRoleContext';
-import { supabase } from '@/integrations/supabase/client';
 import { validateEmailForRole } from '@/lib/emailDomainValidation';
 
 const Auth = () => {
@@ -21,6 +20,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
   const [loading, setLoading] = useState(false);
@@ -52,6 +52,7 @@ const Auth = () => {
       if (password.length < 6) return 'Password must be at least 6 characters';
     }
     if (isSignUp && !fullName.trim()) return 'Full name is required';
+    if (isSignUp && password !== signupConfirmPassword) return 'Passwords do not match';
     return null;
   };
 
@@ -93,10 +94,14 @@ const Auth = () => {
     }
     
     setLoading(true);
-    const { error: signUpError, data } = await signUp(email.trim(), password, fullName.trim());
-    
+    // The chosen role travels in signUp's user metadata and is applied by
+    // the handle_new_user() database trigger at account-creation time - a
+    // client-side write here can't work because there's no session yet
+    // until the user confirms their email (see migration for handle_new_user).
+    const { error: signUpError } = await signUp(email.trim(), password, fullName.trim(), selectedRole);
+    setLoading(false);
+
     if (signUpError) {
-      setLoading(false);
       if (signUpError.message.includes('already registered')) {
         setError('This email is already registered. Try signing in instead.');
       } else {
@@ -104,24 +109,6 @@ const Auth = () => {
       }
       return;
     }
-    
-    // Assign the selected role after successful signup
-    if (data?.user && selectedRole !== 'citizen_reporter') {
-      try {
-        // The default citizen_reporter role is already assigned by the database trigger
-        // We need to update it to the selected role
-        await supabase
-          .from('user_roles')
-          .update({ role: selectedRole })
-          .eq('user_id', data.user.id)
-          .eq('role', 'citizen_reporter');
-      } catch (roleError) {
-        console.error('Error assigning role:', roleError);
-        // Don't fail signup if role assignment fails
-      }
-    }
-    
-    setLoading(false);
     setSuccessMessage('Account created! Please check your email to confirm your account before signing in.');
   };
 
@@ -504,7 +491,18 @@ const Auth = () => {
                       required
                     />
                   </div>
-                  
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                    <Input
+                      id="signup-confirm-password"
+                      type="password"
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
                   <RoleSelector value={selectedRole} onChange={setSelectedRole} email={email} />
                   
                   <Button type="submit" className="w-full" disabled={loading || !isRoleValid}>

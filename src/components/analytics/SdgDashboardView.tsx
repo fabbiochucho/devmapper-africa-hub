@@ -18,32 +18,18 @@ import {
   Filter,
   CheckCircle,
   AlertCircle,
-  XCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 import { africanCountries } from "@/data/countries";
 import { sdgGoals } from "@/lib/constants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import SdgIcon from "@/components/landing/SdgIcon";
 
 interface CountryStat {
   country: string;
   projects: number;
   budget: number;
-}
-
-interface UserTypeTrend {
-  'Citizen Reporter': number;
-  'NGO Staff': number;
-  'Government Official': number;
-  'Researcher': number;
-}
-
-interface MonthlyUserTypeTrend {
-  month: string;
-  trends: UserTypeTrend;
 }
 
 interface AnalyticsData {
@@ -55,12 +41,20 @@ interface AnalyticsData {
   countryStats: CountryStat[];
   countryStatsByBudget: CountryStat[];
   monthlyTrends: { month: string; projects: number; budget: number }[];
-  verificationStats: { verified: number; pending: number; disputed: number };
-  monthlyUserTypeTrends: MonthlyUserTypeTrend[];
+  verificationStats: { verified: number; pending: number };
 }
 
 const countryCodeMap = new Map(africanCountries.map((c) => [c.name, c.code]));
+const codeToNameMap = new Map(africanCountries.map((c) => [c.code, c.name]));
 const sdgGoalMap = new Map(sdgGoals.map(g => [g.value, g.label]));
+
+const TIMEFRAME_MONTHS: Record<string, number | null> = {
+  '1month': 1,
+  '3months': 3,
+  '6months': 6,
+  '1year': 12,
+  'all': null,
+};
 
 const SdgDashboardView = () => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -69,73 +63,106 @@ const SdgDashboardView = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching data
-    const timer = setTimeout(() => {
-      fetchAnalytics();
-    }, 1000); // 1 second delay to show skeleton
-    return () => clearTimeout(timer);
+    fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCountry, selectedTimeframe]);
 
-  const fetchAnalytics = () => {
+  const fetchAnalytics = async () => {
     setIsLoading(true);
-    // In a real app, you'd fetch from an API. We'll use mock data.
-    setAnalytics(getMockAnalytics());
-    setIsLoading(false);
+    try {
+      let query = supabase
+        .from('reports')
+        .select('sdg_goal, country_code, cost, is_verified, project_status, submitted_at');
+
+      if (selectedCountry !== 'all') {
+        query = query.eq('country_code', selectedCountry);
+      }
+      const months = TIMEFRAME_MONTHS[selectedTimeframe];
+      if (months !== null) {
+        const since = new Date();
+        since.setMonth(since.getMonth() - months);
+        query = query.gte('submitted_at', since.toISOString());
+      }
+
+      const { data: reports, error } = await query;
+      if (error) throw error;
+
+      setAnalytics(computeAnalytics(reports || []));
+    } catch (error) {
+      console.error('Error fetching SDG analytics:', error);
+      setAnalytics(computeAnalytics([]));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getMockAnalytics = (): AnalyticsData => {
-    const baseCountryStats: CountryStat[] = [
-      { country: "Nigeria", projects: 298, budget: 12400000 },
-      { country: "Kenya", projects: 234, budget: 8900000 },
-      { country: "South Africa", projects: 187, budget: 11200000 },
-      { country: "Ghana", projects: 156, budget: 5600000 },
-      { country: "Ethiopia", projects: 134, budget: 4200000 },
-      { country: "Uganda", projects: 98, budget: 2800000 },
-      { country: "Tanzania", projects: 87, budget: 3100000 },
-      { country: "Rwanda", projects: 53, budget: 1400000 },
-    ];
+  const computeAnalytics = (
+    rows: { sdg_goal: number | null; country_code: string | null; cost: number | null; is_verified: boolean | null; project_status: string | null; submitted_at: string | null }[]
+  ): AnalyticsData => {
+    const totalProjects = rows.length;
+    const confirmedProjects = rows.filter(r => r.is_verified).length;
+    const totalBudget = rows.reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
+    const countriesActive = new Set(rows.map(r => r.country_code).filter(Boolean)).size;
+
+    const sdgCounts = new Map<number, number>();
+    rows.forEach(r => {
+      if (r.sdg_goal != null) sdgCounts.set(r.sdg_goal, (sdgCounts.get(r.sdg_goal) || 0) + 1);
+    });
+    const sdgDistribution = Array.from(sdgCounts.entries())
+      .map(([goal, count]) => ({
+        goal,
+        count,
+        percentage: totalProjects ? Math.round((count / totalProjects) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const countryMap = new Map<string, { projects: number; budget: number }>();
+    rows.forEach(r => {
+      if (!r.country_code) return;
+      const name = codeToNameMap.get(r.country_code) || r.country_code;
+      const entry = countryMap.get(name) || { projects: 0, budget: 0 };
+      entry.projects += 1;
+      entry.budget += Number(r.cost) || 0;
+      countryMap.set(name, entry);
+    });
+    const baseCountryStats: CountryStat[] = Array.from(countryMap.entries())
+      .map(([country, v]) => ({ country, projects: v.projects, budget: v.budget }));
+    const countryStats = [...baseCountryStats].sort((a, b) => b.projects - a.projects).slice(0, 8);
+    const countryStatsByBudget = [...baseCountryStats].sort((a, b) => b.budget - a.budget).slice(0, 8);
+
+    const monthKeys: string[] = [];
+    const monthBuckets = new Map<string, { projects: number; budget: number }>();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const key = d.toLocaleString('en-US', { month: 'short' });
+      monthKeys.push(key);
+      monthBuckets.set(key, { projects: 0, budget: 0 });
+    }
+    rows.forEach(r => {
+      if (!r.submitted_at) return;
+      const key = new Date(r.submitted_at).toLocaleString('en-US', { month: 'short' });
+      const entry = monthBuckets.get(key);
+      if (entry) {
+        entry.projects += 1;
+        entry.budget += Number(r.cost) || 0;
+      }
+    });
+    const monthlyTrends = monthKeys.map(month => ({ month, ...monthBuckets.get(month)! }));
 
     return {
-      totalProjects: 1247,
-      confirmedProjects: 892,
-      totalBudget: 45600000,
-      countriesActive: 12,
-      sdgDistribution: [
-        { goal: 6, count: 234, percentage: 18.8 },
-        { goal: 4, count: 198, percentage: 15.9 },
-        { goal: 3, count: 156, percentage: 12.5 },
-        { goal: 7, count: 134, percentage: 10.7 },
-        { goal: 2, count: 112, percentage: 9.0 },
-        { goal: 1, count: 98, percentage: 7.9 },
-        { goal: 8, count: 87, percentage: 7.0 },
-        { goal: 11, count: 76, percentage: 6.1 },
-        { goal: 5, count: 65, percentage: 5.2 },
-        { goal: 13, count: 54, percentage: 4.3 },
-        { goal: 9, count: 33, percentage: 2.6 },
-      ],
-      countryStats: [...baseCountryStats].sort((a,b) => b.projects - a.projects),
-      countryStatsByBudget: [...baseCountryStats].sort((a,b) => b.budget - a.budget),
-      monthlyTrends: [
-        { month: "Jan", projects: 89, budget: 3200000 },
-        { month: "Feb", projects: 112, budget: 4100000 },
-        { month: "Mar", projects: 134, budget: 5200000 },
-        { month: "Apr", projects: 156, budget: 6800000 },
-        { month: "May", projects: 178, budget: 7900000 },
-        { month: "Jun", projects: 203, budget: 9200000 },
-      ],
+      totalProjects,
+      confirmedProjects,
+      totalBudget,
+      countriesActive,
+      sdgDistribution,
+      countryStats,
+      countryStatsByBudget,
+      monthlyTrends,
       verificationStats: {
-        verified: 892,
-        pending: 234,
-        disputed: 121,
+        verified: confirmedProjects,
+        pending: totalProjects - confirmedProjects,
       },
-      monthlyUserTypeTrends: [
-        { month: "Jan", trends: { 'Citizen Reporter': 60, 'NGO Staff': 15, 'Government Official': 10, 'Researcher': 4 } },
-        { month: "Feb", trends: { 'Citizen Reporter': 70, 'NGO Staff': 20, 'Government Official': 12, 'Researcher': 10 } },
-        { month: "Mar", trends: { 'Citizen Reporter': 80, 'NGO Staff': 25, 'Government Official': 15, 'Researcher': 14 } },
-        { month: "Apr", trends: { 'Citizen Reporter': 95, 'NGO Staff': 30, 'Government Official': 18, 'Researcher': 13 } },
-        { month: "May", trends: { 'Citizen Reporter': 110, 'NGO Staff': 35, 'Government Official': 20, 'Researcher': 13 } },
-        { month: "Jun", trends: { 'Citizen Reporter': 120, 'NGO Staff': 40, 'Government Official': 25, 'Researcher': 18 } },
-      ],
     };
   };
 
@@ -156,13 +183,13 @@ const SdgDashboardView = () => {
   };
 
   const exportData = () => {
-    if (!analytics) return;
+    if (!analytics || analytics.countryStats.length === 0) return;
 
     const dataToExport = analytics.countryStats;
     const headers = Object.keys(dataToExport[0]);
     const csvRows = [
       headers.join(','),
-      ...dataToExport.map(row => 
+      ...dataToExport.map(row =>
         headers.map(header => {
             const val = row[header as keyof typeof row];
             if (typeof val === 'string') return `"${val.replace(/"/g, '""')}"`;
@@ -170,7 +197,7 @@ const SdgDashboardView = () => {
         }).join(',')
       )
     ];
-    
+
     const csvData = csvRows.join('\n');
     const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -182,7 +209,7 @@ const SdgDashboardView = () => {
     URL.revokeObjectURL(url);
     document.body.removeChild(a);
   };
-  
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -201,7 +228,7 @@ const SdgDashboardView = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
@@ -221,18 +248,6 @@ const SdgDashboardView = () => {
   }
 
   if (!analytics) return <div>No analytics data available.</div>;
-
-  const userTypeTrendsChartData = analytics.monthlyUserTypeTrends.map(d => ({
-    month: d.month,
-    ...d.trends,
-  }));
-
-  const userTypeChartConfig = {
-    'Citizen Reporter': { label: 'Citizen Reporter', color: '#3b82f6' },
-    'NGO Staff': { label: 'NGO Staff', color: '#22c55e' },
-    'Government Official': { label: 'Government Official', color: '#f97316' },
-    'Researcher': { label: 'Researcher', color: '#8b5cf6' },
-  }
 
   return (
     <div className="space-y-6">
@@ -328,19 +343,22 @@ const SdgDashboardView = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round((analytics.verificationStats.verified / analytics.totalProjects) * 100)}%
+              {analytics.totalProjects ? Math.round((analytics.verificationStats.verified / analytics.totalProjects) * 100) : 0}%
             </div>
             <p className="text-xs text-muted-foreground">{analytics.verificationStats.verified.toLocaleString()} verified</p>
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>SDG Goals Distribution</CardTitle>
           </CardHeader>
           <CardContent>
+            {analytics.sdgDistribution.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No reports yet for this filter.</p>
+            ) : (
             <TooltipProvider>
               <div className="space-y-4">
                 {analytics.sdgDistribution.map((sdg) => (
@@ -369,6 +387,7 @@ const SdgDashboardView = () => {
                 ))}
               </div>
             </TooltipProvider>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -382,7 +401,7 @@ const SdgDashboardView = () => {
                 <div className="font-bold text-lg">{analytics.verificationStats.verified.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Verified</div>
               </div>
-              <div className="ml-auto text-lg font-semibold">{Math.round((analytics.verificationStats.verified / analytics.totalProjects) * 100)}%</div>
+              <div className="ml-auto text-lg font-semibold">{analytics.totalProjects ? Math.round((analytics.verificationStats.verified / analytics.totalProjects) * 100) : 0}%</div>
             </div>
             <div className="flex items-center">
               <AlertCircle className="w-5 h-5 text-yellow-500 mr-3" />
@@ -390,15 +409,7 @@ const SdgDashboardView = () => {
                 <div className="font-bold text-lg">{analytics.verificationStats.pending.toLocaleString()}</div>
                 <div className="text-sm text-muted-foreground">Pending</div>
               </div>
-              <div className="ml-auto text-lg font-semibold">{Math.round((analytics.verificationStats.pending / analytics.totalProjects) * 100)}%</div>
-            </div>
-            <div className="flex items-center">
-              <XCircle className="w-5 h-5 text-red-500 mr-3" />
-              <div>
-                <div className="font-bold text-lg">{analytics.verificationStats.disputed.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Disputed</div>
-              </div>
-              <div className="ml-auto text-lg font-semibold">{Math.round((analytics.verificationStats.disputed / analytics.totalProjects) * 100)}%</div>
+              <div className="ml-auto text-lg font-semibold">{analytics.totalProjects ? Math.round((analytics.verificationStats.pending / analytics.totalProjects) * 100) : 0}%</div>
             </div>
           </CardContent>
         </Card>
@@ -409,6 +420,9 @@ const SdgDashboardView = () => {
             <CardTitle>Top Countries by Projects</CardTitle>
           </CardHeader>
           <CardContent>
+            {analytics.countryStats.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No reports yet for this filter.</p>
+            ) : (
             <div className="space-y-4">
               {analytics.countryStats.map((country, index) => {
                 const countryCode = countryCodeMap.get(country.country);
@@ -437,6 +451,7 @@ const SdgDashboardView = () => {
                 );
               })}
             </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -444,6 +459,9 @@ const SdgDashboardView = () => {
             <CardTitle>Top Countries by Investment</CardTitle>
           </CardHeader>
           <CardContent>
+            {analytics.countryStatsByBudget.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No reports yet for this filter.</p>
+            ) : (
             <div className="space-y-4">
               {analytics.countryStatsByBudget.map((country, index) => {
                 const countryCode = countryCodeMap.get(country.country);
@@ -472,6 +490,7 @@ const SdgDashboardView = () => {
                 );
               })}
             </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -482,7 +501,7 @@ const SdgDashboardView = () => {
             <div className="space-y-4">
               {analytics.monthlyTrends.map((month) => (
                 <div key={month.month} className="flex items-center justify-between">
-                  <span className="font-medium">{month.month} 2025</span>
+                  <span className="font-medium">{month.month}</span>
                   <div className="text-right">
                     <div className="font-medium">{month.projects.toLocaleString()} projects</div>
                     <div className="text-sm text-muted-foreground">{formatCurrency(month.budget)}</div>
@@ -493,26 +512,6 @@ const SdgDashboardView = () => {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Submissions by User Type</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={userTypeChartConfig} className="h-[300px] w-full">
-            <BarChart data={userTypeTrendsChartData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Legend />
-              <Bar dataKey="Citizen Reporter" stackId="a" fill="var(--color-Citizen Reporter)" />
-              <Bar dataKey="NGO Staff" stackId="a" fill="var(--color-NGO Staff)" />
-              <Bar dataKey="Government Official" stackId="a" fill="var(--color-Government Official)" />
-              <Bar dataKey="Researcher" stackId="a" fill="var(--color-Researcher)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 };

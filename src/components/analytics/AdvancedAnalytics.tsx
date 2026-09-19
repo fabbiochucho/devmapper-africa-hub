@@ -7,16 +7,27 @@ import { Activity, TrendingUp, Users, Eye, MousePointer, Clock } from 'lucide-re
 import { supabase } from '@/integrations/supabase/client';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
+interface DailyActivity { date: string; events: number; }
+interface HourlyActivity { hour: string; events: number; }
+interface TopPage { page: string; views: number; }
+interface DeviceBreakdown { name: string; value: number; color: string; }
+
 interface AnalyticsData {
-  pageViews: any[];
-  userEngagement: any[];
-  topPages: any[];
-  deviceTypes: any[];
-  realTimeUsers: number;
-  bounceRate: number;
-  avgSessionDuration: number;
+  dailyActivity: DailyActivity[];
+  hourlyActivity: HourlyActivity[];
+  topPages: TopPage[];
+  deviceTypes: DeviceBreakdown[];
+  totalEvents: number;
+  pageViewCount: number;
+  uniqueVisitors: number;
 }
 
+// Real analytics computed from public.analytics_events - no simulated data.
+// Metrics that would require session-duration/exit tracking (bounce rate,
+// average session length, live concurrent users) aren't included: nothing
+// in the schema tracks sessions today, so there's no honest way to compute
+// them - see the DevMapper launch audit for the decision to drop rather
+// than fabricate these.
 export function AdvancedAnalytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,44 +40,82 @@ export function AdvancedAnalytics() {
 
   const fetchAnalyticsData = async () => {
     try {
-      // Simulate fetching advanced analytics data
-      // In a real app, this would come from your analytics events table
-      const mockData: AnalyticsData = {
-        pageViews: [
-          { date: '2024-01-01', views: 1200, unique: 800 },
-          { date: '2024-01-02', views: 1350, unique: 900 },
-          { date: '2024-01-03', views: 1100, unique: 750 },
-          { date: '2024-01-04', views: 1500, unique: 1000 },
-          { date: '2024-01-05', views: 1800, unique: 1200 },
-          { date: '2024-01-06', views: 1600, unique: 1100 },
-          { date: '2024-01-07', views: 2000, unique: 1400 }
-        ],
-        userEngagement: [
-          { hour: '00:00', users: 45 },
-          { hour: '04:00', users: 20 },
-          { hour: '08:00', users: 150 },
-          { hour: '12:00', users: 300 },
-          { hour: '16:00', users: 250 },
-          { hour: '20:00', users: 180 }
-        ],
-        topPages: [
-          { page: '/', views: 5000, bounce: 0.4 },
-          { page: '/forum', views: 3200, bounce: 0.3 },
-          { page: '/analytics', views: 2100, bounce: 0.2 },
-          { page: '/change-makers', views: 1800, bounce: 0.35 },
-          { page: '/fundraising', views: 1500, bounce: 0.45 }
-        ],
-        deviceTypes: [
-          { name: 'Desktop', value: 45, color: '#8884d8' },
-          { name: 'Mobile', value: 35, color: '#82ca9d' },
-          { name: 'Tablet', value: 20, color: '#ffc658' }
-        ],
-        realTimeUsers: 127,
-        bounceRate: 0.34,
-        avgSessionDuration: 285
-      };
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      setData(mockData);
+      const { data: events, error } = await supabase
+        .from('analytics_events')
+        .select('event_type, page_url, user_agent, user_id, created_at')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      const rows = events || [];
+
+      // Daily activity, last 7 days (all event types)
+      const dayBuckets = new Map<string, number>();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dayBuckets.set(d.toISOString().slice(0, 10), 0);
+      }
+      rows.forEach(r => {
+        const day = (r.created_at || '').slice(0, 10);
+        if (dayBuckets.has(day)) dayBuckets.set(day, (dayBuckets.get(day) || 0) + 1);
+      });
+      const dailyActivity: DailyActivity[] = Array.from(dayBuckets.entries())
+        .map(([date, events]) => ({ date, events }));
+
+      // Activity by time of day (4-hour buckets, across the whole 7-day window)
+      const hourBucketStarts = [0, 4, 8, 12, 16, 20];
+      const hourCounts = hourBucketStarts.map(() => 0);
+      rows.forEach(r => {
+        if (!r.created_at) return;
+        const hour = new Date(r.created_at).getHours();
+        hourCounts[Math.floor(hour / 4)]++;
+      });
+      const hourlyActivity: HourlyActivity[] = hourBucketStarts.map((h, i) => ({
+        hour: `${h.toString().padStart(2, '0')}:00`,
+        events: hourCounts[i],
+      }));
+
+      // Top pages, from real page_view events
+      const pageCounts = new Map<string, number>();
+      rows.filter(r => r.event_type === 'page_view' && r.page_url).forEach(r => {
+        pageCounts.set(r.page_url!, (pageCounts.get(r.page_url!) || 0) + 1);
+      });
+      const topPages: TopPage[] = Array.from(pageCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([page, views]) => ({ page, views }));
+
+      // Device split, parsed from the real user_agent string
+      let mobile = 0, tablet = 0, desktop = 0;
+      rows.forEach(r => {
+        const ua = r.user_agent || '';
+        if (/iPad|Tablet/i.test(ua)) tablet++;
+        else if (/Mobile|Android|iPhone/i.test(ua)) mobile++;
+        else desktop++;
+      });
+      const deviceTotal = mobile + tablet + desktop || 1;
+      const deviceTypes: DeviceBreakdown[] = [
+        { name: 'Desktop', value: Math.round((desktop / deviceTotal) * 100), color: '#8884d8' },
+        { name: 'Mobile', value: Math.round((mobile / deviceTotal) * 100), color: '#82ca9d' },
+        { name: 'Tablet', value: Math.round((tablet / deviceTotal) * 100), color: '#ffc658' },
+      ];
+
+      const uniqueVisitors = new Set(rows.map(r => r.user_id || 'anonymous')).size;
+      const pageViewCount = rows.filter(r => r.event_type === 'page_view').length;
+
+      setData({
+        dailyActivity,
+        hourlyActivity,
+        topPages,
+        deviceTypes,
+        totalEvents: rows.length,
+        pageViewCount,
+        uniqueVisitors,
+      });
     } catch (error) {
       console.error('Error fetching analytics:', error);
     } finally {
@@ -97,19 +146,16 @@ export function AdvancedAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Real-time Metrics */}
+      {/* Real metrics from analytics_events, last 7 days */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Users</p>
-                <p className="text-2xl font-bold">{data.realTimeUsers}</p>
+                <p className="text-sm text-muted-foreground">Unique Visitors (7d)</p>
+                <p className="text-2xl font-bold">{data.uniqueVisitors}</p>
               </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
-                <Activity className="w-4 h-4 text-green-500" />
-              </div>
+              <Users className="w-4 h-4 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -118,10 +164,10 @@ export function AdvancedAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Bounce Rate</p>
-                <p className="text-2xl font-bold">{(data.bounceRate * 100).toFixed(1)}%</p>
+                <p className="text-sm text-muted-foreground">Page Views (7d)</p>
+                <p className="text-2xl font-bold">{data.pageViewCount.toLocaleString()}</p>
               </div>
-              <MousePointer className="w-4 h-4 text-blue-500" />
+              <Eye className="w-4 h-4 text-blue-500" />
             </div>
           </CardContent>
         </Card>
@@ -130,10 +176,10 @@ export function AdvancedAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg. Session</p>
-                <p className="text-2xl font-bold">{Math.floor(data.avgSessionDuration / 60)}m</p>
+                <p className="text-sm text-muted-foreground">Total Events (7d)</p>
+                <p className="text-2xl font-bold">{data.totalEvents.toLocaleString()}</p>
               </div>
-              <Clock className="w-4 h-4 text-orange-500" />
+              <Activity className="w-4 h-4 text-orange-500" />
             </div>
           </CardContent>
         </Card>
@@ -141,13 +187,11 @@ export function AdvancedAnalytics() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Page Views</p>
-                <p className="text-2xl font-bold">
-                  {data.pageViews.reduce((sum, day) => sum + day.views, 0).toLocaleString()}
-                </p>
+              <div className="min-w-0">
+                <p className="text-sm text-muted-foreground">Most Viewed Page</p>
+                <p className="text-lg font-bold truncate">{data.topPages[0]?.page || '—'}</p>
               </div>
-              <TrendingUp className="w-4 h-4 text-green-500" />
+              <TrendingUp className="w-4 h-4 text-green-500 shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -164,29 +208,20 @@ export function AdvancedAnalytics() {
         <TabsContent value="traffic">
           <Card>
             <CardHeader>
-              <CardTitle>Page Views Over Time</CardTitle>
+              <CardTitle>Activity Over Time</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={data.pageViews}>
+                <AreaChart data={data.dailyActivity}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
                   <Tooltip />
-                  <Area 
-                    type="monotone" 
-                    dataKey="views" 
-                    stackId="1"
-                    stroke="hsl(var(--primary))" 
-                    fill="hsl(var(--primary))" 
-                    fillOpacity={0.3}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="unique" 
-                    stackId="2"
-                    stroke="hsl(var(--secondary))" 
-                    fill="hsl(var(--secondary))" 
+                  <Area
+                    type="monotone"
+                    dataKey="events"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))"
                     fillOpacity={0.3}
                   />
                 </AreaChart>
@@ -198,19 +233,19 @@ export function AdvancedAnalytics() {
         <TabsContent value="engagement">
           <Card>
             <CardHeader>
-              <CardTitle>User Engagement by Hour</CardTitle>
+              <CardTitle>Activity by Time of Day</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={data.userEngagement}>
+                <LineChart data={data.hourlyActivity}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="hour" />
                   <YAxis />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="users" 
-                    stroke="hsl(var(--primary))" 
+                  <Line
+                    type="monotone"
+                    dataKey="events"
+                    stroke="hsl(var(--primary))"
                     strokeWidth={2}
                   />
                 </LineChart>
@@ -225,32 +260,23 @@ export function AdvancedAnalytics() {
               <CardTitle>Top Pages</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {data.topPages.map((page, index) => (
-                  <div key={page.page} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Badge variant="secondary">{index + 1}</Badge>
-                      <div>
+              {data.topPages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Not enough page-view data yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {data.topPages.map((page, index) => (
+                    <div key={page.page} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Badge variant="secondary">{index + 1}</Badge>
                         <p className="font-medium">{page.page}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {page.views.toLocaleString()} views
-                        </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {(page.bounce * 100).toFixed(1)}% bounce
+                      <p className="text-sm text-muted-foreground">
+                        {page.views.toLocaleString()} views
                       </p>
-                      <div className="w-20 bg-muted rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all"
-                          style={{ width: `${100 - (page.bounce * 100)}%` }}
-                        ></div>
-                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -280,12 +306,12 @@ export function AdvancedAnalytics() {
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
-                
+
                 <div className="space-y-4">
                   {data.deviceTypes.map((device) => (
                     <div key={device.name} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div 
+                        <div
                           className="w-4 h-4 rounded"
                           style={{ backgroundColor: device.color }}
                         ></div>

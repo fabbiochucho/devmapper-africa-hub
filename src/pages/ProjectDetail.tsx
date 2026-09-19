@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,10 +60,10 @@ export default function ProjectDetail() {
   const [selectedVerifierId, setSelectedVerifierId] = useState<string>("");
   const [routingSubmitting, setRoutingSubmitting] = useState(false);
 
-  const loadAssignments = () => {
+  const loadAssignments = useCallback(() => {
     if (!id) return;
     fetchReportAssignments(id).then(setAssignments).catch(() => {});
-  };
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -82,7 +82,7 @@ export default function ProjectDetail() {
       setLoading(false);
     });
     loadAssignments();
-  }, [id]);
+  }, [id, loadAssignments]);
 
   useEffect(() => {
     if (!user || !report || user.id !== report.user_id) return;

@@ -40,7 +40,16 @@ const handler = async (req: Request): Promise<Response> => {
     const requestData: PaymentRequest = await req.json();
     const { payment_type, amount, currency = 'USD' } = requestData;
 
-    console.log('Processing payment request:', requestData);
+    // Log identifying/routing fields only - never the raw request, which
+    // can carry a donor's email and name.
+    console.log('Processing payment request:', {
+      payment_type: requestData.payment_type,
+      amount: requestData.amount,
+      currency: requestData.currency,
+      organizationId: requestData.organizationId,
+      campaign_id: requestData.campaign_id,
+      order_id: requestData.order_id,
+    });
 
     // Handle donation payments (can be anonymous)
     if (payment_type === 'donation') {

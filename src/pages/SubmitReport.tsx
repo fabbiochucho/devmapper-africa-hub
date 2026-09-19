@@ -25,6 +25,9 @@ import { useEarthIntelligence } from '@/hooks/useEarthIntelligence';
 import { submitReportToServer } from '@/lib/report-submission';
 import { queueReport, flushQueuedReports, listQueuedReports } from '@/lib/offline-report-queue';
 import { WifiOff, RefreshCw } from 'lucide-react';
+import { SDG_INDICATOR_LIBRARY } from '@/data/sdgIndicatorLibrary';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { supabase } from '@/integrations/supabase/client';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
@@ -89,11 +92,14 @@ const SubmitReport = () => {
   });
 
   const sdgGoal = form.watch('sdg_goal');
+  const { data: exchangeRates } = useExchangeRates('USD');
 
   React.useEffect(() => {
     if (sdgGoal) {
-      const mockTargets = [`${sdgGoal}.1`, `${sdgGoal}.2`, `${sdgGoal}.a`, `${sdgGoal}.b`, `${sdgGoal}.c`];
-      setSdgTargets(mockTargets);
+      const realTargets = [...new Set(
+        SDG_INDICATOR_LIBRARY.filter(i => i.sdg === Number(sdgGoal)).map(i => i.target)
+      )];
+      setSdgTargets(realTargets);
       form.setValue('sdg_target', '');
     } else {
       setSdgTargets([]);
@@ -127,13 +133,33 @@ const SubmitReport = () => {
       return;
     }
 
-    try {
-      const { failedUploads } = await submitReportToServer(values, photos, user.id, fetchGEEData);
-
-      // Handle exchange rate logging
-      if (values.exchangeRateMode === 'auto' && values.startDate) {
-        console.log(`TODO: Auto-fetch exchange rate for ${values.costCurrency} in ${values.startDate.getFullYear()}`);
+    let finalValues = values;
+    if (values.exchangeRateMode === 'auto' && values.costCurrency && values.costCurrency !== 'USD') {
+      let rates = exchangeRates?.rates;
+      if (!rates) {
+        // Rates hook hasn't resolved yet - fetch directly so submission
+        // never silently proceeds without a rate.
+        const { data, error } = await supabase.functions.invoke('exchange-rates', { body: { base: 'USD' } });
+        if (error || !data?.rates) {
+          toast.error("Couldn't fetch the current exchange rate", {
+            description: "Please try again, or enter the rate manually.",
+          });
+          return;
+        }
+        rates = data.rates;
       }
+      const rate = rates[values.costCurrency];
+      if (!rate) {
+        toast.error(`No exchange rate available for ${values.costCurrency}`, {
+          description: "Please enter the rate manually.",
+        });
+        return;
+      }
+      finalValues = { ...values, usd_exchange_rate: rate };
+    }
+
+    try {
+      const { failedUploads } = await submitReportToServer(finalValues, photos, user.id, fetchGEEData);
 
       toast.success("Report submitted successfully!", {
         description: "Your report has been saved. You can now track progress via milestones.",

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,16 +37,6 @@ const SearchPage = () => {
   const sdgFilter = searchParams.get('sdg_goal') || 'all';
 
   useEffect(() => {
-    const q = searchParams.get('q');
-    if (q && q.length >= 2) {
-      setLoading(true);
-      performSearch(q, typeFilter, countryFilter, sdgFilter);
-    } else {
-      setResults(null);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
     async function fetchCountries() {
       const fetchedCountries = await getCountries();
       setCountries(fetchedCountries);
@@ -54,7 +44,7 @@ const SearchPage = () => {
     fetchCountries();
   }, []);
 
-  const performSearch = (q: string, type: string, country: string, sdg: string) => {
+  const performSearch = useCallback((q: string, type: string, country: string, sdg: string) => {
     const lowerCaseQuery = q.toLowerCase();
     
     const filteredProjects = mockReports.filter(p => {
@@ -79,7 +69,17 @@ const SearchPage = () => {
     });
 
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && q.length >= 2) {
+      setLoading(true);
+      performSearch(q, typeFilter, countryFilter, sdgFilter);
+    } else {
+      setResults(null);
+    }
+  }, [searchParams, performSearch, typeFilter, countryFilter, sdgFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

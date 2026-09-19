@@ -7,7 +7,7 @@ import {
   User, Users, Building2, Briefcase, Heart,
   AlertCircle, CheckCircle2, Info
 } from "lucide-react";
-import type { UserRole } from "@/contexts/UserRoleContext";
+import { SELF_ASSIGNABLE_ROLES, type UserRole } from "@/contexts/UserRoleContext";
 import { 
   validateEmailForRole, 
   getRoleConfig, 
@@ -50,13 +50,7 @@ const RoleSelector = ({ value, onChange, email = '' }: RoleSelectorProps) => {
   const [suggestedRole, setSuggestedRole] = useState<UserRole | null>(null);
 
   // Available roles for users to select (excluding admin roles)
-  const selectableRoles: UserRole[] = [
-    'citizen_reporter',
-    'ngo_member',
-    'government_official',
-    'company_representative',
-    'change_maker'
-  ];
+  const selectableRoles: UserRole[] = SELF_ASSIGNABLE_ROLES;
 
   useEffect(() => {
     if (email && email.includes('@')) {

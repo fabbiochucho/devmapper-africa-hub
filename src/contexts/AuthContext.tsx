@@ -11,7 +11,7 @@ interface AuthContextType {
   userRoles: string[];
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
+  signUp: (email: string, password: string, fullName?: string, role?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signInWithGithub: () => Promise<{ error: AuthError | null }>;
@@ -141,13 +141,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchProfile]);
 
-  const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName?: string, role?: string) => {
     const redirectUrl = `${window.location.origin}/`;
+    const metadata: Record<string, string> = {};
+    if (fullName) metadata.full_name = fullName;
+    if (role) metadata.selected_role = role;
     const { error, data } = await supabase.auth.signUp({
       email, password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: fullName ? { full_name: fullName } : undefined
+        data: Object.keys(metadata).length ? metadata : undefined
       }
     });
     if (error) toast.error(error.message);
