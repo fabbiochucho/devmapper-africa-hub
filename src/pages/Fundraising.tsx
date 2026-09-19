@@ -61,10 +61,7 @@ const Fundraising = () => {
     try {
       const query = supabase
         .from('fundraising_campaigns')
-        .select(`
-          *,
-          public_profiles!fundraising_campaigns_change_maker_id_fkey(full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       // Only filter by status if not "all"
@@ -76,10 +73,20 @@ const Fundraising = () => {
 
       if (error) throw error;
 
+      // Change-maker names fetched separately from public_profiles - this
+      // used to be a PostgREST embed (public_profiles!fkey(...)), but that
+      // relied on public_profiles being a view with special auth.users
+      // relationship inference that a plain synced table doesn't get.
+      const changeMakerIds = [...new Set((data || []).map(c => c.change_maker_id).filter((id): id is string => !!id))];
+      const { data: profiles } = changeMakerIds.length
+        ? await supabase.from('public_profiles').select('user_id, full_name').in('user_id', changeMakerIds)
+        : { data: [] as { user_id: string; full_name: string | null }[] };
+      const nameByUserId = new Map((profiles || []).map(p => [p.user_id, p.full_name]));
+
       const campaignsWithNames = data?.map(campaign => ({
         ...campaign,
         category: campaign.category as 'nano' | 'micro' | 'small',
-        change_maker_name: (campaign as any).public_profiles?.full_name || 'Anonymous'
+        change_maker_name: (campaign.change_maker_id && nameByUserId.get(campaign.change_maker_id)) || 'Anonymous'
       })) || [];
 
       setCampaigns(campaignsWithNames as FundraisingCampaign[]);

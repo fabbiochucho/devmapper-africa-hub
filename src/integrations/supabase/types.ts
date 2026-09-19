@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_areas: {
@@ -1263,13 +1288,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "corporate_targets_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       country_intelligence: {
@@ -2126,13 +2144,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: "fundraising_campaigns_change_maker_id_fkey"
-            columns: ["change_maker_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "fundraising_campaigns_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
@@ -2241,13 +2252,6 @@ export type Database = {
             columns: ["government_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "government_projects_government_id_fkey"
-            columns: ["government_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -3583,6 +3587,39 @@ export type Database = {
           },
         ]
       }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          country: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_verified: boolean
+          organization: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          is_verified?: boolean
+          organization?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_verified?: boolean
+          organization?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       regulatory_exposure_profiles: {
         Row: {
           actor_type: string
@@ -4881,39 +4918,6 @@ export type Database = {
         }
         Relationships: []
       }
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          country: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string | null
-          is_verified: boolean | null
-          organization: string | null
-          user_id: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          country?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          organization?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          country?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_verified?: boolean | null
-          organization?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       assign_test_role: {
@@ -5204,6 +5208,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [

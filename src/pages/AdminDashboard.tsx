@@ -101,7 +101,7 @@ export default function AdminDashboard() {
   const loadDashboard = useCallback(async () => {
     try {
       const [campaignsRes, totalUsersRes, pendingUsersCountRes, pendingProfilesRes, flagsRes] = await Promise.all([
-        supabase.from('fundraising_campaigns').select(`*, public_profiles!fundraising_campaigns_created_by_fkey(full_name)`).order('created_at', { ascending: false }),
+        supabase.from('fundraising_campaigns').select('*').order('created_at', { ascending: false }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_verified', false),
         supabase.from('profiles').select('user_id, full_name, email, organization, country, created_at').eq('is_verified', false).order('created_at', { ascending: false }).limit(20),
@@ -110,7 +110,21 @@ export default function AdminDashboard() {
 
       if (campaignsRes.error) throw campaignsRes.error;
 
-      const loadedCampaigns = ((campaignsRes.data as any) || []) as FundraisingCampaign[];
+      const rawCampaigns = (campaignsRes.data as any[]) || [];
+      // Creator names fetched separately from public_profiles - this used
+      // to be a PostgREST embed (public_profiles!fkey(...)), but that
+      // relied on public_profiles being a view with special auth.users
+      // relationship inference that a plain synced table doesn't get.
+      const creatorIds = [...new Set(rawCampaigns.map(c => c.created_by).filter(Boolean))];
+      const { data: creatorProfiles } = creatorIds.length
+        ? await supabase.from('public_profiles').select('user_id, full_name').in('user_id', creatorIds)
+        : { data: [] as { user_id: string; full_name: string | null }[] };
+      const creatorNameById = new Map((creatorProfiles || []).map(p => [p.user_id, p.full_name]));
+
+      const loadedCampaigns = rawCampaigns.map(c => ({
+        ...c,
+        public_profiles: { full_name: creatorNameById.get(c.created_by) || null },
+      })) as FundraisingCampaign[];
       setCampaigns(loadedCampaigns);
 
       const pending = (pendingProfilesRes.data || []).map((p: any) => ({
