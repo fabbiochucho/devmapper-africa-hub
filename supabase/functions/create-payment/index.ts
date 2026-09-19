@@ -216,7 +216,17 @@ const handler = async (req: Request): Promise<Response> => {
       const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
       const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
 
-      if (provider === 'paystack' && PAYSTACK_SECRET) {
+      // Each branch below only fires for its own explicitly-requested
+      // provider, and returns a clear error if that provider's secret is
+      // missing - a Paystack request must never silently fall through and
+      // get charged via Flutterwave instead just because PAYSTACK_SECRET
+      // isn't configured.
+      if (provider === 'paystack') {
+        if (!PAYSTACK_SECRET) {
+          return new Response(JSON.stringify({ error: 'Paystack is not configured for this deployment' }), {
+            status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
         const paystackPayload = {
           email: user.email,
           amount: Math.round(order.total_amount * 100),
@@ -245,7 +255,12 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error(paystackData.message || 'Failed to create Paystack payment link');
       }
 
-      if (FLUTTERWAVE_SECRET) {
+      if (provider === 'flutterwave' || !provider) {
+        if (!FLUTTERWAVE_SECRET) {
+          return new Response(JSON.stringify({ error: 'Flutterwave is not configured for this deployment' }), {
+            status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
         const flutterwavePayload = {
           tx_ref,
           amount: order.total_amount,
@@ -300,8 +315,19 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
-    
-    if (provider === 'flutterwave' && FLUTTERWAVE_SECRET) {
+    const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
+
+    // As with marketplace purchases above: each branch only fires for its
+    // own explicitly-requested provider and errors clearly if unconfigured,
+    // rather than falling through to the dev-mode mock fallback below and
+    // reporting a fake "success" (with a fabricated billing_events row) for
+    // a payment that was never actually attempted.
+    if (provider === 'flutterwave') {
+      if (!FLUTTERWAVE_SECRET) {
+        return new Response(JSON.stringify({ error: 'Flutterwave is not configured for this deployment' }), {
+          status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
       // Create real Flutterwave payment
       const tx_ref = `sub_${organizationId}_${Date.now()}`;
       
@@ -375,8 +401,12 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Handle Paystack subscription payments
-    const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
-    if (provider === 'paystack' && PAYSTACK_SECRET) {
+    if (provider === 'paystack') {
+      if (!PAYSTACK_SECRET) {
+        return new Response(JSON.stringify({ error: 'Paystack is not configured for this deployment' }), {
+          status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
       const tx_ref = `sub_${organizationId}_${Date.now()}`;
       const paystackPayload = {
         email: user.email,
@@ -430,10 +460,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(paystackData.message || 'Paystack declined the subscription payment request');
     }
 
-    // Fallback to mock payment for development (only reached when NEITHER
-    // provider has a secret configured at all - a configured provider that
-    // fails throws above instead of reaching here).
-    const paymentUrl = provider === 'flutterwave' 
+    // Fallback to mock payment for development - only reached when `provider`
+    // is neither 'flutterwave' nor 'paystack' (e.g. omitted entirely). Either
+    // named provider is fully handled above: it either succeeds for real, or
+    // returns a clear error (missing secret or gateway rejection) - never
+    // silently mocked.
+    const paymentUrl = provider === 'flutterwave'
       ? `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`
       : `https://checkout.paystack.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`;
     
