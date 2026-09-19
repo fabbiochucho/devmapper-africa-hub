@@ -240,6 +240,14 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/countries" className={getNavCls}>
+                    <Globe className="h-4 w-4" />
+                    {!collapsed && <span className="ml-2">Country Directory</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {isAuthenticated && (
                 <>
                   <SidebarMenuItem>

@@ -12,6 +12,7 @@ export const reportSchema = z.object({
   issue_type: z.string().optional(),
   issue_severity: z.string().optional(),
   evidence_type: z.string().optional(),
+  responsibility_area: z.string().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
   cost: z.coerce.number().optional(),

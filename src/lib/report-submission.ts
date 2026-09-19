@@ -39,6 +39,7 @@ export async function submitReportToServer(
       issue_type: values.issue_type && values.issue_type !== 'none' ? values.issue_type : null,
       issue_severity: values.issue_severity || 'low',
       evidence_type: values.evidence_type && values.evidence_type !== 'none' ? values.evidence_type : null,
+      responsibility_area: values.responsibility_area && values.responsibility_area !== 'none' ? values.responsibility_area : null,
       start_date: values.startDate ? new Date(values.startDate).toISOString().split('T')[0] : null,
       end_date: values.endDate ? new Date(values.endDate).toISOString().split('T')[0] : null,
       sponsor: values.sponsor || null,

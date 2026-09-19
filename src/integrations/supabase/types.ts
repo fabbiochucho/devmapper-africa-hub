@@ -1353,6 +1353,84 @@ export type Database = {
         }
         Relationships: []
       }
+      country_ratings: {
+        Row: {
+          agriculture: number | null
+          civil_registration: number | null
+          country_code: string
+          created_at: string
+          economic_revenue: number | null
+          education: number | null
+          governance: number | null
+          health: number | null
+          id: string
+          infrastructure: number | null
+          rater_id: string
+          rating_period: string
+          water_sanitation: number | null
+        }
+        Insert: {
+          agriculture?: number | null
+          civil_registration?: number | null
+          country_code: string
+          created_at?: string
+          economic_revenue?: number | null
+          education?: number | null
+          governance?: number | null
+          health?: number | null
+          id?: string
+          infrastructure?: number | null
+          rater_id: string
+          rating_period?: string
+          water_sanitation?: number | null
+        }
+        Update: {
+          agriculture?: number | null
+          civil_registration?: number | null
+          country_code?: string
+          created_at?: string
+          economic_revenue?: number | null
+          education?: number | null
+          governance?: number | null
+          health?: number | null
+          id?: string
+          infrastructure?: number | null
+          rater_id?: string
+          rating_period?: string
+          water_sanitation?: number | null
+        }
+        Relationships: []
+      }
+      country_stats_snapshots: {
+        Row: {
+          avg_rating: number | null
+          country_code: string
+          created_at: string
+          id: string
+          snapshot_date: string
+          total_reports: number
+          verified_reports: number
+        }
+        Insert: {
+          avg_rating?: number | null
+          country_code: string
+          created_at?: string
+          id?: string
+          snapshot_date?: string
+          total_reports: number
+          verified_reports: number
+        }
+        Update: {
+          avg_rating?: number | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          snapshot_date?: string
+          total_reports?: number
+          verified_reports?: number
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string
@@ -3872,6 +3950,7 @@ export type Database = {
           lng: number | null
           location: string | null
           project_status: string
+          responsibility_area: string | null
           sdg_goal: number
           sponsor: string | null
           start_date: string | null
@@ -3904,6 +3983,7 @@ export type Database = {
           lng?: number | null
           location?: string | null
           project_status?: string
+          responsibility_area?: string | null
           sdg_goal: number
           sponsor?: string | null
           start_date?: string | null
@@ -3936,6 +4016,7 @@ export type Database = {
           lng?: number | null
           location?: string | null
           project_status?: string
+          responsibility_area?: string | null
           sdg_goal?: number
           sponsor?: string | null
           start_date?: string | null
@@ -4938,6 +5019,7 @@ export type Database = {
         Args: { p_feature: string; p_user_id: string }
         Returns: boolean
       }
+      capture_country_stats_snapshot: { Args: never; Returns: undefined }
       check_project_quota: { Args: { p_org_id: string }; Returns: boolean }
       check_webhook_processed: {
         Args: { p_event_id: string; p_provider: string }
@@ -4951,6 +5033,31 @@ export type Database = {
           data_source: string
           description: string
           goal: string
+        }[]
+      }
+      get_country_directory_stats: {
+        Args: never
+        Returns: {
+          country_code: string
+          total_budget: number
+          total_reports: number
+          verified_reports: number
+        }[]
+      }
+      get_country_rating_aggregates: {
+        Args: never
+        Returns: {
+          avg_agriculture: number
+          avg_civil_registration: number
+          avg_economic_revenue: number
+          avg_education: number
+          avg_governance: number
+          avg_health: number
+          avg_infrastructure: number
+          avg_overall: number
+          avg_water_sanitation: number
+          country_code: string
+          rater_count: number
         }[]
       }
       get_dashboard_stats: {
@@ -4974,6 +5081,20 @@ export type Database = {
           sdg_label: string
           total_budget: number
           total_spent: number
+        }[]
+      }
+      get_most_improved_countries: {
+        Args: { p_days?: number }
+        Returns: {
+          country_code: string
+          earliest_date: string
+          earliest_reports: number
+          earliest_verified: number
+          latest_date: string
+          latest_reports: number
+          latest_verified: number
+          report_delta: number
+          verified_delta: number
         }[]
       }
       get_test_accounts: {

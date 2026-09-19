@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, Download } from "lucide-react";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, Download, Award } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -80,6 +80,79 @@ function AuditLogViewer() {
             ))}
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Inline Certification Review Panel - approving here is now the only
+// legitimate path a status can move away from 'submitted' (RLS blocks
+// applicants from setting anything but 'submitted'/'withdrawn' themselves).
+function CertificationReviewPanel() {
+  const { user } = useAuth();
+  const [apps, setApps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actingId, setActingId] = useState<string | null>(null);
+
+  const loadApps = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('certification_applications')
+      .select('id, requested_tier, status, project_description, budget_usd, geographic_scope, evidence_summary, applicant_id, submitted_at')
+      .eq('status', 'submitted')
+      .order('submitted_at', { ascending: true });
+    if (error) { console.error(error); toast.error('Failed to load certification applications'); }
+    setApps(data || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadApps(); }, [loadApps]);
+
+  const handleReview = async (id: string, status: 'approved' | 'rejected') => {
+    setActingId(id);
+    try {
+      const { error } = await supabase.from('certification_applications').update({
+        status, reviewed_by: user?.id, reviewed_at: new Date().toISOString(),
+      }).eq('id', id);
+      if (error) throw error;
+      toast.success(`Application ${status}`);
+      loadApps();
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to update application');
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  if (loading) return <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Award />Certification Applications Awaiting Review</CardTitle></CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {apps.map(app => (
+            <div key={app.id} className="border rounded-lg p-4">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold capitalize">{app.requested_tier} tier</h3>
+                    <Badge variant="outline">{app.geographic_scope || 'Unspecified scope'}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{app.project_description}</p>
+                  {app.budget_usd != null && <p className="text-sm text-muted-foreground"><strong>Budget:</strong> ${Number(app.budget_usd).toLocaleString()}</p>}
+                  {app.evidence_summary && <p className="text-sm text-muted-foreground"><strong>Evidence:</strong> {app.evidence_summary}</p>}
+                  <p className="text-xs text-muted-foreground">Submitted {new Date(app.submitted_at).toLocaleDateString()}</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button size="sm" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'approved')}><CheckCircle className="mr-1 h-4 w-4" />Approve</Button>
+                  <Button size="sm" variant="destructive" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'rejected')}><XCircle className="mr-1 h-4 w-4" />Reject</Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {apps.length === 0 && <div className="text-center py-8 text-muted-foreground"><Award className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>No certification applications awaiting review</p></div>}
+        </div>
       </CardContent>
     </Card>
   );
@@ -292,6 +365,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
           <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
           <TabsTrigger value="content">Flagged Content {flaggedReports.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{flaggedReports.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="certifications">Certification Review</TabsTrigger>
           <TabsTrigger value="partners">Partner Management</TabsTrigger>
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
           <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
@@ -386,6 +460,10 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="certifications">
+          <CertificationReviewPanel />
         </TabsContent>
 
         <TabsContent value="broadcasts"><BroadcastManager /></TabsContent>

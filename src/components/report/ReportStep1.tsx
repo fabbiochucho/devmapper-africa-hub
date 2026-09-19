@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { sdgGoals, projectStatuses } from "@/lib/constants";
+import { responsibilityAreas } from "@/data/responsibilityAreas";
 import { ImagePlus, Trash2, MapPin } from "lucide-react";
 import ExifReader from "exif-reader";
 import { Buffer } from 'buffer';
@@ -246,7 +247,31 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
       <div className="space-y-4 rounded-lg border p-4">
         <Label className="font-semibold">Issue Classification (Optional)</Label>
         <p className="text-xs text-muted-foreground">If this is an issue report, classify it below.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <FormField
+            control={control}
+            name="responsibility_area"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Government Responsibility Area</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {responsibilityAreas.map((area) => (
+                      <SelectItem key={area.value} value={area.value}>
+                        {area.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
           <FormField
             control={control}
             name="issue_type"
