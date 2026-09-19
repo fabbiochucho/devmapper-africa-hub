@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useHydrateFormFromSource } from '@/hooks/useHydrateFormFromSource';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,13 +20,12 @@ const ProfileCompletionPrompt = () => {
   const [phone, setPhone] = useState(profile?.phone || '');
 
   // Profile loads asynchronously - hydrate fields once it arrives
-  useEffect(() => {
-    if (!profile) return;
-    setCountry(profile.country || '');
-    setOrganization(profile.organization || '');
-    setBio(profile.bio || '');
-    setPhone(profile.phone || '');
-  }, [profile]);
+  useHydrateFormFromSource(profile, (p) => {
+    setCountry(p.country || '');
+    setOrganization(p.organization || '');
+    setBio(p.bio || '');
+    setPhone(p.phone || '');
+  });
 
   // Don't show if profile is already complete or dismissed
   const isComplete = profile?.country && profile?.organization;

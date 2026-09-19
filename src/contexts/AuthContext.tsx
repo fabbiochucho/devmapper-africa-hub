@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError, PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { UserProfile } from '@/lib/types';
@@ -10,14 +10,14 @@ interface AuthContextType {
   profile: UserProfile | null;
   userRoles: string[];
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any; data?: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ error: any }>;
-  signInWithGithub: () => Promise<{ error: any }>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
-  updatePassword: (newPassword: string) => Promise<{ error: any }>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
+  signInWithGithub: () => Promise<{ error: AuthError | null }>;
+  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | PostgrestError | null }>;
   hasRole: (role: string) => boolean;
   isAdmin: boolean;
   refreshProfile: () => Promise<void>;
@@ -66,27 +66,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // so clearing it before the fetch settles bounces authorized users off
     // role-gated routes (the same bug already fixed in UserRoleContext.tsx).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (session?.user) {
-          // Still deferred via setTimeout to avoid calling further Supabase
-          // methods synchronously inside onAuthStateChange (documented
-          // deadlock risk), but loading now waits for the deferred fetch.
-          setTimeout(() => {
-            if (!mounted) return;
-            fetchProfile(session.user.id).finally(() => {
-              if (mounted) setLoading(false);
-            });
-          }, 0);
-        } else {
+        if (!session?.user) {
           setProfile(null);
           setUserRoles([]);
           setLoading(false);
+          return;
         }
+
+        // TOKEN_REFRESHED fires purely for silent token rotation - profile
+        // data hasn't changed, so skip refetching. Otherwise this replaces
+        // `profile` with a new object reference on a timer in the
+        // background, which re-triggers "hydrate form from profile" effects
+        // in consumers (e.g. Settings, ProfileCompletionPrompt) and silently
+        // clobbers whatever the user is mid-typing.
+        if (event === 'TOKEN_REFRESHED') return;
+
+        // Still deferred via setTimeout to avoid calling further Supabase
+        // methods synchronously inside onAuthStateChange (documented
+        // deadlock risk), but loading now waits for the deferred fetch.
+        setTimeout(() => {
+          if (!mounted) return;
+          fetchProfile(session.user.id).finally(() => {
+            if (mounted) setLoading(false);
+          });
+        }, 0);
       }
     );
 
@@ -174,7 +183,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    if (!user) return { error: { message: 'Not authenticated' } };
+    if (!user) return { error: new Error('Not authenticated') };
     const { error } = await supabase.from('profiles').update(updates).eq('user_id', user.id);
     if (error) toast.error(error.message);
     else {
@@ -208,6 +217,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// useAuth is imported alongside AuthProvider from this file in ~80 places;
+// splitting it into its own module is a large mechanical rename with no
+// behavior benefit (HMR fast-refresh only), so scope the warning down instead.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');

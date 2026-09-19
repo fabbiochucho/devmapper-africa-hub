@@ -12,4 +12,8 @@ export interface UserProfile {
   is_verified: boolean;
   created_at: string;
   updated_at: string;
+  legal_capacity: string | null;
+  sector_classification: string | null;
+  verification_tier: string | null;
+  impact_area: string | null;
 }

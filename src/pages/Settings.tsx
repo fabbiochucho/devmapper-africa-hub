@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHydrateFormFromSource } from "@/hooks/useHydrateFormFromSource";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -29,10 +30,10 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
 
   // Entity enrichment fields
-  const [legalCapacity, setLegalCapacity] = useState((profile as any)?.legal_capacity || "");
-  const [sectorClassification, setSectorClassification] = useState((profile as any)?.sector_classification || "");
-  const [verificationTier, setVerificationTier] = useState((profile as any)?.verification_tier || "");
-  const [impactArea, setImpactArea] = useState((profile as any)?.impact_area || "");
+  const [legalCapacity, setLegalCapacity] = useState(profile?.legal_capacity || "");
+  const [sectorClassification, setSectorClassification] = useState(profile?.sector_classification || "");
+  const [verificationTier, setVerificationTier] = useState(profile?.verification_tier || "");
+  const [impactArea, setImpactArea] = useState(profile?.impact_area || "");
   const [savingEnrichment, setSavingEnrichment] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
@@ -41,22 +42,21 @@ const Settings = () => {
 
   // Profile loads asynchronously - sync form state once it arrives so edits
   // aren't made against (and saved from) an empty initial snapshot.
-  useEffect(() => {
-    if (!profile) return;
-    setFullName(profile.full_name || "");
-    setCountry(profile.country || "");
-    setOrganization(profile.organization || "");
-    setBio(profile.bio || "");
-    setPhone(profile.phone || "");
-    setLegalCapacity((profile as any).legal_capacity || "");
-    setSectorClassification((profile as any).sector_classification || "");
-    setVerificationTier((profile as any).verification_tier || "");
-    setImpactArea((profile as any).impact_area || "");
-  }, [profile]);
+  useHydrateFormFromSource(profile, (p) => {
+    setFullName(p.full_name || "");
+    setCountry(p.country || "");
+    setOrganization(p.organization || "");
+    setBio(p.bio || "");
+    setPhone(p.phone || "");
+    setLegalCapacity(p.legal_capacity || "");
+    setSectorClassification(p.sector_classification || "");
+    setVerificationTier(p.verification_tier || "");
+    setImpactArea(p.impact_area || "");
+  });
 
   const handleSaveProfile = async () => {
     setSaving(true);
-    const { error } = await updateProfile({
+    await updateProfile({
       full_name: fullName,
       country,
       organization,

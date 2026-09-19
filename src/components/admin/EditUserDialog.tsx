@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { africanCountries } from "@/data/countries";
+import { useHydrateFormFromSource } from "@/hooks/useHydrateFormFromSource";
 
 interface UserProfile {
   id: string;
@@ -37,15 +38,14 @@ const EditUserDialog = ({ user, open, onOpenChange, onSaved }: EditUserDialogPro
   });
 
   // Sync form whenever a different user is opened
-  useEffect(() => {
-    if (!user) return;
+  useHydrateFormFromSource(user, (u) => {
     setFormData({
-      full_name: user.full_name || "",
-      email: user.email || "",
-      organization: user.organization || "",
-      country: user.country || "",
+      full_name: u.full_name || "",
+      email: u.email || "",
+      organization: u.organization || "",
+      country: u.country || "",
     });
-  }, [user]);
+  });
 
   const handleSave = async () => {
     if (!user) return;
@@ -64,9 +64,9 @@ const EditUserDialog = ({ user, open, onOpenChange, onSaved }: EditUserDialogPro
       toast.success("User profile updated");
       onSaved();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating user:", error);
-      toast.error(error.message || "Failed to update user");
+      toast.error(error instanceof Error ? error.message : "Failed to update user");
     } finally {
       setSaving(false);
     }
