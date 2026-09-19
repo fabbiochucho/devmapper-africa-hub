@@ -25,6 +25,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function isProfileEqual(a: UserProfile | null, b: UserProfile | null) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function areRolesEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((role, i) => role === sortedB[i]);
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -42,8 +55,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         supabase.from('organizations').select('id').eq('created_by', userId).limit(1).maybeSingle()
       ]);
 
-      setProfile(profileResult.data as UserProfile | null);
-      setUserRoles(rolesResult.data?.map(r => r.role) || []);
+      const nextProfile = profileResult.data as UserProfile | null;
+      const nextRoles = rolesResult.data?.map(r => r.role) || [];
+
+      // Keep the same object/array reference when the fetched data hasn't
+      // actually changed (e.g. a background TOKEN_REFRESHED reconciliation)
+      // so consumers that hydrate local form state from `profile` via a
+      // `[profile]` effect dependency don't get retriggered and clobber
+      // whatever the user is mid-typing.
+      setProfile((prev) => (isProfileEqual(prev, nextProfile) ? prev : nextProfile));
+      setUserRoles((prev) => (areRolesEqual(prev, nextRoles) ? prev : nextRoles));
 
       // Auto-create organization if none exists (needed for quotas/billing)
       if (!orgResult.data && profileResult.data) {
@@ -66,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // so clearing it before the fetch settles bounces authorized users off
     // role-gated routes (the same bug already fixed in UserRoleContext.tsx).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         if (!mounted) return;
 
         setSession(session);
@@ -79,14 +100,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // TOKEN_REFRESHED fires purely for silent token rotation - profile
-        // data hasn't changed, so skip refetching. Otherwise this replaces
-        // `profile` with a new object reference on a timer in the
-        // background, which re-triggers "hydrate form from profile" effects
-        // in consumers (e.g. Settings, ProfileCompletionPrompt) and silently
-        // clobbers whatever the user is mid-typing.
-        if (event === 'TOKEN_REFRESHED') return;
-
+        // Refetch on every event, including background TOKEN_REFRESHED
+        // rotations, so a server-side role/profile change (e.g. an admin
+        // revoking a privilege) reconciles promptly instead of only on the
+        // next full sign-in. fetchProfile itself avoids identity churn when
+        // the data hasn't changed (see isProfileEqual/areRolesEqual above),
+        // so this no longer clobbers in-progress form edits.
+        //
         // Still deferred via setTimeout to avoid calling further Supabase
         // methods synchronously inside onAuthStateChange (documented
         // deadlock risk), but loading now waits for the deferred fetch.
