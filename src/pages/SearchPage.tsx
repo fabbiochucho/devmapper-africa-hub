@@ -5,12 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockReports, Report } from '@/data/mockReports';
-import { mockOrganizations, Organization } from '@/data/mockOrganizations';
+import { supabase } from '@/integrations/supabase/client';
 import { sdgGoals } from '@/lib/constants';
 import { getCountries, Country } from '@/data/countries';
 import { Search, FolderKanban, User, Building } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
+
+interface SearchProject {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+}
 
 interface UserProfile {
   id: string;
@@ -18,10 +24,16 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
+interface SearchOrganization {
+  name: string;
+  country: string | null;
+  members_count: number;
+}
+
 type SearchResults = {
-  projects: Report[];
+  projects: SearchProject[];
   users: UserProfile[];
-  organizations: Organization[];
+  organizations: SearchOrganization[];
 };
 
 const SearchPage = () => {
@@ -44,30 +56,70 @@ const SearchPage = () => {
     fetchCountries();
   }, []);
 
-  const performSearch = useCallback((q: string, type: string, country: string, sdg: string) => {
+  const performSearch = useCallback(async (q: string, type: string, country: string, sdg: string) => {
+    // `,` and `(`/`)` are structural characters in PostgREST's `.or()` filter
+    // syntax - left unescaped, a search string containing them could inject
+    // extra filter conditions rather than being treated as literal text.
+    const safeTerm = q.replace(/[,()]/g, '');
+    const term = `%${safeTerm}%`;
+
+    const wantsProjects = type === 'all' || type === 'projects';
+    const wantsProfiles = type === 'all' || type === 'users' || type === 'organizations';
+
+    const [projectsResult, profilesResult] = await Promise.all([
+      wantsProjects
+        ? (() => {
+            let projectsQuery = supabase
+              .from('reports')
+              .select('id, title, description, location, country_code, sdg_goal')
+              .or(`title.ilike.${term},description.ilike.${term}`)
+              .limit(30);
+            if (country !== 'all') projectsQuery = projectsQuery.eq('country_code', country);
+            if (sdg !== 'all') projectsQuery = projectsQuery.eq('sdg_goal', Number(sdg));
+            return projectsQuery;
+          })()
+        : Promise.resolve({ data: [], error: null }),
+      wantsProfiles
+        ? (() => {
+            let profilesQuery = supabase
+              .from('public_profiles')
+              .select('id, user_id, full_name, avatar_url, organization, country')
+              .or(`full_name.ilike.${term},organization.ilike.${term}`)
+              .limit(50);
+            if (country !== 'all') profilesQuery = profilesQuery.eq('country', country);
+            return profilesQuery;
+          })()
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
     const lowerCaseQuery = q.toLowerCase();
-    
-    const filteredProjects = mockReports.filter(p => {
-      const matchesQuery = p.title.toLowerCase().includes(lowerCaseQuery) || p.description?.toLowerCase().includes(lowerCaseQuery);
-      const matchesCountry = country === 'all' || p.country_code === country;
-      const matchesSdg = sdg === 'all' || p.sdg_goal === sdg;
-      return matchesQuery && matchesCountry && matchesSdg;
-    });
+    const projects: SearchProject[] = (projectsResult.data || []) as SearchProject[];
+    const profiles = profilesResult.data || [];
 
-    const filteredUsers: UserProfile[] = []; // Removed mock users
+    const users: UserProfile[] = (type === 'all' || type === 'users')
+      ? profiles
+          .filter(p => p.full_name?.toLowerCase().includes(lowerCaseQuery))
+          .map(p => ({ id: p.id, full_name: p.full_name, avatar_url: p.avatar_url }))
+      : [];
 
-    const filteredOrganizations = mockOrganizations.filter(o => {
-      const matchesQuery = o.name.toLowerCase().includes(lowerCaseQuery);
-      const matchesCountry = country === 'all' || o.country === country;
-      return matchesQuery && matchesCountry;
-    });
-    
-    setResults({
-      projects: type === 'all' || type === 'projects' ? filteredProjects : [],
-      users: type === 'all' || type === 'users' ? filteredUsers : [],
-      organizations: type === 'all' || type === 'organizations' ? filteredOrganizations : [],
-    });
+    const organizations: SearchOrganization[] = [];
+    if (type === 'all' || type === 'organizations') {
+      const orgMap = new Map<string, SearchOrganization>();
+      profiles
+        .filter(p => p.organization?.toLowerCase().includes(lowerCaseQuery))
+        .forEach(p => {
+          const name = p.organization as string;
+          const existing = orgMap.get(name);
+          if (existing) {
+            existing.members_count += 1;
+          } else {
+            orgMap.set(name, { name, country: p.country, members_count: 1 });
+          }
+        });
+      organizations.push(...orgMap.values());
+    }
 
+    setResults({ projects, users, organizations });
     setLoading(false);
   }, []);
 
@@ -107,7 +159,7 @@ const SearchPage = () => {
       />
       <h1 className="text-3xl font-bold">Search</h1>
       <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <Input 
+        <Input
           type="search"
           placeholder="Search for projects, people, or organizations..."
           value={query}
@@ -192,10 +244,10 @@ const SearchPage = () => {
                 <h2 className="text-2xl font-semibold mb-4">Organizations</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {results.organizations.map(o => (
-                    <Card key={o.id}>
+                    <Card key={o.name}>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building className="w-5 h-5 text-primary" />{o.name}</CardTitle>
-                        <CardDescription>{o.type} in {o.country} • {o.projects_count} projects</CardDescription>
+                        <CardDescription>{o.country || 'Unknown location'} • {o.members_count} member{o.members_count === 1 ? '' : 's'}</CardDescription>
                       </CardHeader>
                     </Card>
                   ))}
