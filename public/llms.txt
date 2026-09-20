@@ -18,6 +18,7 @@ Dev Mapper helps citizens, NGOs, governments, and corporates report, verify, and
 ## Discover
 
 - [Change Makers](/change-makers): Verified African change-maker registry.
+- [Country Directory](/countries): Every African country tracked, with citizen ratings across 8 government-responsibility areas and a "Most Improved" trend view.
 - [Fundraising](/fundraising): Active campaigns supporting SDG projects.
 - [Search](/search): Find projects, organisations, and people.
 - [SDG Overview](/sdg-overview): Country-level SDG progress dashboards.
