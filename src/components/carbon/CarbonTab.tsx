@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Flame, ShieldCheck, Plus, Trash2, TrendingDown, Calculator, BookText } from "lucide-react";
+import { Flame, ShieldCheck, Plus, Trash2, TrendingDown, Calculator, BookText, Upload, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface CarbonTabProps {
@@ -96,6 +96,13 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
   const [savings, setSavings] = useState("");
   const [evidenceUrl, setEvidenceUrl] = useState("");
 
+  // Upload-a-bill extraction (§31)
+  const [extracting, setExtracting] = useState(false);
+  const [billResult, setBillResult] = useState<{
+    activity_type: string; quantity: number | null; unit: string | null;
+    vendor: string | null; billing_period: string | null; confidence: string;
+  } | null>(null);
+
   useEffect(() => {
     fetchEntries();
     fetchFactors();
@@ -153,6 +160,42 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     fetchEntries();
   };
 
+  const handleBillUpload = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large (max 5MB)");
+      return;
+    }
+    setExtracting(true);
+    setBillResult(null);
+    try {
+      const imageDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data, error } = await supabase.functions.invoke("extract-bill-data", { body: { imageDataUrl } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setBillResult(data);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to read bill");
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const applyBillResult = () => {
+    if (!billResult) return;
+    if (billResult.activity_type === "electricity" && factors.some(f => f.category === "electricity")) {
+      setCategory("electricity");
+    }
+    if (billResult.quantity != null) {
+      setActivityQuantity(String(billResult.quantity));
+    }
+    toast.info("Quantity filled in — pick the matching activity/region below and check the unit matches.");
+  };
+
   const handleDelete = async (id: string) => {
     await supabase.from("project_carbon_data").delete().eq("id", id);
     toast.success("Entry deleted");
@@ -173,6 +216,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     setFundingSource("");
     setSavings("");
     setEvidenceUrl("");
+    setBillResult(null);
   };
 
   const totalEmissions = entries.reduce((s, e) => s + (e.estimated_emissions_tco2e || 0), 0);
@@ -286,6 +330,35 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
 
               {calcMethod === "activity_based" ? (
                 <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="bill-upload"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleBillUpload(e.target.files[0])}
+                    />
+                    <Button type="button" size="sm" variant="outline" disabled={extracting} asChild>
+                      <label htmlFor="bill-upload" className="cursor-pointer">
+                        <Upload className="h-3.5 w-3.5 mr-1" />
+                        {extracting ? "Reading bill…" : "Upload a bill/receipt photo"}
+                      </label>
+                    </Button>
+                  </div>
+                  {billResult && (
+                    <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-1">
+                      <div className="flex items-center gap-2 font-medium">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        AI read: {billResult.quantity ?? "?"} {billResult.unit ?? ""} ({billResult.activity_type})
+                        <Badge variant="outline" className="text-xs">{billResult.confidence} confidence</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {[billResult.vendor, billResult.billing_period].filter(Boolean).join(" · ") || "No vendor/period detected"}
+                        {" — extracted by Ndovu Akili (Gemini), not verified. "}
+                      </p>
+                      <Button type="button" size="sm" variant="secondary" onClick={applyBillResult}>Use this quantity</Button>
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <Label>Category</Label>
