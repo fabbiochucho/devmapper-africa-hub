@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Leaf, Droplets, Building, Flame } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import UpgradePrompt from '@/components/UpgradePrompt';
@@ -32,6 +33,11 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     emissions: false
   });
   const [loading, setLoading] = useState<Partial<Record<LayerType, boolean>>>({});
+  // What each currently-loaded layer's data actually is, so the map never
+  // shows a heatmap (real or synthetic) without disclosing which it is -
+  // the same "cite your source" rule already enforced in the carbon
+  // calculator, applied here.
+  const [layerSources, setLayerSources] = useState<Partial<Record<LayerType, { source: string; isEstimated: boolean; note?: string }>>>({});
 
   const hasEarthIntel = canAccess('view_earth_intelligence');
   const hasAdvancedIntel = canAccess('advanced_earth_intel');
@@ -108,7 +114,12 @@ export default function GeoLayers({ map }: GeoLayersProps) {
 
       // Add layer to map
       addLayerToMap(layerType, data);
-      toast.success(`${layerType.toUpperCase()} layer loaded`);
+
+      const source: string = data.metadata?.source || 'Unknown source';
+      const isEstimated = /estimated|mock|calculated/i.test(source) || !!data.metadata?.note;
+      setLayerSources(prev => ({ ...prev, [layerType]: { source, isEstimated, note: data.metadata?.note } }));
+
+      toast.success(`${layerType.toUpperCase()} layer loaded${isEstimated ? ' (estimated data)' : ''}`);
     } catch (error: any) {
       console.error(`Error loading ${layerType} layer:`, error);
       toast.error(`Failed to load ${layerType} layer: ${error.message}`);
@@ -180,6 +191,12 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     if (map.getSource(sourceId)) {
       map.removeSource(sourceId);
     }
+
+    setLayerSources(prev => {
+      const next = { ...prev };
+      delete next[layerType];
+      return next;
+    });
   };
 
   const getLayerConfig = (layerType: LayerType) => {
@@ -308,14 +325,21 @@ export default function GeoLayers({ map }: GeoLayersProps) {
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t text-xs text-muted-foreground">
-        <p>Data sources:</p>
-        <ul className="list-disc list-inside mt-1 space-y-1">
-          <li>Google Earth Engine</li>
-          <li>Copernicus Sentinel Hub</li>
-          <li>Climate TRACE</li>
-        </ul>
-      </div>
+      {Object.keys(layerSources).length > 0 && (
+        <div className="mt-4 pt-4 border-t text-xs text-muted-foreground space-y-2">
+          <p>Active layer sources:</p>
+          {(Object.entries(layerSources) as [LayerType, { source: string; isEstimated: boolean; note?: string }][]).map(
+            ([layerType, info]) => (
+              <div key={layerType} className="flex items-start justify-between gap-2">
+                <span className="capitalize">{layerType}: {info.source}</span>
+                {info.isEstimated && (
+                  <Badge variant="outline" className="text-[10px] shrink-0">Estimated</Badge>
+                )}
+              </div>
+            )
+          )}
+        </div>
+      )}
     </Card>
   );
 }
