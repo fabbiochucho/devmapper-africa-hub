@@ -31,7 +31,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getBenchmark } from '@/lib/alphaearth-client';
+import { getBenchmark, getCachedBenchmark, type AlphaEarthBenchmark } from '@/lib/alphaearth-client';
 import ESGScenarioAnalysis from './ESGScenarioAnalysis';
 import ESGReportGenerator from './ESGReportGenerator';
 import ESGReportDialog from './ESGReportDialog';
@@ -75,6 +75,8 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
   const [indicators, setIndicators] = useState<ESGIndicators[]>([]);
   const [benchmark, setBenchmark] = useState<any>(null);
   const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [supplierEmissions, setSupplierEmissions] = useState<Record<string, { total: number; year: number; quality: string }>>({});
+  const [sectorBenchmarks, setSectorBenchmarks] = useState<Record<string, AlphaEarthBenchmark>>({});
   const [scenarios, setScenarios] = useState<any[]>([]);
 
   useEffect(() => {
@@ -117,6 +119,47 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         .eq('organization_id', organizationId);
 
       setSuppliers(suppliersData || []);
+
+      // Load per-supplier emissions (latest reporting year per supplier) so
+      // the suppliers tab can show real emissions, not just spend.
+      if (suppliersData && suppliersData.length > 0) {
+        const supplierIds = suppliersData.map((s) => s.id);
+        const { data: emissionsRows } = await supabase
+          .from('esg_supplier_emissions')
+          .select('supplier_id, reporting_year, emissions_tonnes, data_quality')
+          .in('supplier_id', supplierIds)
+          .order('reporting_year', { ascending: false });
+
+        const latestBySupplier: Record<string, { total: number; year: number; quality: string }> = {};
+        for (const row of emissionsRows || []) {
+          const existing = latestBySupplier[row.supplier_id];
+          if (!existing) {
+            latestBySupplier[row.supplier_id] = { total: row.emissions_tonnes, year: row.reporting_year, quality: row.data_quality || 'reported' };
+          } else if (row.reporting_year === existing.year) {
+            existing.total += row.emissions_tonnes;
+          }
+        }
+        setSupplierEmissions(latestBySupplier);
+
+        // Look up cached sector benchmarks (no live API calls here - only
+        // reads what enrichment has already populated in alphaearth_cache)
+        // for each unique country+sector pair, to show "vs sector avg".
+        const pairs = new Set(
+          suppliersData
+            .filter((s) => s.country_code && s.sector)
+            .map((s) => `${s.country_code}:${s.sector}`)
+        );
+        const benchmarkEntries = await Promise.all(
+          Array.from(pairs).map(async (pair) => {
+            const [country, sector] = pair.split(':');
+            const benchmark = await getCachedBenchmark(country, sector);
+            return [pair, benchmark] as const;
+          })
+        );
+        setSectorBenchmarks(
+          Object.fromEntries(benchmarkEntries.filter(([, b]) => b !== null)) as Record<string, AlphaEarthBenchmark>
+        );
+      }
 
       // Load scenarios
       const { data: scenariosData } = await supabase
@@ -473,20 +516,47 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             <CardContent>
               {suppliers.length > 0 ? (
                 <div className="space-y-4">
-                  {suppliers.map((supplier) => (
-                    <div key={supplier.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {supplier.sector} • {supplier.country_code}
+                  {suppliers.map((supplier) => {
+                    const emissions = supplierEmissions[supplier.id];
+                    const benchmark = supplier.country_code && supplier.sector
+                      ? sectorBenchmarks[`${supplier.country_code}:${supplier.sector}`]
+                      : null;
+                    // Same basis alphaearth-proxy uses server-side: tonnes CO2e per $1M spend.
+                    const actualIntensity = emissions && supplier.annual_spend
+                      ? emissions.total / (supplier.annual_spend / 1_000_000)
+                      : null;
+                    const vsBenchmark = actualIntensity != null && benchmark?.avg_carbon_intensity
+                      ? ((actualIntensity - benchmark.avg_carbon_intensity) / benchmark.avg_carbon_intensity) * 100
+                      : null;
+
+                    return (
+                      <div key={supplier.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <div className="font-medium">{supplier.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {supplier.sector} • {supplier.country_code}
+                          </div>
+                          {emissions ? (
+                            <div className="text-sm mt-1 flex items-center gap-2">
+                              <span>{emissions.total.toLocaleString(undefined, { maximumFractionDigits: 1 })} tCO2e ({emissions.year})</span>
+                              <Badge variant="outline" className="text-xs">{emissions.quality}</Badge>
+                              {vsBenchmark != null && (
+                                <Badge variant={vsBenchmark > 15 ? 'destructive' : vsBenchmark < -15 ? 'default' : 'secondary'} className="text-xs">
+                                  {vsBenchmark > 0 ? '+' : ''}{vsBenchmark.toFixed(0)}% vs {supplier.sector} avg
+                                </Badge>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground mt-1">No emissions data yet</div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">${(supplier.annual_spend || 0).toLocaleString()}</div>
+                          <div className="text-sm text-muted-foreground">Annual Spend</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-medium">${(supplier.annual_spend || 0).toLocaleString()}</div>
-                        <div className="text-sm text-muted-foreground">Annual Spend</div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">

@@ -294,7 +294,26 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
       if (autoEnrich && suppliersToEnrich.length > 0) {
         try {
           const enrichResult = await enrichSuppliers(organizationId, suppliersToEnrich, reportingYear);
-          enrichedCount = enrichResult.enriched.filter((r) => !r.error).length;
+          const enrichedRows = enrichResult.enriched.filter((r) => !r.error && r.estimated_emissions != null);
+          if (enrichedRows.length > 0) {
+            const { error: enrichInsertError } = await supabase.from('esg_supplier_emissions').insert(
+              enrichedRows.map((r) => ({
+                supplier_id: r.supplier_id,
+                organization_id: organizationId,
+                reporting_year: reportingYear,
+                activity_description: 'Estimated from spend x sector benchmark (AlphaEarth)',
+                emissions_tonnes: r.estimated_emissions,
+                emission_factor: r.benchmark_used?.avg_carbon_intensity ?? null,
+                emission_factor_source: r.benchmark_used?.source ?? 'AlphaEarth',
+                data_quality: 'estimated',
+              }))
+            );
+            if (enrichInsertError) {
+              errors.push(`Failed to save estimated emissions: ${enrichInsertError.message}`);
+            } else {
+              enrichedCount = enrichedRows.length;
+            }
+          }
         } catch (enrichError: any) {
           errors.push(`Auto-enrichment failed: ${enrichError.message}`);
         }
