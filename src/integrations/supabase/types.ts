@@ -3008,8 +3008,12 @@ export type Database = {
       }
       project_carbon_data: {
         Row: {
+          activity_quantity: number | null
+          activity_unit: string | null
+          calculation_method: string
           carbon_verified: boolean | null
           created_at: string | null
+          emission_factor_id: string | null
           emission_source: string | null
           estimated_emissions_tco2e: number | null
           estimated_savings: number | null
@@ -3025,8 +3029,12 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          activity_quantity?: number | null
+          activity_unit?: string | null
+          calculation_method?: string
           carbon_verified?: boolean | null
           created_at?: string | null
+          emission_factor_id?: string | null
           emission_source?: string | null
           estimated_emissions_tco2e?: number | null
           estimated_savings?: number | null
@@ -3042,8 +3050,12 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          activity_quantity?: number | null
+          activity_unit?: string | null
+          calculation_method?: string
           carbon_verified?: boolean | null
           created_at?: string | null
+          emission_factor_id?: string | null
           emission_source?: string | null
           estimated_emissions_tco2e?: number | null
           estimated_savings?: number | null
@@ -3059,6 +3071,13 @@ export type Database = {
           verified_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_carbon_data_emission_factor_id_fkey"
+            columns: ["emission_factor_id"]
+            isOneToOne: false
+            referencedRelation: "emission_factors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_carbon_data_report_id_fkey"
             columns: ["report_id"]

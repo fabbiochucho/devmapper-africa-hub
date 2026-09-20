@@ -9,12 +9,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Flame, ShieldCheck, Plus, Trash2, TrendingDown } from "lucide-react";
+import { Flame, ShieldCheck, Plus, Trash2, TrendingDown, Calculator, BookText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface CarbonTabProps {
   reportId: string;
   isOwner: boolean;
+}
+
+interface EmissionFactor {
+  id: string;
+  category: string;
+  activity: string;
+  region: string;
+  unit: string;
+  factor_kgco2e: number;
+  scope: number;
+  source: string;
+  source_year: number;
 }
 
 interface CarbonEntry {
@@ -29,6 +41,11 @@ interface CarbonEntry {
   carbon_verified: boolean;
   evidence_url: string | null;
   created_at: string;
+  activity_quantity: number | null;
+  activity_unit: string | null;
+  emission_factor_id: string | null;
+  calculation_method: string;
+  emission_factors: { activity: string; source: string; source_year: number; region: string } | null;
 }
 
 const EMISSION_SOURCES = ["Energy", "Transport", "Agriculture", "Waste", "Industrial"];
@@ -36,13 +53,40 @@ const SCOPE_TYPES = ["Scope 1", "Scope 2", "Scope 3"];
 const FUNDING_SOURCES = ["Government", "Donor", "Corporate", "Self-funded"];
 const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "#10b981", "#f59e0b"];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  electricity: "Electricity",
+  stationary_combustion: "Stationary Fuel Combustion",
+  mobile_combustion: "Vehicle Fuel Combustion",
+  fugitive: "Refrigerants & Fugitive Emissions",
+  heat_steam: "Purchased Heat/Steam",
+  cat1_purchased_goods: "Purchased Goods & Services",
+  cat3_fuel_energy: "Fuel & Energy (Well-to-Tank)",
+  cat4_upstream_transport: "Upstream Transport & Freight",
+  cat5_waste: "Waste Generated",
+  cat6_business_travel: "Business Travel",
+  cat7_employee_commute: "Employee Commuting",
+};
+
+const SCOPE_LABELS: Record<number, string> = { 1: "Scope 1", 2: "Scope 2", 3: "Scope 3" };
+
+const CATEGORY_TO_EMISSION_SOURCE: Record<string, string> = {
+  electricity: "Energy", heat_steam: "Energy", stationary_combustion: "Energy",
+  mobile_combustion: "Transport", cat4_upstream_transport: "Transport", cat6_business_travel: "Transport", cat7_employee_commute: "Transport",
+  cat5_waste: "Waste", fugitive: "Industrial", cat1_purchased_goods: "Industrial", cat3_fuel_energy: "Energy",
+};
+
 export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
   const { user } = useAuth();
   const [entries, setEntries] = useState<CarbonEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [factors, setFactors] = useState<EmissionFactor[]>([]);
 
   // Form state
+  const [calcMethod, setCalcMethod] = useState<"activity_based" | "manual_entry">("activity_based");
+  const [category, setCategory] = useState("");
+  const [factorId, setFactorId] = useState("");
+  const [activityQuantity, setActivityQuantity] = useState("");
   const [emissionSource, setEmissionSource] = useState("");
   const [scopeTypes, setScopeTypes] = useState<string[]>([]);
   const [emissions, setEmissions] = useState("");
@@ -54,12 +98,27 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
 
   useEffect(() => {
     fetchEntries();
+    fetchFactors();
   }, [reportId]);
+
+  const fetchFactors = async () => {
+    const { data } = await supabase
+      .from("emission_factors")
+      .select("id, category, activity, region, unit, factor_kgco2e, scope, source, source_year")
+      .order("category")
+      .order("activity");
+    if (data) setFactors(data as EmissionFactor[]);
+  };
+
+  const selectedFactor = factors.find(f => f.id === factorId) || null;
+  const computedEmissions = selectedFactor && activityQuantity
+    ? (parseFloat(activityQuantity) * selectedFactor.factor_kgco2e) / 1000
+    : null;
 
   const fetchEntries = async () => {
     const { data, error } = await supabase
       .from("project_carbon_data")
-      .select("*")
+      .select("*, emission_factors(activity, source, source_year, region)")
       .eq("report_id", reportId)
       .order("created_at", { ascending: false });
     if (!error && data) setEntries(data as any);
@@ -68,16 +127,25 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
 
   const handleSubmit = async () => {
     if (!user) return;
+    const isActivityBased = calcMethod === "activity_based" && selectedFactor && activityQuantity;
+    if (calcMethod === "activity_based" && !isActivityBased) {
+      toast.error("Select an activity and enter a quantity, or switch to manual entry");
+      return;
+    }
     const { error } = await supabase.from("project_carbon_data").insert({
       report_id: reportId,
-      emission_source: emissionSource || null,
-      scope_types: scopeTypes.length > 0 ? scopeTypes : null,
-      estimated_emissions_tco2e: emissions ? parseFloat(emissions) : null,
+      emission_source: isActivityBased ? (CATEGORY_TO_EMISSION_SOURCE[category] || null) : (emissionSource || null),
+      scope_types: isActivityBased ? [SCOPE_LABELS[selectedFactor!.scope]] : (scopeTypes.length > 0 ? scopeTypes : null),
+      estimated_emissions_tco2e: isActivityBased ? computedEmissions : (emissions ? parseFloat(emissions) : null),
       reporting_period_start: periodStart || null,
       reporting_period_end: periodEnd || null,
       funding_source: fundingSource || null,
       estimated_savings: savings ? parseFloat(savings) : null,
       evidence_url: evidenceUrl || null,
+      calculation_method: isActivityBased ? "activity_based" : "manual_entry",
+      activity_quantity: isActivityBased ? parseFloat(activityQuantity) : null,
+      activity_unit: isActivityBased ? selectedFactor!.unit : null,
+      emission_factor_id: isActivityBased ? selectedFactor!.id : null,
     } as any);
     if (error) { toast.error("Failed to save carbon data"); return; }
     toast.success("Carbon data saved");
@@ -93,6 +161,10 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
 
   const resetForm = () => {
     setShowForm(false);
+    setCalcMethod("activity_based");
+    setCategory("");
+    setFactorId("");
+    setActivityQuantity("");
     setEmissionSource("");
     setScopeTypes([]);
     setEmissions("");
@@ -203,37 +275,97 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
         <CardContent className="space-y-4">
           {showForm && (
             <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <Label>Emission Source</Label>
-                  <Select value={emissionSource} onValueChange={setEmissionSource}>
-                    <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
-                    <SelectContent>
-                      {EMISSION_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Estimated Emissions (tCO₂e)</Label>
-                  <Input type="number" value={emissions} onChange={e => setEmissions(e.target.value)} placeholder="0.00" />
-                </div>
+              <div className="flex items-center gap-2">
+                <Button type="button" size="sm" variant={calcMethod === "activity_based" ? "default" : "outline"} onClick={() => setCalcMethod("activity_based")}>
+                  <Calculator className="h-3.5 w-3.5 mr-1" />Calculate from activity data
+                </Button>
+                <Button type="button" size="sm" variant={calcMethod === "manual_entry" ? "default" : "outline"} onClick={() => setCalcMethod("manual_entry")}>
+                  Enter total directly
+                </Button>
               </div>
-              <div>
-                <Label>Scope Types</Label>
-                <div className="flex gap-4 mt-1">
-                  {SCOPE_TYPES.map(scope => (
-                    <label key={scope} className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={scopeTypes.includes(scope)}
-                        onCheckedChange={(checked) => {
-                          setScopeTypes(prev => checked ? [...prev, scope] : prev.filter(s => s !== scope));
-                        }}
-                      />
-                      {scope}
-                    </label>
-                  ))}
+
+              {calcMethod === "activity_based" ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={category} onValueChange={(v) => { setCategory(v); setFactorId(""); }}>
+                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectContent>
+                          {Object.keys(CATEGORY_LABELS).filter(c => factors.some(f => f.category === c)).map(c => (
+                            <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Activity</Label>
+                      <Select value={factorId} onValueChange={setFactorId} disabled={!category}>
+                        <SelectTrigger><SelectValue placeholder="Select activity" /></SelectTrigger>
+                        <SelectContent>
+                          {factors.filter(f => f.category === category).map(f => (
+                            <SelectItem key={f.id} value={f.id}>
+                              {f.activity.replace(/_/g, " ")} — {f.region} ({f.unit})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {selectedFactor && (
+                    <div>
+                      <Label>Activity Quantity ({selectedFactor.unit})</Label>
+                      <Input type="number" value={activityQuantity} onChange={e => setActivityQuantity(e.target.value)} placeholder="0.00" />
+                    </div>
+                  )}
+                  {selectedFactor && (
+                    <div className="rounded-md bg-background border p-3 text-sm space-y-1">
+                      <div className="flex items-center gap-2 font-medium">
+                        <BookText className="h-3.5 w-3.5" />
+                        {computedEmissions != null ? `${computedEmissions.toFixed(4)} tCO₂e` : "Enter a quantity to calculate"}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedFactor.factor_kgco2e} kg CO₂e/{selectedFactor.unit} · Source: {selectedFactor.source} ({selectedFactor.source_year}) · {SCOPE_LABELS[selectedFactor.scope]}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label>Emission Source</Label>
+                    <Select value={emissionSource} onValueChange={setEmissionSource}>
+                      <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                      <SelectContent>
+                        {EMISSION_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Estimated Emissions (tCO₂e)</Label>
+                    <Input type="number" value={emissions} onChange={e => setEmissions(e.target.value)} placeholder="0.00" />
+                  </div>
+                </div>
+              )}
+
+              {calcMethod === "manual_entry" && (
+                <div>
+                  <Label>Scope Types</Label>
+                  <div className="flex gap-4 mt-1">
+                    {SCOPE_TYPES.map(scope => (
+                      <label key={scope} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={scopeTypes.includes(scope)}
+                          onCheckedChange={(checked) => {
+                            setScopeTypes(prev => checked ? [...prev, scope] : prev.filter(s => s !== scope));
+                          }}
+                        />
+                        {scope}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <Label>Reporting Period Start</Label>
@@ -263,7 +395,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                 <Label>Evidence URL</Label>
                 <Input value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} placeholder="https://..." />
               </div>
-              <Button onClick={handleSubmit} disabled={!emissions}>Save Carbon Data</Button>
+              <Button onClick={handleSubmit} disabled={calcMethod === "activity_based" ? !computedEmissions : !emissions}>Save Carbon Data</Button>
             </div>
           )}
 
@@ -289,11 +421,19 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                   )}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                  <div><span className="text-muted-foreground">Emissions:</span> {entry.estimated_emissions_tco2e?.toFixed(1) || "—"} tCO₂e</div>
+                  <div><span className="text-muted-foreground">Emissions:</span> {entry.estimated_emissions_tco2e?.toFixed(entry.calculation_method === "activity_based" ? 4 : 1) || "—"} tCO₂e</div>
                   {entry.funding_source && <div><span className="text-muted-foreground">Funding:</span> {entry.funding_source}</div>}
                   {entry.estimated_savings && <div><span className="text-muted-foreground">Savings:</span> ${entry.estimated_savings.toLocaleString()}</div>}
                   {entry.reporting_period_start && <div><span className="text-muted-foreground">Period:</span> {entry.reporting_period_start} → {entry.reporting_period_end}</div>}
                 </div>
+                {entry.calculation_method === "activity_based" && entry.emission_factors ? (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <BookText className="h-3 w-3" />
+                    {entry.activity_quantity} {entry.activity_unit} of {entry.emission_factors.activity.replace(/_/g, " ")} ({entry.emission_factors.region}) · Source: {entry.emission_factors.source} ({entry.emission_factors.source_year})
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">⚠ Self-reported figure — not calculated from a cited emission factor</p>
+                )}
                 {entry.evidence_url && (
                   <a href={entry.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View evidence</a>
                 )}
