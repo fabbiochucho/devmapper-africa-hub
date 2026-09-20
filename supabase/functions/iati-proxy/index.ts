@@ -22,11 +22,13 @@ interface IatiRequest {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let supabaseClient: ReturnType<typeof createClient> | null = null;
+
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization header");
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       { global: { headers: { Authorization: authHeader } } },
@@ -116,12 +118,21 @@ serve(async (req) => {
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
+    try { await supabaseClient.rpc("record_provider_health", { p_provider_key: "iati", p_success: true }); } catch { /* best-effort */ }
+
     return new Response(JSON.stringify({ configured: true, ...payload }), {
       headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "MISS" },
     });
   } catch (error) {
     console.error("[IATI-PROXY] Error:", error);
     const isAuth = error instanceof Error && error.message === "Unauthorized";
+    if (!isAuth && supabaseClient) {
+      try {
+        await supabaseClient.rpc("record_provider_health", {
+          p_provider_key: "iati", p_success: false, p_error_message: (error as Error).message ?? "Unknown error",
+        });
+      } catch { /* best-effort */ }
+    }
     return new Response(JSON.stringify({ error: isAuth ? "Unauthorized" : (error as Error).message ?? "Internal server error" }), {
       status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

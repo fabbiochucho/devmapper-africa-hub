@@ -31,16 +31,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let supabaseClient: ReturnType<typeof createClient> | null = null;
+
   try {
     console.log('[ALPHAEARTH-PROXY] Incoming request');
-    
+
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
     }
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -77,6 +79,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('[ALPHAEARTH-PROXY] Error:', error);
     const isAuth = error instanceof Error && error.message === 'Unauthorized';
+    if (!isAuth && supabaseClient) {
+      try {
+        await supabaseClient.rpc('record_provider_health', {
+          p_provider_key: 'alphaearth', p_success: false, p_error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
+    }
     return new Response(JSON.stringify({ error: isAuth ? 'Unauthorized' : 'Internal server error' }), {
       status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -145,9 +154,21 @@ async function handleBenchmark(
             sector,
             year
           };
+          try { await supabase.rpc('record_provider_health', { p_provider_key: 'alphaearth', p_success: true }); } catch { /* best-effort */ }
+        } else {
+          try {
+            await supabase.rpc('record_provider_health', {
+              p_provider_key: 'alphaearth', p_success: false, p_error_message: `AlphaEarth API returned ${response.status}`,
+            });
+          } catch { /* best-effort */ }
         }
       } catch (apiError) {
         console.warn('[ALPHAEARTH-PROXY] Commercial API error:', apiError);
+        try {
+          await supabase.rpc('record_provider_health', {
+            p_provider_key: 'alphaearth', p_success: false, p_error_message: apiError instanceof Error ? apiError.message : 'Unknown error',
+          });
+        } catch { /* best-effort */ }
       }
     }
   }

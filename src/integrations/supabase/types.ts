@@ -1431,6 +1431,69 @@ export type Database = {
         }
         Relationships: []
       }
+      data_providers: {
+        Row: {
+          category: string
+          consecutive_failures: number
+          created_at: string
+          description: string | null
+          endpoint_or_table: string | null
+          geographic_coverage: string | null
+          id: string
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          license: string | null
+          name: string
+          notes: string | null
+          provider_key: string
+          provider_type: string
+          requires_api_key: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          endpoint_or_table?: string | null
+          geographic_coverage?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          license?: string | null
+          name: string
+          notes?: string | null
+          provider_key: string
+          provider_type: string
+          requires_api_key?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          endpoint_or_table?: string | null
+          geographic_coverage?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          license?: string | null
+          name?: string
+          notes?: string | null
+          provider_key?: string
+          provider_type?: string
+          requires_api_key?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string
@@ -5191,6 +5254,14 @@ export type Database = {
           similarity: number
           title: string
         }[]
+      }
+      record_provider_health: {
+        Args: {
+          p_error_message?: string
+          p_provider_key: string
+          p_success: boolean
+        }
+        Returns: undefined
       }
       record_webhook_event: {
         Args: {

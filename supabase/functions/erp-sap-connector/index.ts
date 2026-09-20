@@ -185,6 +185,8 @@ serve(async (req) => {
         last_error: result.errors.length > 0 ? result.errors.slice(0, 5).join('; ') : null,
       }).eq('id', connectionId);
 
+      try { await supabase.rpc('record_provider_health', { p_provider_key: 'erp_sap', p_success: true }); } catch { /* best-effort */ }
+
       return new Response(
         JSON.stringify({ success: true, ...result }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -208,6 +210,13 @@ serve(async (req) => {
       } catch {
         // best-effort status update only
       }
+    }
+    if (supabase) {
+      try {
+        await supabase.rpc('record_provider_health', {
+          p_provider_key: 'erp_sap', p_success: false, p_error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
     }
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),

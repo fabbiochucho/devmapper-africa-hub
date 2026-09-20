@@ -22,13 +22,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let supabaseClient: ReturnType<typeof createClient> | null = null;
+
   try {
     console.log('[GEE-PROXY] Incoming request');
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('Missing authorization header');
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -65,9 +67,15 @@ serve(async (req) => {
       console.log('[GEE-PROXY] Using live GEE API');
       try {
         geeData = await fetchLiveGEEData(body, geeServiceAccount);
+        try { await supabaseClient.rpc('record_provider_health', { p_provider_key: 'gee', p_success: true }); } catch { /* best-effort */ }
       } catch (geeError) {
         console.warn('[GEE-PROXY] GEE API failed, falling back to estimates:', geeError);
         geeData = generateEstimatedGEEData(body.type, body.bounds);
+        try {
+          await supabaseClient.rpc('record_provider_health', {
+            p_provider_key: 'gee', p_success: false, p_error_message: geeError instanceof Error ? geeError.message : 'Unknown error',
+          });
+        } catch { /* best-effort */ }
       }
     } else {
       console.log('[GEE-PROXY] No GEE_SERVICE_ACCOUNT_KEY configured, using estimated data');
@@ -100,6 +108,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('[GEE-PROXY] Error:', error);
     const isAuth = error instanceof Error && error.message === 'Unauthorized';
+    if (!isAuth && supabaseClient) {
+      try {
+        await supabaseClient.rpc('record_provider_health', {
+          p_provider_key: 'gee', p_success: false, p_error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
+    }
     return new Response(JSON.stringify({ error: isAuth ? 'Unauthorized' : 'Internal server error' }), {
       status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -21,13 +21,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let supabaseClient: ReturnType<typeof createClient> | null = null;
+
   try {
     console.log('[CLIMATETRACE-PROXY] Incoming request');
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('Missing authorization header');
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -87,10 +89,20 @@ serve(async (req) => {
       } else {
         console.warn('[CLIMATETRACE-PROXY] API returned', apiResponse.status, '- falling back to estimates');
         emissionsData = generateFallbackEmissions(country, sector, year);
+        try {
+          await supabaseClient.rpc('record_provider_health', {
+            p_provider_key: 'climatetrace', p_success: false, p_error_message: `Climate TRACE API returned ${apiResponse.status}`,
+          });
+        } catch { /* best-effort */ }
       }
     } catch (fetchError) {
       console.warn('[CLIMATETRACE-PROXY] API call failed:', fetchError, '- using fallback');
       emissionsData = generateFallbackEmissions(country, sector, year);
+      try {
+        await supabaseClient.rpc('record_provider_health', {
+          p_provider_key: 'climatetrace', p_success: false, p_error_message: fetchError instanceof Error ? fetchError.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
     }
 
     // Cache for 30 days
@@ -113,12 +125,23 @@ serve(async (req) => {
       p_payload: { country, sector, year, cached: false, live: emissionsData.metadata?.source?.includes('Live') }
     });
 
+    if (emissionsData.metadata?.source?.includes('Live')) {
+      try { await supabaseClient.rpc('record_provider_health', { p_provider_key: 'climatetrace', p_success: true }); } catch { /* best-effort */ }
+    }
+
     return new Response(JSON.stringify(emissionsData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'MISS' },
     });
   } catch (error) {
     console.error('[CLIMATETRACE-PROXY] Error:', error);
     const isAuth = error instanceof Error && error.message === 'Unauthorized';
+    if (!isAuth && supabaseClient) {
+      try {
+        await supabaseClient.rpc('record_provider_health', {
+          p_provider_key: 'climatetrace', p_success: false, p_error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
+    }
     return new Response(JSON.stringify({ error: isAuth ? 'Unauthorized' : 'Internal server error' }), {
       status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

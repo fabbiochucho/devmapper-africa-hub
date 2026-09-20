@@ -12,15 +12,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let supabaseClient: ReturnType<typeof createClient> | null = null;
+
   try {
     console.log('[SDG-PROXY] Incoming request');
-    
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
     }
 
-    const supabaseClient = createClient(
+    supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -84,12 +86,21 @@ serve(async (req) => {
       p_payload: { goal, country, indicator, cached: false }
     });
 
+    try { await supabaseClient.rpc('record_provider_health', { p_provider_key: 'sdg_indicators', p_success: true }); } catch { /* best-effort */ }
+
     return new Response(JSON.stringify(sdgData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'MISS' },
     });
   } catch (error) {
     console.error('[SDG-PROXY] Error:', error);
     const isAuth = error instanceof Error && error.message === 'Unauthorized';
+    if (!isAuth && supabaseClient) {
+      try {
+        await supabaseClient.rpc('record_provider_health', {
+          p_provider_key: 'sdg_indicators', p_success: false, p_error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } catch { /* best-effort */ }
+    }
     return new Response(JSON.stringify({ error: isAuth ? 'Unauthorized' : 'Internal server error' }), {
       status: isAuth ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
