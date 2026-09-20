@@ -105,7 +105,7 @@ serve(async (req: Request) => {
         const oldPlan = org.plan_type;
 
         // Update organization plan
-        await supabase
+        const { error: planUpdateError } = await supabase
           .from('organizations')
           .update({
             plan_type: requestedPlan,
@@ -114,6 +114,27 @@ serve(async (req: Request) => {
             ...getPlanQuotas(requestedPlan),
           })
           .eq('id', metadata.organization_id);
+
+        if (planUpdateError) {
+          // Customer already paid - a failure here must not be logged as
+          // plan_upgraded/payment_success (that previously happened
+          // unconditionally below regardless of whether this update
+          // actually took effect), since that leaves the org silently
+          // stuck on its old plan while every record claims success.
+          console.error('Failed to update organization plan:', planUpdateError);
+          await supabase.rpc('record_webhook_event', {
+            p_event_id: eventId,
+            p_provider: 'paystack',
+            p_event_type: event.event,
+            p_payload: event,
+            p_status: 'failed',
+            p_error_message: `Plan update failed: ${planUpdateError.message}`
+          });
+          return new Response(JSON.stringify({ error: 'Plan update failed' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
 
         // Log audit event - matches flutterwave-webhook's parity step,
         // previously missing here.

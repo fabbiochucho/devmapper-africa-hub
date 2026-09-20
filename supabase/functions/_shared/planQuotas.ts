@@ -30,3 +30,18 @@ export function computePlanExpiry(interval: string | undefined): string {
   const days = interval === "yearly" ? 365 : 30;
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
+
+/**
+ * Canonical USD subscription prices, matching src/pages/BillingUpgrade.tsx's
+ * planDetails table exactly. create-payment must charge from this table,
+ * never from a client-supplied amount - the client only chooses which plan
+ * and interval, never how much that costs. "enterprise" is a
+ * sales-assisted plan not sold through self-serve checkout (matches
+ * getPlanQuotas' comment above) and has no self-serve price.
+ */
+export function getPlanPrice(planType: string | undefined, interval: string | undefined): number {
+  const yearly = interval === "yearly";
+  if (planType === "pro") return yearly ? 490 : 49;
+  if (planType === "advanced") return yearly ? 1490 : 149;
+  return 0;
+}

@@ -60,30 +60,19 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } else if (req.method === 'PATCH') {
-      // PATCH: Update organization plan
+      // PATCH: Update organization plan. Plan changes only ever happen
+      // after a payment provider confirms a charge - a plain user JWT is
+      // never sufficient here, no matter whose organization it is, since
+      // that would let any org owner grant themselves a paid plan for
+      // free. Nothing in this app currently calls this endpoint with a
+      // user JWT (only paystack-webhook/flutterwave-webhook/create-payment
+      // call it, all with the webhook secret) - this closes that path
+      // rather than leaving it live and reachable via a raw request.
       const webhookSecret = req.headers.get('X-Webhook-Secret');
       const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-      
-      let user = null;
-      
-      // Verify authorization - either valid JWT or webhook secret
-      if (webhookSecret && webhookSecret === expectedSecret) {
-        console.log('Webhook request authenticated');
-      } else {
-        // Check JWT authentication
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader) {
-          throw new Error('No authorization header or webhook secret');
-        }
 
-        const jwt = authHeader.replace('Bearer ', '');
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(jwt);
-        
-        if (authError || !authUser) {
-          throw new Error('Invalid authorization');
-        }
-        
-        user = authUser;
+      if (!webhookSecret || !expectedSecret || webhookSecret !== expectedSecret) {
+        throw new Error('Invalid or missing webhook secret');
       }
 
       const body = await req.json();
@@ -115,13 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error('Organization not found');
       }
 
-      // If user authentication, verify access
-      if (user && currentOrg.created_by !== user.id) {
-        throw new Error('Access denied');
-      }
-
-      // Prevent downgrade from webhook without proper validation
-      if (!user && plan_type === 'lite' && currentOrg.plan_type === 'pro') {
+      if (plan_type === 'lite' && currentOrg.plan_type === 'pro') {
         console.warn(`Downgrade attempt for org ${orgId} via webhook`);
       }
 

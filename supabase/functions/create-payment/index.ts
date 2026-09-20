@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getPlanPrice } from "../_shared/planQuotas.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -314,6 +315,18 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Organization not found or access denied');
     }
 
+    // The client chooses which plan and interval, never how much that
+    // costs - the client-supplied `amount` was previously charged
+    // directly, letting a request for e.g. planType:'advanced' pass
+    // amount:0.01 and be charged a cent while the webhook still upgrades
+    // the org to the full plan on "payment success". "enterprise" has no
+    // self-serve price (sales-assisted only, matches getPlanQuotas'
+    // comment) so it's rejected here rather than silently priced at $0.
+    const subscriptionAmount = getPlanPrice(planType, interval);
+    if (subscriptionAmount <= 0) {
+      throw new Error('This plan is not available for self-serve checkout');
+    }
+
     const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
     const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
 
@@ -333,7 +346,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       const flutterwavePayload = {
         tx_ref,
-        amount,
+        amount: subscriptionAmount,
         currency: 'USD',
         // Post-checkout browser landing page only - the real webhook is
         // configured separately in the Flutterwave dashboard.
@@ -376,7 +389,7 @@ const handler = async (req: Request): Promise<Response> => {
             old_plan: org.plan_type,
             new_plan: planType,
             provider: 'flutterwave',
-            amount,
+            amount: subscriptionAmount,
             currency: 'USD',
             external_id: tx_ref
           }]);
@@ -410,7 +423,7 @@ const handler = async (req: Request): Promise<Response> => {
       const tx_ref = `sub_${organizationId}_${Date.now()}`;
       const paystackPayload = {
         email: user.email,
-        amount: amount * 100, // Paystack uses kobo/cents
+        amount: subscriptionAmount * 100, // Paystack uses kobo/cents
         currency: 'NGN',
         reference: tx_ref,
         // Post-checkout browser landing page only - the real webhook is
@@ -442,7 +455,7 @@ const handler = async (req: Request): Promise<Response> => {
           old_plan: org.plan_type,
           new_plan: planType,
           provider: 'paystack',
-          amount,
+          amount: subscriptionAmount,
           currency: 'NGN',
           external_id: tx_ref,
         }]);
@@ -466,9 +479,9 @@ const handler = async (req: Request): Promise<Response> => {
     // returns a clear error (missing secret or gateway rejection) - never
     // silently mocked.
     const paymentUrl = provider === 'flutterwave'
-      ? `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`
-      : `https://checkout.paystack.com/demo?plan=${planType}&interval=${interval}&amount=${amount}`;
-    
+      ? `https://checkout.flutterwave.com/demo?plan=${planType}&interval=${interval}&amount=${subscriptionAmount}`
+      : `https://checkout.paystack.com/demo?plan=${planType}&interval=${interval}&amount=${subscriptionAmount}`;
+
     // Log billing event
     await supabase
       .from('billing_events')
@@ -478,7 +491,7 @@ const handler = async (req: Request): Promise<Response> => {
         old_plan: org.plan_type,
         new_plan: planType,
         provider: provider || 'flutterwave',
-        amount,
+        amount: subscriptionAmount,
         currency: 'USD'
       }]);
 
