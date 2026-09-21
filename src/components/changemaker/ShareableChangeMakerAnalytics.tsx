@@ -1,14 +1,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Download, Users, DollarSign, TrendingUp, Target } from "lucide-react";
+import { Share2, Download, Users, DollarSign, Target } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 interface ShareableChangeMakerAnalyticsProps {
   data: {
     totalChangeMakers: number;
     totalFunding: number;
-    totalLivesTouched: number;
     totalProjects: number;
     verifiedChangeMakers: number;
   };
@@ -64,7 +63,7 @@ const ShareableChangeMakerAnalytics: React.FC<ShareableChangeMakerAnalyticsProps
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="flex items-center space-x-2">
             <Users className="h-8 w-8 text-blue-600" />
             <div>
@@ -72,7 +71,7 @@ const ShareableChangeMakerAnalytics: React.FC<ShareableChangeMakerAnalyticsProps
               <p className="text-xs text-muted-foreground">Total Change Makers</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Target className="h-8 w-8 text-green-600" />
             <div>
@@ -80,7 +79,7 @@ const ShareableChangeMakerAnalytics: React.FC<ShareableChangeMakerAnalyticsProps
               <p className="text-xs text-muted-foreground">Verified</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <DollarSign className="h-8 w-8 text-purple-600" />
             <div>
@@ -88,20 +87,12 @@ const ShareableChangeMakerAnalytics: React.FC<ShareableChangeMakerAnalyticsProps
               <p className="text-xs text-muted-foreground">Total Funding</p>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="h-8 w-8 text-orange-600" />
-            <div>
-              <p className="text-2xl font-bold">{formatNumber(data.totalLivesTouched)}</p>
-              <p className="text-xs text-muted-foreground">Lives Touched</p>
-            </div>
-          </div>
-          
+
           <div className="flex items-center space-x-2">
             <Target className="h-8 w-8 text-red-600" />
             <div>
               <p className="text-2xl font-bold">{formatNumber(data.totalProjects)}</p>
-              <p className="text-xs text-muted-foreground">Projects Completed</p>
+              <p className="text-xs text-muted-foreground">Projects Reported</p>
             </div>
           </div>
         </div>

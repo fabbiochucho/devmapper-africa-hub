@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,39 +7,83 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, Eye, Download, MapPin, Calendar, Users } from "lucide-react";
-import { mockChangeMakers, ChangeMaker } from "@/data/mockChangeMakers";
+import { Search, Filter, Eye, Download, MapPin, Calendar, Users, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type Report = Database['public']['Tables']['reports']['Row'];
+type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
 
 interface ChangeMakerReportsViewProps {
   selectedChangeMakerId?: string | null;
 }
 
+// Real reports submitted by change makers, joined via change_makers.user_id --
+// there is no "type" column on change_makers (that was mock-only), so the
+// type filter/badge from the old mock-driven table is dropped rather than
+// faked.
 const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selectedChangeMakerId }) => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [changeMakerTitles, setChangeMakerTitles] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
   const [filterVerification, setFilterVerification] = useState<string>("all");
 
-  const filteredChangeMakers = mockChangeMakers.filter(changeMaker => {
-    const matchesSearch = changeMaker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         changeMaker.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || changeMaker.type === filterType;
-    const matchesVerification = filterVerification === "all" || 
-                               (filterVerification === "verified" && changeMaker.verified) ||
-                               (filterVerification === "unverified" && !changeMaker.verified);
-    
-    return matchesSearch && matchesType && matchesVerification;
-  });
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'individual': return 'bg-blue-100 text-blue-800';
-      case 'group': return 'bg-green-100 text-green-800';
-      case 'ngo': return 'bg-purple-100 text-purple-800';
-      case 'corporate': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+      if (selectedChangeMakerId) {
+        const { data: cm } = await supabase
+          .from('change_makers')
+          .select('*')
+          .eq('id', selectedChangeMakerId)
+          .maybeSingle<ChangeMaker>();
+
+        if (cm?.user_id) {
+          const { data: reportsData } = await supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', cm.user_id);
+          setReports(reportsData || []);
+          setChangeMakerTitles({ [cm.user_id]: cm.title });
+        } else {
+          setReports([]);
+          setChangeMakerTitles({});
+        }
+      } else {
+        const { data: cms } = await supabase.from('change_makers').select('*');
+        const list = cms || [];
+        const userIds = list.map(cm => cm.user_id).filter((id): id is string => !!id);
+        const titles: Record<string, string> = {};
+        list.forEach(cm => { if (cm.user_id) titles[cm.user_id] = cm.title; });
+        setChangeMakerTitles(titles);
+
+        if (userIds.length > 0) {
+          const { data: reportsData } = await supabase
+            .from('reports')
+            .select('*')
+            .in('user_id', userIds);
+          setReports(reportsData || []);
+        } else {
+          setReports([]);
+        }
+      }
+
+      setLoading(false);
+    })();
+  }, [selectedChangeMakerId]);
+
+  const filteredReports = reports.filter(report => {
+    const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (report.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesVerification = filterVerification === "all" ||
+                               (filterVerification === "verified" && report.is_verified) ||
+                               (filterVerification === "unverified" && !report.is_verified);
+
+    return matchesSearch && matchesVerification;
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -53,21 +97,21 @@ const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selecte
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handleViewDetails = (changeMaker: ChangeMaker) => {
-    navigate(`/change-makers/${changeMaker.id}`);
+  const handleViewDetails = (report: Report) => {
+    navigate(`/project/${report.id}`);
   };
 
-  const handleExportReport = (changeMaker: ChangeMaker) => {
+  const handleExportReport = (report: Report) => {
     const reportData = {
-      ...changeMaker,
+      ...report,
       exportedAt: new Date().toISOString(),
     };
-    
+
     const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `change-maker-report-${changeMaker.id}-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `report-${report.id}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -81,7 +125,7 @@ const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selecte
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
-            Filter Change Makers
+            Filter Reports
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -89,24 +133,12 @@ const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selecte
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search change makers..."
+                placeholder="Search reports..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="individual">Individual</SelectItem>
-                <SelectItem value="group">Group</SelectItem>
-                <SelectItem value="ngo">NGO</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={filterVerification} onValueChange={setFilterVerification}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Filter by verification" />
@@ -126,113 +158,107 @@ const ChangeMakerReportsView: React.FC<ChangeMakerReportsViewProps> = ({ selecte
         <CardHeader>
           <CardTitle>Change Maker Reports</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {filteredChangeMakers.length} change maker(s) found
+            {filteredReports.length} report(s) found
           </p>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Projects</TableHead>
-                  <TableHead>Funding</TableHead>
-                  <TableHead>Impact</TableHead>
-                  <TableHead>Verification</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredChangeMakers.map((changeMaker) => (
-                  <TableRow key={changeMaker.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={changeMaker.photo}
-                          alt={changeMaker.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="font-medium">{changeMaker.name}</div>
-                          <div className="text-sm text-muted-foreground">{changeMaker.id}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getTypeColor(changeMaker.type)}>
-                        {changeMaker.type.charAt(0).toUpperCase() + changeMaker.type.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {changeMaker.location}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-center">
-                        <div className="font-medium">{changeMaker.impactMetrics.projectsCompleted}</div>
-                        <div className="text-xs text-muted-foreground">completed</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{formatCurrency(changeMaker.totalFunding)}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{changeMaker.impactMetrics.livesTouched.toLocaleString()}+ lives</div>
-                        <div className="text-muted-foreground">{changeMaker.impactMetrics.communitiesServed} communities</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        {changeMaker.verified && (
-                          <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
-                        )}
-                        <div className="text-xs">{changeMaker.verification_score}%</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {formatDate(changeMaker.submitted_at)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewDetails(changeMaker)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExportReport(changeMaker)}
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {filteredChangeMakers.length === 0 && (
-            <div className="text-center py-12">
-              <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No change makers found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Try adjusting your search or filter criteria.
-              </p>
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Report</TableHead>
+                      {!selectedChangeMakerId && <TableHead>Change Maker</TableHead>}
+                      <TableHead>Location</TableHead>
+                      <TableHead>Beneficiaries</TableHead>
+                      <TableHead>Cost</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Verification</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredReports.map((report) => (
+                      <TableRow key={report.id}>
+                        <TableCell>
+                          <div className="font-medium">{report.title}</div>
+                          <div className="text-sm text-muted-foreground">SDG {report.sdg_goal}</div>
+                        </TableCell>
+                        {!selectedChangeMakerId && (
+                          <TableCell>
+                            {report.user_id ? changeMakerTitles[report.user_id] || '—' : '—'}
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <div className="flex items-center text-sm">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {report.location || '—'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-center">{(report.beneficiaries ?? 0).toLocaleString()}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{formatCurrency(report.cost ?? 0)}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{report.project_status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {report.is_verified && (
+                              <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {formatDate(report.submitted_at)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewDetails(report)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleExportReport(report)}
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredReports.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No reports found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {reports.length === 0
+                      ? "No reports have been submitted by change makers yet."
+                      : "Try adjusting your search or filter criteria."}
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

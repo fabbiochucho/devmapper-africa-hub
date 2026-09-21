@@ -1,10 +1,12 @@
 import { Suspense, lazy } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { ChangeMaker } from '@/data/mockChangeMakers';
+import type { Database } from '@/integrations/supabase/types';
 
-// ChangeMakerMap pulls in react-leaflet + leaflet.markercluster (part of
-// the shared vendor-maps chunk). Lazy-loaded so it only fetches on pages
-// that actually render it.
+type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
+
+// Kept lazy for consistency with other map-tab components, even though
+// ChangeMakerMap itself no longer pulls in react-leaflet (see its comment --
+// change_makers has no lat/lng columns to plot).
 const ChangeMakerMap = lazy(() => import('./ChangeMakerMap'));
 
 interface LazyChangeMakerMapProps {

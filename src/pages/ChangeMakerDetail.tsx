@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockChangeMakers, ChangeMaker } from '@/data/mockChangeMakers';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SEOHead, generateChangeMakerSchema } from '@/components/seo/SEOHead';
@@ -11,20 +12,22 @@ import {
   MapPin,
   Mail,
   Phone,
-  Globe,
   Users,
   Heart,
   Building,
   CheckCircle,
   ArrowLeft,
-  Linkedin,
-  Twitter,
-  Facebook,
-  Instagram,
   DollarSign,
   Target,
   Award,
+  Loader2,
+  FileText,
 } from 'lucide-react';
+
+type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Report = Database['public']['Tables']['reports']['Row'];
+type Campaign = Database['public']['Tables']['fundraising_campaigns']['Row'];
 
 const sdgColors: Record<string, string> = {
   '1': 'bg-red-600',
@@ -46,16 +49,48 @@ const sdgColors: Record<string, string> = {
   '17': 'bg-blue-800',
 };
 
-const typeLabels: Record<string, { label: string; color: string }> = {
-  individual: { label: 'Individual', color: 'bg-blue-500' },
-  group: { label: 'Group', color: 'bg-purple-500' },
-  ngo: { label: 'NGO', color: 'bg-green-500' },
-  corporate: { label: 'Corporate', color: 'bg-amber-500' },
-};
-
 const ChangeMakerDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const changeMaker = mockChangeMakers.find((cm) => cm.id === id);
+  const [loading, setLoading] = useState(true);
+  const [changeMaker, setChangeMaker] = useState<ChangeMaker | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      setLoading(true);
+      const { data: cm } = await supabase.from('change_makers').select('*').eq('id', id).single();
+      setChangeMaker(cm);
+
+      // Real project list + funding total come from this change maker's own
+      // reports/fundraising_campaigns rows (same join pattern as
+      // ChangeMakerMyAnalytics), not from a mock projects[]/totalFunding pair.
+      if (cm?.user_id) {
+        const [{ data: profileData }, { data: reportsData }, { data: campaignsData }] = await Promise.all([
+          supabase.from('profiles').select('*').eq('user_id', cm.user_id).maybeSingle(),
+          supabase.from('reports').select('*').eq('user_id', cm.user_id),
+          supabase.from('fundraising_campaigns').select('*').eq('created_by', cm.user_id),
+        ]);
+        setProfile(profileData);
+        setReports(reportsData || []);
+        setCampaigns(campaignsData || []);
+      }
+      setLoading(false);
+    })();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!changeMaker) {
     return (
@@ -85,20 +120,21 @@ const ChangeMakerDetail = () => {
     }).format(amount);
   };
 
-  const typeInfo = typeLabels[changeMaker.type];
+  const totalFunding = campaigns.reduce((sum, c) => sum + (c.raised_amount || 0), 0);
+  const totalBeneficiaries = reports.reduce((sum, r) => sum + (r.beneficiaries || 0), 0);
+  const verifiedReports = reports.filter(r => r.is_verified).length;
+  const hasContactInfo = !!(profile?.email || profile?.phone || profile?.organization);
 
   return (
     <>
       <SEOHead
-        title={`${changeMaker.name} - Dev Mapper Change Maker`}
+        title={`${changeMaker.title} - Dev Mapper Change Maker`}
         description={changeMaker.description}
         keywords={['change maker', 'SDG', 'Africa', changeMaker.location, ...changeMaker.sdg_goals.map(g => `SDG ${g}`)]}
         structuredData={generateChangeMakerSchema({
-          name: changeMaker.name,
+          name: changeMaker.title,
           description: changeMaker.description,
           location: changeMaker.location,
-          type: changeMaker.type,
-          website: changeMaker.website,
         })}
       />
 
@@ -117,22 +153,19 @@ const ChangeMakerDetail = () => {
             <CardHeader>
               <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={changeMaker.photo} alt={changeMaker.name} />
+                  <AvatarImage src={changeMaker.image_url || undefined} alt={changeMaker.title} />
                   <AvatarFallback className="text-2xl">
-                    {changeMaker.name.substring(0, 2).toUpperCase()}
+                    {changeMaker.title.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <CardTitle className="text-2xl">{changeMaker.name}</CardTitle>
-                    {changeMaker.verified && (
+                    <CardTitle className="text-2xl">{changeMaker.title}</CardTitle>
+                    {changeMaker.is_verified && (
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <Badge className={`${typeInfo.color} text-white`}>
-                      {typeInfo.label}
-                    </Badge>
                     <span className="text-muted-foreground flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
                       {changeMaker.location}
@@ -142,16 +175,15 @@ const ChangeMakerDetail = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Bio */}
+              {/* About (the real table only has a single description field --
+                  the mock's separate short "bio" + long "description" fields
+                  are collapsed into one) */}
               <div>
                 <h3 className="font-semibold mb-2">About</h3>
-                <p className="text-muted-foreground">{changeMaker.bio}</p>
-              </div>
-
-              {/* Description */}
-              <div>
-                <h3 className="font-semibold mb-2">Mission & Impact</h3>
                 <p className="text-muted-foreground">{changeMaker.description}</p>
+                {changeMaker.impact_description && (
+                  <p className="text-muted-foreground mt-2">{changeMaker.impact_description}</p>
+                )}
               </div>
 
               <Separator />
@@ -171,115 +203,69 @@ const ChangeMakerDetail = () => {
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Contact Info */}
-              <div>
-                <h3 className="font-semibold mb-3">Contact Information</h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <a
-                    href={`mailto:${changeMaker.email}`}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Mail className="h-4 w-4" />
-                    {changeMaker.email}
-                  </a>
-                  {changeMaker.phone && (
-                    <a
-                      href={`tel:${changeMaker.phone}`}
-                      className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <Phone className="h-4 w-4" />
-                      {changeMaker.phone}
-                    </a>
-                  )}
-                  {changeMaker.website && (
-                    <a
-                      href={changeMaker.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <Globe className="h-4 w-4" />
-                      Website
-                    </a>
-                  )}
-                </div>
-
-                {/* Social Media */}
-                {changeMaker.socialMedia && (
-                  <div className="flex gap-3 mt-4">
-                    {changeMaker.socialMedia.linkedin && (
-                      <a
-                        href={changeMaker.socialMedia.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Linkedin className="h-5 w-5" />
-                      </a>
-                    )}
-                    {changeMaker.socialMedia.twitter && (
-                      <a
-                        href={changeMaker.socialMedia.twitter}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Twitter className="h-5 w-5" />
-                      </a>
-                    )}
-                    {changeMaker.socialMedia.facebook && (
-                      <a
-                        href={changeMaker.socialMedia.facebook}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Facebook className="h-5 w-5" />
-                      </a>
-                    )}
-                    {changeMaker.socialMedia.instagram && (
-                      <a
-                        href={changeMaker.socialMedia.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Instagram className="h-5 w-5" />
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Group Members */}
-              {changeMaker.type === 'group' && changeMaker.members && (
+              {/* Contact Information -- only profiles.email/phone/organization
+                  are real columns. Website/social links/phone-of-members etc.
+                  from the mock have no backing column, so they're dropped
+                  rather than invented. */}
+              {hasContactInfo && (
                 <>
                   <Separator />
                   <div>
-                    <h3 className="font-semibold mb-3">Team Members</h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {changeMaker.members.map((member, index) => (
-                        <Card key={index} className="p-4">
-                          <div className="flex items-start gap-3">
-                            <Avatar>
-                              <AvatarImage src={member.photo} alt={member.name} />
-                              <AvatarFallback>
-                                {member.name.substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                    <h3 className="font-semibold mb-3">Contact Information</h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {profile?.email && (
+                        <a
+                          href={`mailto:${profile.email}`}
+                          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Mail className="h-4 w-4" />
+                          {profile.email}
+                        </a>
+                      )}
+                      {profile?.phone && (
+                        <a
+                          href={`tel:${profile.phone}`}
+                          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Phone className="h-4 w-4" />
+                          {profile.phone}
+                        </a>
+                      )}
+                      {profile?.organization && (
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <Building className="h-4 w-4" />
+                          {profile.organization}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Projects -- real reports submitted by this change maker */}
+              {reports.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="font-semibold mb-3">Projects</h3>
+                    <div className="space-y-2">
+                      {reports.map((report) => (
+                        <Link
+                          key={report.id}
+                          to={`/project/${report.id}`}
+                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">{member.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {member.role}
-                              </p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {member.bio}
-                              </p>
+                              <div className="text-sm font-medium">{report.title}</div>
+                              <div className="text-xs text-muted-foreground">{report.location}</div>
                             </div>
                           </div>
-                        </Card>
+                          {report.is_verified && (
+                            <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
+                          )}
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -290,29 +276,30 @@ const ChangeMakerDetail = () => {
 
           {/* Stats Sidebar */}
           <div className="space-y-6">
-            {/* Verification Score */}
+            {/* Verification Status -- the real table only has an is_verified
+                boolean; there is no numeric verification_score or
+                verifications[] log to back the mock's confirm/dispute list. */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Award className="h-5 w-5 text-primary" />
-                  Verification Score
+                  Verification Status
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <span className="text-4xl font-bold text-primary">
-                    {changeMaker.verification_score}%
-                  </span>
-                </div>
-                <Progress value={changeMaker.verification_score} className="h-2" />
-                <p className="text-sm text-muted-foreground mt-2 text-center">
-                  {changeMaker.verifications.length} verification
-                  {changeMaker.verifications.length !== 1 ? 's' : ''}
-                </p>
+              <CardContent className="text-center">
+                {changeMaker.is_verified ? (
+                  <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
+                    <CheckCircle className="h-4 w-4 mr-1 inline" /> Verified
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-sm px-3 py-1">Not yet verified</Badge>
+                )}
               </CardContent>
             </Card>
 
-            {/* Impact Metrics */}
+            {/* Impact Metrics -- derived from real reports, not a mock
+                impactMetrics object. "Communities Served" had no real source
+                anywhere in the schema and is dropped rather than estimated. */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -324,29 +311,23 @@ const ChangeMakerDetail = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Heart className="h-4 w-4 text-red-500" />
-                    <span className="text-sm">Lives Touched</span>
+                    <span className="text-sm">Beneficiaries Reported</span>
                   </div>
-                  <span className="font-semibold">
-                    {changeMaker.impactMetrics.livesTouched.toLocaleString()}
-                  </span>
+                  <span className="font-semibold">{totalBeneficiaries.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm">Communities Served</span>
+                    <span className="text-sm">Verified Reports</span>
                   </div>
-                  <span className="font-semibold">
-                    {changeMaker.impactMetrics.communitiesServed}
-                  </span>
+                  <span className="font-semibold">{verifiedReports}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">Projects Completed</span>
+                    <span className="text-sm">Projects</span>
                   </div>
-                  <span className="font-semibold">
-                    {changeMaker.impactMetrics.projectsCompleted}
-                  </span>
+                  <span className="font-semibold">{reports.length}</span>
                 </div>
               </CardContent>
             </Card>
@@ -356,12 +337,12 @@ const ChangeMakerDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <DollarSign className="h-5 w-5 text-primary" />
-                  Total Funding
+                  Total Funds Raised
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-center">
-                  {formatCurrency(changeMaker.totalFunding)}
+                  {formatCurrency(totalFunding)}
                 </p>
               </CardContent>
             </Card>
@@ -374,9 +355,11 @@ const ChangeMakerDetail = () => {
                     Support This Change Maker
                   </Link>
                 </Button>
-                <Button variant="outline" className="w-full" asChild>
-                  <a href={`mailto:${changeMaker.email}`}>Contact</a>
-                </Button>
+                {profile?.email && (
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href={`mailto:${profile.email}`}>Contact</a>
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

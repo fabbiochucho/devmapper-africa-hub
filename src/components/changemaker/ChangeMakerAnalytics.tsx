@@ -1,64 +1,74 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Users, Target, DollarSign, TrendingUp } from "lucide-react";
-import { ChangeMaker } from "@/data/mockChangeMakers";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Users, Target, DollarSign, CheckCircle } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 import { sdgGoals } from "@/lib/constants";
+
+type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
+type Report = Database['public']['Tables']['reports']['Row'];
+type Campaign = Database['public']['Tables']['fundraising_campaigns']['Row'];
 
 interface ChangeMakerAnalyticsProps {
   changeMakers: ChangeMaker[];
+  // Funding/project totals are derived from real reports and fundraising
+  // campaigns (same join pattern as ChangeMakerMyAnalytics), not from the
+  // admin-editable total_funding/projects_count columns on change_makers.
+  reports: Report[];
+  campaigns: Campaign[];
 }
 
-const ChangeMakerAnalytics: React.FC<ChangeMakerAnalyticsProps> = ({ changeMakers }) => {
-  // Calculate statistics
-  const totalChangeMakers = changeMakers.length;
-  const totalFunding = changeMakers.reduce((sum, cm) => sum + cm.totalFunding, 0);
-  const totalLivesTouched = changeMakers.reduce((sum, cm) => sum + cm.impactMetrics.livesTouched, 0);
-  const totalProjects = changeMakers.reduce((sum, cm) => sum + cm.impactMetrics.projectsCompleted, 0);
+const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'];
 
-  // Change Makers by Type
-  const typeData = [
-    { name: 'Individual', count: changeMakers.filter(cm => cm.type === 'individual').length },
-    { name: 'Group', count: changeMakers.filter(cm => cm.type === 'group').length },
-    { name: 'NGO', count: changeMakers.filter(cm => cm.type === 'ngo').length },
-    { name: 'Corporate', count: changeMakers.filter(cm => cm.type === 'corporate').length },
+const ChangeMakerAnalytics: React.FC<ChangeMakerAnalyticsProps> = ({ changeMakers, reports, campaigns }) => {
+  const totalChangeMakers = changeMakers.length;
+  const verifiedCount = changeMakers.filter(cm => cm.is_verified).length;
+  const totalFunding = campaigns.reduce((sum, c) => sum + (c.raised_amount || 0), 0);
+  const totalProjects = reports.length;
+
+  // The mock "type" breakdown (individual/group/ngo/corporate) has no real
+  // column on change_makers, so it's replaced with the one real status the
+  // schema actually tracks: verification.
+  const verificationData = [
+    { name: 'Verified', count: verifiedCount },
+    { name: 'Unverified', count: Math.max(0, totalChangeMakers - verifiedCount) },
   ];
 
-  // SDG Distribution
-  const sdgCounts: { [key: string]: number } = {};
+  // SDG distribution -- sdg_goals is a real integer[] column.
+  const sdgCounts: Record<number, number> = {};
   changeMakers.forEach(cm => {
-    cm.sdg_goals.forEach(sdg => {
+    (cm.sdg_goals || []).forEach(sdg => {
       sdgCounts[sdg] = (sdgCounts[sdg] || 0) + 1;
     });
   });
+  const sdgData = Object.entries(sdgCounts)
+    .map(([sdg, count]) => ({
+      sdg: `SDG ${sdg}`,
+      count,
+      name: sdgGoals.find(g => g.number === Number(sdg))?.title || `SDG ${sdg}`,
+    }))
+    .sort((a, b) => b.count - a.count);
 
-  const sdgData = Object.entries(sdgCounts).map(([sdg, count]) => ({
-    sdg: `SDG ${sdg}`,
-    count,
-    name: sdgGoals.find(g => g.number.toString() === sdg)?.title || `SDG ${sdg}`
-  })).sort((a, b) => b.count - a.count);
+  // Country distribution -- real country_code column.
+  const countryCounts: Record<string, number> = {};
+  changeMakers.forEach(cm => {
+    const country = cm.country_code || 'Unknown';
+    countryCounts[country] = (countryCounts[country] || 0) + 1;
+  });
+  const countryChartData = Object.entries(countryCounts).map(([country, count]) => ({ country, count }));
 
-  // Country Distribution
-  const countryData = changeMakers.reduce((acc: { [key: string]: number }, cm) => {
-    const country = cm.location.split(', ').pop() || 'Unknown';
-    acc[country] = (acc[country] || 0) + 1;
-    return acc;
-  }, {});
-
-  const countryChartData = Object.entries(countryData).map(([country, count]) => ({
-    country,
-    count
-  }));
-
-  // Funding by Type
-  const fundingByType = [
-    { type: 'Individual', funding: changeMakers.filter(cm => cm.type === 'individual').reduce((sum, cm) => sum + cm.totalFunding, 0) },
-    { type: 'Group', funding: changeMakers.filter(cm => cm.type === 'group').reduce((sum, cm) => sum + cm.totalFunding, 0) },
-    { type: 'NGO', funding: changeMakers.filter(cm => cm.type === 'ngo').reduce((sum, cm) => sum + cm.totalFunding, 0) },
-    { type: 'Corporate', funding: changeMakers.filter(cm => cm.type === 'corporate').reduce((sum, cm) => sum + cm.totalFunding, 0) },
-  ];
-
-  const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'];
+  // Funding by country: attribute each campaign's raised amount to its
+  // creator's change-maker country via user_id.
+  const countryByUserId: Record<string, string> = {};
+  changeMakers.forEach(cm => {
+    if (cm.user_id) countryByUserId[cm.user_id] = cm.country_code || 'Unknown';
+  });
+  const fundingByCountry: Record<string, number> = {};
+  campaigns.forEach(c => {
+    const country = countryByUserId[c.created_by] || 'Unknown';
+    fundingByCountry[country] = (fundingByCountry[country] || 0) + (c.raised_amount || 0);
+  });
+  const fundingByCountryData = Object.entries(fundingByCountry).map(([country, funding]) => ({ country, funding }));
 
   const formatCurrency = (value: number) => `$${(value / 1000).toFixed(0)}K`;
 
@@ -73,125 +83,136 @@ const ChangeMakerAnalytics: React.FC<ChangeMakerAnalyticsProps> = ({ changeMaker
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalChangeMakers}</div>
-            <p className="text-xs text-muted-foreground">Active across Africa</p>
+            <p className="text-xs text-muted-foreground">Registered across Africa</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Funding</CardTitle>
+            <CardTitle className="text-sm font-medium">Verified</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{verifiedCount}</div>
+            <p className="text-xs text-muted-foreground">Verified change makers</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Funding Raised</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(totalFunding / 1000000).toFixed(1)}M</div>
-            <p className="text-xs text-muted-foreground">Mobilized for projects</p>
+            <div className="text-2xl font-bold">${(totalFunding / 1000000).toFixed(2)}M</div>
+            <p className="text-xs text-muted-foreground">Via fundraising campaigns</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Lives Touched</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(totalLivesTouched / 1000).toFixed(0)}K+</div>
-            <p className="text-xs text-muted-foreground">People impacted</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Projects Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">Projects Reported</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProjects}</div>
-            <p className="text-xs text-muted-foreground">Successful implementations</p>
+            <p className="text-xs text-muted-foreground">Submitted reports</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Change Makers by Type */}
         <Card>
           <CardHeader>
-            <CardTitle>Change Makers by Type</CardTitle>
+            <CardTitle>Verification Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={typeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {typeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {totalChangeMakers > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={verificationData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    dataKey="count"
+                  >
+                    {verificationData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">No change makers yet</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Funding by Type */}
         <Card>
           <CardHeader>
-            <CardTitle>Funding by Change Maker Type</CardTitle>
+            <CardTitle>Funding by Country</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={fundingByType}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="type" />
-                <YAxis tickFormatter={formatCurrency} />
-                <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Funding']} />
-                <Bar dataKey="funding" fill="#10B981" />
-              </BarChart>
-            </ResponsiveContainer>
+            {fundingByCountryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={fundingByCountryData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="country" />
+                  <YAxis tickFormatter={formatCurrency} />
+                  <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Funding']} />
+                  <Bar dataKey="funding" fill="#10B981" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">No funding data yet</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* SDG Distribution */}
         <Card>
           <CardHeader>
             <CardTitle>SDG Focus Areas</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sdgData.slice(0, 8)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="sdg" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
+            {sdgData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={sdgData.slice(0, 8)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="sdg" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#3B82F6" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">No SDG data yet</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Country Distribution */}
         <Card>
           <CardHeader>
             <CardTitle>Change Makers by Country</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={countryChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="country" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8B5CF6" />
-              </BarChart>
-            </ResponsiveContainer>
+            {countryChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={countryChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="country" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#8B5CF6" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12">No location data yet</p>
+            )}
           </CardContent>
         </Card>
       </div>

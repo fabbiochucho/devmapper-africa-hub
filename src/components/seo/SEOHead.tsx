@@ -117,7 +117,7 @@ export const generateChangeMakerSchema = (changeMaker: {
   name: string;
   description: string;
   location: string;
-  type: string;
+  type?: string;
   website?: string;
 }) => ({
   '@context': 'https://schema.org',
