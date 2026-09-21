@@ -18,7 +18,8 @@ import {
   Clock,
   Trash2,
   X,
-  Send
+  Send,
+  Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -28,6 +29,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserBadgeList } from '@/components/badges/UserBadgeList';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ForumReply {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: { name: string; avatar: string };
+}
 
 interface ForumPostProps {
   post: {
@@ -51,7 +60,7 @@ interface ForumPostProps {
     isLiked?: boolean;
   };
   onLike?: (postId: string) => void;
-  onReply?: (postId: string, content: string) => void;
+  onReply?: (postId: string, content: string) => void | Promise<void>;
   onShare?: (postId: string) => void;
   onDelete?: (postId: string) => void;
   onPin?: (postId: string) => void;
@@ -79,6 +88,9 @@ const ForumPost: React.FC<ForumPostProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showReply, setShowReply] = useState(false);
   const [replyContent, setReplyContent] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
+  const [replies, setReplies] = useState<ForumReply[] | null>(null);
+  const [loadingReplies, setLoadingReplies] = useState(false);
 
   const categoryStyle = categoryConfig[post.category] || { bg: 'bg-muted', text: 'text-muted-foreground' };
 
@@ -89,12 +101,54 @@ const ForumPost: React.FC<ForumPostProps> = ({
   const handleDelete = () => onDelete?.(post.id);
   const handlePin = () => onPin?.(post.id);
 
-  const handleSubmitReply = (e: React.FormEvent) => {
+  const loadReplies = async () => {
+    setLoadingReplies(true);
+    try {
+      const { data: replyRows, error } = await supabase
+        .from('forum_replies')
+        .select('id, content, created_at, author_id')
+        .eq('post_id', post.id)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+
+      const authorIds = Array.from(new Set((replyRows || []).map(r => r.author_id).filter(Boolean)));
+      const { data: authorProfiles } = authorIds.length
+        ? await supabase.from('public_profiles').select('user_id, full_name, avatar_url').in('user_id', authorIds)
+        : { data: [] as { user_id: string; full_name: string | null; avatar_url: string | null }[] };
+      const profileMap = new Map((authorProfiles || []).map(p => [p.user_id, p]));
+
+      setReplies((replyRows || []).map(r => {
+        const prof = profileMap.get(r.author_id);
+        return {
+          id: r.id,
+          content: r.content,
+          createdAt: new Date(r.created_at).toLocaleString(),
+          author: { name: prof?.full_name || 'Anonymous', avatar: prof?.avatar_url || '/placeholder.svg' },
+        };
+      }));
+    } catch {
+      setReplies([]);
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
+  const toggleReplies = () => {
+    const next = !showReply;
+    setShowReply(next);
+    if (next && replies === null) loadReplies();
+  };
+
+  const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (replyContent.trim()) {
-      onReply?.(post.id, replyContent.trim());
+    if (!replyContent.trim() || !onReply) return;
+    setSubmittingReply(true);
+    try {
+      await onReply(post.id, replyContent.trim());
       setReplyContent('');
-      setShowReply(false);
+      await loadReplies();
+    } finally {
+      setSubmittingReply(false);
     }
   };
 
@@ -213,7 +267,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowReply(!showReply)}
+                onClick={toggleReplies}
                 className="flex items-center gap-1.5"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -231,31 +285,59 @@ const ForumPost: React.FC<ForumPostProps> = ({
             </Button>
           </div>
 
-          {/* Inline reply form */}
+          {/* Replies list + inline reply form */}
           {showReply && (
-            <div className="border-t pt-3">
-              <form onSubmit={handleSubmitReply} className="space-y-2">
-                <Textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Write a reply..."
-                  rows={3}
-                  className="resize-none"
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setShowReply(false); setReplyContent(''); }}
-                  >
-                    <X className="w-4 h-4 mr-1" />Cancel
-                  </Button>
-                  <Button type="submit" size="sm" disabled={!replyContent.trim()}>
-                    <Send className="w-4 h-4 mr-1" />Reply
-                  </Button>
+            <div className="border-t pt-3 space-y-3">
+              {loadingReplies ? (
+                <div className="flex justify-center py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                 </div>
-              </form>
+              ) : replies && replies.length > 0 ? (
+                <div className="space-y-3">
+                  {replies.map((reply) => (
+                    <div key={reply.id} className="flex gap-2">
+                      <Avatar className="w-7 h-7">
+                        <AvatarImage src={reply.author.avatar} />
+                        <AvatarFallback>{reply.author.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 bg-muted/50 rounded-lg px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{reply.author.name}</span>
+                          <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{reply.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : replies && replies.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-2">No replies yet — be the first.</p>
+              ) : null}
+
+              {onReply && (
+                <form onSubmit={handleSubmitReply} className="space-y-2">
+                  <Textarea
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder="Write a reply..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setShowReply(false); setReplyContent(''); }}
+                    >
+                      <X className="w-4 h-4 mr-1" />Cancel
+                    </Button>
+                    <Button type="submit" size="sm" disabled={!replyContent.trim() || submittingReply}>
+                      <Send className="w-4 h-4 mr-1" />{submittingReply ? 'Posting...' : 'Reply'}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </div>

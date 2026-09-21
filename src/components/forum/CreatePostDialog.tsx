@@ -8,8 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle, X, Image, Link, Hash } from 'lucide-react';
 
+interface NewPostInput {
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+}
+
 interface CreatePostDialogProps {
-  onCreatePost: (post: any) => void;
+  onCreatePost: (post: NewPostInput) => void;
 }
 
 const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ onCreatePost }) => {
@@ -51,25 +58,12 @@ const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ onCreatePost }) => 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newPost = {
-      id: Date.now().toString(),
+    onCreatePost({
       title: formData.title,
       content: formData.content,
       category: formData.category,
       tags: formData.tags,
-      author: {
-        name: 'Current User',
-        role: 'Community Member',
-        verified: true
-      },
-      likes: 0,
-      replies: 0,
-      views: 0,
-      createdAt: 'Just now',
-      isLiked: false
-    };
-
-    onCreatePost(newPost);
+    });
     setFormData({
       title: '',
       content: '',

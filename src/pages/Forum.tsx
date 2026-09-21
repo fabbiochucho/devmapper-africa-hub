@@ -293,11 +293,13 @@ const Forum = () => {
     const violations = detectPrivacyViolations(content);
     if (violations.length > 0) { toast.error(formatPrivacyError(violations)); return; }
     try {
-      // Increment replies_count
-      await supabase
-        .from('forum_posts')
-        .update({ replies_count: (posts.find(p => p.id === postId)?.replies || 0) + 1 })
-        .eq('id', postId);
+      const { error } = await supabase.from('forum_replies').insert({
+        post_id: postId,
+        author_id: user.id,
+        content,
+      });
+      if (error) throw error;
+      // replies_count is maintained server-side by sync_forum_post_replies_count_trigger.
       setPosts(prev => prev.map(p =>
         p.id === postId ? { ...p, replies: p.replies + 1 } : p
       ));
