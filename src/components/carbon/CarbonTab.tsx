@@ -65,14 +65,18 @@ const CATEGORY_LABELS: Record<string, string> = {
   cat5_waste: "Waste Generated",
   cat6_business_travel: "Business Travel",
   cat7_employee_commute: "Employee Commuting",
+  cat9_downstream_transport: "Downstream Transport & Distribution",
+  cat2_capital_goods: "Capital Goods",
+  cat12_end_of_life: "End-of-Life Treatment of Sold Products",
 };
 
 const SCOPE_LABELS: Record<number, string> = { 1: "Scope 1", 2: "Scope 2", 3: "Scope 3" };
 
 const CATEGORY_TO_EMISSION_SOURCE: Record<string, string> = {
   electricity: "Energy", heat_steam: "Energy", stationary_combustion: "Energy",
-  mobile_combustion: "Transport", cat4_upstream_transport: "Transport", cat6_business_travel: "Transport", cat7_employee_commute: "Transport",
+  mobile_combustion: "Transport", cat4_upstream_transport: "Transport", cat6_business_travel: "Transport", cat7_employee_commute: "Transport", cat9_downstream_transport: "Transport",
   cat5_waste: "Waste", fugitive: "Industrial", cat1_purchased_goods: "Industrial", cat3_fuel_energy: "Energy",
+  cat2_capital_goods: "Industrial", cat12_end_of_life: "Waste",
 };
 
 export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
