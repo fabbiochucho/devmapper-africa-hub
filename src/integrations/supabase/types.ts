@@ -5242,6 +5242,10 @@ export type Database = {
         }
         Returns: string
       }
+      mark_broadcast_read: {
+        Args: { p_broadcast_id: string }
+        Returns: undefined
+      }
       match_report_embeddings: {
         Args: {
           match_count: number

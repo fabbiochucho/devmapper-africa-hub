@@ -150,14 +150,12 @@ const NotificationCenter = () => {
       .map(n => n.id);
 
     if (broadcastIds.length > 0 && session?.user?.id) {
-      // Batch update all unread broadcasts in parallel
+      // Appends the caller's own id server-side (mark_broadcast_read RPC) -
+      // a plain .update() here would overwrite the shared is_read_by array
+      // and wipe out every other recipient's read receipt, and would be
+      // silently rejected by RLS for non-admins in the first place.
       await Promise.all(
-        broadcastIds.map(id =>
-          supabase
-            .from("admin_broadcasts")
-            .update({ is_read_by: [session.user.id] })
-            .eq("id", id)
-        )
+        broadcastIds.map(id => supabase.rpc("mark_broadcast_read", { p_broadcast_id: id }))
       );
     }
 
