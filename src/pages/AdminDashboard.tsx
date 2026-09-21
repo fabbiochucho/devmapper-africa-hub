@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, Download, Award } from "lucide-react";
+import { Shield, Users, Flag, CheckCircle, XCircle, AlertTriangle, Heart, DollarSign, TrendingUp, Loader2, Download, Award, Plug } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -76,6 +76,70 @@ function AuditLogViewer() {
                   {log.actor_type} • {log.target_table || 'system'}
                   {log.target_id && ` • ${log.target_id.slice(0, 8)}…`}
                 </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Inline Data Providers Panel - surfaces the data_providers registry
+// (built earlier this session) and the health-tracking columns
+// (record_provider_health, wired into every connector) that previously
+// had no UI at all - the only way to see them was a direct DB query.
+function DataProvidersPanel() {
+  const [providers, setProviders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from('data_providers').select('*').order('category').order('name')
+      .then(({ data }) => { setProviders(data || []); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
+
+  const statusBadge = (status: string) => {
+    if (status === 'active') return <Badge className="bg-green-600 text-white">Active</Badge>;
+    if (status === 'needs_setup') return <Badge variant="outline" className="text-amber-600 border-amber-400">Needs Setup</Badge>;
+    if (status === 'planned') return <Badge variant="secondary">Planned</Badge>;
+    return <Badge variant="outline">{status}</Badge>;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Data Provider Registry</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {providers.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No providers registered.</p>
+        ) : (
+          <div className="space-y-2">
+            {providers.map((p) => (
+              <div key={p.id} className="p-3 border rounded-lg">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{p.name}</span>
+                    <Badge variant="outline" className="text-xs">{p.category}</Badge>
+                    {statusBadge(p.status)}
+                    {p.consecutive_failures > 0 && (
+                      <Badge variant="destructive" className="text-xs">{p.consecutive_failures} consecutive failures</Badge>
+                    )}
+                  </div>
+                  {p.requires_api_key && (
+                    <span className="text-xs text-muted-foreground">Requires API key</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
+                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                  <span>Last success: {p.last_success_at ? new Date(p.last_success_at).toLocaleString() : 'never'}</span>
+                  <span>Last error: {p.last_error_at ? new Date(p.last_error_at).toLocaleString() : 'never'}</span>
+                </div>
+                {p.last_error_message && (
+                  <p className="text-xs text-destructive mt-1">{p.last_error_message}</p>
+                )}
               </div>
             ))}
           </div>
@@ -370,6 +434,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
           <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
+          <TabsTrigger value="data-providers"><Plug className="w-3.5 h-3.5 mr-1" />Data Providers</TabsTrigger>
           <TabsTrigger value="reports">System Reports</TabsTrigger>
         </TabsList>
 
@@ -473,6 +538,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="audit">
           <AuditLogViewer />
+        </TabsContent>
+
+        <TabsContent value="data-providers">
+          <DataProvidersPanel />
         </TabsContent>
 
         <TabsContent value="reports">
