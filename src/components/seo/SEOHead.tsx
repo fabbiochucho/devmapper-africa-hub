@@ -40,7 +40,7 @@ export const SEOHead = ({
     updateMetaTag('keywords', keywords.join(', '));
 
     // Resolve canonical to absolute URL (accept relative paths like "/about")
-    const SITE_ORIGIN = 'https://devmapperafrica.lovable.app';
+    const SITE_ORIGIN = 'https://devmapper.africa';
     const resolvedCanonical = canonicalUrl
       ? (canonicalUrl.startsWith('http') ? canonicalUrl : `${SITE_ORIGIN}${canonicalUrl.startsWith('/') ? '' : '/'}${canonicalUrl}`)
       : `${SITE_ORIGIN}${typeof window !== 'undefined' ? window.location.pathname : '/'}`;

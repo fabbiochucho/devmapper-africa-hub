@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://devmapperafrica.lovable.app/sitemap.xml
+Sitemap: https://devmapper.africa/sitemap.xml
