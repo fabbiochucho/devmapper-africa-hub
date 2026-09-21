@@ -55,7 +55,11 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
   const calcCircularityScore = (wasteG: number, wasteR: number, reuse: number): number => {
     const diversionFactor = wasteG > 0 ? (wasteR / wasteG) * 0.5 : 0;
     const reuseFactor = (reuse / 100) * 0.3;
-    const efficiencyFactor = 0.2; // simplified
+    // No real per-entry efficiency signal is collected yet, so this
+    // contributes a flat 20/100 baseline to every score rather than
+    // measuring anything - disclosed in the UI (see the caption under
+    // "Circularity Score" below) rather than left unstated.
+    const efficiencyFactor = 0.2;
     return Math.min(Math.round((diversionFactor + reuseFactor + efficiencyFactor) * 100), 100);
   };
 
@@ -122,6 +126,9 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
             <Badge variant={avgScore >= 70 ? "default" : avgScore >= 40 ? "secondary" : "outline"} className="mt-1">
               {avgScore >= 70 ? "High" : avgScore >= 40 ? "Medium" : "Low"}
             </Badge>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Waste diversion + reuse rate, plus a flat 20-point baseline (no efficiency data collected yet)
+            </p>
           </CardContent>
         </Card>
         <Card>

@@ -1,15 +1,17 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlayCircle, BookOpen, Users, Award, Clock, CheckCircle, Star } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BookOpen, Users, Award, Clock, Star, Info } from 'lucide-react';
 
+// This page has no backing courses/enrollments/workshops/certifications
+// tables yet - everything below is a preview of planned curriculum, not
+// live content. Do not add per-user progress, dates, instructor names, or
+// download counts without a real table behind them.
 const Training = () => {
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-
   const courses = [
     {
       id: 'basics',
@@ -18,7 +20,6 @@ const Training = () => {
       duration: '2 hours',
       level: 'Beginner',
       lessons: 8,
-      progress: 75,
       topics: [
         'Platform Overview',
         'Creating Your Profile',
@@ -37,7 +38,6 @@ const Training = () => {
       duration: '3 hours',
       level: 'Intermediate',
       lessons: 12,
-      progress: 30,
       topics: [
         'Data Collection Best Practices',
         'Photo Documentation',
@@ -60,7 +60,6 @@ const Training = () => {
       duration: '4 hours',
       level: 'Advanced',
       lessons: 15,
-      progress: 0,
       topics: [
         'Verification Principles',
         'Source Validation',
@@ -81,66 +80,9 @@ const Training = () => {
     }
   ];
 
-  const workshops = [
-    {
-      title: 'SDG Mapping Workshop',
-      date: 'January 15, 2025',
-      time: '14:00 GMT',
-      instructor: 'Dr. Amina Hassan',
-      participants: 45,
-      maxParticipants: 50,
-      description: 'Interactive workshop on mapping SDG projects across Africa'
-    },
-    {
-      title: 'Community Engagement Best Practices',
-      date: 'January 22, 2025',
-      time: '16:00 GMT',
-      instructor: 'John Kwame',
-      participants: 32,
-      maxParticipants: 40,
-      description: 'Learn effective strategies for community engagement in development projects'
-    },
-    {
-      title: 'Data Visualization for Impact',
-      date: 'January 29, 2025',
-      time: '15:00 GMT',
-      instructor: 'Sarah Okonkwo',
-      participants: 28,
-      maxParticipants: 35,
-      description: 'Creating compelling visualizations to communicate project impact'
-    }
-  ];
-
-  const resources = [
-    {
-      title: 'SDG Implementation Guide',
-      type: 'PDF',
-      size: '2.5 MB',
-      downloads: 1248,
-      description: 'Comprehensive guide to implementing SDG projects in African communities'
-    },
-    {
-      title: 'Report Template Collection',
-      type: 'ZIP',
-      size: '1.2 MB',
-      downloads: 892,
-      description: 'Ready-to-use templates for various types of development project reports'
-    },
-    {
-      title: 'Community Engagement Toolkit',
-      type: 'PDF',
-      size: '3.1 MB',
-      downloads: 756,
-      description: 'Tools and techniques for effective community participation'
-    },
-    {
-      title: 'Verification Checklist',
-      type: 'PDF',
-      size: '800 KB',
-      downloads: 654,
-      description: 'Step-by-step checklist for verifying project reports'
-    }
-  ];
+  // Workshop scheduling and downloadable resources aren't live yet either -
+  // no fabricated instructor names, dates, or download counts in the
+  // meantime (see the "coming soon" states in each tab below).
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -150,6 +92,15 @@ const Training = () => {
           Develop your skills in sustainable development tracking and community engagement
         </p>
       </div>
+
+      <Alert className="mb-6">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          This is a preview of planned training content — course delivery, workshop scheduling, downloadable
+          resources, and certification tracking aren't live yet. For help right now, see the FAQs on the{' '}
+          <a href="/support" className="underline font-medium">Support page</a>.
+        </AlertDescription>
+      </Alert>
 
       <Tabs defaultValue="courses" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
@@ -178,11 +129,7 @@ const Training = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{course.lessons} lessons</span>
-                      <span>{course.progress}% complete</span>
-                    </div>
-                    <Progress value={course.progress} className="h-2" />
+                    <div className="text-sm text-muted-foreground">{course.lessons} lessons planned</div>
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Course Topics:</p>
                       <div className="flex flex-wrap gap-1">
@@ -198,13 +145,8 @@ const Training = () => {
                         )}
                       </div>
                     </div>
-                    <Button 
-                      className="w-full" 
-                      variant={course.progress > 0 ? "default" : "outline"}
-                      onClick={() => setSelectedCourse(course.id)}
-                    >
-                      <PlayCircle className="w-4 h-4 mr-2" />
-                      {course.progress > 0 ? 'Continue' : 'Start Course'}
+                    <Button className="w-full" variant="outline" disabled>
+                      Coming Soon
                     </Button>
                   </div>
                 </CardContent>
@@ -214,72 +156,23 @@ const Training = () => {
         </TabsContent>
 
         <TabsContent value="workshops" className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">Upcoming Workshops</h2>
-          <div className="grid gap-4">
-            {workshops.map((workshop, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-xl">{workshop.title}</CardTitle>
-                      <CardDescription className="mt-2">{workshop.description}</CardDescription>
-                    </div>
-                    <Badge variant="outline">Live</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm">{workshop.date} at {workshop.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        <span className="text-sm">Instructor: {workshop.instructor}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">
-                          {workshop.participants}/{workshop.maxParticipants} participants
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-end">
-                      <Button>Register Now</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <h2 className="text-2xl font-semibold mb-4">Workshops</h2>
+          <Card>
+            <CardContent className="py-16 text-center text-muted-foreground">
+              <Users className="mx-auto h-10 w-10 mb-3 text-gray-400" />
+              <p>No workshops are scheduled yet. Check back soon.</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="resources" className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">Learning Resources</h2>
-          <div className="grid gap-4">
-            {resources.map((resource, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-primary/10 rounded">
-                        <BookOpen className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{resource.title}</h3>
-                        <p className="text-sm text-muted-foreground">{resource.description}</p>
-                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                          <span>{resource.type} • {resource.size}</span>
-                          <span>{resource.downloads} downloads</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button variant="outline">Download</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card>
+            <CardContent className="py-16 text-center text-muted-foreground">
+              <BookOpen className="mx-auto h-10 w-10 mb-3 text-gray-400" />
+              <p>No downloadable resources are available yet. Check back soon.</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="certification" className="space-y-6">
@@ -329,30 +222,11 @@ const Training = () => {
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold text-lg">Your Progress</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Courses Completed</span>
-                        <span>2/3</span>
-                      </div>
-                      <Progress value={66} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Reports Submitted</span>
-                        <span>3/5</span>
-                      </div>
-                      <Progress value={60} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Verifications Done</span>
-                        <span>0/20</span>
-                      </div>
-                      <Progress value={0} className="h-2" />
-                    </div>
-                  </div>
-                  <Button className="w-full">View Certification Requirements</Button>
+                  <p className="text-sm text-muted-foreground">
+                    Certification progress tracking isn't live yet — there's nothing here to show until courses
+                    and verification counts are wired up to your account.
+                  </p>
+                  <Button className="w-full" variant="outline" disabled>Coming Soon</Button>
                 </div>
               </div>
             </CardContent>
