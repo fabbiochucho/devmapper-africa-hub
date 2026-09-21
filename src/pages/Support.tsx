@@ -5,17 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle, Search, BookOpen, Shield, Users, FileText, Globe, CreditCard, Zap, ExternalLink, MapPin } from 'lucide-react';
+import { HelpCircle, MessageSquare, Phone, Mail, Clock, AlertCircle, Search, BookOpen, Shield, Users, FileText, Globe, CreditCard, Zap, ExternalLink, MapPin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { SEOHead, generateFAQSchema } from '@/components/seo/SEOHead';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const Support = () => {
+  const { user } = useAuth();
   const [ticketForm, setTicketForm] = useState({
     subject: '',
     category: '',
     description: '',
     priority: 'medium'
   });
+  const [submittingTicket, setSubmittingTicket] = useState(false);
   const [faqSearch, setFaqSearch] = useState('');
 
   const faqCategories = [
@@ -97,10 +102,29 @@ const Support = () => {
     ? allFaqs.filter(f => f.q.toLowerCase().includes(faqSearch.toLowerCase()) || f.a.toLowerCase().includes(faqSearch.toLowerCase()))
     : [];
 
-  const handleSubmitTicket = (e: React.FormEvent) => {
+  const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Support ticket submitted:', ticketForm);
-    alert('Support ticket submitted successfully! We\'ll get back to you within 24 hours.');
+    if (!user) {
+      toast.error('Please sign in to submit a support ticket');
+      return;
+    }
+    setSubmittingTicket(true);
+    try {
+      const { error } = await supabase.from('support_tickets').insert({
+        user_id: user.id,
+        subject: ticketForm.subject,
+        category: ticketForm.category,
+        description: ticketForm.description,
+        priority: ticketForm.priority,
+      });
+      if (error) throw error;
+      toast.success("Support ticket submitted! We'll get back to you within 24 hours.");
+      setTicketForm({ subject: '', category: '', description: '', priority: 'medium' });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit ticket');
+    } finally {
+      setSubmittingTicket(false);
+    }
   };
 
   return (
@@ -254,7 +278,12 @@ const Support = () => {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full">Submit Ticket</Button>
+                  <Button type="submit" className="w-full" disabled={submittingTicket}>
+                    {submittingTicket ? 'Submitting...' : 'Submit Ticket'}
+                  </Button>
+                  {!user && (
+                    <p className="text-xs text-muted-foreground text-center">Sign in to submit a ticket.</p>
+                  )}
                 </form>
               </CardContent>
             </Card>
@@ -346,45 +375,33 @@ const Support = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                All Systems Operational
+                <AlertCircle className="w-5 h-5 text-muted-foreground" />
+                No live status monitoring yet
               </CardTitle>
-              <CardDescription>Last checked: {new Date().toLocaleString()}</CardDescription>
+              <CardDescription>
+                DevMapper doesn't have automated uptime monitoring set up yet, so this page can't show real-time
+                status. If something seems broken, please submit a support ticket below rather than checking here.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {[
-                  { name: 'Map Services (MapLibre / Leaflet)', status: 'Operational' },
-                  { name: 'Report Submission Pipeline', status: 'Operational' },
-                  { name: 'User Authentication (Supabase Auth)', status: 'Operational' },
-                  { name: 'Analytics Dashboard', status: 'Operational' },
-                  { name: 'Ndovu Akili AI (Edge Function)', status: 'Operational' },
-                  { name: 'ESG Module', status: 'Operational' },
-                  { name: 'Project Management', status: 'Operational' },
-                  { name: 'Payment Processing (Flutterwave / Paystack)', status: 'Operational' },
-                  { name: 'Carbon & Sustainability Module', status: 'Operational' },
-                  { name: 'File Storage', status: 'Operational' },
+                  'Map Services (MapLibre / Leaflet)',
+                  'Report Submission Pipeline',
+                  'User Authentication (Supabase Auth)',
+                  'Analytics Dashboard',
+                  'Ndovu Akili AI (Edge Function)',
+                  'ESG Module',
+                  'Project Management',
+                  'Payment Processing (Flutterwave / Paystack)',
+                  'Carbon & Sustainability Module',
+                  'File Storage',
                 ].map((service, i) => (
-                  <div key={i} className="flex justify-between items-center py-1.5 border-b last:border-0">
-                    <span className="text-sm">{service.name}</span>
-                    <Badge className="bg-green-500/15 text-green-700 border-green-500/30">{service.status}</Badge>
+                  <div key={i} className="py-1.5 border-b last:border-0 text-sm text-muted-foreground">
+                    {service}
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Uptime History (Last 30 Days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-0.5">
-                {Array.from({ length: 30 }, (_, i) => (
-                  <div key={i} className="flex-1 h-8 bg-green-500/80 rounded-sm" title={`Day ${30 - i}: 100% uptime`} />
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">99.95% uptime over the last 30 days</p>
             </CardContent>
           </Card>
         </TabsContent>
