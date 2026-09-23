@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { NON_FABRICATION_DIRECTIVE } from "../_shared/agent-utils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,9 +75,9 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const systemPrompt = SYSTEM_PROMPTS[context] || SYSTEM_PROMPTS.general;
-    
+
     // Inject project data context if provided
-    let enrichedSystem = systemPrompt;
+    let enrichedSystem = `${systemPrompt}\n\n${NON_FABRICATION_DIRECTIVE}`;
     if (projectData) {
       enrichedSystem += `\n\nCurrent project context:\n${JSON.stringify(projectData, null, 2)}`;
     }

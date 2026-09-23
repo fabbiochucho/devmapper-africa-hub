@@ -1438,6 +1438,7 @@ export type Database = {
           created_at: string
           description: string | null
           endpoint_or_table: string | null
+          fallback_strategy: string | null
           geographic_coverage: string | null
           id: string
           last_error_at: string | null
@@ -1458,6 +1459,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           endpoint_or_table?: string | null
+          fallback_strategy?: string | null
           geographic_coverage?: string | null
           id?: string
           last_error_at?: string | null
@@ -1478,6 +1480,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           endpoint_or_table?: string | null
+          fallback_strategy?: string | null
           geographic_coverage?: string | null
           id?: string
           last_error_at?: string | null
@@ -3111,6 +3114,7 @@ export type Database = {
           calculation_method: string
           carbon_verified: boolean | null
           created_at: string | null
+          data_quality: string | null
           emission_factor_id: string | null
           emission_source: string | null
           estimated_emissions_tco2e: number | null
@@ -3132,6 +3136,7 @@ export type Database = {
           calculation_method?: string
           carbon_verified?: boolean | null
           created_at?: string | null
+          data_quality?: string | null
           emission_factor_id?: string | null
           emission_source?: string | null
           estimated_emissions_tco2e?: number | null
@@ -3153,6 +3158,7 @@ export type Database = {
           calculation_method?: string
           carbon_verified?: boolean | null
           created_at?: string | null
+          data_quality?: string | null
           emission_factor_id?: string | null
           emission_source?: string | null
           estimated_emissions_tco2e?: number | null
@@ -3345,6 +3351,7 @@ export type Database = {
       project_dism_scores: {
         Row: {
           created_at: string
+          data_quality: string | null
           evidence_verification: number
           governance_ethics: number
           id: string
@@ -3361,6 +3368,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_quality?: string | null
           evidence_verification?: number
           governance_ethics?: number
           id?: string
@@ -3377,6 +3385,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_quality?: string | null
           evidence_verification?: number
           governance_ethics?: number
           id?: string

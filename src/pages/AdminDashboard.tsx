@@ -124,6 +124,9 @@ function DataProvidersPanel() {
                     <span className="font-medium text-sm">{p.name}</span>
                     <Badge variant="outline" className="text-xs">{p.category}</Badge>
                     {statusBadge(p.status)}
+                    {p.fallback_strategy === 'internal_estimate' && (
+                      <Badge variant="outline" className="text-xs">Falls back to estimate on failure</Badge>
+                    )}
                     {p.consecutive_failures > 0 && (
                       <Badge variant="destructive" className="text-xs">{p.consecutive_failures} consecutive failures</Badge>
                     )}

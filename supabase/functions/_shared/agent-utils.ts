@@ -5,6 +5,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// §13: "must not fabricate, must show source" - previously true only by
+// per-feature discipline (the carbon calculator's citation trail, each
+// agent's own prompt wording), not as a governed rule every agent
+// actually receives. Every handleAgent()-based agent's prompt is built
+// in exactly one place (below), so injecting it here applies it
+// uniformly instead of relying on each agent's own prompt wording to
+// remember it.
+const NON_FABRICATION_DIRECTIVE = `CRITICAL RULE: Never invent or estimate a specific number, date, regulation, or fact that isn't present in the context data below. If the context data doesn't contain what's needed to answer precisely, say so plainly and name what's missing rather than guessing a plausible-sounding figure. When you do state a figure from the context data, note which field/record it came from.`;
+
 // Lovable AI Gateway (correct endpoint + header + supported model)
 async function callLLM(systemPrompt: string, userPrompt: string): Promise<{ text: string; error?: string }> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
@@ -196,7 +205,7 @@ async function handleAgent(
   const { contextStr, dataSources } = await dataFetcher(supabaseUser, { userId: user.id, ...(contextData ?? {}) });
 
   const modeNote = expertMode ? "Use technical terminology." : "Use plain, non-technical language.";
-  const fullPrompt = `${systemPrompt}\n\n${modeNote}\n\nContext data:\n${contextStr}\n\nUser question: ${userMessage}`;
+  const fullPrompt = `${systemPrompt}\n\n${NON_FABRICATION_DIRECTIVE}\n\n${modeNote}\n\nContext data:\n${contextStr}\n\nUser question: ${userMessage}`;
 
   const { text: rawOutput, error: llmError } = await callLLM(fullPrompt, userMessage);
   if (llmError) {
@@ -241,4 +250,4 @@ function jsonError(message: string, status: number) {
   });
 }
 
-export { handleAgent, callLLM, parseAgentOutput, corsHeaders, jsonError, embedText, indexReportEmbedding, fetchSimilarReports };
+export { handleAgent, callLLM, parseAgentOutput, corsHeaders, jsonError, embedText, indexReportEmbedding, fetchSimilarReports, NON_FABRICATION_DIRECTIVE };
