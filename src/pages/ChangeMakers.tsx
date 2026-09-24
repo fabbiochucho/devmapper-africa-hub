@@ -16,6 +16,7 @@ import LazyChangeMakerMap from "@/components/changemaker/LazyChangeMakerMap";
 import ChangeMakerAnalytics from "@/components/changemaker/ChangeMakerAnalytics";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminVerification } from "@/hooks/useAdminVerification";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -25,7 +26,8 @@ type Report = Database['public']['Tables']['reports']['Row'];
 type Campaign = Database['public']['Tables']['fundraising_campaigns']['Row'];
 
 const ChangeMakers = () => {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
+  const { isAdmin } = useAdminVerification();
   const [showNominateDialog, setShowNominateDialog] = useState(false);
   const [nomineeData, setNomineeData] = useState({ name: '', email: '', reason: '' });
   const [nominating, setNominating] = useState(false);
@@ -130,7 +132,7 @@ const ChangeMakers = () => {
               Champions driving sustainable development across Africa
             </p>
           </div>
-          {user && (
+          {isAdmin && (
             <Dialog open={showNominateDialog} onOpenChange={setShowNominateDialog}>
               <DialogTrigger asChild>
                 <Button>
