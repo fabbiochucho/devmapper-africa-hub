@@ -212,7 +212,7 @@ const SearchPage = () => {
                 <h2 className="text-2xl font-semibold mb-4">Projects</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {results.projects.map(p => (
-                    <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/reports?id=${p.id}`)}>
+                    <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/project/${p.id}`)}>
                       <CardHeader>
                         <CardTitle className="flex items-start gap-2"><FolderKanban className="w-5 h-5 text-primary mt-1" /><span>{p.title}</span></CardTitle>
                         <CardDescription>{p.location}</CardDescription>
