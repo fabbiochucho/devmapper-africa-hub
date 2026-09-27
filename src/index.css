@@ -118,6 +118,11 @@
     @apply bg-background text-foreground;
     /* Ensure system fonts display immediately */
     font-display: swap;
+    /* Defensive backstop: a single stray fixed-width element shouldn't be
+       able to force the whole page to scroll sideways on mobile. Doesn't
+       fix the root cause of an overflowing element, just contains the
+       symptom. */
+    overflow-x: hidden;
   }
 
   /* Smooth font rendering */

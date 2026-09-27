@@ -219,7 +219,7 @@ export default function SdgOverview() {
       </div>
 
       {/* SDG Grid with official logos */}
-      <div className="grid grid-cols-6 sm:grid-cols-9 lg:grid-cols-17 gap-2">
+      <div className="grid grid-cols-6 sm:grid-cols-9 lg:grid-cols-[repeat(17,minmax(0,1fr))] gap-2">
         {sdgGoalDetails.map(g => (
           <button
             key={g.goal}

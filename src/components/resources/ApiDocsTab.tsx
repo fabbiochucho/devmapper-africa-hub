@@ -220,7 +220,7 @@ Authorization: Bearer ACCESS_TOKEN`} />
                           {ep.params.length > 0 && (
                             <div>
                               <h4 className="text-sm font-semibold mb-2">Parameters</h4>
-                              <div className="border rounded-lg overflow-hidden">
+                              <div className="border rounded-lg overflow-x-auto">
                                 <table className="w-full text-sm">
                                   <thead>
                                     <tr className="bg-muted/50">

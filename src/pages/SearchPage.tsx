@@ -169,9 +169,9 @@ const SearchPage = () => {
         <Button type="submit"><Search className="mr-2 h-4 w-4" /> Search</Button>
       </form>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <Select value={typeFilter} onValueChange={(v) => updateParam('type', v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -182,7 +182,7 @@ const SearchPage = () => {
           </SelectContent>
         </Select>
         <Select value={countryFilter} onValueChange={(v) => updateParam('country', v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Country" />
           </SelectTrigger>
           <SelectContent>
@@ -191,7 +191,7 @@ const SearchPage = () => {
           </SelectContent>
         </Select>
         <Select value={sdgFilter} onValueChange={(v) => updateParam('sdg_goal', v)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="SDG Goal" />
           </SelectTrigger>
           <SelectContent>
