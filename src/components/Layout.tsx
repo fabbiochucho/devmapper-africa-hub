@@ -18,6 +18,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 import PageFooter from "./landing/PageFooter";
 import { Badge } from "./ui/badge";
 import LanguageSwitcher from "./LanguageSwitcher";
+import LanguagePromptBanner from "./LanguagePromptBanner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -209,7 +210,8 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex flex-col bg-background">
-        <LayoutHeader 
+        <LanguagePromptBanner />
+        <LayoutHeader
           user={user}
           profile={profile}
           currentRole={currentRole}
