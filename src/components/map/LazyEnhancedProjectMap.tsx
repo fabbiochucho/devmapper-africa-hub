@@ -1,8 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// EnhancedProjectMap pulls in maplibre-gl + react-leaflet (the ~1.1MB
-// vendor-maps chunk). It was previously statically imported from
+// EnhancedProjectMap pulls in maplibre-gl (the ~1.1MB vendor-maps chunk).
+// It was previously statically imported from
 // src/pages/Index.tsx (via MapSection) - App.tsx never wraps the "/" route
 // in Suspense, so every visitor's initial landing-page load pulled in the
 // entire map stack before it even rendered. Lazy-loading here means
