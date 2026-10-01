@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -73,11 +73,7 @@ export default function ESGScenarioAnalysis({
     }
   });
 
-  useEffect(() => {
-    loadScenarios();
-  }, [organizationId]);
-
-  const loadScenarios = async () => {
+  const loadScenarios = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('esg_scenarios')
@@ -99,7 +95,11 @@ export default function ESGScenarioAnalysis({
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, t]);
+
+  useEffect(() => {
+    loadScenarios();
+  }, [loadScenarios, organizationId]);
 
   const calculateScenarioResults = (assumptions: typeof newScenario.assumptions) => {
     const baselineTotal = currentEmissions.scope1 + currentEmissions.scope2 + currentEmissions.scope3;

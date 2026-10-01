@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -157,13 +157,7 @@ const CorporateDashboard = () => {
     visibility: 'public'
   });
 
-  useEffect(() => {
-    if (user && hasRole('company_representative')) {
-      fetchTargets();
-    }
-  }, [user, hasRole]);
-
-  const fetchTargets = async () => {
+  const fetchTargets = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('corporate_targets')
@@ -179,7 +173,13 @@ const CorporateDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user && hasRole('company_representative')) {
+      fetchTargets();
+    }
+  }, [user, hasRole, fetchTargets]);
 
   const toggleSdgGoal = (goalNumber: number) => {
     setFormData(prev => ({

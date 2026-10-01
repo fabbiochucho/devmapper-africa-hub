@@ -174,7 +174,7 @@ function CertificationReviewPanel() {
     if (error) { console.error(error); toast.error(t('admin.certification.loadError')); }
     setApps(data || []);
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadApps(); }, [loadApps]);
 
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
       console.error('Error loading admin dashboard:', error);
       toast.error(t('admin.dashboard.loadError'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadDashboard(); }, [loadDashboard]);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,16 +38,12 @@ const AdminMessaging = () => {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
-
-  useEffect(() => {
     if (selectedConversation) {
       loadMessages(selectedConversation.id);
     }
   }, [selectedConversation]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     setLoading(true);
     try {
       const { data: participations } = await supabase
@@ -97,7 +93,11 @@ const AdminMessaging = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   const loadMessages = async (conversationId: string) => {
     try {

@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SEOHead, generateChangeMakerSchema } from '@/components/seo/SEOHead';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { generateChangeMakerSchema } from '@/lib/seoSchemas';
 import {
   MapPin,
   Mail,

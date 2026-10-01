@@ -36,7 +36,7 @@ export function AdvancedAnalytics() {
   useEffect(() => {
     fetchAnalyticsData();
     trackCustomEvent('analytics_dashboard_viewed');
-  }, []);
+  }, [trackCustomEvent]);
 
   const fetchAnalyticsData = async () => {
     try {

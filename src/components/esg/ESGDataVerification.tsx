@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,13 +51,82 @@ export default function ESGDataVerification({
   const [verificationNotes, setVerificationNotes] = useState('');
   const [overallScore, setOverallScore] = useState(0);
 
-  useEffect(() => {
-    if (indicatorId) {
-      runVerificationChecks();
-    }
-  }, [indicatorId]);
+  const checkDataCompleteness = (indicator: any): 'pass' | 'fail' | 'warning' => {
+    const requiredFields = ['carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'energy_consumption_kwh'];
+    const optionalFields = ['carbon_scope3_tonnes', 'water_consumption_m3', 'waste_generated_tonnes'];
+    
+    const requiredComplete = requiredFields.every(f => indicator[f] !== null && indicator[f] !== undefined);
+    const optionalComplete = optionalFields.filter(f => indicator[f] !== null && indicator[f] !== undefined).length;
+    
+    if (!requiredComplete) return 'fail';
+    if (optionalComplete < optionalFields.length / 2) return 'warning';
+    return 'pass';
+  };
 
-  const runVerificationChecks = async () => {
+  const getCompletenessDetails = useCallback((indicator: any): string => {
+    const fields = [
+      'carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'carbon_scope3_tonnes',
+      'energy_consumption_kwh', 'water_consumption_m3', 'waste_generated_tonnes'
+    ];
+    const filled = fields.filter(f => indicator[f] !== null && indicator[f] !== undefined).length;
+    return t('esg.dataVerification.fieldsPopulatedDetail', { filled, total: fields.length });
+  }, [t]);
+
+  const checkScopeBreakdown = (indicator: any): 'pass' | 'fail' | 'warning' => {
+    const hasScope1 = indicator.carbon_scope1_tonnes !== null;
+    const hasScope2 = indicator.carbon_scope2_tonnes !== null;
+    const hasScope3 = indicator.carbon_scope3_tonnes !== null;
+    
+    if (hasScope1 && hasScope2 && hasScope3) return 'pass';
+    if (hasScope1 && hasScope2) return 'warning';
+    return 'fail';
+  };
+
+  const getScopeDetails = useCallback((indicator: any): string => {
+    const scopes = [];
+    if (indicator.carbon_scope1_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel1'));
+    if (indicator.carbon_scope2_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel2'));
+    if (indicator.carbon_scope3_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel3'));
+    return scopes.length > 0 ? t('esg.dataVerification.scopeIncludesDetail', { scopes: scopes.join(', ') }) : t('esg.dataVerification.noScopeDataDetail');
+  }, [t]);
+
+  const checkTemporalConsistency = (indicator: any): 'pass' | 'fail' | 'warning' => {
+    const currentYear = new Date().getFullYear();
+    const reportingYear = indicator.reporting_year;
+    
+    if (reportingYear === currentYear || reportingYear === currentYear - 1) return 'pass';
+    if (reportingYear >= currentYear - 2) return 'warning';
+    return 'fail';
+  };
+
+  const checkValueRanges = (indicator: any): 'pass' | 'fail' | 'warning' => {
+    // Basic sanity checks
+    const checks = [
+      indicator.renewable_energy_percentage === null || (indicator.renewable_energy_percentage >= 0 && indicator.renewable_energy_percentage <= 100),
+      indicator.esg_score === null || (indicator.esg_score >= 0 && indicator.esg_score <= 100),
+      indicator.carbon_scope1_tonnes === null || indicator.carbon_scope1_tonnes >= 0,
+      indicator.carbon_scope2_tonnes === null || indicator.carbon_scope2_tonnes >= 0,
+      indicator.carbon_scope3_tonnes === null || indicator.carbon_scope3_tonnes >= 0
+    ];
+    
+    const failCount = checks.filter(c => !c).length;
+    if (failCount === 0) return 'pass';
+    if (failCount <= 1) return 'warning';
+    return 'fail';
+  };
+
+  const getValueRangeDetails = useCallback((indicator: any): string => {
+    const issues = [];
+    if (indicator.renewable_energy_percentage !== null && (indicator.renewable_energy_percentage < 0 || indicator.renewable_energy_percentage > 100)) {
+      issues.push(t('esg.dataVerification.renewableOutOfRangeIssue'));
+    }
+    if (indicator.esg_score !== null && (indicator.esg_score < 0 || indicator.esg_score > 100)) {
+      issues.push(t('esg.dataVerification.esgScoreOutOfRangeIssue'));
+    }
+    return issues.length > 0 ? issues.join(', ') : t('esg.dataVerification.allValuesWithinRangeDetail');
+  }, [t]);
+
+  const runVerificationChecks = useCallback(async () => {
     setLoading(true);
     
     try {
@@ -124,82 +193,13 @@ export default function ESGDataVerification({
     } finally {
       setLoading(false);
     }
-  };
+  }, [getCompletenessDetails, getScopeDetails, getValueRangeDetails, indicatorId, t]);
 
-  const checkDataCompleteness = (indicator: any): 'pass' | 'fail' | 'warning' => {
-    const requiredFields = ['carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'energy_consumption_kwh'];
-    const optionalFields = ['carbon_scope3_tonnes', 'water_consumption_m3', 'waste_generated_tonnes'];
-    
-    const requiredComplete = requiredFields.every(f => indicator[f] !== null && indicator[f] !== undefined);
-    const optionalComplete = optionalFields.filter(f => indicator[f] !== null && indicator[f] !== undefined).length;
-    
-    if (!requiredComplete) return 'fail';
-    if (optionalComplete < optionalFields.length / 2) return 'warning';
-    return 'pass';
-  };
-
-  const getCompletenessDetails = (indicator: any): string => {
-    const fields = [
-      'carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'carbon_scope3_tonnes',
-      'energy_consumption_kwh', 'water_consumption_m3', 'waste_generated_tonnes'
-    ];
-    const filled = fields.filter(f => indicator[f] !== null && indicator[f] !== undefined).length;
-    return t('esg.dataVerification.fieldsPopulatedDetail', { filled, total: fields.length });
-  };
-
-  const checkScopeBreakdown = (indicator: any): 'pass' | 'fail' | 'warning' => {
-    const hasScope1 = indicator.carbon_scope1_tonnes !== null;
-    const hasScope2 = indicator.carbon_scope2_tonnes !== null;
-    const hasScope3 = indicator.carbon_scope3_tonnes !== null;
-    
-    if (hasScope1 && hasScope2 && hasScope3) return 'pass';
-    if (hasScope1 && hasScope2) return 'warning';
-    return 'fail';
-  };
-
-  const getScopeDetails = (indicator: any): string => {
-    const scopes = [];
-    if (indicator.carbon_scope1_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel1'));
-    if (indicator.carbon_scope2_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel2'));
-    if (indicator.carbon_scope3_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel3'));
-    return scopes.length > 0 ? t('esg.dataVerification.scopeIncludesDetail', { scopes: scopes.join(', ') }) : t('esg.dataVerification.noScopeDataDetail');
-  };
-
-  const checkTemporalConsistency = (indicator: any): 'pass' | 'fail' | 'warning' => {
-    const currentYear = new Date().getFullYear();
-    const reportingYear = indicator.reporting_year;
-    
-    if (reportingYear === currentYear || reportingYear === currentYear - 1) return 'pass';
-    if (reportingYear >= currentYear - 2) return 'warning';
-    return 'fail';
-  };
-
-  const checkValueRanges = (indicator: any): 'pass' | 'fail' | 'warning' => {
-    // Basic sanity checks
-    const checks = [
-      indicator.renewable_energy_percentage === null || (indicator.renewable_energy_percentage >= 0 && indicator.renewable_energy_percentage <= 100),
-      indicator.esg_score === null || (indicator.esg_score >= 0 && indicator.esg_score <= 100),
-      indicator.carbon_scope1_tonnes === null || indicator.carbon_scope1_tonnes >= 0,
-      indicator.carbon_scope2_tonnes === null || indicator.carbon_scope2_tonnes >= 0,
-      indicator.carbon_scope3_tonnes === null || indicator.carbon_scope3_tonnes >= 0
-    ];
-    
-    const failCount = checks.filter(c => !c).length;
-    if (failCount === 0) return 'pass';
-    if (failCount <= 1) return 'warning';
-    return 'fail';
-  };
-
-  const getValueRangeDetails = (indicator: any): string => {
-    const issues = [];
-    if (indicator.renewable_energy_percentage !== null && (indicator.renewable_energy_percentage < 0 || indicator.renewable_energy_percentage > 100)) {
-      issues.push(t('esg.dataVerification.renewableOutOfRangeIssue'));
+  useEffect(() => {
+    if (indicatorId) {
+      runVerificationChecks();
     }
-    if (indicator.esg_score !== null && (indicator.esg_score < 0 || indicator.esg_score > 100)) {
-      issues.push(t('esg.dataVerification.esgScoreOutOfRangeIssue'));
-    }
-    return issues.length > 0 ? issues.join(', ') : t('esg.dataVerification.allValuesWithinRangeDetail');
-  };
+  }, [indicatorId, runVerificationChecks]);
 
   const submitForVerification = async () => {
     setSubmitting(true);

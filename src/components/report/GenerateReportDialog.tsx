@@ -59,24 +59,13 @@ const GenerateReportDialog = ({ isOpen, onOpenChange }: GenerateReportDialogProp
     },
   });
 
+  // ponytail: still a mock - nothing is generated or downloaded; wire to a real report endpoint.
   const onSubmit = (values: GenerateReportValues) => {
-    console.log("Generating report with values:", values);
-    
-    const reportData = {
-      id: `report_${Date.now()}`,
-      userId: 5, // Mocking platform admin user ID
-      reportType: values.reportType,
-      dateRange: values.dateRange,
-      generatedAt: new Date().toISOString(),
-      downloadUrl: `/api/reports/download/${Date.now()}.pdf`,
-    };
-
     toast.success("Report generated successfully!", {
       description: `Your ${values.reportType} report is ready.`,
       action: {
         label: "Download",
         onClick: () => {
-          console.log("Downloading from:", reportData.downloadUrl);
           toast.info("Download started (mock).");
         },
       },

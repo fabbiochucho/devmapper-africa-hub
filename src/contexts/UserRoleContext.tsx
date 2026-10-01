@@ -3,16 +3,8 @@ import { createContext, useState, useContext, ReactNode, useEffect, useCallback 
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'citizen_reporter' | 'ngo_member' | 'government_official' | 'company_representative' | 'country_admin' | 'platform_admin' | 'change_maker' | 'admin' | 'funder';
-
-export const ALL_ROLES: UserRole[] = ['citizen_reporter', 'ngo_member', 'government_official', 'company_representative', 'country_admin', 'platform_admin', 'change_maker', 'admin', 'funder'];
-
-// Roles a user may assign to themselves. Excludes the privileged/admin roles,
-// which must only ever be granted by an existing admin (server-side RLS
-// enforces this too - this list keeps the UI from offering them at all).
-export const SELF_ASSIGNABLE_ROLES: UserRole[] = ALL_ROLES.filter(
-  role => !['admin', 'platform_admin', 'country_admin'].includes(role)
-);
+import type { UserRole } from '@/lib/roles';
+export type { UserRole } from '@/lib/roles';
 
 export interface UserRoleData {
   role: UserRole;
@@ -187,6 +179,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useUserRole = () => {
   const context = useContext(UserRoleContext);
   if (context === undefined) {

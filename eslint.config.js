@@ -50,5 +50,15 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    // shadcn/ui files are CLI-generated and export variants/hooks by design; test helpers never hot-reload.
+    files: ["src/components/ui/**/*.tsx", "src/test/**/*.tsx"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
+  {
+    // CLI scripts print to the terminal, and Edge Function logs are the functions' only observability.
+    files: ["scripts/**/*.ts", "supabase/functions/**/*.ts"],
+    rules: { "no-console": "off" },
   }
 );

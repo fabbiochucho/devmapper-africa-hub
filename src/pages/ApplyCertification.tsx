@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,11 +55,7 @@ const ApplyCertification = () => {
   const [evidenceSummary, setEvidenceSummary] = useState('');
   const [agreed, setAgreed] = useState(false);
 
-  useEffect(() => {
-    if (user) fetchData();
-  }, [user]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     const [reportsRes, appsRes] = await Promise.all([
       supabase.from('reports').select('id, title, sdg_goal, project_status, country_code').eq('user_id', user!.id).order('submitted_at', { ascending: false }),
@@ -68,7 +64,11 @@ const ApplyCertification = () => {
     if (reportsRes.data) setReports(reportsRes.data);
     if (appsRes.data) setExistingApps((appsRes.data as any[]).map((a: any) => a.report_id));
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchData();
+  }, [fetchData, user]);
 
   const eligibleReports = reports.filter(r => !existingApps.includes(r.id));
 

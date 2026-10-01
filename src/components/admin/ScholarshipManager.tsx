@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,11 +33,7 @@ export function ScholarshipManager() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
 
-  useEffect(() => {
-    fetchApplications();
-  }, [filter]);
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('scholarships')
@@ -56,7 +52,11 @@ export function ScholarshipManager() {
       setApplications(data as ScholarshipApplication[]);
     }
     setLoading(false);
-  };
+  }, [filter, t]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications, filter]);
 
   const handleApprove = async (app: ScholarshipApplication) => {
     try {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,18 +37,18 @@ export default function VerificationLedgerView({ reportId }: VerificationLedgerV
   const [loading, setLoading] = useState(true);
   const [showHashes, setShowHashes] = useState(false);
 
-  useEffect(() => {
-    load();
-  }, [reportId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const result = await fetchAndVerifyLedger(reportId);
     setEntries(result.entries);
     setIsValid(result.isValid);
     setBrokenAt(result.brokenAt);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    load();
+  }, [load, reportId]);
 
   if (loading) {
     return <Card><CardContent className="py-8 text-center text-muted-foreground">Loading audit trail...</CardContent></Card>;

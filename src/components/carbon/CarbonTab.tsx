@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,11 +111,6 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     vendor: string | null; billing_period: string | null; confidence: string;
   } | null>(null);
 
-  useEffect(() => {
-    fetchEntries();
-    fetchFactors();
-  }, [reportId]);
-
   const fetchFactors = async () => {
     const { data } = await supabase
       .from("emission_factors")
@@ -130,7 +125,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     ? (parseFloat(activityQuantity) * selectedFactor.factor_kgco2e) / 1000
     : null;
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     const { data, error } = await supabase
       .from("project_carbon_data")
       .select("*, emission_factors(activity, source, source_year, region)")
@@ -138,7 +133,12 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       .order("created_at", { ascending: false });
     if (!error && data) setEntries(data as any);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    fetchEntries();
+    fetchFactors();
+  }, [fetchEntries, reportId]);
 
   const handleSubmit = async () => {
     if (!user) return;

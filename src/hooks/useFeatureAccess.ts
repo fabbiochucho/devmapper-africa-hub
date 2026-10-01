@@ -15,11 +15,7 @@ export function useFeatureAccess() {
   const [projectCap, setProjectCap] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    fetchFeatureAccess();
-  }, []);
-
-  const fetchFeatureAccess = async () => {
+  const fetchFeatureAccess = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -67,7 +63,11 @@ export function useFeatureAccess() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchFeatureAccess();
+  }, [fetchFeatureAccess]);
 
   const loadFeaturesForPlan = async (plan: PlanType) => {
     const flagsResult = await supabase

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,11 +44,7 @@ export default function ClimateTab({ reportId, isOwner }: ClimateTabProps) {
   const [methane, setMethane] = useState("");
   const [methaneSector, setMethaneSector] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from("project_decarbonisation")
       .select("*")
@@ -64,7 +60,11 @@ export default function ClimateTab({ reportId, isOwner }: ClimateTabProps) {
       setMethaneSector(data.methane_sector || "");
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, reportId]);
 
   const handleSave = async () => {
     if (!user) return;

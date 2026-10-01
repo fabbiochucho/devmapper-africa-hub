@@ -1,24 +1,34 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
-import { mockReports } from "@/data/mockReports";
+import { supabase } from "@/integrations/supabase/client";
 import { sdgGoals, sdgGoalColors } from "@/lib/constants";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import SdgIcon from "./landing/SdgIcon";
 
+const sdgGoalMap = new Map(sdgGoals.map((g) => [g.value, g.label.replace(/Goal \d+: /, '')]));
+
 const SdgDistributionChart = () => {
-  const sdgGoalMap = new Map(sdgGoals.map((g) => [g.value, g.label.replace(/Goal \d+: /, '')]));
+  // Real reports only - this landing-page chart previously plotted mockReports.
+  const [goals, setGoals] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    supabase.from("reports").select("sdg_goal").then(({ data, error }) => {
+      if (error) console.error("Failed to load SDG distribution:", error);
+      setGoals((data || []).map((r) => String(r.sdg_goal)));
+    });
+  }, []);
 
   const data = React.useMemo(() => {
-    const totalProjects = mockReports.length;
+    const totalProjects = goals?.length ?? 0;
     if (totalProjects === 0) {
         return [];
     }
     const counts: { [key: string]: number } = {};
-    mockReports.forEach((report) => {
-      counts[report.sdg_goal] = (counts[report.sdg_goal] || 0) + 1;
+    goals!.forEach((goal) => {
+      counts[goal] = (counts[goal] || 0) + 1;
     });
 
     return sdgGoals.map(goal => ({
@@ -26,7 +36,7 @@ const SdgDistributionChart = () => {
       value: (counts[goal.value] || 0) * 100 / totalProjects,
       fill: sdgGoalColors[goal.value],
     })).filter(item => item.value > 0).sort((a,b) => b.value - a.value);
-  }, []);
+  }, [goals]);
 
   const chartConfig = {
       value: { label: "Percentage" },
@@ -95,6 +105,9 @@ const SdgDistributionChart = () => {
         <CardDescription>Distribution of projects across all SDGs by percentage.</CardDescription>
       </CardHeader>
       <CardContent>
+        {goals && data.length === 0 && (
+          <p className="text-sm text-muted-foreground py-8 text-center">No projects have been reported yet.</p>
+        )}
         <ChartContainer config={chartConfig} style={{ height: `${chartHeight}px` }} className="w-full">
           <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
             <CartesianGrid horizontal={false} />

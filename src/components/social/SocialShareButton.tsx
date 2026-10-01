@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Dialog, 
@@ -53,7 +53,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     };
   };
 
-  const generatePreviewImage = async () => {
+  const generatePreviewImage = useCallback(async () => {
     // Create a canvas with DevMapper branding
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -135,7 +135,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     }
     
     return canvas.toDataURL('image/png');
-  };
+  }, [data, description, title, type]);
 
   const socialPlatforms = [
     {
@@ -203,14 +203,13 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   };
 
   const downloadPreview = async () => {
-    if (!previewUrl) {
-      const preview = await generatePreviewImage();
-      setPreviewUrl(preview);
-    }
+    // Use the freshly generated image directly - previewUrl state isn't updated until the next render.
+    const url = previewUrl || await generatePreviewImage();
+    if (!previewUrl) setPreviewUrl(url);
     
     const link = document.createElement('a');
     link.download = `devmapper-${type}-preview.png`;
-    link.href = previewUrl;
+    link.href = url;
     link.click();
     
     toast("Preview image downloaded with DevMapper branding");
@@ -220,7 +219,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     if (isOpen && !previewUrl) {
       generatePreviewImage().then(setPreviewUrl);
     }
-  }, [isOpen]);
+  }, [generatePreviewImage, isOpen, previewUrl]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

@@ -57,7 +57,7 @@ serve(async (req) => {
     const action = url.searchParams.get('action') || 'benchmark';
     const body = await req.json();
 
-    console.log('[ALPHAEARTH-PROXY] Action:', action, 'Body:', body);
+    console.log('[ALPHAEARTH-PROXY] Action:', action);
 
     let result;
 

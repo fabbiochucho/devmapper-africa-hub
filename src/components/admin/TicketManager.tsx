@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,11 +45,7 @@ const TicketManager = () => {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    loadTickets();
-  }, [statusFilter]);
-
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase
@@ -70,7 +66,11 @@ const TicketManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets, statusFilter]);
 
   const updateTicketStatus = async (ticketId: string, newStatus: string) => {
     setUpdating(true);

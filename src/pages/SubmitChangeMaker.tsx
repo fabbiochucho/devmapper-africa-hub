@@ -93,7 +93,7 @@ const SubmitChangeMaker = () => {
     };
 
     loadExistingProfile();
-  }, [user?.id]);
+  }, [user?.id, form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,

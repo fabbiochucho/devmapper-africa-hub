@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,11 +39,7 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
     is_headquarters: false,
   });
 
-  useEffect(() => {
-    if (user) fetchLocations();
-  }, [user]);
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("entity_locations")
@@ -59,7 +55,11 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType, user]);
+
+  useEffect(() => {
+    if (user) fetchLocations();
+  }, [fetchLocations, user]);
 
   const handleAdd = async () => {
     if (!form.country) {

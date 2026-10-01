@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,11 +68,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
   // Stage update form
   const [stageNotes, setStageNotes] = useState('');
 
-  useEffect(() => {
-    if (reportId) fetchAll();
-  }, [reportId]);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     const [wfRes, scRes, evRes, vrRes, crRes] = await Promise.all([
       supabase.from('verification_workflow_stages').select('*').eq('report_id', reportId).order('created_at'),
@@ -99,7 +95,11 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
     if (vrRes.data) setVerifications(vrRes.data);
     if (crRes.data) setCertifications(crRes.data);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    if (reportId) fetchAll();
+  }, [fetchAll, reportId]);
 
   const sisResult: SISResult = computeFullSIS(scoreForm);
   const isVerifier = hasRole('admin') || hasRole('platform_admin') || hasRole('government_official') || hasRole('ngo_member');

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +32,7 @@ const ChangeMakerMyAnalytics = () => {
   const [donations, setDonations] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
 
-  useEffect(() => {
-    if (user) loadData();
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [profileRes, changeMakerRes, reportsRes, campaignsRes] = await Promise.all([
@@ -62,7 +58,11 @@ const ChangeMakerMyAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) loadData();
+  }, [loadData, user]);
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;

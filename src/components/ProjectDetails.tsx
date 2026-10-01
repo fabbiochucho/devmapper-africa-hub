@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,22 +35,22 @@ export default function ProjectDetails({
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  useEffect(() => {
-    if (project) {
-      fetchComments();
-    }
-  }, [project]);
-
-  const fetchComments = async () => {
-    if (!project) return;
+  // Keyed on the id, not the object, so a parent re-render can't trigger a refetch.
+  const projectId = project?.id;
+  const fetchComments = useCallback(async () => {
+    if (!projectId) return;
     try {
-      const data = await getComments(project.id);
+      const data = await getComments(projectId);
       setComments(data);
     } catch (error) {
       console.error("Failed to fetch comments:", error);
       toast.error("Failed to fetch comments.");
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();

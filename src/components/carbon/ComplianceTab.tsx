@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,9 +43,7 @@ export default function ComplianceTab({ reportId, isOwner }: ComplianceTabProps)
   const [totalEmissions, setTotalEmissions] = useState(0);
   const [totalCredits, setTotalCredits] = useState(0);
 
-  useEffect(() => { fetchData(); }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const [compResult, carbonResult, assetResult] = await Promise.all([
       supabase.from("carbon_compliance").select("*").eq("report_id", reportId).maybeSingle(),
       supabase.from("project_carbon_data").select("estimated_emissions_tco2e").eq("report_id", reportId),
@@ -65,7 +63,9 @@ export default function ComplianceTab({ reportId, isOwner }: ComplianceTabProps)
     setTotalEmissions(carbonResult.data?.reduce((s: number, e: any) => s + (e.estimated_emissions_tco2e || 0), 0) || 0);
     setTotalCredits(assetResult.data?.credits_owned || 0);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchData(); }, [fetchData, reportId]);
 
   const handleSave = async () => {
     if (!user) return;

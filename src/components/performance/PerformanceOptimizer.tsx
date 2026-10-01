@@ -1,141 +1,68 @@
-import React, { useEffect, useState, memo, lazy, Suspense } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, memo, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Zap, Clock, Database, Wifi } from 'lucide-react';
+import { Zap, Clock, Server, FileCode, HardDriveDownload } from 'lucide-react';
 
 // Lazy load components for better performance
 const LazyAnalytics = lazy(() => import('@/components/analytics/AdvancedAnalytics').then(module => ({ default: module.AdvancedAnalytics })));
 
+// Every figure comes from the browser's Navigation Timing entry for this page load.
+// (This panel previously showed Math.random() "DB query time" and "cache hit rate", and an
+// "Optimize" button that waited 5s and then shrank the displayed numbers.)
 interface PerformanceMetrics {
-  loadTime: number;
-  cacheHitRate: number;
-  dbQueryTime: number;
-  networkLatency: number;
+  loadTime: number;      // fetchStart -> loadEventEnd
+  serverResponse: number; // requestStart -> responseStart (time to first byte)
+  domReady: number;      // fetchStart -> domContentLoadedEventEnd
+  transferKb: number;    // bytes over the network for the document (0 when served from cache)
   score: number;
 }
 
+function scoreFor(loadTime: number, serverResponse: number) {
+  let score = 100;
+  if (loadTime > 3000) score -= 40;
+  else if (loadTime > 2000) score -= 25;
+  else if (loadTime > 1000) score -= 10;
+  if (serverResponse > 600) score -= 25;
+  else if (serverResponse > 200) score -= 10;
+  return Math.max(0, Math.min(100, score));
+}
+
+function metricsFrom(nav: PerformanceNavigationTiming): PerformanceMetrics | null {
+  if (!nav.loadEventEnd) return null; // page hasn't finished loading yet
+  const loadTime = nav.loadEventEnd - nav.fetchStart;
+  const serverResponse = nav.responseStart - nav.requestStart;
+  return {
+    loadTime,
+    serverResponse,
+    domReady: nav.domContentLoadedEventEnd - nav.fetchStart,
+    transferKb: (nav.transferSize || 0) / 1024,
+    score: scoreFor(loadTime, serverResponse),
+  };
+}
+
+const scoreColor = (score: number) => (score >= 90 ? 'text-green-600' : score >= 70 ? 'text-yellow-600' : 'text-red-600');
+const scoreBadge = (score: number) =>
+  score >= 90 ? { variant: 'default' as const, text: 'Excellent' }
+  : score >= 70 ? { variant: 'secondary' as const, text: 'Good' }
+  : { variant: 'destructive' as const, text: 'Needs Work' };
+
 export const PerformanceOptimizer = memo(() => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
-  const [optimizing, setOptimizing] = useState(false);
 
   useEffect(() => {
-    measurePerformance();
-    
-    // Set up performance observer
-    if ('PerformanceObserver' in window) {
-      const observer = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        entries.forEach((entry) => {
-          if (entry.entryType === 'navigation') {
-            updateMetrics(entry as PerformanceNavigationTiming);
-          }
-        });
-      });
-      
-      observer.observe({ entryTypes: ['navigation'] });
-      
-      return () => observer.disconnect();
-    }
+    const read = () => {
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const m = nav && metricsFrom(nav);
+      if (m) setMetrics(m);
+      return !!m;
+    };
+    if (read()) return;
+    // Still loading: read once the load event has finished.
+    const onLoad = () => setTimeout(read, 0);
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
   }, []);
-
-  const measurePerformance = () => {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
-    if (navigation) {
-      updateMetrics(navigation);
-    }
-  };
-
-  const updateMetrics = (navigation: PerformanceNavigationTiming) => {
-    const loadTime = navigation.loadEventEnd - navigation.fetchStart;
-    const dbQueryTime = Math.random() * 100 + 20; // Simulated
-    const networkLatency = navigation.responseStart - navigation.requestStart;
-    const cacheHitRate = Math.random() * 100; // Simulated
-    
-    const score = calculatePerformanceScore(loadTime, dbQueryTime, networkLatency, cacheHitRate);
-    
-    setMetrics({
-      loadTime,
-      cacheHitRate,
-      dbQueryTime,
-      networkLatency,
-      score
-    });
-  };
-
-  const calculatePerformanceScore = (
-    loadTime: number,
-    dbQueryTime: number,
-    networkLatency: number,
-    cacheHitRate: number
-  ) => {
-    let score = 100;
-    
-    // Deduct points for slow load times
-    if (loadTime > 3000) score -= 30;
-    else if (loadTime > 2000) score -= 20;
-    else if (loadTime > 1000) score -= 10;
-    
-    // Deduct points for slow DB queries
-    if (dbQueryTime > 100) score -= 20;
-    else if (dbQueryTime > 50) score -= 10;
-    
-    // Deduct points for high network latency
-    if (networkLatency > 200) score -= 15;
-    else if (networkLatency > 100) score -= 10;
-    
-    // Add points for good cache hit rate
-    if (cacheHitRate > 90) score += 5;
-    else if (cacheHitRate < 50) score -= 10;
-    
-    return Math.max(0, Math.min(100, score));
-  };
-
-  const optimizePerformance = async () => {
-    setOptimizing(true);
-    
-    // Simulate optimization tasks
-    const optimizations = [
-      'Clearing unused cache entries...',
-      'Compressing images...',
-      'Minifying JavaScript...',
-      'Optimizing database queries...',
-      'Enabling service worker...'
-    ];
-    
-    for (const task of optimizations) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log(task);
-    }
-    
-    // Update metrics after optimization
-    if (metrics) {
-      setMetrics({
-        ...metrics,
-        loadTime: metrics.loadTime * 0.8,
-        dbQueryTime: metrics.dbQueryTime * 0.7,
-        networkLatency: metrics.networkLatency * 0.9,
-        cacheHitRate: Math.min(95, metrics.cacheHitRate * 1.1),
-        score: Math.min(100, metrics.score + 15)
-      });
-    }
-    
-    setOptimizing(false);
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBadge = (score: number) => {
-    if (score >= 90) return { variant: 'default' as const, text: 'Excellent' };
-    if (score >= 70) return { variant: 'secondary' as const, text: 'Good' };
-    return { variant: 'destructive' as const, text: 'Needs Work' };
-  };
 
   if (!metrics) {
     return (
@@ -150,7 +77,13 @@ export const PerformanceOptimizer = memo(() => {
     );
   }
 
-  const scoreBadge = getScoreBadge(metrics.score);
+  const badge = scoreBadge(metrics.score);
+  const tiles = [
+    { icon: <Clock className="w-4 h-4 text-blue-500" />, label: 'Load Time', value: `${(metrics.loadTime / 1000).toFixed(2)}s`, bar: 100 - metrics.loadTime / 50 },
+    { icon: <Server className="w-4 h-4 text-purple-500" />, label: 'Server Response', value: `${metrics.serverResponse.toFixed(0)}ms`, bar: 100 - metrics.serverResponse / 10 },
+    { icon: <FileCode className="w-4 h-4 text-green-500" />, label: 'DOM Ready', value: `${(metrics.domReady / 1000).toFixed(2)}s`, bar: 100 - metrics.domReady / 40 },
+    { icon: <HardDriveDownload className="w-4 h-4 text-orange-500" />, label: 'Page Transfer', value: metrics.transferKb ? `${metrics.transferKb.toFixed(1)} KB` : 'cached', bar: 100 - metrics.transferKb / 20 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -162,93 +95,28 @@ export const PerformanceOptimizer = memo(() => {
               Performance Dashboard
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Real-time performance monitoring and optimization
+              Measured from this page load in your browser
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant={scoreBadge.variant}>{scoreBadge.text}</Badge>
-            <div className={`text-2xl font-bold ${getScoreColor(metrics.score)}`}>
+            <Badge variant={badge.variant}>{badge.text}</Badge>
+            <div className={`text-2xl font-bold ${scoreColor(metrics.score)}`}>
               {metrics.score.toFixed(0)}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium">Load Time</span>
+            {tiles.map((tile) => (
+              <div key={tile.label} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {tile.icon}
+                  <span className="text-sm font-medium">{tile.label}</span>
+                </div>
+                <div className="text-2xl font-bold">{tile.value}</div>
+                <Progress value={Math.max(0, Math.min(100, tile.bar))} className="h-2" />
               </div>
-              <div className="text-2xl font-bold">
-                {(metrics.loadTime / 1000).toFixed(2)}s
-              </div>
-              <Progress 
-                value={Math.max(0, 100 - (metrics.loadTime / 50))} 
-                className="h-2"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium">DB Queries</span>
-              </div>
-              <div className="text-2xl font-bold">
-                {metrics.dbQueryTime.toFixed(0)}ms
-              </div>
-              <Progress 
-                value={Math.max(0, 100 - metrics.dbQueryTime)} 
-                className="h-2"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Wifi className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-medium">Network</span>
-              </div>
-              <div className="text-2xl font-bold">
-                {metrics.networkLatency.toFixed(0)}ms
-              </div>
-              <Progress 
-                value={Math.max(0, 100 - (metrics.networkLatency / 5))} 
-                className="h-2"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-medium">Cache Hit Rate</span>
-              </div>
-              <div className="text-2xl font-bold">
-                {metrics.cacheHitRate.toFixed(1)}%
-              </div>
-              <Progress 
-                value={metrics.cacheHitRate} 
-                className="h-2"
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-center">
-            <Button 
-              onClick={optimizePerformance}
-              disabled={optimizing}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-            >
-              {optimizing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Optimizing...
-                </>
-              ) : (
-                <>
-                  <Zap className="w-4 h-4 mr-2" />
-                  Optimize Performance
-                </>
-              )}
-            </Button>
+            ))}
           </div>
         </CardContent>
       </Card>

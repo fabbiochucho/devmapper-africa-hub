@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -54,7 +54,7 @@ export default function FunderDashboard() {
   const [amountDrafts, setAmountDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const loadDecisions = () => {
+  const loadDecisions = useCallback(() => {
     if (!user) return;
     supabase
       .from('funder_decisions')
@@ -65,7 +65,7 @@ export default function FunderDashboard() {
         (data ?? []).forEach((d: any) => { map[d.report_id] = { decision: d.decision, amount_committed: d.amount_committed }; });
         setDecisions(map);
       });
-  };
+  }, [user]);
 
   useEffect(() => {
     supabase
@@ -78,7 +78,7 @@ export default function FunderDashboard() {
         setLoading(false);
       });
     loadDecisions();
-  }, [user]);
+  }, [loadDecisions, user]);
 
   const recordDecision = async (reportId: string, decision: 'interested' | 'passed') => {
     if (!user) return;

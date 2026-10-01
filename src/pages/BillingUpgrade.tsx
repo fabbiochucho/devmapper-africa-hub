@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,11 +62,7 @@ const BillingUpgrade = () => {
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const selectedPlan = searchParams.get('plan') as PlanId | null;
 
-  useEffect(() => {
-    if (user) fetchOrganization();
-  }, [user]);
-
-  const fetchOrganization = async () => {
+  const fetchOrganization = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('organizations')
@@ -94,7 +90,11 @@ const BillingUpgrade = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchOrganization();
+  }, [fetchOrganization, user]);
 
   const handleUpgrade = async (provider: 'flutterwave' | 'paystack', planType: PlanId) => {
     if (!organization) return;

@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Target, Award, Linkedin, Globe, GraduationCap, Heart, Building, Zap, BookOpen, Briefcase } from 'lucide-react';
-import { SEOHead, generateOrganizationSchema } from '@/components/seo/SEOHead';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { generateOrganizationSchema } from '@/lib/seoSchemas';
 import WhyNowSection from '@/components/landing/WhyNowSection';
 import ImpactMetricsSection from '@/components/landing/ImpactMetricsSection';
 

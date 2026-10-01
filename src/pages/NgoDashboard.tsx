@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -347,7 +347,7 @@ function PublicProjectVerifier({ userId }: { userId: string }) {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
 
-  const loadProjects = () => {
+  const loadProjects = useCallback(() => {
     supabase
       .from('reports')
       .select('id, title, description, sdg_goal, location, project_status, user_id, submitted_at')
@@ -359,11 +359,11 @@ function PublicProjectVerifier({ userId }: { userId: string }) {
         setPublicProjects(data || []);
         setLoadingVerify(false);
       });
-  };
+  }, [userId]);
 
   useEffect(() => {
     loadProjects();
-  }, [userId]);
+  }, [loadProjects, userId]);
 
   if (loadingVerify) return <p className="text-sm text-muted-foreground">Loading public projects...</p>;
   if (publicProjects.length === 0) return <p className="text-sm text-muted-foreground">No public projects available for verification.</p>;

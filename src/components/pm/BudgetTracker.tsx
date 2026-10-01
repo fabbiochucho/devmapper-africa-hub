@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,12 +26,12 @@ export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps)
   const [donor, setDonor] = useState("");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => { fetchBudgets(); }, [reportId]);
-
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
     const { data } = await supabase.from("project_budgets").select("*").eq("report_id", reportId);
     if (data) setBudgets(data);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchBudgets(); }, [fetchBudgets, reportId]);
 
   const totalAllocated = budgets.reduce((s, b) => s + Number(b.budget_allocated || 0), 0);
   const totalSpent = budgets.reduce((s, b) => s + Number(b.budget_spent || 0), 0);

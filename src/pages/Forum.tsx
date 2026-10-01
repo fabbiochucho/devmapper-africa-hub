@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,12 +62,7 @@ const Forum = () => {
     newMembers: 0
   });
 
-  useEffect(() => {
-    fetchPosts(0);
-    fetchStats();
-  }, []);
-
-  const fetchPosts = async (pageNum: number) => {
+  const fetchPosts = useCallback(async (pageNum: number) => {
     try {
       const from = pageNum * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
@@ -137,7 +132,12 @@ const Forum = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t, user]);
+
+  useEffect(() => {
+    fetchPosts(0);
+    fetchStats();
+  }, [fetchPosts]);
 
   const fetchStats = async () => {
     try {

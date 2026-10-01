@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -58,12 +58,12 @@ const GovernmentDashboard = () => {
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const loadReviewQueue = () => {
+  const loadReviewQueue = useCallback(() => {
     if (!authUser) return;
     fetchGovernmentReviewQueue(authUser.id).then(setReviewQueue).catch(() => {});
-  };
+  }, [authUser]);
 
-  useEffect(() => { if (!authLoading) loadReviewQueue(); }, [authUser, authLoading]);
+  useEffect(() => { if (!authLoading) loadReviewQueue(); }, [authUser, authLoading, loadReviewQueue]);
 
   const handleReviewDecision = async (item: GovernmentReviewQueueItem, decision: 'approved' | 'rejected') => {
     setDecidingId(item.id);
@@ -84,7 +84,7 @@ const GovernmentDashboard = () => {
     start_date: '', end_date: '', beneficiaries: '',
   });
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     if (!authUser) { setProjects([]); setLoading(false); return; }
     try {
       setLoading(true);
@@ -112,9 +112,9 @@ const GovernmentDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authUser]);
 
-  useEffect(() => { if (!authLoading) loadProjects(); }, [authUser, authLoading]);
+  useEffect(() => { if (!authLoading) loadProjects(); }, [authUser, authLoading, loadProjects]);
 
   const toggleSdgGoal = (goalNumber: number) => {
     setFormData(prev => ({
@@ -185,7 +185,7 @@ const GovernmentDashboard = () => {
     return Array.from(map.entries())
       .map(([goal, v]) => ({ goal, projects: v.projects, budget: v.budget, progress: v.projects > 0 ? Math.round((v.completed / v.projects) * 100) : 0 }))
       .sort((a, b) => b.projects - a.projects).slice(0, 12);
-  }, [projects]);
+  }, [filteredProjects]);
 
   const regionalStats: RegionalRow[] = useMemo(() => {
     const map = new Map<string, { projects: number; budget: number }>();

@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       throw new Error('nominee_email and nominee_name are required')
     }
 
-    console.log(`Processing changemaker nomination for ${nominee_email}`)
+    console.log('Processing changemaker nomination')
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()

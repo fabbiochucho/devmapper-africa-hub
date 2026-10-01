@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -48,20 +48,7 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  useEffect(() => {
-    if (query.length >= 2) {
-      const debounceTimer = setTimeout(() => {
-        performSearch()
-      }, 300)
-
-      return () => clearTimeout(debounceTimer)
-    } else {
-      setResults(null)
-      setIsOpen(false)
-    }
-  }, [query])
-
-  const performSearch = () => {
+  const performSearch = useCallback(() => {
     setIsSearching(true);
     const lowerCaseQuery = query.toLowerCase();
 
@@ -83,7 +70,20 @@ export default function SearchInterface({ onProjectSelect, onUserSelect, onOrgan
     });
     setIsOpen(true);
     setIsSearching(false);
-  }
+  }, [query])
+
+  useEffect(() => {
+    if (query.length >= 2) {
+      const debounceTimer = setTimeout(() => {
+        performSearch()
+      }, 300)
+
+      return () => clearTimeout(debounceTimer)
+    } else {
+      setResults(null)
+      setIsOpen(false)
+    }
+  }, [performSearch, query])
 
   const clearSearch = () => {
     setQuery("")

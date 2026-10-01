@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole, ALL_ROLES } from '@/contexts/UserRoleContext';
+import { UserRole } from '@/contexts/UserRoleContext';
+import { ALL_ROLES } from '@/lib/roles';
 import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User } from 'lucide-react';
 
 // role keys below are stored UserRole values (used for DB rpc calls, checkbox ids) - never translate the keys.

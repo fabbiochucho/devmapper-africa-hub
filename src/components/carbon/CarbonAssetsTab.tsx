@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,9 +44,7 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
   const [refPrice, setRefPrice] = useState("");
   const [issuanceDate, setIssuanceDate] = useState("");
 
-  useEffect(() => { fetchData(); }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from("carbon_assets")
       .select("*")
@@ -63,7 +61,9 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
       setIssuanceDate(data.issuance_date || "");
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchData(); }, [fetchData, reportId]);
 
   const handleSave = async () => {
     if (!user) return;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,12 @@ export default function ImpactIndicators({ reportId, isOwner }: ImpactIndicators
   const [unit, setUnit] = useState("");
   const [sdgGoal, setSdgGoal] = useState("");
 
-  useEffect(() => { fetchIndicators(); }, [reportId]);
-
-  const fetchIndicators = async () => {
+  const fetchIndicators = useCallback(async () => {
     const { data } = await supabase.from("project_indicators").select("*").eq("report_id", reportId);
     if (data) setIndicators(data);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchIndicators(); }, [fetchIndicators, reportId]);
 
   const createIndicator = async () => {
     if (!name.trim() || !user) return;

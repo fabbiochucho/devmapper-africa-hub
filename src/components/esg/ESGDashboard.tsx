@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,13 +78,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
   const [sectorBenchmarks, setSectorBenchmarks] = useState<Record<string, AlphaEarthBenchmark>>({});
   const [scenarios, setScenarios] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (organizationId) {
-      loadESGData();
-    }
-  }, [organizationId]);
-
-  const loadESGData = async () => {
+  const loadESGData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -189,7 +183,13 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    if (organizationId) {
+      loadESGData();
+    }
+  }, [loadESGData, organizationId]);
 
   const enableESG = async () => {
     try {
