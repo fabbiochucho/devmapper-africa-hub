@@ -20,12 +20,14 @@ import { useAdminVerification } from "@/hooks/useAdminVerification";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
 type Report = Database['public']['Tables']['reports']['Row'];
 type Campaign = Database['public']['Tables']['fundraising_campaigns']['Row'];
 
 const ChangeMakers = () => {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { isAdmin } = useAdminVerification();
   const [showNominateDialog, setShowNominateDialog] = useState(false);
@@ -71,7 +73,7 @@ const ChangeMakers = () => {
 
   const handleNominate = async () => {
     if (!nomineeData.email || !nomineeData.name) {
-      toast.error('Please fill in name and email');
+      toast.error(t('changeMakers.fillNameEmail'));
       return;
     }
     setNominating(true);
@@ -80,17 +82,17 @@ const ChangeMakers = () => {
         body: {
           nominee_email: nomineeData.email,
           nominee_name: nomineeData.name,
-          nominator_name: profile?.full_name || 'A community member',
+          nominator_name: profile?.full_name || t('changeMakers.communityMember'),
           reason: nomineeData.reason
         }
       });
       if (error) throw error;
-      toast.success(data?.message || 'Nomination sent successfully!');
+      toast.success(data?.message || t('changeMakers.nominationSent'));
       setShowNominateDialog(false);
       setNomineeData({ name: '', email: '', reason: '' });
     } catch (error: any) {
       console.error('Nomination error:', error);
-      toast.error(error.message || 'Failed to send nomination');
+      toast.error(error.message || t('changeMakers.nominationFailed'));
     } finally {
       setNominating(false);
     }
@@ -120,16 +122,16 @@ const ChangeMakers = () => {
   return (
     <>
       <SEOHead
-        title="Change Makers - Dev Mapper"
-        description="Discover champions driving sustainable development across Africa. Connect with individuals, NGOs, and organizations making real impact on SDG goals."
+        title={t('changeMakers.seoTitle')}
+        description={t('changeMakers.seoDescription')}
         keywords={['change makers', 'SDG champions', 'Africa sustainability', 'social impact', 'development', 'NGO']}
       />
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Change Makers</h1>
+            <h1 className="text-3xl font-bold">{t('changeMakers.pageTitle')}</h1>
             <p className="text-muted-foreground">
-              Champions driving sustainable development across Africa
+              {t('changeMakers.pageSubtitle')}
             </p>
           </div>
           {isAdmin && (
@@ -137,25 +139,25 @@ const ChangeMakers = () => {
               <DialogTrigger asChild>
                 <Button>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Nominate Change Maker
+                  {t('changeMakers.nominateButton')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Nominate a Change Maker</DialogTitle>
+                  <DialogTitle>{t('changeMakers.nominateDialogTitle')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="nominee-name">Nominee Name *</Label>
+                    <Label htmlFor="nominee-name">{t('changeMakers.nomineeNameLabel')}</Label>
                     <Input
                       id="nominee-name"
                       value={nomineeData.name}
                       onChange={(e) => setNomineeData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Full name of the nominee"
+                      placeholder={t('changeMakers.nomineeNamePlaceholder')}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="nominee-email">Nominee Email *</Label>
+                    <Label htmlFor="nominee-email">{t('changeMakers.nomineeEmailLabel')}</Label>
                     <Input
                       id="nominee-email"
                       type="email"
@@ -165,18 +167,18 @@ const ChangeMakers = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="nominee-reason">Reason for Nomination</Label>
+                    <Label htmlFor="nominee-reason">{t('changeMakers.nomineeReasonLabel')}</Label>
                     <Textarea
                       id="nominee-reason"
                       value={nomineeData.reason}
                       onChange={(e) => setNomineeData(prev => ({ ...prev, reason: e.target.value }))}
-                      placeholder="Why should this person be recognized as a Change Maker?"
+                      placeholder={t('changeMakers.nomineeReasonPlaceholder')}
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowNominateDialog(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => setShowNominateDialog(false)}>{t('changeMakers.cancel')}</Button>
                     <Button onClick={handleNominate} disabled={nominating}>
-                      {nominating ? 'Sending...' : 'Send Nomination'}
+                      {nominating ? t('changeMakers.sending') : t('changeMakers.sendNomination')}
                     </Button>
                   </div>
                 </div>
@@ -189,15 +191,15 @@ const ChangeMakers = () => {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="list">
             <Grid className="mr-2 h-4 w-4" />
-            List View
+            {t('changeMakers.tabListView')}
           </TabsTrigger>
           <TabsTrigger value="map">
             <Map className="mr-2 h-4 w-4" />
-            Map View
+            {t('changeMakers.tabMapView')}
           </TabsTrigger>
           <TabsTrigger value="analytics">
             <BarChart3 className="mr-2 h-4 w-4" />
-            Analytics
+            {t('changeMakers.tabAnalytics')}
           </TabsTrigger>
         </TabsList>
 
@@ -207,7 +209,7 @@ const ChangeMakers = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search change makers..."
+                placeholder={t('changeMakers.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -215,13 +217,13 @@ const ChangeMakers = () => {
             </div>
             <Select value={filterSDG} onValueChange={setFilterSDG}>
               <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by SDG" />
+                <SelectValue placeholder={t('changeMakers.filterBySdg')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All SDGs</SelectItem>
+                <SelectItem value="all">{t('changeMakers.allSdgs')}</SelectItem>
                 {sdgGoals.map((sdg) => (
                   <SelectItem key={sdg.number} value={sdg.number.toString()}>
-                    SDG {sdg.number}
+                    {t('changeMakers.sdgLabel', { number: sdg.number })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -248,7 +250,7 @@ const ChangeMakers = () => {
                         <CardTitle className="text-lg">{maker.title}</CardTitle>
                         <div className="flex items-center justify-center gap-2">
                           {maker.is_verified && (
-                            <Badge className="bg-green-100 text-green-800">✓ Verified</Badge>
+                            <Badge className="bg-green-100 text-green-800">✓ {t('changeMakers.verified')}</Badge>
                           )}
                         </div>
                         <div className="flex items-center justify-center text-sm text-gray-500 mt-2">
@@ -263,12 +265,12 @@ const ChangeMakers = () => {
                           <div className="flex flex-wrap gap-1 justify-center">
                             {maker.sdg_goals.slice(0, 3).map((sdg) => (
                               <Badge key={sdg} variant="secondary" className="text-xs">
-                                SDG {sdg}
+                                {t('changeMakers.sdgLabel', { number: sdg })}
                               </Badge>
                             ))}
                             {maker.sdg_goals.length > 3 && (
                               <Badge variant="secondary" className="text-xs">
-                                +{maker.sdg_goals.length - 3}
+                                {t('changeMakers.moreSdgs', { count: maker.sdg_goals.length - 3 })}
                               </Badge>
                             )}
                           </div>
@@ -278,13 +280,13 @@ const ChangeMakers = () => {
                               <div className="font-semibold text-green-600">
                                 {maker.projects_count ?? 0}
                               </div>
-                              <div className="text-gray-500">Projects</div>
+                              <div className="text-gray-500">{t('changeMakers.projects')}</div>
                             </div>
                             <div className="text-center">
                               <div className="font-semibold text-blue-600">
                                 {formatCurrency(maker.total_funding ?? 0)}
                               </div>
-                              <div className="text-gray-500">Funded</div>
+                              <div className="text-gray-500">{t('changeMakers.funded')}</div>
                             </div>
                           </div>
                         </div>
@@ -297,11 +299,11 @@ const ChangeMakers = () => {
               {filteredChangeMakers.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No change makers found</h3>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">{t('changeMakers.noneFoundTitle')}</h3>
                   <p className="mt-1 text-sm text-gray-500">
                     {changeMakers.length === 0
-                      ? "No verified change makers have been added to the registry yet."
-                      : "Try adjusting your search or filter criteria."}
+                      ? t('changeMakers.noneFoundEmptyRegistry')
+                      : t('changeMakers.noneFoundAdjustFilter')}
                   </p>
                 </div>
               )}

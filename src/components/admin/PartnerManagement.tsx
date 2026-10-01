@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ interface Partner {
 }
 
 export default function PartnerManagement() {
+  const { t } = useTranslation();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -52,7 +54,7 @@ export default function PartnerManagement() {
       setPartners(data || []);
     } catch (error) {
       console.error('Error fetching partners:', error);
-      toast.error('Failed to fetch partners');
+      toast.error(t('admin.partners.fetchError'));
     } finally {
       setLoading(false);
     }
@@ -83,10 +85,10 @@ export default function PartnerManagement() {
       });
       
       setFormData(prev => ({ ...prev, logo_url: base64 }));
-      toast.success('Logo uploaded successfully');
+      toast.success(t('admin.partners.logoUploadSuccess'));
     } catch (error) {
       console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo');
+      toast.error(t('admin.partners.logoUploadError'));
     } finally {
       setUploadingLogo(false);
     }
@@ -104,12 +106,12 @@ export default function PartnerManagement() {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      toast.error('Partner name is required');
+      toast.error(t('admin.partners.nameRequired'));
       return;
     }
-    
+
     if (!formData.logo_url.trim()) {
-      toast.error('Logo is required');
+      toast.error(t('admin.partners.logoRequired'));
       return;
     }
 
@@ -129,22 +131,25 @@ export default function PartnerManagement() {
           .eq('id', editingPartner.id);
         
         if (error) throw error;
-        toast.success('Partner updated successfully');
+        toast.success(t('admin.partners.updateSuccess'));
       } else {
         const { error } = await supabase
           .from('partners')
           .insert([partnerData]);
-        
+
         if (error) throw error;
-        toast.success('Partner added successfully');
+        toast.success(t('admin.partners.addSuccess'));
       }
-      
+
       setShowDialog(false);
       resetForm();
       fetchPartners();
     } catch (error: any) {
       console.error('Error saving partner:', error);
-      toast.error(`Failed to ${editingPartner ? 'update' : 'add'} partner: ${error.message || 'Unknown error'}`);
+      const errorMessage = error.message || t('admin.partners.unknownError');
+      toast.error(editingPartner
+        ? t('admin.partners.updateFailed', { error: errorMessage })
+        : t('admin.partners.addFailed', { error: errorMessage }));
     }
   };
 
@@ -162,20 +167,20 @@ export default function PartnerManagement() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this partner?')) return;
-    
+    if (!confirm(t('admin.partners.deleteConfirm'))) return;
+
     try {
       const { error } = await supabase
         .from('partners')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      toast.success('Partner deleted successfully');
+      toast.success(t('admin.partners.deleteSuccess'));
       fetchPartners();
     } catch (error) {
       console.error('Error deleting partner:', error);
-      toast.error('Failed to delete partner');
+      toast.error(t('admin.partners.deleteError'));
     }
   };
 
@@ -185,13 +190,13 @@ export default function PartnerManagement() {
         .from('partners')
         .update({ is_active })
         .eq('id', id);
-      
+
       if (error) throw error;
-      toast.success(`Partner ${is_active ? 'activated' : 'deactivated'} successfully`);
+      toast.success(is_active ? t('admin.partners.activatedSuccess') : t('admin.partners.deactivatedSuccess'));
       fetchPartners();
     } catch (error) {
       console.error('Error updating partner status:', error);
-      toast.error('Failed to update partner status');
+      toast.error(t('admin.partners.statusUpdateError'));
     }
   };
 
@@ -202,14 +207,14 @@ export default function PartnerManagement() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-8">Loading partners...</div>;
+    return <div className="flex justify-center py-8">{t('admin.partners.loading')}</div>;
   }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Partner Management</CardTitle>
+          <CardTitle>{t('admin.partners.title')}</CardTitle>
           <Dialog open={showDialog} onOpenChange={(open) => {
             setShowDialog(open);
             if (!open) resetForm();
@@ -217,28 +222,28 @@ export default function PartnerManagement() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Partner
+                {t('admin.partners.addPartnerButton')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingPartner ? 'Edit Partner' : 'Add New Partner'}
+                  {editingPartner ? t('admin.partners.editPartnerTitle') : t('admin.partners.addNewPartnerTitle')}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Partner Name *</Label>
+                  <Label htmlFor="name">{t('admin.partners.nameLabel')}</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter partner name"
+                    placeholder={t('admin.partners.namePlaceholder')}
                     required
                   />
                 </div>
                 <div>
-                  <Label>Logo *</Label>
+                  <Label>{t('admin.partners.logoLabel')}</Label>
                   <div className="space-y-3">
                     {/* File Upload */}
                     <div className="flex gap-2">
@@ -249,15 +254,15 @@ export default function PartnerManagement() {
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingLogo}
                         className="flex-1"
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                        {uploadingLogo ? t('admin.partners.uploadingLabel') : t('admin.partners.uploadLogoButton')}
                       </Button>
                       {formData.logo_url && (
                         <Button type="button" variant="destructive" size="icon" onClick={handleRemoveLogo}>
@@ -265,10 +270,10 @@ export default function PartnerManagement() {
                         </Button>
                       )}
                     </div>
-                    
+
                     {/* Or enter URL */}
                     <div>
-                      <Label htmlFor="logo_url" className="text-xs text-muted-foreground">Or enter URL</Label>
+                      <Label htmlFor="logo_url" className="text-xs text-muted-foreground">{t('admin.partners.orEnterUrlLabel')}</Label>
                       <Input
                         id="logo_url"
                         value={formData.logo_url.startsWith('data:') ? '' : formData.logo_url}
@@ -283,9 +288,9 @@ export default function PartnerManagement() {
                     {/* Preview */}
                     {(logoPreview || formData.logo_url) && (
                       <div className="border rounded-lg p-3 flex items-center justify-center bg-muted/50">
-                        <img 
-                          src={logoPreview || formData.logo_url} 
-                          alt="Logo preview" 
+                        <img
+                          src={logoPreview || formData.logo_url}
+                          alt={t('admin.partners.logoPreviewAlt')}
                           className="max-w-[200px] max-h-[80px] object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -296,7 +301,7 @@ export default function PartnerManagement() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="website_url">Website URL (Optional)</Label>
+                  <Label htmlFor="website_url">{t('admin.partners.websiteUrlLabel')}</Label>
                   <Input
                     id="website_url"
                     value={formData.website_url}
@@ -305,7 +310,7 @@ export default function PartnerManagement() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="display_order">Display Order</Label>
+                  <Label htmlFor="display_order">{t('admin.partners.displayOrderLabel')}</Label>
                   <Input
                     id="display_order"
                     type="number"
@@ -320,14 +325,14 @@ export default function PartnerManagement() {
                     checked={formData.is_active}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
-                  <Label htmlFor="is_active">Active</Label>
+                  <Label htmlFor="is_active">{t('admin.partners.activeLabel')}</Label>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                    Cancel
+                    {t('admin.partners.cancelButton')}
                   </Button>
                   <Button type="submit">
-                    {editingPartner ? 'Update' : 'Add'} Partner
+                    {editingPartner ? t('admin.partners.updatePartnerButton') : t('admin.partners.addPartnerSubmitButton')}
                   </Button>
                 </div>
               </form>
@@ -339,12 +344,12 @@ export default function PartnerManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Logo</TableHead>
-              <TableHead>Website</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t('admin.partners.columnName')}</TableHead>
+              <TableHead>{t('admin.partners.columnLogo')}</TableHead>
+              <TableHead>{t('admin.partners.columnWebsite')}</TableHead>
+              <TableHead>{t('admin.partners.columnOrder')}</TableHead>
+              <TableHead>{t('admin.partners.columnStatus')}</TableHead>
+              <TableHead>{t('admin.partners.columnActions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -396,7 +401,7 @@ export default function PartnerManagement() {
         </Table>
         {partners.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            No partners found. Add your first partner to get started.
+            {t('admin.partners.emptyState')}
           </div>
         )}
       </CardContent>

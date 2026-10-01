@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ interface FundraisingCampaign {
 
 // Inline Audit Log Viewer
 function AuditLogViewer() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<any[]>([]);
   const [logLoading, setLogLoading] = useState(true);
 
@@ -60,10 +62,10 @@ function AuditLogViewer() {
 
   return (
     <Card>
-      <CardHeader><CardTitle>Audit Log</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t('admin.auditLogTitle')}</CardTitle></CardHeader>
       <CardContent>
         {logs.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No audit logs recorded yet.</p>
+          <p className="text-center text-muted-foreground py-8">{t('admin.auditLogEmpty')}</p>
         ) : (
           <div className="space-y-2 max-h-[500px] overflow-y-auto">
             {logs.map((log: any) => (
@@ -73,7 +75,7 @@ function AuditLogViewer() {
                   <span className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {log.actor_type} • {log.target_table || 'system'}
+                  {log.actor_type} • {log.target_table || t('admin.auditLogSystemFallback')}
                   {log.target_id && ` • ${log.target_id.slice(0, 8)}…`}
                 </p>
               </div>
@@ -90,6 +92,7 @@ function AuditLogViewer() {
 // (record_provider_health, wired into every connector) that previously
 // had no UI at all - the only way to see them was a direct DB query.
 function DataProvidersPanel() {
+  const { t } = useTranslation();
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,20 +104,20 @@ function DataProvidersPanel() {
   if (loading) return <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
 
   const statusBadge = (status: string) => {
-    if (status === 'active') return <Badge className="bg-green-600 text-white">Active</Badge>;
-    if (status === 'needs_setup') return <Badge variant="outline" className="text-amber-600 border-amber-400">Needs Setup</Badge>;
-    if (status === 'planned') return <Badge variant="secondary">Planned</Badge>;
+    if (status === 'active') return <Badge className="bg-green-600 text-white">{t('admin.dataProviders.statusActive')}</Badge>;
+    if (status === 'needs_setup') return <Badge variant="outline" className="text-amber-600 border-amber-400">{t('admin.dataProviders.statusNeedsSetup')}</Badge>;
+    if (status === 'planned') return <Badge variant="secondary">{t('admin.dataProviders.statusPlanned')}</Badge>;
     return <Badge variant="outline">{status}</Badge>;
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data Provider Registry</CardTitle>
+        <CardTitle>{t('admin.dataProviders.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {providers.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No providers registered.</p>
+          <p className="text-center text-muted-foreground py-8">{t('admin.dataProviders.empty')}</p>
         ) : (
           <div className="space-y-2">
             {providers.map((p) => (
@@ -125,20 +128,20 @@ function DataProvidersPanel() {
                     <Badge variant="outline" className="text-xs">{p.category}</Badge>
                     {statusBadge(p.status)}
                     {p.fallback_strategy === 'internal_estimate' && (
-                      <Badge variant="outline" className="text-xs">Falls back to estimate on failure</Badge>
+                      <Badge variant="outline" className="text-xs">{t('admin.dataProviders.fallsBackToEstimate')}</Badge>
                     )}
                     {p.consecutive_failures > 0 && (
-                      <Badge variant="destructive" className="text-xs">{p.consecutive_failures} consecutive failures</Badge>
+                      <Badge variant="destructive" className="text-xs">{t('admin.dataProviders.consecutiveFailures', { count: p.consecutive_failures })}</Badge>
                     )}
                   </div>
                   {p.requires_api_key && (
-                    <span className="text-xs text-muted-foreground">Requires API key</span>
+                    <span className="text-xs text-muted-foreground">{t('admin.dataProviders.requiresApiKey')}</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span>Last success: {p.last_success_at ? new Date(p.last_success_at).toLocaleString() : 'never'}</span>
-                  <span>Last error: {p.last_error_at ? new Date(p.last_error_at).toLocaleString() : 'never'}</span>
+                  <span>{t('admin.dataProviders.lastSuccess', { value: p.last_success_at ? new Date(p.last_success_at).toLocaleString() : t('admin.dataProviders.never') })}</span>
+                  <span>{t('admin.dataProviders.lastError', { value: p.last_error_at ? new Date(p.last_error_at).toLocaleString() : t('admin.dataProviders.never') })}</span>
                 </div>
                 {p.last_error_message && (
                   <p className="text-xs text-destructive mt-1">{p.last_error_message}</p>
@@ -156,6 +159,7 @@ function DataProvidersPanel() {
 // legitimate path a status can move away from 'submitted' (RLS blocks
 // applicants from setting anything but 'submitted'/'withdrawn' themselves).
 function CertificationReviewPanel() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +171,7 @@ function CertificationReviewPanel() {
       .select('id, requested_tier, status, project_description, budget_usd, geographic_scope, evidence_summary, applicant_id, submitted_at')
       .eq('status', 'submitted')
       .order('submitted_at', { ascending: true });
-    if (error) { console.error(error); toast.error('Failed to load certification applications'); }
+    if (error) { console.error(error); toast.error(t('admin.certification.loadError')); }
     setApps(data || []);
     setLoading(false);
   }, []);
@@ -185,7 +189,7 @@ function CertificationReviewPanel() {
       loadApps();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update application');
+      toast.error(t('admin.certification.updateError'));
     } finally {
       setActingId(null);
     }
@@ -195,7 +199,7 @@ function CertificationReviewPanel() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="flex items-center gap-2"><Award />Certification Applications Awaiting Review</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Award />{t('admin.certification.title')}</CardTitle></CardHeader>
       <CardContent>
         <div className="space-y-4">
           {apps.map(app => (
@@ -203,22 +207,22 @@ function CertificationReviewPanel() {
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold capitalize">{app.requested_tier} tier</h3>
-                    <Badge variant="outline">{app.geographic_scope || 'Unspecified scope'}</Badge>
+                    <h3 className="font-semibold capitalize">{t('admin.certification.tierLabel', { tier: app.requested_tier })}</h3>
+                    <Badge variant="outline">{app.geographic_scope || t('admin.certification.unspecifiedScope')}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{app.project_description}</p>
-                  {app.budget_usd != null && <p className="text-sm text-muted-foreground"><strong>Budget:</strong> ${Number(app.budget_usd).toLocaleString()}</p>}
-                  {app.evidence_summary && <p className="text-sm text-muted-foreground"><strong>Evidence:</strong> {app.evidence_summary}</p>}
-                  <p className="text-xs text-muted-foreground">Submitted {new Date(app.submitted_at).toLocaleDateString()}</p>
+                  {app.budget_usd != null && <p className="text-sm text-muted-foreground"><strong>{t('admin.certification.budgetLabel')}</strong> ${Number(app.budget_usd).toLocaleString()}</p>}
+                  {app.evidence_summary && <p className="text-sm text-muted-foreground"><strong>{t('admin.certification.evidenceLabel')}</strong> {app.evidence_summary}</p>}
+                  <p className="text-xs text-muted-foreground">{t('admin.certification.submittedOn', { date: new Date(app.submitted_at).toLocaleDateString() })}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button size="sm" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'approved')}><CheckCircle className="mr-1 h-4 w-4" />Approve</Button>
-                  <Button size="sm" variant="destructive" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'rejected')}><XCircle className="mr-1 h-4 w-4" />Reject</Button>
+                  <Button size="sm" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'approved')}><CheckCircle className="mr-1 h-4 w-4" />{t('admin.certification.approveButton')}</Button>
+                  <Button size="sm" variant="destructive" disabled={actingId === app.id} onClick={() => handleReview(app.id, 'rejected')}><XCircle className="mr-1 h-4 w-4" />{t('admin.certification.rejectButton')}</Button>
                 </div>
               </div>
             </div>
           ))}
-          {apps.length === 0 && <div className="text-center py-8 text-muted-foreground"><Award className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>No certification applications awaiting review</p></div>}
+          {apps.length === 0 && <div className="text-center py-8 text-muted-foreground"><Award className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>{t('admin.certification.empty')}</p></div>}
         </div>
       </CardContent>
     </Card>
@@ -226,6 +230,7 @@ function CertificationReviewPanel() {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdminVerification();
@@ -268,7 +273,7 @@ export default function AdminDashboard() {
       setCampaigns(loadedCampaigns);
 
       const pending = (pendingProfilesRes.data || []).map((p: any) => ({
-        id: p.user_id, name: p.full_name || 'Unnamed', email: p.email || '—',
+        id: p.user_id, name: p.full_name || t('admin.dashboard.unnamedFallback'), email: p.email || '—',
         organization: p.organization, country: p.country, createdAt: p.created_at,
       }));
       setPendingUsers(pending);
@@ -282,11 +287,11 @@ export default function AdminDashboard() {
           supabase.from('profiles').select('user_id, full_name').in('user_id', flags.map((f: any) => f.flagged_by)),
         ]);
         const reportMap = new Map((reportsRes.data || []).map((r: any) => [r.id, r.title]));
-        const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p.full_name || 'Unknown']));
+        const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p.full_name || t('admin.dashboard.unknownFallback')]));
 
         setFlaggedReports(flags.map((f: any) => ({
-          id: f.id, report_id: f.report_id, report_title: reportMap.get(f.report_id) || 'Unknown',
-          flagged_by_name: profileMap.get(f.flagged_by) || 'Unknown', reason: f.reason,
+          id: f.id, report_id: f.report_id, report_title: reportMap.get(f.report_id) || t('admin.dashboard.unknownFallback'),
+          flagged_by_name: profileMap.get(f.flagged_by) || t('admin.dashboard.unknownFallback'), reason: f.reason,
           created_at: f.created_at, status: f.status,
         })));
       } else {
@@ -310,7 +315,7 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error('Error loading admin dashboard:', error);
-      toast.error('Failed to load admin dashboard data');
+      toast.error(t('admin.dashboard.loadError'));
     }
   }, []);
 
@@ -328,7 +333,7 @@ export default function AdminDashboard() {
       loadDashboard();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update flag');
+      toast.error(t('admin.dashboard.flagUpdateError'));
     }
   };
 
@@ -385,10 +390,10 @@ export default function AdminDashboard() {
       const a = document.createElement('a');
       a.href = url; a.download = filename; a.click();
       URL.revokeObjectURL(url);
-      toast.success(`${filename} downloaded`);
+      toast.success(t('admin.dashboard.exportDownloaded', { filename }));
     } catch (e) {
       console.error(e);
-      toast.error('Failed to export report');
+      toast.error(t('admin.dashboard.exportError'));
     }
   };
 
@@ -396,49 +401,49 @@ export default function AdminDashboard() {
     try {
       const { error } = await supabase.from('fundraising_campaigns').update({ is_verified: verified }).eq('id', campaignId);
       if (error) throw error;
-      toast.success(verified ? 'Campaign verified' : 'Campaign unverified');
+      toast.success(verified ? t('admin.dashboard.campaignVerified') : t('admin.dashboard.campaignUnverified'));
       loadDashboard();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update campaign');
+      toast.error(t('admin.dashboard.campaignUpdateError'));
     }
   };
 
   if (adminLoading) return <div className="flex items-center justify-center h-full p-4"><Loader2 className="w-8 h-8 animate-spin" /></div>;
-  if (!isAdmin) return <div className="flex items-center justify-center h-full p-4"><Card className="w-full max-w-md"><CardHeader><CardTitle>Access Denied</CardTitle></CardHeader><CardContent><p>You do not have permission to view this page.</p></CardContent></Card></div>;
+  if (!isAdmin) return <div className="flex items-center justify-center h-full p-4"><Card className="w-full max-w-md"><CardHeader><CardTitle>{t('admin.dashboard.accessDeniedTitle')}</CardTitle></CardHeader><CardContent><p>{t('admin.dashboard.accessDeniedMessage')}</p></CardContent></Card></div>;
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Shield />Admin Dashboard - {authUser?.user_metadata?.country || "Global"}</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Shield />{t('admin.dashboard.title', { country: authUser?.user_metadata?.country || t('admin.dashboard.globalFallback') })}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <div className="text-center"><div className="text-2xl font-bold text-primary">{adminStats.totalUsers}</div><div className="text-sm text-muted-foreground">Total Users</div></div>
-            <div className="text-center"><div className="text-2xl font-bold text-yellow-500">{adminStats.pendingVerifications}</div><div className="text-sm text-muted-foreground">Pending Verifications</div></div>
-            <div className="text-center"><div className="text-2xl font-bold text-destructive">{adminStats.flaggedContent}</div><div className="text-sm text-muted-foreground">Flagged Content</div></div>
-            <div className="text-center"><div className="text-2xl font-bold text-green-500">{adminStats.resolvedIssues}</div><div className="text-sm text-muted-foreground">Resolved Issues</div></div>
-            <div className="text-center"><div className="text-2xl font-bold text-blue-500">{adminStats.totalCampaigns}</div><div className="text-sm text-muted-foreground">Total Campaigns</div></div>
-            <div className="text-center"><div className="text-2xl font-bold text-green-600">${adminStats.totalRaised.toLocaleString()}</div><div className="text-sm text-muted-foreground">Total Raised</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-primary">{adminStats.totalUsers}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statTotalUsers')}</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-yellow-500">{adminStats.pendingVerifications}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statPendingVerifications')}</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-destructive">{adminStats.flaggedContent}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statFlaggedContent')}</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-green-500">{adminStats.resolvedIssues}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statResolvedIssues')}</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-blue-500">{adminStats.totalCampaigns}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statTotalCampaigns')}</div></div>
+            <div className="text-center"><div className="text-2xl font-bold text-green-600">${adminStats.totalRaised.toLocaleString()}</div><div className="text-sm text-muted-foreground">{t('admin.dashboard.statTotalRaised')}</div></div>
           </div>
         </CardContent>
       </Card>
 
       <Tabs defaultValue="platform-health" className="w-full">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="platform-health">Platform Health</TabsTrigger>
-          <TabsTrigger value="users">User Verification</TabsTrigger>
-          <TabsTrigger value="campaigns">Campaign Management</TabsTrigger>
-          <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
-          <TabsTrigger value="content">Flagged Content {flaggedReports.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{flaggedReports.length}</Badge>}</TabsTrigger>
-          <TabsTrigger value="certifications">Certification Review</TabsTrigger>
-          <TabsTrigger value="partners">Partner Management</TabsTrigger>
-          <TabsTrigger value="test-accounts">Test Accounts</TabsTrigger>
-          <TabsTrigger value="fellowships">Fellowships</TabsTrigger>
-          <TabsTrigger value="audit">Audit Log</TabsTrigger>
-          <TabsTrigger value="data-providers"><Plug className="w-3.5 h-3.5 mr-1" />Data Providers</TabsTrigger>
-          <TabsTrigger value="reports">System Reports</TabsTrigger>
+          <TabsTrigger value="platform-health">{t('admin.dashboard.tabPlatformHealth')}</TabsTrigger>
+          <TabsTrigger value="users">{t('admin.dashboard.tabUserVerification')}</TabsTrigger>
+          <TabsTrigger value="campaigns">{t('admin.dashboard.tabCampaignManagement')}</TabsTrigger>
+          <TabsTrigger value="broadcasts">{t('admin.dashboard.tabBroadcasts')}</TabsTrigger>
+          <TabsTrigger value="content">{t('admin.dashboard.tabFlaggedContent')} {flaggedReports.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{flaggedReports.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="certifications">{t('admin.dashboard.tabCertificationReview')}</TabsTrigger>
+          <TabsTrigger value="partners">{t('admin.dashboard.tabPartnerManagement')}</TabsTrigger>
+          <TabsTrigger value="test-accounts">{t('admin.dashboard.tabTestAccounts')}</TabsTrigger>
+          <TabsTrigger value="fellowships">{t('admin.dashboard.tabFellowships')}</TabsTrigger>
+          <TabsTrigger value="audit">{t('admin.dashboard.tabAuditLog')}</TabsTrigger>
+          <TabsTrigger value="data-providers"><Plug className="w-3.5 h-3.5 mr-1" />{t('admin.dashboard.tabDataProviders')}</TabsTrigger>
+          <TabsTrigger value="reports">{t('admin.dashboard.tabSystemReports')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="platform-health">
@@ -447,7 +452,7 @@ export default function AdminDashboard() {
 
         <TabsContent value="users">
           <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Users />Pending User Verifications</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Users />{t('admin.dashboard.pendingUserVerificationsTitle')}</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {pendingUsers.map(u => (
@@ -456,14 +461,14 @@ export default function AdminDashboard() {
                       <div className="space-y-2">
                         <div><h3 className="font-semibold">{u.name}</h3><p className="text-sm text-muted-foreground">{u.email}</p></div>
                         <div className="flex items-center gap-2">{u.country && <Badge variant="outline">{u.country}</Badge>}</div>
-                        {u.organization && <p className="text-sm text-muted-foreground"><strong>Organization:</strong> {u.organization}</p>}
-                        <p className="text-xs text-muted-foreground">Created: {new Date(u.createdAt).toLocaleDateString()}</p>
+                        {u.organization && <p className="text-sm text-muted-foreground"><strong>{t('admin.dashboard.organizationLabel')}</strong> {u.organization}</p>}
+                        <p className="text-xs text-muted-foreground">{t('admin.dashboard.createdOn', { date: new Date(u.createdAt).toLocaleDateString() })}</p>
                       </div>
-                      <Button size="sm" onClick={handleUserVerification}><CheckCircle className="mr-2 h-4 w-4" />Review</Button>
+                      <Button size="sm" onClick={handleUserVerification}><CheckCircle className="mr-2 h-4 w-4" />{t('admin.dashboard.reviewButton')}</Button>
                     </div>
                   </div>
                 ))}
-                {pendingUsers.length === 0 && <div className="text-center py-8 text-muted-foreground"><Users className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>No pending user verifications</p></div>}
+                {pendingUsers.length === 0 && <div className="text-center py-8 text-muted-foreground"><Users className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>{t('admin.dashboard.noPendingUserVerifications')}</p></div>}
               </div>
             </CardContent>
           </Card>
@@ -471,7 +476,7 @@ export default function AdminDashboard() {
 
         <TabsContent value="campaigns">
           <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Heart />Campaign Management</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Heart />{t('admin.dashboard.campaignManagementTitle')}</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {campaigns.map(campaign => (
@@ -480,25 +485,25 @@ export default function AdminDashboard() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{campaign.title}</h3>
-                          {(campaign as any).is_verified && <Badge variant="default" className="text-xs">✔ Verified</Badge>}
+                          {(campaign as any).is_verified && <Badge variant="default" className="text-xs">✔ {t('admin.dashboard.verifiedBadge')}</Badge>}
                         </div>
-                        <p className="text-sm text-muted-foreground">By: {campaign.public_profiles?.full_name || 'Anonymous'}</p>
+                        <p className="text-sm text-muted-foreground">{t('admin.dashboard.byAuthor', { name: campaign.public_profiles?.full_name || t('admin.dashboard.anonymousFallback') })}</p>
                         <div className="flex items-center gap-2">
                           <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
                           <span className="text-sm text-muted-foreground">{campaign.currency} {campaign.raised_amount.toLocaleString()} / {campaign.target_amount.toLocaleString()}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">Created: {new Date(campaign.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.dashboard.createdOn', { date: new Date(campaign.created_at).toLocaleDateString() })}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <Button size="sm" variant={(campaign as any).is_verified ? "outline" : "default"}
                           onClick={() => handleCampaignVerification(campaign.id, !(campaign as any).is_verified)}>
-                          <CheckCircle className="mr-1 h-4 w-4" />{(campaign as any).is_verified ? 'Unverify' : 'Verify'}
+                          <CheckCircle className="mr-1 h-4 w-4" />{(campaign as any).is_verified ? t('admin.dashboard.unverifyButton') : t('admin.dashboard.verifyButton')}
                         </Button>
                       </div>
                     </div>
                   </div>
                 ))}
-                {campaigns.length === 0 && <div className="text-center py-8 text-muted-foreground"><Heart className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>No campaigns found</p></div>}
+                {campaigns.length === 0 && <div className="text-center py-8 text-muted-foreground"><Heart className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>{t('admin.dashboard.noCampaignsFound')}</p></div>}
               </div>
             </CardContent>
           </Card>
@@ -506,25 +511,25 @@ export default function AdminDashboard() {
 
         <TabsContent value="content">
           <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Flag />Flagged Content</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Flag />{t('admin.dashboard.flaggedContentTitle')}</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {flaggedReports.map(flag => (
                   <div key={flag.id} className="border rounded-lg p-4">
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                       <div className="space-y-2">
-                        <div><h3 className="font-semibold">{flag.report_title}</h3><p className="text-sm text-muted-foreground">Report ID: {flag.report_id.slice(0, 8)}…</p></div>
+                        <div><h3 className="font-semibold">{flag.report_title}</h3><p className="text-sm text-muted-foreground">{t('admin.dashboard.reportIdLabel', { id: flag.report_id.slice(0, 8) })}</p></div>
                         <div className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive" /><span className="text-sm text-destructive">{flag.reason}</span></div>
-                        <p className="text-xs text-muted-foreground">Flagged by {flag.flagged_by_name} • {new Date(flag.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">{t('admin.dashboard.flaggedByOn', { name: flag.flagged_by_name, date: new Date(flag.created_at).toLocaleDateString() })}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button size="sm" onClick={() => handleFlagModeration(flag.id, 'resolved')}><CheckCircle className="mr-1 h-4 w-4" />Resolve</Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleFlagModeration(flag.id, 'dismissed')}><XCircle className="mr-1 h-4 w-4" />Dismiss</Button>
+                        <Button size="sm" onClick={() => handleFlagModeration(flag.id, 'resolved')}><CheckCircle className="mr-1 h-4 w-4" />{t('admin.dashboard.resolveButton')}</Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleFlagModeration(flag.id, 'dismissed')}><XCircle className="mr-1 h-4 w-4" />{t('admin.dashboard.dismissButton')}</Button>
                       </div>
                     </div>
                   </div>
                 ))}
-                {flaggedReports.length === 0 && <div className="text-center py-8 text-muted-foreground"><Flag className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>No flagged content to review</p></div>}
+                {flaggedReports.length === 0 && <div className="text-center py-8 text-muted-foreground"><Flag className="w-12 h-12 mx-auto mb-2 text-gray-300" /><p>{t('admin.dashboard.noFlaggedContent')}</p></div>}
               </div>
             </CardContent>
           </Card>
@@ -549,24 +554,24 @@ export default function AdminDashboard() {
 
         <TabsContent value="reports">
           <Card>
-            <CardHeader><CardTitle>System Reports</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.dashboard.systemReportsTitle')}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { key: 'users', title: 'User Activity Report', desc: 'Export user engagement data' },
-                  { key: 'projects', title: 'Project Analytics', desc: 'Download project statistics' },
-                  { key: 'verifications', title: 'Verification Report', desc: 'Community verification metrics' },
-                  { key: 'moderation', title: 'Moderation Log', desc: 'Content moderation history' },
+                  { key: 'users', title: t('admin.dashboard.reportUserActivityTitle'), desc: t('admin.dashboard.reportUserActivityDesc') },
+                  { key: 'projects', title: t('admin.dashboard.reportProjectAnalyticsTitle'), desc: t('admin.dashboard.reportProjectAnalyticsDesc') },
+                  { key: 'verifications', title: t('admin.dashboard.reportVerificationTitle'), desc: t('admin.dashboard.reportVerificationDesc') },
+                  { key: 'moderation', title: t('admin.dashboard.reportModerationTitle'), desc: t('admin.dashboard.reportModerationDesc') },
                 ].map(report => (
                   <div key={report.key} className="border rounded-lg p-4 space-y-2">
                     <div className="font-medium">{report.title}</div>
                     <p className="text-sm text-muted-foreground">{report.desc}</p>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'json')}>
-                        <Download className="h-3 w-3 mr-1" />JSON
+                        <Download className="h-3 w-3 mr-1" />{t('admin.dashboard.exportJsonButton')}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => exportReport(report.key, 'csv')}>
-                        <Download className="h-3 w-3 mr-1" />CSV
+                        <Download className="h-3 w-3 mr-1" />{t('admin.dashboard.exportCsvButton')}
                       </Button>
                     </div>
                   </div>

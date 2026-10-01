@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const defaultData = {
 };
 
 export default function FrameworkGapAnalysis({ availableData = defaultData }: FrameworkGapAnalysisProps) {
+  const { t } = useTranslation();
   const [jurisdictionFilter, setJurisdictionFilter] = useState("all");
   const [selectedFramework, setSelectedFramework] = useState<string | null>(null);
 
@@ -55,16 +57,16 @@ export default function FrameworkGapAnalysis({ availableData = defaultData }: Fr
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
-            ESG Framework Gap Analysis
+            {t('esg.frameworkGapAnalysis.title')}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {ESG_FRAMEWORKS.length} frameworks • Automated compliance tracking
+            {t('esg.frameworkGapAnalysis.subtitle', { count: ESG_FRAMEWORKS.length })}
           </p>
         </div>
         <Select value={jurisdictionFilter} onValueChange={setJurisdictionFilter}>
           <SelectTrigger className="w-[180px]"><Globe className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Jurisdictions</SelectItem>
+            <SelectItem value="all">{t('esg.frameworkGapAnalysis.allJurisdictionsOption')}</SelectItem>
             {jurisdictions.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -84,7 +86,7 @@ export default function FrameworkGapAnalysis({ availableData = defaultData }: Fr
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{result.framework.shortName}</CardTitle>
                   <div className="flex gap-1">
-                    {result.framework.mandatory && <Badge variant="destructive" className="text-xs">Mandatory</Badge>}
+                    {result.framework.mandatory && <Badge variant="destructive" className="text-xs">{t('esg.frameworkGapAnalysis.mandatoryBadge')}</Badge>}
                     <Badge variant="outline" className="text-xs">{result.framework.jurisdiction}</Badge>
                   </div>
                 </div>
@@ -93,13 +95,13 @@ export default function FrameworkGapAnalysis({ availableData = defaultData }: Fr
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Compliance</span>
+                    <span>{t('esg.frameworkGapAnalysis.complianceLabel')}</span>
                     <span className="font-bold">{compliance.toFixed(0)}%</span>
                   </div>
                   <Progress value={compliance} className="h-2" />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{result.metRequirements} of {result.totalRequirements} met</span>
-                    <span>{result.gaps.length} gap areas</span>
+                    <span>{t('esg.frameworkGapAnalysis.requirementsMet', { met: result.metRequirements, total: result.totalRequirements })}</span>
+                    <span>{t('esg.frameworkGapAnalysis.gapAreasCount', { count: result.gaps.length })}</span>
                   </div>
                 </div>
               </CardContent>
@@ -119,7 +121,7 @@ export default function FrameworkGapAnalysis({ availableData = defaultData }: Fr
               </div>
               <Button variant="outline" size="sm" asChild>
                 <a href={selectedGap.framework.website} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />Website
+                  <ExternalLink className="h-4 w-4 mr-2" />{t('esg.frameworkGapAnalysis.websiteButton')}
                 </a>
               </Button>
             </div>
@@ -149,7 +151,7 @@ export default function FrameworkGapAnalysis({ availableData = defaultData }: Fr
                     </ul>
                   )}
                   {allMet && (
-                    <p className="text-sm text-green-600 ml-6">All requirements met ✓</p>
+                    <p className="text-sm text-green-600 ml-6">{t('esg.frameworkGapAnalysis.allRequirementsMetMessage')}</p>
                   )}
                 </div>
               );

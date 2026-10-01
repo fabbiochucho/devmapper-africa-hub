@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserBadgeList } from '@/components/badges/UserBadgeList';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
 
 interface ForumReply {
   id: string;
@@ -85,6 +86,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
   onPin,
   isAdmin = false
 }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showReply, setShowReply] = useState(false);
   const [replyContent, setReplyContent] = useState('');
@@ -123,7 +125,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
           id: r.id,
           content: r.content,
           createdAt: new Date(r.created_at).toLocaleString(),
-          author: { name: prof?.full_name || 'Anonymous', avatar: prof?.avatar_url || '/placeholder.svg' },
+          author: { name: prof?.full_name || t('forum.anonymous'), avatar: prof?.avatar_url || '/placeholder.svg' },
         };
       }));
     } catch {
@@ -165,7 +167,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{post.author.name}</span>
                 {post.author.verified && (
-                  <Badge className="bg-primary/10 text-primary text-xs px-1 py-0 border-0">✓ Verified</Badge>
+                  <Badge className="bg-primary/10 text-primary text-xs px-1 py-0 border-0">{t('forum.verifiedBadge')}</Badge>
                 )}
                 <Badge variant="outline" className="text-xs">{post.author.role}</Badge>
                 <UserBadgeList userId={post.author.id} max={2} />
@@ -190,25 +192,25 @@ const ForumPost: React.FC<ForumPostProps> = ({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleShare}>
                   <Share2 className="w-4 h-4 mr-2" />
-                  Copy Link
+                  {t('forum.copyLink')}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Flag className="w-4 h-4 mr-2" />
-                  Report Post
+                  {t('forum.reportPost')}
                 </DropdownMenuItem>
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handlePin}>
                       <Pin className="w-4 h-4 mr-2" />
-                      {post.isPinned ? 'Unpin Post' : 'Pin Post'}
+                      {post.isPinned ? t('forum.unpinPost') : t('forum.pinPost')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleDelete}
                       className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Post
+                      {t('forum.deletePost')}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -244,9 +246,9 @@ const ForumPost: React.FC<ForumPostProps> = ({
                 className="p-0 h-auto text-primary mt-1"
               >
                 {isExpanded ? (
-                  <><ChevronUp className="w-4 h-4 mr-1" />Show less</>
+                  <><ChevronUp className="w-4 h-4 mr-1" />{t('forum.showLess')}</>
                 ) : (
-                  <><ChevronDown className="w-4 h-4 mr-1" />Show more</>
+                  <><ChevronDown className="w-4 h-4 mr-1" />{t('forum.showMore')}</>
                 )}
               </Button>
             )}
@@ -311,7 +313,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
                   ))}
                 </div>
               ) : replies && replies.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-2">No replies yet — be the first.</p>
+                <p className="text-sm text-muted-foreground text-center py-2">{t('forum.noRepliesYet')}</p>
               ) : null}
 
               {onReply && (
@@ -319,7 +321,7 @@ const ForumPost: React.FC<ForumPostProps> = ({
                   <Textarea
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="Write a reply..."
+                    placeholder={t('forum.replyPlaceholder')}
                     rows={3}
                     className="resize-none"
                   />
@@ -330,10 +332,10 @@ const ForumPost: React.FC<ForumPostProps> = ({
                       size="sm"
                       onClick={() => { setShowReply(false); setReplyContent(''); }}
                     >
-                      <X className="w-4 h-4 mr-1" />Cancel
+                      <X className="w-4 h-4 mr-1" />{t('forum.cancel')}
                     </Button>
                     <Button type="submit" size="sm" disabled={!replyContent.trim() || submittingReply}>
-                      <Send className="w-4 h-4 mr-1" />{submittingReply ? 'Posting...' : 'Reply'}
+                      <Send className="w-4 h-4 mr-1" />{submittingReply ? t('forum.posting') : t('forum.reply')}
                     </Button>
                   </div>
                 </form>

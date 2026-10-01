@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ interface ScholarshipApplication {
 }
 
 export function ScholarshipManager() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [applications, setApplications] = useState<ScholarshipApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export function ScholarshipManager() {
     const { data, error } = await query;
     if (error) {
       console.error('Error fetching scholarships:', error);
-      toast.error('Failed to load scholarship applications');
+      toast.error(t('admin.scholarships.loadError'));
     } else {
       setApplications(data as ScholarshipApplication[]);
     }
@@ -87,10 +89,10 @@ export function ScholarshipManager() {
           .eq('id', app.org_id);
       }
 
-      toast.success('Fellowship approved!');
+      toast.success(t('admin.scholarships.approveSuccess'));
       fetchApplications();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to approve');
+      toast.error(error.message || t('admin.scholarships.approveError'));
     }
   };
 
@@ -101,18 +103,18 @@ export function ScholarshipManager() {
       .eq('id', appId);
 
     if (error) {
-      toast.error('Failed to deny application');
+      toast.error(t('admin.scholarships.denyError'));
     } else {
-      toast.success('Application denied');
+      toast.success(t('admin.scholarships.denySuccess'));
       fetchApplications();
     }
   };
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'approved': return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
-      case 'denied': return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Denied</Badge>;
-      default: return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      case 'approved': return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />{t('admin.scholarships.statusApproved')}</Badge>;
+      case 'denied': return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />{t('admin.scholarships.statusDenied')}</Badge>;
+      default: return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />{t('admin.scholarships.statusPending')}</Badge>;
     }
   };
 
@@ -121,37 +123,37 @@ export function ScholarshipManager() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <GraduationCap className="w-5 h-5" />
-          Fellowship Applications
+          {t('admin.scholarships.title')}
         </CardTitle>
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="denied">Denied</SelectItem>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="pending">{t('admin.scholarships.filterPending')}</SelectItem>
+            <SelectItem value="approved">{t('admin.scholarships.filterApproved')}</SelectItem>
+            <SelectItem value="denied">{t('admin.scholarships.filterDenied')}</SelectItem>
+            <SelectItem value="all">{t('admin.scholarships.filterAll')}</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-muted-foreground text-center py-8">Loading...</p>
+          <p className="text-muted-foreground text-center py-8">{t('admin.scholarships.loading')}</p>
         ) : applications.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No applications found.</p>
+          <p className="text-muted-foreground text-center py-8">{t('admin.scholarships.noApplicationsFound')}</p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('admin.scholarships.columnOrganization')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnRole')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnCountry')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnPlan')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnDuration')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnStatus')}</TableHead>
+                  <TableHead>{t('admin.scholarships.columnActions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,13 +165,13 @@ export function ScholarshipManager() {
                     <TableCell>
                       <Badge variant="outline">{app.requested_plan}</Badge>
                     </TableCell>
-                    <TableCell>{app.duration_months}mo</TableCell>
+                    <TableCell>{t('admin.scholarships.durationMonths', { count: app.duration_months })}</TableCell>
                     <TableCell>{statusBadge(app.status)}</TableCell>
                     <TableCell>
                       {app.status === 'pending' && (
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => handleApprove(app)}>Approve</Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDeny(app.id)}>Deny</Button>
+                          <Button size="sm" onClick={() => handleApprove(app)}>{t('admin.scholarships.approveButton')}</Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeny(app.id)}>{t('admin.scholarships.denyButton')}</Button>
                         </div>
                       )}
                     </TableCell>

@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Flame, ShieldCheck, Plus, Trash2, TrendingDown, Calculator, BookText, Upload, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -53,22 +54,22 @@ const SCOPE_TYPES = ["Scope 1", "Scope 2", "Scope 3"];
 const FUNDING_SOURCES = ["Government", "Donor", "Corporate", "Self-funded"];
 const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "#10b981", "#f59e0b"];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  electricity: "Electricity",
-  stationary_combustion: "Stationary Fuel Combustion",
-  mobile_combustion: "Vehicle Fuel Combustion",
-  fugitive: "Refrigerants & Fugitive Emissions",
-  heat_steam: "Purchased Heat/Steam",
-  cat1_purchased_goods: "Purchased Goods & Services",
-  cat3_fuel_energy: "Fuel & Energy (Well-to-Tank)",
-  cat4_upstream_transport: "Upstream Transport & Freight",
-  cat5_waste: "Waste Generated",
-  cat6_business_travel: "Business Travel",
-  cat7_employee_commute: "Employee Commuting",
-  cat9_downstream_transport: "Downstream Transport & Distribution",
-  cat2_capital_goods: "Capital Goods",
-  cat12_end_of_life: "End-of-Life Treatment of Sold Products",
-  electricity_lifecycle_estimate: "Electricity (Lifecycle Estimate — not Scope 2)",
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  electricity: "carbon.categoryElectricity",
+  stationary_combustion: "carbon.categoryStationaryCombustion",
+  mobile_combustion: "carbon.categoryMobileCombustion",
+  fugitive: "carbon.categoryFugitive",
+  heat_steam: "carbon.categoryHeatSteam",
+  cat1_purchased_goods: "carbon.categoryPurchasedGoods",
+  cat3_fuel_energy: "carbon.categoryFuelEnergy",
+  cat4_upstream_transport: "carbon.categoryUpstreamTransport",
+  cat5_waste: "carbon.categoryWasteGenerated",
+  cat6_business_travel: "carbon.categoryBusinessTravel",
+  cat7_employee_commute: "carbon.categoryEmployeeCommuting",
+  cat9_downstream_transport: "carbon.categoryDownstreamTransport",
+  cat2_capital_goods: "carbon.categoryCapitalGoods",
+  cat12_end_of_life: "carbon.categoryEndOfLife",
+  electricity_lifecycle_estimate: "carbon.categoryElectricityLifecycle",
 };
 
 const SCOPE_LABELS: Record<number, string> = { 1: "Scope 1", 2: "Scope 2", 3: "Scope 3" };
@@ -81,6 +82,7 @@ const CATEGORY_TO_EMISSION_SOURCE: Record<string, string> = {
 };
 
 export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [entries, setEntries] = useState<CarbonEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +143,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     if (!user) return;
     const isActivityBased = calcMethod === "activity_based" && selectedFactor && activityQuantity;
     if (calcMethod === "activity_based" && !isActivityBased) {
-      toast.error("Select an activity and enter a quantity, or switch to manual entry");
+      toast.error(t("carbon.selectActivityAndQuantity"));
       return;
     }
     const { error } = await supabase.from("project_carbon_data").insert({
@@ -159,15 +161,15 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       activity_unit: isActivityBased ? selectedFactor!.unit : null,
       emission_factor_id: isActivityBased ? selectedFactor!.id : null,
     } as any);
-    if (error) { toast.error("Failed to save carbon data"); return; }
-    toast.success("Carbon data saved");
+    if (error) { toast.error(t("carbon.failedToSaveCarbonData")); return; }
+    toast.success(t("carbon.carbonDataSaved"));
     resetForm();
     fetchEntries();
   };
 
   const handleBillUpload = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image too large (max 5MB)");
+      toast.error(t("carbon.imageTooLarge"));
       return;
     }
     setExtracting(true);
@@ -184,7 +186,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       if (data?.error) throw new Error(data.error);
       setBillResult(data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to read bill");
+      toast.error(err instanceof Error ? err.message : t("carbon.failedToReadBill"));
     } finally {
       setExtracting(false);
     }
@@ -198,12 +200,12 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     if (billResult.quantity != null) {
       setActivityQuantity(String(billResult.quantity));
     }
-    toast.info("Quantity filled in — pick the matching activity/region below and check the unit matches.");
+    toast.info(t("carbon.quantityFilledIn"));
   };
 
   const handleDelete = async (id: string) => {
     await supabase.from("project_carbon_data").delete().eq("id", id);
-    toast.success("Entry deleted");
+    toast.success(t("carbon.entryDeleted"));
     fetchEntries();
   };
 
@@ -247,7 +249,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <Flame className="h-4 w-4" /> Total Emissions
+              <Flame className="h-4 w-4" /> {t("carbon.totalEmissions")}
             </div>
             <p className="text-2xl font-bold">{totalEmissions.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">tCO₂e</span></p>
           </CardContent>
@@ -255,7 +257,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <TrendingDown className="h-4 w-4" /> Est. Cost Savings
+              <TrendingDown className="h-4 w-4" /> {t("carbon.estCostSavings")}
             </div>
             <p className="text-2xl font-bold">${totalSavings.toLocaleString()}</p>
           </CardContent>
@@ -263,11 +265,11 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <ShieldCheck className="h-4 w-4" /> Verification
+              <ShieldCheck className="h-4 w-4" /> {t("carbon.verification")}
             </div>
-            <p className="text-2xl font-bold">{verifiedCount}/{entries.length} <span className="text-sm font-normal text-muted-foreground">verified</span></p>
+            <p className="text-2xl font-bold">{verifiedCount}/{entries.length} <span className="text-sm font-normal text-muted-foreground">{t("carbon.verified")}</span></p>
             {entries.length > 0 && !entries.some(e => e.carbon_verified) && (
-              <Badge variant="outline" className="mt-1 text-yellow-600 border-yellow-400">⚠ Unverified</Badge>
+              <Badge variant="outline" className="mt-1 text-yellow-600 border-yellow-400">{t("carbon.unverifiedBadge")}</Badge>
             )}
           </CardContent>
         </Card>
@@ -278,7 +280,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {bySource.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Emissions by Source</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t("carbon.emissionsBySource")}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={bySource}>
@@ -293,7 +295,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
           )}
           {byScope.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Emissions by Scope</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm">{t("carbon.emissionsByScope")}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
@@ -313,10 +315,10 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Carbon Data Entries ({entries.length})</CardTitle>
+            <CardTitle className="text-base">{t("carbon.carbonDataEntries", { count: entries.length })}</CardTitle>
             {isOwner && (
               <Button size="sm" variant="outline" onClick={() => setShowForm(!showForm)}>
-                <Plus className="h-4 w-4 mr-1" />{showForm ? "Cancel" : "Add Entry"}
+                <Plus className="h-4 w-4 mr-1" />{showForm ? t("carbon.cancel") : t("carbon.addEntry")}
               </Button>
             )}
           </div>
@@ -326,10 +328,10 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
             <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
               <div className="flex items-center gap-2">
                 <Button type="button" size="sm" variant={calcMethod === "activity_based" ? "default" : "outline"} onClick={() => setCalcMethod("activity_based")}>
-                  <Calculator className="h-3.5 w-3.5 mr-1" />Calculate from activity data
+                  <Calculator className="h-3.5 w-3.5 mr-1" />{t("carbon.calculateFromActivityData")}
                 </Button>
                 <Button type="button" size="sm" variant={calcMethod === "manual_entry" ? "default" : "outline"} onClick={() => setCalcMethod("manual_entry")}>
-                  Enter total directly
+                  {t("carbon.enterTotalDirectly")}
                 </Button>
               </div>
 
@@ -346,7 +348,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                     <Button type="button" size="sm" variant="outline" disabled={extracting} asChild>
                       <label htmlFor="bill-upload" className="cursor-pointer">
                         <Upload className="h-3.5 w-3.5 mr-1" />
-                        {extracting ? "Reading bill…" : "Upload a bill/receipt photo"}
+                        {extracting ? t("carbon.readingBill") : t("carbon.uploadBillPhoto")}
                       </label>
                     </Button>
                   </div>
@@ -354,32 +356,32 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                     <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-1">
                       <div className="flex items-center gap-2 font-medium">
                         <Sparkles className="h-3.5 w-3.5" />
-                        AI read: {billResult.quantity ?? "?"} {billResult.unit ?? ""} ({billResult.activity_type})
-                        <Badge variant="outline" className="text-xs">{billResult.confidence} confidence</Badge>
+                        {t("carbon.aiRead", { quantity: billResult.quantity ?? "?", unit: billResult.unit ?? "", activityType: billResult.activity_type })}
+                        <Badge variant="outline" className="text-xs">{t("carbon.confidenceLevel", { confidence: billResult.confidence })}</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {[billResult.vendor, billResult.billing_period].filter(Boolean).join(" · ") || "No vendor/period detected"}
-                        {" — extracted by Ndovu Akili (Gemini), not verified. "}
+                        {[billResult.vendor, billResult.billing_period].filter(Boolean).join(" · ") || t("carbon.noVendorPeriodDetected")}
+                        {t("carbon.extractedByNdovuAkili")}
                       </p>
-                      <Button type="button" size="sm" variant="secondary" onClick={applyBillResult}>Use this quantity</Button>
+                      <Button type="button" size="sm" variant="secondary" onClick={applyBillResult}>{t("carbon.useThisQuantity")}</Button>
                     </div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <Label>Category</Label>
+                      <Label>{t("carbon.category")}</Label>
                       <Select value={category} onValueChange={(v) => { setCategory(v); setFactorId(""); }}>
-                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t("carbon.selectCategory")} /></SelectTrigger>
                         <SelectContent>
-                          {Object.keys(CATEGORY_LABELS).filter(c => factors.some(f => f.category === c)).map(c => (
-                            <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+                          {Object.keys(CATEGORY_LABEL_KEYS).filter(c => factors.some(f => f.category === c)).map(c => (
+                            <SelectItem key={c} value={c}>{t(CATEGORY_LABEL_KEYS[c])}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>Activity</Label>
+                      <Label>{t("carbon.activity")}</Label>
                       <Select value={factorId} onValueChange={setFactorId} disabled={!category}>
-                        <SelectTrigger><SelectValue placeholder="Select activity" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t("carbon.selectActivity")} /></SelectTrigger>
                         <SelectContent>
                           {factors.filter(f => f.category === category).map(f => (
                             <SelectItem key={f.id} value={f.id}>
@@ -392,7 +394,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                   </div>
                   {selectedFactor && (
                     <div>
-                      <Label>Activity Quantity ({selectedFactor.unit})</Label>
+                      <Label>{t("carbon.activityQuantity", { unit: selectedFactor.unit })}</Label>
                       <Input type="number" value={activityQuantity} onChange={e => setActivityQuantity(e.target.value)} placeholder="0.00" />
                     </div>
                   )}
@@ -400,10 +402,10 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                     <div className="rounded-md bg-background border p-3 text-sm space-y-1">
                       <div className="flex items-center gap-2 font-medium">
                         <BookText className="h-3.5 w-3.5" />
-                        {computedEmissions != null ? `${computedEmissions.toFixed(4)} tCO₂e` : "Enter a quantity to calculate"}
+                        {computedEmissions != null ? `${computedEmissions.toFixed(4)} tCO₂e` : t("carbon.enterQuantityToCalculate")}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {selectedFactor.factor_kgco2e} kg CO₂e/{selectedFactor.unit} · Source: {selectedFactor.source} ({selectedFactor.source_year}) · {SCOPE_LABELS[selectedFactor.scope]}
+                        {selectedFactor.factor_kgco2e} kg CO₂e/{selectedFactor.unit} · {t("carbon.source")}: {selectedFactor.source} ({selectedFactor.source_year}) · {SCOPE_LABELS[selectedFactor.scope]}
                       </p>
                     </div>
                   )}
@@ -411,16 +413,16 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <Label>Emission Source</Label>
+                    <Label>{t("carbon.emissionSource")}</Label>
                     <Select value={emissionSource} onValueChange={setEmissionSource}>
-                      <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("carbon.selectSource")} /></SelectTrigger>
                       <SelectContent>
                         {EMISSION_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Estimated Emissions (tCO₂e)</Label>
+                    <Label>{t("carbon.estimatedEmissions")}</Label>
                     <Input type="number" value={emissions} onChange={e => setEmissions(e.target.value)} placeholder="0.00" />
                   </div>
                 </div>
@@ -428,7 +430,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
 
               {calcMethod === "manual_entry" && (
                 <div>
-                  <Label>Scope Types</Label>
+                  <Label>{t("carbon.scopeTypes")}</Label>
                   <div className="flex gap-4 mt-1">
                     {SCOPE_TYPES.map(scope => (
                       <label key={scope} className="flex items-center gap-2 text-sm">
@@ -446,39 +448,39 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <Label>Reporting Period Start</Label>
+                  <Label>{t("carbon.reportingPeriodStart")}</Label>
                   <Input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} />
                 </div>
                 <div>
-                  <Label>Reporting Period End</Label>
+                  <Label>{t("carbon.reportingPeriodEnd")}</Label>
                   <Input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <Label>Funding Source</Label>
+                  <Label>{t("carbon.fundingSource")}</Label>
                   <Select value={fundingSource} onValueChange={setFundingSource}>
-                    <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("carbon.selectSource")} /></SelectTrigger>
                     <SelectContent>
                       {FUNDING_SOURCES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Estimated Cost Savings ($)</Label>
+                  <Label>{t("carbon.estimatedCostSavings")}</Label>
                   <Input type="number" value={savings} onChange={e => setSavings(e.target.value)} placeholder="0.00" />
                 </div>
               </div>
               <div>
-                <Label>Evidence URL</Label>
+                <Label>{t("carbon.evidenceUrl")}</Label>
                 <Input value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} placeholder="https://..." />
               </div>
-              <Button onClick={handleSubmit} disabled={calcMethod === "activity_based" ? !computedEmissions : !emissions}>Save Carbon Data</Button>
+              <Button onClick={handleSubmit} disabled={calcMethod === "activity_based" ? !computedEmissions : !emissions}>{t("carbon.saveCarbonData")}</Button>
             </div>
           )}
 
           {entries.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No carbon data recorded yet.</p>
+            <p className="text-sm text-muted-foreground">{t("carbon.noCarbonDataYet")}</p>
           ) : (
             entries.map(entry => (
               <div key={entry.id} className="border rounded-lg p-3 space-y-1">
@@ -487,9 +489,9 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                     {entry.emission_source && <Badge variant="secondary">{entry.emission_source}</Badge>}
                     {entry.scope_types?.map(s => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
                     {entry.carbon_verified ? (
-                      <Badge className="bg-green-600 text-white text-xs">✔ Verified</Badge>
+                      <Badge className="bg-green-600 text-white text-xs">{t("carbon.verifiedBadge")}</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-yellow-600 border-yellow-400 text-xs">⚠ Unverified</Badge>
+                      <Badge variant="outline" className="text-yellow-600 border-yellow-400 text-xs">{t("carbon.unverifiedBadge")}</Badge>
                     )}
                   </div>
                   {isOwner && (
@@ -499,21 +501,21 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                   )}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                  <div><span className="text-muted-foreground">Emissions:</span> {entry.estimated_emissions_tco2e?.toFixed(entry.calculation_method === "activity_based" ? 4 : 1) || "—"} tCO₂e</div>
-                  {entry.funding_source && <div><span className="text-muted-foreground">Funding:</span> {entry.funding_source}</div>}
-                  {entry.estimated_savings && <div><span className="text-muted-foreground">Savings:</span> ${entry.estimated_savings.toLocaleString()}</div>}
-                  {entry.reporting_period_start && <div><span className="text-muted-foreground">Period:</span> {entry.reporting_period_start} → {entry.reporting_period_end}</div>}
+                  <div><span className="text-muted-foreground">{t("carbon.emissionsLabel")}</span> {entry.estimated_emissions_tco2e?.toFixed(entry.calculation_method === "activity_based" ? 4 : 1) || "—"} tCO₂e</div>
+                  {entry.funding_source && <div><span className="text-muted-foreground">{t("carbon.fundingLabel")}</span> {entry.funding_source}</div>}
+                  {entry.estimated_savings && <div><span className="text-muted-foreground">{t("carbon.savingsLabel")}</span> ${entry.estimated_savings.toLocaleString()}</div>}
+                  {entry.reporting_period_start && <div><span className="text-muted-foreground">{t("carbon.periodLabel")}</span> {entry.reporting_period_start} → {entry.reporting_period_end}</div>}
                 </div>
                 {entry.calculation_method === "activity_based" && entry.emission_factors ? (
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <BookText className="h-3 w-3" />
-                    {entry.activity_quantity} {entry.activity_unit} of {entry.emission_factors.activity.replace(/_/g, " ")} ({entry.emission_factors.region}) · Source: {entry.emission_factors.source} ({entry.emission_factors.source_year})
+                    {entry.activity_quantity} {entry.activity_unit} {t("carbon.of")} {entry.emission_factors.activity.replace(/_/g, " ")} ({entry.emission_factors.region}) · {t("carbon.source")}: {entry.emission_factors.source} ({entry.emission_factors.source_year})
                   </p>
                 ) : (
-                  <p className="text-xs text-muted-foreground">⚠ Self-reported figure — not calculated from a cited emission factor</p>
+                  <p className="text-xs text-muted-foreground">{t("carbon.selfReportedFigure")}</p>
                 )}
                 {entry.evidence_url && (
-                  <a href={entry.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View evidence</a>
+                  <a href={entry.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">{t("carbon.viewEvidence")}</a>
                 )}
               </div>
             ))

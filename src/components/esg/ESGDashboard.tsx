@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,7 @@ interface Organization {
 }
 
 const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -218,26 +220,26 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       <Card className="p-8 text-center">
         <CardContent>
           <Leaf className="w-16 h-16 mx-auto text-green-500 mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Enable ESG Tracking</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('esg.dashboard.enableTitle')}</h2>
           <p className="text-muted-foreground mb-6">
-            Track your environmental, social, and governance impact alongside your SDG initiatives.
+            {t('esg.dashboard.enableDescription')}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
             <div className="flex items-center gap-2">
               <Factory className="w-4 h-4 text-blue-500" />
-              <span>Carbon Footprint Tracking</span>
+              <span>{t('esg.dashboard.featureCarbonTracking')}</span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-purple-500" />
-              <span>AlphaEarth Benchmarking</span>
+              <span>{t('esg.dashboard.featureBenchmarking')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-orange-500" />
-              <span>Scenario Modeling</span>
+              <span>{t('esg.dashboard.featureScenarioModeling')}</span>
             </div>
           </div>
           <Button onClick={enableESG}>
-            Enable ESG Module
+            {t('esg.dashboard.enableButton')}
           </Button>
         </CardContent>
       </Card>
@@ -269,9 +271,9 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">ESG Dashboard</h1>
+          <h1 className="text-3xl font-bold">{t('esg.dashboard.title')}</h1>
           <p className="text-muted-foreground">
-            Environmental, Social & Governance tracking for {organization.name}
+            {t('esg.dashboard.subtitle', { orgName: organization.name })}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -285,17 +287,17 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             planType={organization.plan_type as 'free' | 'lite' | 'pro'}
           />
           <Badge variant={organization.plan_type === 'pro' ? 'default' : 'secondary'}>
-            {organization.plan_type} Plan
+            {t('esg.dashboard.planBadge', { plan: organization.plan_type })}
           </Badge>
           {latestIndicators?.verification_status === 'verified' ? (
             <Badge variant="default" className="bg-green-500">
               <CheckCircle className="w-3 h-3 mr-1" />
-              Verified
+              {t('esg.dashboard.verifiedBadge')}
             </Badge>
           ) : (
             <Badge variant="secondary">
               <AlertTriangle className="w-3 h-3 mr-1" />
-              Unverified
+              {t('esg.dashboard.unverifiedBadge')}
             </Badge>
           )}
         </div>
@@ -305,42 +307,42 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Emissions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('esg.dashboard.totalEmissionsLabel')}</CardTitle>
             <Factory className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalEmissions.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">tonnes CO2e</p>
+            <p className="text-xs text-muted-foreground">{t('esg.dashboard.tonnesCo2eUnit')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Energy Use</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('esg.dashboard.energyUseLabel')}</CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {(latestIndicators?.energy_consumption_kwh || 0).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">kWh</p>
+            <p className="text-xs text-muted-foreground">{t('esg.dashboard.kwhUnit')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Suppliers</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('esg.dashboard.suppliersLabel')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{suppliers.length}</div>
             <p className="text-xs text-muted-foreground">
-              of {organization.esg_suppliers_limit > 0 ? organization.esg_suppliers_limit : '∞'} limit
+              {t('esg.dashboard.suppliersLimitSuffix', { limit: organization.esg_suppliers_limit > 0 ? organization.esg_suppliers_limit : '∞' })}
             </p>
             {organization.esg_suppliers_limit > 0 && (
-              <Progress 
-                value={(suppliers.length / organization.esg_suppliers_limit) * 100} 
-                className="mt-2" 
+              <Progress
+                value={(suppliers.length / organization.esg_suppliers_limit) * 100}
+                className="mt-2"
               />
             )}
           </CardContent>
@@ -348,14 +350,14 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">ESG Score</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('esg.dashboard.esgScoreLabel')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {latestIndicators?.esg_score ? Math.round(latestIndicators.esg_score) : 'N/A'}
+              {latestIndicators?.esg_score ? Math.round(latestIndicators.esg_score) : t('esg.dashboard.naLabel')}
             </div>
-            <p className="text-xs text-muted-foreground">out of 100</p>
+            <p className="text-xs text-muted-foreground">{t('esg.dashboard.scoreOutOf100')}</p>
           </CardContent>
         </Card>
       </div>
@@ -365,23 +367,23 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         organizationName={organization.name}
         planType={organization.plan_type as 'free' | 'lite' | 'pro'}
         availableData={[
-          { type: 'esg_indicators', label: 'ESG Indicators', data: indicators },
-          { type: 'esg_suppliers', label: 'Suppliers', data: suppliers },
-          { type: 'esg_scenarios', label: 'Scenarios', data: scenarios }
+          { type: 'esg_indicators', label: t('esg.dashboard.exportLabelEsgIndicators'), data: indicators },
+          { type: 'esg_suppliers', label: t('esg.dashboard.exportLabelSuppliers'), data: suppliers },
+          { type: 'esg_scenarios', label: t('esg.dashboard.exportLabelScenarios'), data: scenarios }
         ]}
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="emissions">Emissions</TabsTrigger>
-          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-          <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
-          <TabsTrigger value="verification">Verification</TabsTrigger>
-          <TabsTrigger value="ifrs">IFRS S1/S2</TabsTrigger>
-          <TabsTrigger value="frameworks">Frameworks</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="overview">{t('esg.dashboard.tabOverview')}</TabsTrigger>
+          <TabsTrigger value="emissions">{t('esg.dashboard.tabEmissions')}</TabsTrigger>
+          <TabsTrigger value="suppliers">{t('esg.dashboard.tabSuppliers')}</TabsTrigger>
+          <TabsTrigger value="scenarios">{t('esg.dashboard.tabScenarios')}</TabsTrigger>
+          <TabsTrigger value="benchmarks">{t('esg.dashboard.tabBenchmarks')}</TabsTrigger>
+          <TabsTrigger value="verification">{t('esg.dashboard.tabVerification')}</TabsTrigger>
+          <TabsTrigger value="ifrs">{t('esg.dashboard.tabIfrs')}</TabsTrigger>
+          <TabsTrigger value="frameworks">{t('esg.dashboard.tabFrameworks')}</TabsTrigger>
+          <TabsTrigger value="reports">{t('esg.dashboard.tabReports')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -389,7 +391,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             {/* Emissions Trend */}
             <Card>
               <CardHeader>
-                <CardTitle>Emissions Trend</CardTitle>
+                <CardTitle>{t('esg.dashboard.emissionsTrendTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -407,7 +409,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             {/* Scope Breakdown */}
             <Card>
               <CardHeader>
-                <CardTitle>Current Year Emissions Breakdown</CardTitle>
+                <CardTitle>{t('esg.dashboard.currentYearBreakdownTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -436,9 +438,9 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
         <TabsContent value="benchmarks">
           <Card>
             <CardHeader>
-              <CardTitle>Industry Benchmarks</CardTitle>
+              <CardTitle>{t('esg.dashboard.industryBenchmarksTitle')}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Powered by {organization.plan_type === 'pro' ? 'AlphaEarth Commercial API' : 'AlphaEarth Foundations (GEE)'}
+                {t('esg.dashboard.poweredBy', { apiName: organization.plan_type === 'pro' ? t('esg.dashboard.alphaEarthCommercialApi') : t('esg.dashboard.alphaEarthFoundationsApi') })}
               </p>
             </CardHeader>
             <CardContent>
@@ -447,15 +449,15 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center p-4 border rounded-lg">
                       <div className="text-2xl font-bold">{benchmark.avg_carbon_intensity}</div>
-                      <div className="text-sm text-muted-foreground">Industry Average</div>
-                      <div className="text-xs text-muted-foreground">tonnes CO2e</div>
+                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.industryAverageLabel')}</div>
+                      <div className="text-xs text-muted-foreground">{t('esg.dashboard.tonnesCo2eUnit')}</div>
                     </div>
                     <div className="text-center p-4 border rounded-lg">
                       <div className="text-2xl font-bold">
-                        {totalEmissions > 0 ? totalEmissions.toFixed(1) : 'N/A'}
+                        {totalEmissions > 0 ? totalEmissions.toFixed(1) : t('esg.dashboard.naLabel')}
                       </div>
-                      <div className="text-sm text-muted-foreground">Your Performance</div>
-                      <div className="text-xs text-muted-foreground">tonnes CO2e</div>
+                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.yourPerformanceLabel')}</div>
+                      <div className="text-xs text-muted-foreground">{t('esg.dashboard.tonnesCo2eUnit')}</div>
                     </div>
                     <div className="text-center p-4 border rounded-lg">
                       <div className="text-2xl font-bold flex items-center justify-center">
@@ -468,21 +470,21 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                             )}
                             {Math.abs(((totalEmissions - benchmark.avg_carbon_intensity) / benchmark.avg_carbon_intensity) * 100).toFixed(0)}%
                           </>
-                        ) : 'N/A'}
+                        ) : t('esg.dashboard.naLabel')}
                       </div>
-                      <div className="text-sm text-muted-foreground">vs Industry</div>
+                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.vsIndustryLabel')}</div>
                       <div className="text-xs text-muted-foreground">
-                        {totalEmissions < benchmark.avg_carbon_intensity ? 'Better' : 'Needs Improvement'}
+                        {totalEmissions < benchmark.avg_carbon_intensity ? t('esg.dashboard.betterLabel') : t('esg.dashboard.needsImprovementLabel')}
                       </div>
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Source: {benchmark.source} • Fetched: {new Date().toLocaleDateString()}
+                    {t('esg.dashboard.sourceFetchedLabel', { source: benchmark.source, date: new Date().toLocaleDateString() })}
                   </div>
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  No benchmark data available. Configure your organization sector to see industry benchmarks.
+                  {t('esg.dashboard.noBenchmarkDataMessage')}
                 </p>
               )}
             </CardContent>
@@ -511,7 +513,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
           {/* Supplier List */}
           <Card>
             <CardHeader>
-              <CardTitle>Supplier Emissions</CardTitle>
+              <CardTitle>{t('esg.dashboard.supplierEmissionsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               {suppliers.length > 0 ? (
@@ -542,17 +544,17 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                               <Badge variant="outline" className="text-xs">{emissions.quality}</Badge>
                               {vsBenchmark != null && (
                                 <Badge variant={vsBenchmark > 15 ? 'destructive' : vsBenchmark < -15 ? 'default' : 'secondary'} className="text-xs">
-                                  {vsBenchmark > 0 ? '+' : ''}{vsBenchmark.toFixed(0)}% vs {supplier.sector} avg
+                                  {t('esg.dashboard.vsSectorAvg', { pct: `${vsBenchmark > 0 ? '+' : ''}${vsBenchmark.toFixed(0)}`, sector: supplier.sector })}
                                 </Badge>
                               )}
                             </div>
                           ) : (
-                            <div className="text-sm text-muted-foreground mt-1">No emissions data yet</div>
+                            <div className="text-sm text-muted-foreground mt-1">{t('esg.dashboard.noEmissionsDataYet')}</div>
                           )}
                         </div>
                         <div className="text-right">
                           <div className="font-medium">${(supplier.annual_spend || 0).toLocaleString()}</div>
-                          <div className="text-sm text-muted-foreground">Annual Spend</div>
+                          <div className="text-sm text-muted-foreground">{t('esg.dashboard.annualSpendLabel')}</div>
                         </div>
                       </div>
                     );
@@ -560,7 +562,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  No suppliers added yet. Use the importer above or add suppliers manually.
+                  {t('esg.dashboard.noSuppliersMessage')}
                 </p>
               )}
             </CardContent>

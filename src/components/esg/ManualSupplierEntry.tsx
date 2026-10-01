@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ const sectors = [
 ];
 
 export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualSupplierEntryProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -33,7 +35,7 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error('Supplier name is required');
+      toast.error(t('esg.manualSupplierEntry.nameRequiredError'));
       return;
     }
 
@@ -51,12 +53,12 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
 
       if (error) throw error;
 
-      toast.success('Supplier added successfully');
+      toast.success(t('esg.manualSupplierEntry.addSuccess'));
       setForm({ name: '', sector: '', country_code: '', contact_email: '', annual_spend: '' });
       setOpen(false);
       onSupplierAdded();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add supplier');
+      toast.error(error.message || t('esg.manualSupplierEntry.addFailedError'));
     } finally {
       setLoading(false);
     }
@@ -67,30 +69,30 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="w-4 h-4 mr-2" />
-          Add Supplier
+          {t('esg.manualSupplierEntry.addSupplierButton')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Supplier Manually</DialogTitle>
+          <DialogTitle>{t('esg.manualSupplierEntry.dialogTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="supplier-name">Supplier Name *</Label>
+            <Label htmlFor="supplier-name">{t('esg.manualSupplierEntry.supplierNameLabel')}</Label>
             <Input
               id="supplier-name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Acme Corp"
+              placeholder={t('esg.manualSupplierEntry.supplierNamePlaceholder')}
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Sector</Label>
+              <Label>{t('esg.manualSupplierEntry.sectorLabel')}</Label>
               <Select value={form.sector} onValueChange={(v) => setForm({ ...form, sector: v })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('esg.manualSupplierEntry.sectorSelectPlaceholder')} /></SelectTrigger>
                 <SelectContent>
                   {sectors.map((s) => (
                     <SelectItem key={s} value={s.toLowerCase()}>{s}</SelectItem>
@@ -99,12 +101,12 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="country">Country Code</Label>
+              <Label htmlFor="country">{t('esg.manualSupplierEntry.countryCodeLabel')}</Label>
               <Input
                 id="country"
                 value={form.country_code}
                 onChange={(e) => setForm({ ...form, country_code: e.target.value.toUpperCase() })}
-                placeholder="e.g. NG"
+                placeholder={t('esg.manualSupplierEntry.countryCodePlaceholder')}
                 maxLength={2}
               />
             </div>
@@ -112,7 +114,7 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Contact Email</Label>
+              <Label htmlFor="email">{t('esg.manualSupplierEntry.contactEmailLabel')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -122,7 +124,7 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="spend">Annual Spend (USD)</Label>
+              <Label htmlFor="spend">{t('esg.manualSupplierEntry.annualSpendLabel')}</Label>
               <Input
                 id="spend"
                 type="number"
@@ -134,7 +136,7 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Adding...' : 'Add Supplier'}
+            {loading ? t('esg.manualSupplierEntry.addingButton') : t('esg.manualSupplierEntry.addSupplierButton')}
           </Button>
         </form>
       </DialogContent>

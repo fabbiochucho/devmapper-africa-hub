@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,70 +13,71 @@ import { BookOpen, Users, Award, Clock, Star, Info } from 'lucide-react';
 // live content. Do not add per-user progress, dates, instructor names, or
 // download counts without a real table behind them.
 const Training = () => {
+  const { t } = useTranslation();
   const courses = [
     {
       id: 'basics',
-      title: 'DevMapper Basics',
-      description: 'Learn the fundamentals of using DevMapper for SDG tracking',
-      duration: '2 hours',
+      title: t('training.courseBasicsTitle'),
+      description: t('training.courseBasicsDescription'),
+      duration: t('training.courseBasicsDuration'),
       level: 'Beginner',
       lessons: 8,
       topics: [
-        'Platform Overview',
-        'Creating Your Profile',
-        'Understanding SDGs',
-        'Basic Report Submission',
-        'Reading Maps and Data',
-        'Community Guidelines',
-        'Verification Process',
-        'Getting Help'
+        t('training.courseBasicsTopic1'),
+        t('training.courseBasicsTopic2'),
+        t('training.courseBasicsTopic3'),
+        t('training.courseBasicsTopic4'),
+        t('training.courseBasicsTopic5'),
+        t('training.courseBasicsTopic6'),
+        t('training.courseBasicsTopic7'),
+        t('training.courseBasicsTopic8'),
       ]
     },
     {
       id: 'reporting',
-      title: 'Advanced Reporting',
-      description: 'Master the art of comprehensive project reporting',
-      duration: '3 hours',
+      title: t('training.courseReportingTitle'),
+      description: t('training.courseReportingDescription'),
+      duration: t('training.courseReportingDuration'),
       level: 'Intermediate',
       lessons: 12,
       topics: [
-        'Data Collection Best Practices',
-        'Photo Documentation',
-        'GPS Coordinates',
-        'Impact Measurement',
-        'Stakeholder Engagement',
-        'Progress Updates',
-        'Evidence Gathering',
-        'Quality Assurance',
-        'Report Templates',
-        'Common Mistakes',
-        'Review Process',
-        'Publication Guidelines'
+        t('training.courseReportingTopic1'),
+        t('training.courseReportingTopic2'),
+        t('training.courseReportingTopic3'),
+        t('training.courseReportingTopic4'),
+        t('training.courseReportingTopic5'),
+        t('training.courseReportingTopic6'),
+        t('training.courseReportingTopic7'),
+        t('training.courseReportingTopic8'),
+        t('training.courseReportingTopic9'),
+        t('training.courseReportingTopic10'),
+        t('training.courseReportingTopic11'),
+        t('training.courseReportingTopic12'),
       ]
     },
     {
       id: 'verification',
-      title: 'Data Verification',
-      description: 'Learn to verify and validate community reports',
-      duration: '4 hours',
+      title: t('training.courseVerificationTitle'),
+      description: t('training.courseVerificationDescription'),
+      duration: t('training.courseVerificationDuration'),
       level: 'Advanced',
       lessons: 15,
       topics: [
-        'Verification Principles',
-        'Source Validation',
-        'Cross-referencing',
-        'Expert Review',
-        'Community Validation',
-        'Red Flags',
-        'Verification Tools',
-        'Documentation Standards',
-        'Conflict Resolution',
-        'Appeal Process',
-        'Quality Metrics',
-        'Reviewer Guidelines',
-        'Bias Prevention',
-        'Continuous Improvement',
-        'Certification Process'
+        t('training.courseVerificationTopic1'),
+        t('training.courseVerificationTopic2'),
+        t('training.courseVerificationTopic3'),
+        t('training.courseVerificationTopic4'),
+        t('training.courseVerificationTopic5'),
+        t('training.courseVerificationTopic6'),
+        t('training.courseVerificationTopic7'),
+        t('training.courseVerificationTopic8'),
+        t('training.courseVerificationTopic9'),
+        t('training.courseVerificationTopic10'),
+        t('training.courseVerificationTopic11'),
+        t('training.courseVerificationTopic12'),
+        t('training.courseVerificationTopic13'),
+        t('training.courseVerificationTopic14'),
+        t('training.courseVerificationTopic15'),
       ]
     }
   ];
@@ -87,27 +89,26 @@ const Training = () => {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Training & Education</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('training.pageTitle')}</h1>
         <p className="text-muted-foreground">
-          Develop your skills in sustainable development tracking and community engagement
+          {t('training.pageSubtitle')}
         </p>
       </div>
 
       <Alert className="mb-6">
         <Info className="h-4 w-4" />
         <AlertDescription>
-          This is a preview of planned training content — course delivery, workshop scheduling, downloadable
-          resources, and certification tracking aren't live yet. For help right now, see the FAQs on the{' '}
-          <a href="/support" className="underline font-medium">Support page</a>.
+          {t('training.previewBannerPrefix')}{' '}
+          <a href="/support" className="underline font-medium">{t('training.previewBannerLinkText')}</a>{t('training.previewBannerSuffix')}
         </AlertDescription>
       </Alert>
 
       <Tabs defaultValue="courses" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="courses">Courses</TabsTrigger>
-          <TabsTrigger value="workshops">Workshops</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="certification">Certification</TabsTrigger>
+          <TabsTrigger value="courses">{t('training.tabCourses')}</TabsTrigger>
+          <TabsTrigger value="workshops">{t('training.tabWorkshops')}</TabsTrigger>
+          <TabsTrigger value="resources">{t('training.tabResources')}</TabsTrigger>
+          <TabsTrigger value="certification">{t('training.tabCertification')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="courses" className="space-y-6">
@@ -129,9 +130,9 @@ const Training = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="text-sm text-muted-foreground">{course.lessons} lessons planned</div>
+                    <div className="text-sm text-muted-foreground">{t('training.lessonsPlanned', { count: course.lessons })}</div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Course Topics:</p>
+                      <p className="text-sm font-medium">{t('training.courseTopicsLabel')}</p>
                       <div className="flex flex-wrap gap-1">
                         {course.topics.slice(0, 3).map((topic, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
@@ -140,13 +141,13 @@ const Training = () => {
                         ))}
                         {course.topics.length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{course.topics.length - 3} more
+                            {t('training.moreTopics', { count: course.topics.length - 3 })}
                           </Badge>
                         )}
                       </div>
                     </div>
                     <Button className="w-full" variant="outline" disabled>
-                      Coming Soon
+                      {t('training.comingSoon')}
                     </Button>
                   </div>
                 </CardContent>
@@ -156,21 +157,21 @@ const Training = () => {
         </TabsContent>
 
         <TabsContent value="workshops" className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">Workshops</h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('training.workshopsTitle')}</h2>
           <Card>
             <CardContent className="py-16 text-center text-muted-foreground">
               <Users className="mx-auto h-10 w-10 mb-3 text-gray-400" />
-              <p>No workshops are scheduled yet. Check back soon.</p>
+              <p>{t('training.noWorkshopsMessage')}</p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="resources" className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">Learning Resources</h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('training.resourcesTitle')}</h2>
           <Card>
             <CardContent className="py-16 text-center text-muted-foreground">
               <BookOpen className="mx-auto h-10 w-10 mb-3 text-gray-400" />
-              <p>No downloadable resources are available yet. Check back soon.</p>
+              <p>{t('training.noResourcesMessage')}</p>
             </CardContent>
           </Card>
         </TabsContent>

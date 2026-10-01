@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,11 +25,11 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS = [
-  { key: "todo", label: "To Do", icon: <ListTodo className="h-4 w-4" />, color: "border-muted-foreground/30" },
-  { key: "in_progress", label: "In Progress", icon: <Clock className="h-4 w-4 text-primary" />, color: "border-primary/30" },
-  { key: "review", label: "Review", icon: <ArrowUpDown className="h-4 w-4 text-orange-500" />, color: "border-orange-500/30" },
-  { key: "done", label: "Done", icon: <CheckCircle2 className="h-4 w-4 text-green-500" />, color: "border-green-500/30" },
-  { key: "blocked", label: "Blocked", icon: <AlertTriangle className="h-4 w-4 text-destructive" />, color: "border-destructive/30" },
+  { key: "todo", labelKey: "pm.kanban.columnTodo", icon: <ListTodo className="h-4 w-4" />, color: "border-muted-foreground/30" },
+  { key: "in_progress", labelKey: "pm.kanban.columnInProgress", icon: <Clock className="h-4 w-4 text-primary" />, color: "border-primary/30" },
+  { key: "review", labelKey: "pm.kanban.columnReview", icon: <ArrowUpDown className="h-4 w-4 text-orange-500" />, color: "border-orange-500/30" },
+  { key: "done", labelKey: "pm.kanban.columnDone", icon: <CheckCircle2 className="h-4 w-4 text-green-500" />, color: "border-green-500/30" },
+  { key: "blocked", labelKey: "pm.kanban.columnBlocked", icon: <AlertTriangle className="h-4 w-4 text-destructive" />, color: "border-destructive/30" },
 ];
 
 const priorityColors: Record<string, string> = {
@@ -39,6 +40,7 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assigneeNames }: KanbanBoardProps) {
+  const { t } = useTranslation();
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
 
   const tasksByStatus = COLUMNS.reduce((acc, col) => {
@@ -87,7 +89,7 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assi
         >
           <div className={`flex items-center gap-2 font-semibold text-sm px-2 py-1.5 rounded-md border-l-4 ${col.color} bg-muted/30`}>
             {col.icon}
-            <span className="capitalize">{col.label}</span>
+            <span className="capitalize">{t(col.labelKey)}</span>
             <Badge variant="secondary" className="ml-auto h-5 text-xs">
               {tasksByStatus[col.key]?.length || 0}
             </Badge>
@@ -120,7 +122,7 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assi
                     )}
                     {task.assigned_to && hasAssignment && (
                       <Badge variant="outline" className="text-xs gap-0.5">
-                        <Users className="h-3 w-3" />{assigneeNames?.[task.assigned_to] || "Assigned"}
+                        <Users className="h-3 w-3" />{assigneeNames?.[task.assigned_to] || t('pm.kanban.assignedFallback')}
                       </Badge>
                     )}
                   </div>
@@ -132,7 +134,7 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assi
                         </SelectTrigger>
                         <SelectContent>
                           {COLUMNS.map(c => (
-                            <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>
+                            <SelectItem key={c.key} value={c.key}>{t(c.labelKey)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -142,7 +144,7 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assi
               </Card>
             ))}
             {(tasksByStatus[col.key]?.length || 0) === 0 && (
-              <p className="text-xs text-muted-foreground/50 text-center py-6">Drop tasks here</p>
+              <p className="text-xs text-muted-foreground/50 text-center py-6">{t('pm.kanban.dropTasksHere')}</p>
             )}
           </div>
         </div>

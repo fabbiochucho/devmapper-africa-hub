@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,108 +13,112 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserRole, ALL_ROLES } from '@/contexts/UserRoleContext';
 import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User } from 'lucide-react';
 
-const roleConfig: Record<UserRole, { label: string; color: string; icon: any; description: string }> = {
-  citizen_reporter: { 
-    label: 'Citizen Reporter', 
-    color: 'bg-blue-500', 
-    icon: User,
-    description: 'Default role - can submit reports and verify projects'
-  },
-  ngo_member: { 
-    label: 'NGO Member', 
-    color: 'bg-green-500', 
-    icon: Users,
-    description: 'Access to NGO dashboard and project management'
-  },
-  government_official: { 
-    label: 'Government Official', 
-    color: 'bg-purple-500', 
-    icon: Building2,
-    description: 'Access to government dashboard and national data'
-  },
-  company_representative: { 
-    label: 'Corporate Rep', 
-    color: 'bg-amber-500', 
-    icon: Briefcase,
-    description: 'Access to corporate dashboard, ESG, and targets'
-  },
-  country_admin: { 
-    label: 'Country Admin', 
-    color: 'bg-indigo-500', 
-    icon: Globe,
-    description: 'Manage country-specific data and users'
-  },
-  platform_admin: { 
-    label: 'Platform Admin', 
-    color: 'bg-red-500', 
-    icon: Shield,
-    description: 'Full platform access and user management'
-  },
-  change_maker: { 
-    label: 'Change Maker', 
-    color: 'bg-pink-500', 
-    icon: Heart,
-    description: 'Verified change maker with impact profile'
-  },
-  admin: {
-    label: 'Admin',
-    color: 'bg-red-600',
-    icon: Shield,
-    description: 'Administrative access to all features'
-  },
-  funder: {
-    label: 'Funder',
-    color: 'bg-emerald-600',
-    icon: Heart,
-    description: 'Funder profile with portfolio access'
-  },
-};
-
-// Test account templates
-const testAccountTemplates = [
-  {
-    email: 'citizen@test.devmapper.africa',
-    name: 'Test Citizen',
-    roles: ['citizen_reporter'] as UserRole[],
-    description: 'Basic user for testing citizen features'
-  },
-  {
-    email: 'ngo@test.devmapper.africa',
-    name: 'Test NGO User',
-    roles: ['ngo_member', 'citizen_reporter'] as UserRole[],
-    organization: 'Test NGO Organization',
-    description: 'NGO member with project access'
-  },
-  {
-    email: 'government@test.devmapper.africa',
-    name: 'Test Government Official',
-    roles: ['government_official', 'citizen_reporter'] as UserRole[],
-    country: 'Kenya',
-    description: 'Government official with national dashboard'
-  },
-  {
-    email: 'corporate@test.devmapper.africa',
-    name: 'Test Corporate Rep',
-    roles: ['company_representative', 'citizen_reporter'] as UserRole[],
-    organization: 'Test Corporation Ltd',
-    description: 'Corporate user with ESG and targets access'
-  },
-  {
-    email: 'changemaker@test.devmapper.africa',
-    name: 'Test Change Maker',
-    roles: ['change_maker', 'citizen_reporter'] as UserRole[],
-    description: 'Verified change maker profile'
-  },
-  {
-    email: 'admin@test.devmapper.africa',
-    name: 'Test Admin',
-    roles: ['admin', 'platform_admin', 'citizen_reporter'] as UserRole[],
-    description: 'Full admin access for testing'
-  },
-];
-
+// role keys below are stored UserRole values (used for DB rpc calls, checkbox ids) - never translate the keys.
+// label/description text is resolved via translation inside the component (see roleConfig below).
 export function TestAccountManager() {
+  const { t } = useTranslation();
   const { user } = useAuth();
+
+  const roleConfig: Record<UserRole, { label: string; color: string; icon: any; description: string }> = {
+    citizen_reporter: {
+      label: t('admin.testAccounts.role.citizenReporterLabel'),
+      color: 'bg-blue-500',
+      icon: User,
+      description: t('admin.testAccounts.role.citizenReporterDescription')
+    },
+    ngo_member: {
+      label: t('admin.testAccounts.role.ngoMemberLabel'),
+      color: 'bg-green-500',
+      icon: Users,
+      description: t('admin.testAccounts.role.ngoMemberDescription')
+    },
+    government_official: {
+      label: t('admin.testAccounts.role.governmentOfficialLabel'),
+      color: 'bg-purple-500',
+      icon: Building2,
+      description: t('admin.testAccounts.role.governmentOfficialDescription')
+    },
+    company_representative: {
+      label: t('admin.testAccounts.role.companyRepresentativeLabel'),
+      color: 'bg-amber-500',
+      icon: Briefcase,
+      description: t('admin.testAccounts.role.companyRepresentativeDescription')
+    },
+    country_admin: {
+      label: t('admin.testAccounts.role.countryAdminLabel'),
+      color: 'bg-indigo-500',
+      icon: Globe,
+      description: t('admin.testAccounts.role.countryAdminDescription')
+    },
+    platform_admin: {
+      label: t('admin.testAccounts.role.platformAdminLabel'),
+      color: 'bg-red-500',
+      icon: Shield,
+      description: t('admin.testAccounts.role.platformAdminDescription')
+    },
+    change_maker: {
+      label: t('admin.testAccounts.role.changeMakerLabel'),
+      color: 'bg-pink-500',
+      icon: Heart,
+      description: t('admin.testAccounts.role.changeMakerDescription')
+    },
+    admin: {
+      label: t('admin.testAccounts.role.adminLabel'),
+      color: 'bg-red-600',
+      icon: Shield,
+      description: t('admin.testAccounts.role.adminDescription')
+    },
+    funder: {
+      label: t('admin.testAccounts.role.funderLabel'),
+      color: 'bg-emerald-600',
+      icon: Heart,
+      description: t('admin.testAccounts.role.funderDescription')
+    },
+  };
+
+  // Test account templates - email addresses are fixed test data, never translated.
+  const testAccountTemplates = [
+    {
+      email: 'citizen@test.devmapper.africa',
+      name: t('admin.testAccounts.template.citizenName'),
+      roles: ['citizen_reporter'] as UserRole[],
+      description: t('admin.testAccounts.template.citizenDescription')
+    },
+    {
+      email: 'ngo@test.devmapper.africa',
+      name: t('admin.testAccounts.template.ngoName'),
+      roles: ['ngo_member', 'citizen_reporter'] as UserRole[],
+      organization: t('admin.testAccounts.template.ngoOrganization'),
+      description: t('admin.testAccounts.template.ngoDescription')
+    },
+    {
+      email: 'government@test.devmapper.africa',
+      name: t('admin.testAccounts.template.governmentName'),
+      roles: ['government_official', 'citizen_reporter'] as UserRole[],
+      country: t('admin.testAccounts.template.governmentCountry'),
+      description: t('admin.testAccounts.template.governmentDescription')
+    },
+    {
+      email: 'corporate@test.devmapper.africa',
+      name: t('admin.testAccounts.template.corporateName'),
+      roles: ['company_representative', 'citizen_reporter'] as UserRole[],
+      organization: t('admin.testAccounts.template.corporateOrganization'),
+      description: t('admin.testAccounts.template.corporateDescription')
+    },
+    {
+      email: 'changemaker@test.devmapper.africa',
+      name: t('admin.testAccounts.template.changeMakerName'),
+      roles: ['change_maker', 'citizen_reporter'] as UserRole[],
+      description: t('admin.testAccounts.template.changeMakerDescription')
+    },
+    {
+      email: 'admin@test.devmapper.africa',
+      name: t('admin.testAccounts.template.adminName'),
+      roles: ['admin', 'platform_admin', 'citizen_reporter'] as UserRole[],
+      description: t('admin.testAccounts.template.adminDescription')
+    },
+  ];
+
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([]);
   const [organization, setOrganization] = useState('');
@@ -122,7 +127,7 @@ export function TestAccountManager() {
 
   const assignRolesToUser = async () => {
     if (!selectedUserId || selectedRoles.length === 0) {
-      toast.error('Please select a user and at least one role');
+      toast.error(t('admin.testAccounts.selectUserAndRoleError'));
       return;
     }
 
@@ -139,13 +144,13 @@ export function TestAccountManager() {
         if (error) throw error;
       }
 
-      toast.success('Roles assigned successfully');
+      toast.success(t('admin.testAccounts.assignSuccess'));
       setSelectedUserId('');
       setSelectedRoles([]);
       setOrganization('');
       setCountry('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to assign roles');
+      toast.error(error.message || t('admin.testAccounts.assignError'));
     } finally {
       setLoading(false);
     }
@@ -153,7 +158,7 @@ export function TestAccountManager() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
+    toast.success(t('admin.testAccounts.copiedToClipboard'));
   };
 
   return (
@@ -162,11 +167,10 @@ export function TestAccountManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Test Account Templates
+            {t('admin.testAccounts.templatesTitle')}
           </CardTitle>
           <CardDescription>
-            Pre-configured test accounts for each user type. Create these accounts in Supabase Auth, 
-            then use the role assignment tool below.
+            {t('admin.testAccounts.templatesDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -199,12 +203,12 @@ export function TestAccountManager() {
                     </div>
                     {template.organization && (
                       <p className="text-xs text-muted-foreground">
-                        Org: {template.organization}
+                        {t('admin.testAccounts.orgLabel', { organization: template.organization })}
                       </p>
                     )}
                     {template.country && (
                       <p className="text-xs text-muted-foreground">
-                        Country: {template.country}
+                        {t('admin.testAccounts.countryLabel', { country: template.country })}
                       </p>
                     )}
                   </div>
@@ -219,15 +223,15 @@ export function TestAccountManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Assign Roles to User
+            {t('admin.testAccounts.assignRolesTitle')}
           </CardTitle>
           <CardDescription>
-            Enter a user ID to assign roles. The user must already exist in Supabase Auth.
+            {t('admin.testAccounts.assignRolesDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="userId">User ID (UUID)</Label>
+            <Label htmlFor="userId">{t('admin.testAccounts.userIdLabel')}</Label>
             <Input
               id="userId"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -237,7 +241,7 @@ export function TestAccountManager() {
           </div>
 
           <div className="space-y-2">
-            <Label>Select Roles</Label>
+            <Label>{t('admin.testAccounts.selectRolesLabel')}</Label>
             <div className="grid gap-2 md:grid-cols-2">
               {ALL_ROLES.map((role) => {
                 const config = roleConfig[role];
@@ -270,19 +274,19 @@ export function TestAccountManager() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="organization">Organization (optional)</Label>
+              <Label htmlFor="organization">{t('admin.testAccounts.organizationOptionalLabel')}</Label>
               <Input
                 id="organization"
-                placeholder="Organization name"
+                placeholder={t('admin.testAccounts.organizationPlaceholder')}
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="country">Country (optional)</Label>
+              <Label htmlFor="country">{t('admin.testAccounts.countryOptionalLabel')}</Label>
               <Input
                 id="country"
-                placeholder="Country name"
+                placeholder={t('admin.testAccounts.countryPlaceholder')}
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
               />
@@ -290,16 +294,16 @@ export function TestAccountManager() {
           </div>
 
           <Button onClick={assignRolesToUser} disabled={loading}>
-            {loading ? 'Assigning...' : 'Assign Roles'}
+            {loading ? t('admin.testAccounts.assigningLabel') : t('admin.testAccounts.assignRolesButton')}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Role Descriptions</CardTitle>
+          <CardTitle>{t('admin.testAccounts.roleDescriptionsTitle')}</CardTitle>
           <CardDescription>
-            What each role can access in the platform
+            {t('admin.testAccounts.roleDescriptionsSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>

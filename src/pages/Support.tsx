@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const Support = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [ticketForm, setTicketForm] = useState({
     subject: '',
@@ -25,74 +27,74 @@ const Support = () => {
 
   const faqCategories = [
     {
-      category: 'Getting Started',
+      category: t('support.faq.categoryGettingStarted'),
       icon: <BookOpen className="w-4 h-4" />,
       faqs: [
-        { q: "How do I create an account?", a: "Click 'Sign Up' on the homepage. You can register with email, Google, or GitHub. After registration, you'll be prompted to complete your profile and select your primary role (citizen reporter, NGO, government, or corporate)." },
-        { q: "How do I submit a development project report?", a: "Navigate to 'Submit Report' from the sidebar. Fill out the project details including title, description, location (with GPS coordinates), SDG alignment, and supporting documentation. Your report starts at 'Self-Report' verification level and can be upgraded through community verification." },
-        { q: "What are the different user roles?", a: "DevMapper has 5 primary roles: Citizen Reporter (default), NGO Representative, Government Official, Corporate Representative, and Platform Admin. Each role has different verification capabilities. For example, only government officials can provide Level 4 'Institutional Verification'." },
-        { q: "Is DevMapper free to use?", a: "Yes! The Free tier allows you to submit up to 3 projects per month, use Kanban and List views, and access basic analytics. Paid plans (Lite, Pro, Advanced, Enterprise) unlock features like Gantt charts, Ndovu Akili AI (Copilot), ESG modules, and higher project quotas." },
+        { q: t('support.faq.gettingStarted.q1'), a: t('support.faq.gettingStarted.a1') },
+        { q: t('support.faq.gettingStarted.q2'), a: t('support.faq.gettingStarted.a2') },
+        { q: t('support.faq.gettingStarted.q3'), a: t('support.faq.gettingStarted.a3') },
+        { q: t('support.faq.gettingStarted.q4'), a: t('support.faq.gettingStarted.a4') },
       ]
     },
     {
-      category: 'Reporting & Verification',
+      category: t('support.faq.categoryReportingVerification'),
       icon: <Shield className="w-4 h-4" />,
       faqs: [
-        { q: "How is data verified on the platform?", a: "We use a 5-level verification system: 1) Self-Report (submitted by project owner), 2) Citizen Verification (community members confirm), 3) NGO Verification (organization validates), 4) Government Verification (official institutional confirmation), and 5) Platform Audit (automated cross-referencing and expert review)." },
-        { q: "Can I edit or update my submitted reports?", a: "Yes. Go to 'My Projects', select the project, and use 'Update Progress' to add milestones, budget updates, indicator data, and photo evidence. All updates maintain an audit trail visible to verifiers." },
-        { q: "How do I verify someone else's project?", a: "Navigate to the project page and click 'Verify'. Your verification level is automatically determined by your role. You must provide written comments and optionally upload evidence. You cannot verify your own projects." },
-        { q: "What happens when a project is flagged?", a: "Flagged projects enter a review queue. A moderator examines the flag within 48 hours. If the flag is valid, the project may be suspended pending correction. The reporter receives notification and can respond or appeal." },
-        { q: "How do SDG and Agenda 2063 alignment work?", a: "When submitting a project, select the relevant SDG goals (1–17). The platform automatically maps these to AU Agenda 2063 aspirations. The SDG-Agenda 2063 dashboard shows alignment density, gap analysis, and country-level filtering." },
+        { q: t('support.faq.reportingVerification.q1'), a: t('support.faq.reportingVerification.a1') },
+        { q: t('support.faq.reportingVerification.q2'), a: t('support.faq.reportingVerification.a2') },
+        { q: t('support.faq.reportingVerification.q3'), a: t('support.faq.reportingVerification.a3') },
+        { q: t('support.faq.reportingVerification.q4'), a: t('support.faq.reportingVerification.a4') },
+        { q: t('support.faq.reportingVerification.q5'), a: t('support.faq.reportingVerification.a5') },
       ]
     },
     {
-      category: 'Project Management',
+      category: t('support.faq.categoryProjectManagement'),
       icon: <FileText className="w-4 h-4" />,
       faqs: [
-        { q: "What PM features are available on the Free plan?", a: "Free users get Kanban Board and List View with basic task management. You can create tasks, set priorities, and track status (to-do, in-progress, done). Gantt Chart, resource allocation, and Ndovu Akili AI (Copilot) require Lite+ or Pro+ plans." },
-        { q: "How does the Gantt Chart view work?", a: "Available on Lite+ plans. The Gantt Chart visualizes project timelines, task dependencies, and milestone dates. Tasks are displayed as horizontal bars with drag-to-reschedule support. It integrates directly with your project milestones from Supabase." },
-        { q: "Can I assign tasks to team members?", a: "Yes, on Lite+ plans and above. Task assignment uses the project affiliation system — only users who are affiliated with a project (owner, partner, funder) can be assigned tasks. Assignees receive notifications." },
-        { q: "What is the Ndovu Akili AI (Copilot)?", a: "Available on Pro+ plans. The Ndovu Akili AI assists with compliance gap analysis, report drafting, and general development questions. It has context-aware modes for different use cases and maintains conversation history." },
+        { q: t('support.faq.projectManagement.q1'), a: t('support.faq.projectManagement.a1') },
+        { q: t('support.faq.projectManagement.q2'), a: t('support.faq.projectManagement.a2') },
+        { q: t('support.faq.projectManagement.q3'), a: t('support.faq.projectManagement.a3') },
+        { q: t('support.faq.projectManagement.q4'), a: t('support.faq.projectManagement.a4') },
       ]
     },
     {
-      category: 'ESG & Compliance',
+      category: t('support.faq.categoryEsgCompliance'),
       icon: <Globe className="w-4 h-4" />,
       faqs: [
-        { q: "How do I access ESG features?", a: "ESG modules are available for organizations on Pro plans and above with esg_enabled set to true. Navigate to 'ESG Dashboard' from the sidebar to access emissions tracking, supplier management, scenario analysis, and regulatory exposure profiles." },
-        { q: "How does Scope 3 emissions tracking work?", a: "Import your suppliers via CSV or manual entry. The platform calculates Scope 3 emissions based on supplier activity data, emission factors, and industry benchmarks. Data quality is tracked (estimated vs. measured vs. verified) to ensure transparency." },
-        { q: "What regulatory frameworks does the Rule Engine cover?", a: "The Rule Engine matches your organization's profile (country, actor type, sector) against stored regulatory frameworks. It covers mandatory ESG disclosure requirements, climate reporting mandates, and voluntary frameworks like GRI and TCFD across African jurisdictions." },
+        { q: t('support.faq.esgCompliance.q1'), a: t('support.faq.esgCompliance.a1') },
+        { q: t('support.faq.esgCompliance.q2'), a: t('support.faq.esgCompliance.a2') },
+        { q: t('support.faq.esgCompliance.q3'), a: t('support.faq.esgCompliance.a3') },
       ]
     },
     {
-      category: 'Billing & Plans',
+      category: t('support.faq.categoryBillingPlans'),
       icon: <CreditCard className="w-4 h-4" />,
       faqs: [
-        { q: "What subscription plans are available?", a: "We offer 5 tiers: Free (3 projects/month), Lite ($5/month, 10 projects), Pro ($15/month, 40 projects + ESG), Advanced ($30/month, 150 projects + full features), and Enterprise (custom pricing, unlimited). Scholarships are available for qualifying organizations." },
-        { q: "How do I apply for a scholarship?", a: "Go to Settings → Billing → Apply for Scholarship. Provide your organization details, mission statement, and proof of eligibility. Scholarships grant Pro-tier access at no cost for qualifying NGOs, community organizations, and educational institutions." },
-        { q: "What payment methods are accepted?", a: "We accept payments via Flutterwave and Paystack, supporting credit/debit cards, mobile money (M-Pesa, MTN MoMo), bank transfers, and USSD across African currencies (NGN, KES, ZAR, GHS, UGX, TZS, etc.)." },
-        { q: "How do project quotas work?", a: "Each plan has a monthly project quota that refreshes on your billing date. Pro+ plans support rollover — unused quota carries to the next month (up to your plan cap). Quota status is visible in your dashboard." },
+        { q: t('support.faq.billingPlans.q1'), a: t('support.faq.billingPlans.a1') },
+        { q: t('support.faq.billingPlans.q2'), a: t('support.faq.billingPlans.a2') },
+        { q: t('support.faq.billingPlans.q3'), a: t('support.faq.billingPlans.a3') },
+        { q: t('support.faq.billingPlans.q4'), a: t('support.faq.billingPlans.a4') },
       ]
     },
     {
-      category: 'Carbon & Sustainability',
+      category: t('support.faq.categoryCarbonSustainability'),
       icon: <Globe className="w-4 h-4" />,
       faqs: [
-        { q: "How do I track carbon emissions for a project?", a: "Open any project in Project Management, then navigate to the 'Carbon' tab. Enter Scope 1 (direct), Scope 2 (energy), and Scope 3 (supply chain) emissions in tonnes CO2e. The platform calculates total footprint and tracks reduction over time." },
-        { q: "What is the Circularity Score?", a: "The Circularity Score measures how well a project reuses materials and diverts waste. It is calculated as: (waste_diverted + material_reused) / total_waste × 100. Scores above 50% indicate good circular economy practices." },
-        { q: "How does Article 6 compliance work?", a: "The Compliance tab tracks Paris Agreement Article 6 readiness. It assesses ITMO (Internationally Transferred Mitigation Outcomes) eligibility, corresponding adjustments, and country-of-origin compliance. This helps projects participate in international carbon markets." },
-        { q: "Can I generate carbon credits from my project?", a: "Yes. Use the 'Carbon Assets' tab to register verified emission reductions. Credits can be tracked through their lifecycle: generation, ownership transfer, and retirement. Each credit includes methodology, vintage year, and verification status." },
+        { q: t('support.faq.carbonSustainability.q1'), a: t('support.faq.carbonSustainability.a1') },
+        { q: t('support.faq.carbonSustainability.q2'), a: t('support.faq.carbonSustainability.a2') },
+        { q: t('support.faq.carbonSustainability.q3'), a: t('support.faq.carbonSustainability.a3') },
+        { q: t('support.faq.carbonSustainability.q4'), a: t('support.faq.carbonSustainability.a4') },
       ]
     },
     {
-      category: 'Technical Issues',
+      category: t('support.faq.categoryTechnicalIssues'),
       icon: <Zap className="w-4 h-4" />,
       faqs: [
-        { q: "The map isn't loading. What should I do?", a: "Maps require a stable internet connection. Try: 1) Refresh the page, 2) Clear browser cache, 3) Try a different browser. If maps consistently fail, check if your organization has firewall rules blocking MapLibre or Leaflet tile servers." },
-        { q: "How do I reset my password?", a: "Click 'Forgot Password' on the login page. Enter your email and you'll receive a password reset link. The link expires in 10 minutes. If you signed up with Google or GitHub, use those providers to log in instead." },
-        { q: "Can I use DevMapper offline?", a: "DevMapper is a Progressive Web App (PWA). You can install it to your home screen for quick access. Basic viewing works offline, but submitting reports and syncing data requires an internet connection." },
-        { q: "My report submission failed. What happened?", a: "Common causes: 1) Project quota exhausted (check plan limits), 2) Missing required fields (title, description, location, SDG goal, status), 3) Network timeout. Check the error message for specifics and try again." },
-        { q: "How do I connect to my organization?", a: "Organizations are auto-created on sign-up. To join an existing organization, contact the organization admin who can add you via the Admin Dashboard. Organization membership determines your plan tier and project quota." },
+        { q: t('support.faq.technicalIssues.q1'), a: t('support.faq.technicalIssues.a1') },
+        { q: t('support.faq.technicalIssues.q2'), a: t('support.faq.technicalIssues.a2') },
+        { q: t('support.faq.technicalIssues.q3'), a: t('support.faq.technicalIssues.a3') },
+        { q: t('support.faq.technicalIssues.q4'), a: t('support.faq.technicalIssues.a4') },
+        { q: t('support.faq.technicalIssues.q5'), a: t('support.faq.technicalIssues.a5') },
       ]
     },
   ];
@@ -105,7 +107,7 @@ const Support = () => {
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error('Please sign in to submit a support ticket');
+      toast.error(t('support.toastSignInRequired'));
       return;
     }
     setSubmittingTicket(true);
@@ -118,10 +120,10 @@ const Support = () => {
         priority: ticketForm.priority,
       });
       if (error) throw error;
-      toast.success("Support ticket submitted! We'll get back to you within 24 hours.");
+      toast.success(t('support.toastTicketSubmitted'));
       setTicketForm({ subject: '', category: '', description: '', priority: 'medium' });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit ticket');
+      toast.error(error instanceof Error ? error.message : t('support.toastTicketSubmitFailed'));
     } finally {
       setSubmittingTicket(false);
     }
@@ -130,26 +132,26 @@ const Support = () => {
   return (
     <div className="container mx-auto p-6 max-w-5xl">
       <SEOHead
-        title="Support Center — Dev Mapper"
-        description="FAQs, guides, and ticket submission for Dev Mapper users — verification, reporting, billing, and platform help."
+        title={t('support.seoTitle')}
+        description={t('support.seoDescription')}
         canonicalUrl="/support"
         structuredData={generateFAQSchema(
           faqCategories.flatMap((c) => c.faqs).slice(0, 12).map((f) => ({ question: f.q, answer: f.a }))
         )}
       />
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Support Center</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('support.pageTitle')}</h1>
         <p className="text-muted-foreground">
-          Get help with DevMapper, find answers to common questions, and reach our support team
+          {t('support.pageSubtitle')}
         </p>
       </div>
 
       <Tabs defaultValue="faq" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="faq">Knowledge Base</TabsTrigger>
-          <TabsTrigger value="contact">Contact Support</TabsTrigger>
-          <TabsTrigger value="status">System Status</TabsTrigger>
-          <TabsTrigger value="community">Community Help</TabsTrigger>
+          <TabsTrigger value="faq">{t('support.tabKnowledgeBase')}</TabsTrigger>
+          <TabsTrigger value="contact">{t('support.tabContactSupport')}</TabsTrigger>
+          <TabsTrigger value="status">{t('support.tabSystemStatus')}</TabsTrigger>
+          <TabsTrigger value="community">{t('support.tabCommunityHelp')}</TabsTrigger>
         </TabsList>
 
         {/* Knowledge Base / FAQ */}
@@ -157,7 +159,7 @@ const Support = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search for help (e.g., 'verification', 'ESG', 'billing')..."
+              placeholder={t('support.searchPlaceholder')}
               value={faqSearch}
               onChange={(e) => setFaqSearch(e.target.value)}
               className="pl-10"
@@ -166,7 +168,7 @@ const Support = () => {
 
           {faqSearch && (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for "{faqSearch}"</p>
+              <p className="text-sm text-muted-foreground">{t('support.faqResultsCount', { count: filteredFaqs.length, query: faqSearch })}</p>
               {filteredFaqs.map((faq, i) => (
                 <Card key={i}>
                   <CardHeader className="pb-2">
@@ -182,8 +184,8 @@ const Support = () => {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <HelpCircle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="font-medium">No results found</p>
-                    <p className="text-sm text-muted-foreground">Try different search terms, or contact support directly.</p>
+                    <p className="font-medium">{t('support.noResultsFound')}</p>
+                    <p className="text-sm text-muted-foreground">{t('support.noResultsHint')}</p>
                   </CardContent>
                 </Card>
               )}
@@ -220,69 +222,69 @@ const Support = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Submit a Support Ticket</CardTitle>
-                <CardDescription>Get personalized help from our support team. Average response: under 24 hours.</CardDescription>
+                <CardTitle>{t('support.submitTicketTitle')}</CardTitle>
+                <CardDescription>{t('support.submitTicketDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmitTicket} className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Subject</label>
+                    <label className="text-sm font-medium">{t('support.subjectLabel')}</label>
                     <Input
                       value={ticketForm.subject}
                       onChange={(e) => setTicketForm(prev => ({ ...prev, subject: e.target.value }))}
-                      placeholder="Brief description of your issue"
+                      placeholder={t('support.subjectPlaceholder')}
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Category</label>
+                    <label className="text-sm font-medium">{t('support.categoryLabel')}</label>
                     <select
                       className="w-full p-2 border rounded-md bg-background"
                       value={ticketForm.category}
                       onChange={(e) => setTicketForm(prev => ({ ...prev, category: e.target.value }))}
                       required
                     >
-                      <option value="">Select category</option>
-                      <option value="technical">Technical Issue</option>
-                      <option value="account">Account & Authentication</option>
-                      <option value="reporting">Report Submission</option>
-                      <option value="verification">Verification & Trust</option>
-                      <option value="billing">Billing & Plans</option>
-                      <option value="esg">ESG & Compliance</option>
-                      <option value="pm">Project Management</option>
-                      <option value="api">API & Integrations</option>
-                      <option value="moderation">Moderation Appeal</option>
-                      <option value="other">Other</option>
+                      <option value="">{t('support.selectCategory')}</option>
+                      <option value="technical">{t('support.categoryTechnical')}</option>
+                      <option value="account">{t('support.categoryAccount')}</option>
+                      <option value="reporting">{t('support.categoryReporting')}</option>
+                      <option value="verification">{t('support.categoryVerification')}</option>
+                      <option value="billing">{t('support.categoryBilling')}</option>
+                      <option value="esg">{t('support.categoryEsg')}</option>
+                      <option value="pm">{t('support.categoryPm')}</option>
+                      <option value="api">{t('support.categoryApi')}</option>
+                      <option value="moderation">{t('support.categoryModeration')}</option>
+                      <option value="other">{t('support.categoryOther')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Priority</label>
+                    <label className="text-sm font-medium">{t('support.priorityLabel')}</label>
                     <select
                       className="w-full p-2 border rounded-md bg-background"
                       value={ticketForm.priority}
                       onChange={(e) => setTicketForm(prev => ({ ...prev, priority: e.target.value }))}
                     >
-                      <option value="low">Low — General question</option>
-                      <option value="medium">Medium — Feature not working</option>
-                      <option value="high">High — Blocking my work</option>
-                      <option value="urgent">Urgent — Data loss or security issue</option>
+                      <option value="low">{t('support.priorityLow')}</option>
+                      <option value="medium">{t('support.priorityMedium')}</option>
+                      <option value="high">{t('support.priorityHigh')}</option>
+                      <option value="urgent">{t('support.priorityUrgent')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Description</label>
+                    <label className="text-sm font-medium">{t('support.descriptionLabel')}</label>
                     <Textarea
                       value={ticketForm.description}
                       onChange={(e) => setTicketForm(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Detailed description of your issue. Include steps to reproduce, browser/device info, and any error messages."
+                      placeholder={t('support.descriptionPlaceholder')}
                       rows={5}
                       required
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={submittingTicket}>
-                    {submittingTicket ? 'Submitting...' : 'Submit Ticket'}
+                    {submittingTicket ? t('support.submitting') : t('support.submitTicket')}
                   </Button>
                   {!user && (
-                    <p className="text-xs text-muted-foreground text-center">Sign in to submit a ticket.</p>
+                    <p className="text-xs text-muted-foreground text-center">{t('support.signInToSubmit')}</p>
                   )}
                 </form>
               </CardContent>
@@ -293,13 +295,13 @@ const Support = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Mail className="w-4 h-4" />
-                    Email Support
+                    {t('support.emailSupportTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-1">General inquiries and technical support</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('support.emailSupportDesc')}</p>
                   <p className="font-medium">support@devmapper.africa</p>
-                  <p className="text-xs text-muted-foreground mt-1">Response time: Within 24 hours (business days)</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('support.emailResponseTime')}</p>
                 </CardContent>
               </Card>
 
@@ -307,13 +309,13 @@ const Support = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Mail className="w-4 h-4" />
-                    Partnership Inquiries
+                    {t('support.partnershipTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-1">For NGOs, governments, and corporate partners</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('support.partnershipDesc')}</p>
                   <p className="font-medium">partnerships@devmapper.africa</p>
-                  <p className="text-xs text-muted-foreground mt-1">Response time: Within 48 hours</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('support.partnershipResponseTime')}</p>
                 </CardContent>
               </Card>
 
@@ -321,14 +323,14 @@ const Support = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <MessageSquare className="w-4 h-4" />
-                    Community Forum
+                    {t('support.communityForumTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-2">Get help from fellow DevMapper users and moderators</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t('support.communityForumDesc')}</p>
                   <Button variant="outline" className="w-full" onClick={() => window.location.href = '/forum'}>
                     <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                    Visit Forum
+                    {t('support.visitForum')}
                   </Button>
                 </CardContent>
               </Card>
@@ -337,17 +339,17 @@ const Support = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Clock className="w-4 h-4" />
-                    Support Hours
+                    {t('support.supportHoursTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm space-y-1">
-                    <div className="flex justify-between"><span>Monday – Friday</span><span className="text-muted-foreground">9:00 AM – 6:00 PM EAT</span></div>
-                    <div className="flex justify-between"><span>Saturday</span><span className="text-muted-foreground">10:00 AM – 2:00 PM EAT</span></div>
-                    <div className="flex justify-between"><span>Sunday</span><span className="text-muted-foreground">Closed</span></div>
+                    <div className="flex justify-between"><span>{t('support.mondayFriday')}</span><span className="text-muted-foreground">{t('support.hoursWeekday')}</span></div>
+                    <div className="flex justify-between"><span>{t('support.saturday')}</span><span className="text-muted-foreground">{t('support.hoursSaturday')}</span></div>
+                    <div className="flex justify-between"><span>{t('support.sunday')}</span><span className="text-muted-foreground">{t('support.closed')}</span></div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> Nairobi, Kenya (UTC+3)
+                    <MapPin className="w-3 h-3" /> {t('support.locationNairobi')}
                   </p>
                 </CardContent>
               </Card>
@@ -356,13 +358,13 @@ const Support = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Phone className="w-4 h-4" />
-                    WhatsApp / Telegram Support
+                    {t('support.whatsappTelegramTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-1">Quick support via messaging platforms</p>
-                  <p className="text-sm">WhatsApp: <span className="font-medium">+234 XXX DEVMAP</span></p>
-                  <p className="text-sm">Telegram: <span className="font-medium">@DevMapperSupport</span></p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('support.whatsappTelegramDesc')}</p>
+                  <p className="text-sm">{t('support.whatsappLabel')} <span className="font-medium">+234 XXX DEVMAP</span></p>
+                  <p className="text-sm">{t('support.telegramLabel')} <span className="font-medium">@DevMapperSupport</span></p>
                 </CardContent>
               </Card>
             </div>
@@ -371,31 +373,30 @@ const Support = () => {
 
         {/* System Status */}
         <TabsContent value="status" className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">System Status</h2>
+          <h2 className="text-2xl font-semibold mb-4">{t('support.systemStatusTitle')}</h2>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                No live status monitoring yet
+                {t('support.noStatusMonitoringTitle')}
               </CardTitle>
               <CardDescription>
-                DevMapper doesn't have automated uptime monitoring set up yet, so this page can't show real-time
-                status. If something seems broken, please submit a support ticket below rather than checking here.
+                {t('support.noStatusMonitoringDesc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {[
-                  'Map Services (MapLibre / Leaflet)',
-                  'Report Submission Pipeline',
-                  'User Authentication (Supabase Auth)',
-                  'Analytics Dashboard',
-                  'Ndovu Akili AI (Edge Function)',
-                  'ESG Module',
-                  'Project Management',
-                  'Payment Processing (Flutterwave / Paystack)',
-                  'Carbon & Sustainability Module',
-                  'File Storage',
+                  t('support.serviceMap'),
+                  t('support.serviceReportPipeline'),
+                  t('support.serviceAuth'),
+                  t('support.serviceAnalytics'),
+                  t('support.serviceAI'),
+                  t('support.serviceEsg'),
+                  t('support.serviceProjectManagement'),
+                  t('support.servicePayment'),
+                  t('support.serviceCarbon'),
+                  t('support.serviceFileStorage'),
                 ].map((service, i) => (
                   <div key={i} className="py-1.5 border-b last:border-0 text-sm text-muted-foreground">
                     {service}
@@ -408,18 +409,18 @@ const Support = () => {
 
         {/* Community Help */}
         <TabsContent value="community" className="space-y-6">
-          <h2 className="text-2xl font-semibold mb-2">Community Help Resources</h2>
+          <h2 className="text-2xl font-semibold mb-2">{t('support.communityHelpTitle')}</h2>
           <p className="text-muted-foreground mb-4">
-            Learn from tutorials, guides, and the DevMapper community.
+            {t('support.communityHelpDesc')}
           </p>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { title: 'Getting Started Guide', desc: 'Step-by-step walkthrough of setting up your profile and submitting your first report', icon: <BookOpen className="w-5 h-5" />, link: '/training' },
-              { title: 'SDG Alignment Handbook', desc: 'How to correctly tag projects with SDG goals and Agenda 2063 aspirations', icon: <Globe className="w-5 h-5" />, link: '/sdg-overview' },
-              { title: 'Verification Best Practices', desc: 'Guidelines for citizen, NGO, and government verifiers', icon: <Shield className="w-5 h-5" />, link: '/guidelines' },
-              { title: 'Community Forum', desc: 'Ask questions, share insights, and connect with other users across Africa', icon: <MessageSquare className="w-5 h-5" />, link: '/forum' },
-              { title: 'API Documentation', desc: 'Comprehensive REST API reference for developers building on DevMapper', icon: <Zap className="w-5 h-5" />, link: '/resources' },
-              { title: 'ESG Reporting Guide', desc: 'How to use emissions tracking, supplier management, and scenario analysis', icon: <FileText className="w-5 h-5" />, link: '/esg' },
+              { title: t('support.resourceGettingStartedTitle'), desc: t('support.resourceGettingStartedDesc'), icon: <BookOpen className="w-5 h-5" />, link: '/training' },
+              { title: t('support.resourceSdgHandbookTitle'), desc: t('support.resourceSdgHandbookDesc'), icon: <Globe className="w-5 h-5" />, link: '/sdg-overview' },
+              { title: t('support.resourceVerificationTitle'), desc: t('support.resourceVerificationDesc'), icon: <Shield className="w-5 h-5" />, link: '/guidelines' },
+              { title: t('support.resourceCommunityForumTitle'), desc: t('support.resourceCommunityForumDesc'), icon: <MessageSquare className="w-5 h-5" />, link: '/forum' },
+              { title: t('support.resourceApiDocsTitle'), desc: t('support.resourceApiDocsDesc'), icon: <Zap className="w-5 h-5" />, link: '/resources' },
+              { title: t('support.resourceEsgGuideTitle'), desc: t('support.resourceEsgGuideDesc'), icon: <FileText className="w-5 h-5" />, link: '/esg' },
             ].map((resource, i) => (
               <Card key={i} className="hover:border-primary/40 transition-colors cursor-pointer" onClick={() => window.location.href = resource.link}>
                 <CardContent className="p-5 flex items-start gap-4">

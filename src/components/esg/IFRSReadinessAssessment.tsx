@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,62 +21,62 @@ interface ReadinessStage {
   items: { id: string; label: string; description: string }[];
 }
 
-const FRC_READINESS_STAGES: ReadinessStage[] = [
+const getFrcReadinessStages = (t: (key: string) => string): ReadinessStage[] => [
   {
     id: 'stage1',
-    title: 'Stage 1: Pre-Adoption',
-    timing: '3 months before reporting date',
-    description: 'Board-level approval and planning documents required before adoption begins.',
+    title: t('esg.ifrsReadiness.stage1Title'),
+    timing: t('esg.ifrsReadiness.stage1Timing'),
+    description: t('esg.ifrsReadiness.stage1Description'),
     items: [
-      { id: 's1_board_resolution', label: 'Board Resolution', description: 'Board resolution approving adoption of IFRS Sustainability Disclosure Standards' },
-      { id: 's1_gap_analysis', label: 'GAP Analysis Report', description: 'Comprehensive gap analysis comparing current reporting to IFRS S1/S2 requirements' },
-      { id: 's1_implementation_plan', label: 'Implementation Plan', description: 'Detailed plan with timelines, resource allocation, and milestones for adoption' },
+      { id: 's1_board_resolution', label: t('esg.ifrsReadiness.s1BoardResolutionLabel'), description: t('esg.ifrsReadiness.s1BoardResolutionDescription') },
+      { id: 's1_gap_analysis', label: t('esg.ifrsReadiness.s1GapAnalysisLabel'), description: t('esg.ifrsReadiness.s1GapAnalysisDescription') },
+      { id: 's1_implementation_plan', label: t('esg.ifrsReadiness.s1ImplementationPlanLabel'), description: t('esg.ifrsReadiness.s1ImplementationPlanDescription') },
     ],
   },
   {
     id: 'stage2',
-    title: 'Stage 2: Early Implementation',
-    timing: 'Within 3 months after reporting date',
-    description: 'Disclosure policies, materiality assessment, and governance structures must be established.',
+    title: t('esg.ifrsReadiness.stage2Title'),
+    timing: t('esg.ifrsReadiness.stage2Timing'),
+    description: t('esg.ifrsReadiness.stage2Description'),
     items: [
-      { id: 's2_disclosure_policies', label: 'IFRS Sustainability Disclosure Policies', description: 'Documented sustainability disclosure policies aligned with IFRS S1 requirements' },
-      { id: 's2_transitional_reliefs', label: 'Transitional Reliefs Identification', description: 'Identification and documentation of applicable transitional reliefs (climate-first, Scope 3 deferral, comparative data)' },
-      { id: 's2_materiality', label: 'Materiality Assessment', description: 'Identification and materiality assessment of sustainability and climate-related risks and opportunities' },
-      { id: 's2_governance', label: 'Governance Structure', description: 'Evidence of establishment of a governance structure for sustainability reporting' },
-      { id: 's2_board_approval_policy', label: 'Board Approval of Policies', description: 'Evidence of Board approval of IFRS Sustainability Disclosure Policies' },
-      { id: 's2_training', label: 'Regulatory Training', description: 'Evidence of FRC-accredited sustainability training for Board Members, Management, and Preparers' },
+      { id: 's2_disclosure_policies', label: t('esg.ifrsReadiness.s2DisclosurePoliciesLabel'), description: t('esg.ifrsReadiness.s2DisclosurePoliciesDescription') },
+      { id: 's2_transitional_reliefs', label: t('esg.ifrsReadiness.s2TransitionalReliefsLabel'), description: t('esg.ifrsReadiness.s2TransitionalReliefsDescription') },
+      { id: 's2_materiality', label: t('esg.ifrsReadiness.s2MaterialityLabel'), description: t('esg.ifrsReadiness.s2MaterialityDescription') },
+      { id: 's2_governance', label: t('esg.ifrsReadiness.s2GovernanceLabel'), description: t('esg.ifrsReadiness.s2GovernanceDescription') },
+      { id: 's2_board_approval_policy', label: t('esg.ifrsReadiness.s2BoardApprovalPolicyLabel'), description: t('esg.ifrsReadiness.s2BoardApprovalPolicyDescription') },
+      { id: 's2_training', label: t('esg.ifrsReadiness.s2TrainingLabel'), description: t('esg.ifrsReadiness.s2TrainingDescription') },
     ],
   },
   {
     id: 'stage3',
-    title: 'Stage 3: Full Readiness',
-    timing: 'Within 6 months after reporting date',
-    description: 'Scenario analysis, risk frameworks, metrics, and internal controls must be in place.',
+    title: t('esg.ifrsReadiness.stage3Title'),
+    timing: t('esg.ifrsReadiness.stage3Timing'),
+    description: t('esg.ifrsReadiness.stage3Description'),
     items: [
-      { id: 's3_frc_registration', label: 'FRC Registration', description: 'Evidence of registration of entity and professionals with FRC (Section 41, FRC Act 2011)' },
-      { id: 's3_scenario_models', label: 'Scenario Analysis Models', description: 'Description of models used for climate-related scenario analysis (qualitative or quantitative)' },
-      { id: 's3_risk_framework', label: 'Risk Management Framework', description: 'Enterprise and Sustainability Risk Management Framework documented and operational' },
-      { id: 's3_board_risk_approval', label: 'Board Risk Framework Approval', description: 'Evidence of Board approval of Enterprise and Sustainability Risk Management Framework' },
-      { id: 's3_metrics', label: 'Cross-Industry & Industry Metrics', description: 'Description of identified cross-industry and industry-specific metrics and targets (SASB aligned)' },
-      { id: 's3_board_metrics_approval', label: 'Board Metrics Approval', description: 'Evidence of Board approval of metrics and targets for sustainability and climate-related risks' },
-      { id: 's3_financial_effect', label: 'Current Financial Effect of SRRO', description: 'Documentation of current financial effect of sustainability-related risks and opportunities' },
-      { id: 's3_icsr', label: 'Internal Control Over Sustainability Reporting (ICSR)', description: 'Controls ensuring sustainability data integrity: ownership, documented methodologies, validation checks, audit trails' },
+      { id: 's3_frc_registration', label: t('esg.ifrsReadiness.s3FrcRegistrationLabel'), description: t('esg.ifrsReadiness.s3FrcRegistrationDescription') },
+      { id: 's3_scenario_models', label: t('esg.ifrsReadiness.s3ScenarioModelsLabel'), description: t('esg.ifrsReadiness.s3ScenarioModelsDescription') },
+      { id: 's3_risk_framework', label: t('esg.ifrsReadiness.s3RiskFrameworkLabel'), description: t('esg.ifrsReadiness.s3RiskFrameworkDescription') },
+      { id: 's3_board_risk_approval', label: t('esg.ifrsReadiness.s3BoardRiskApprovalLabel'), description: t('esg.ifrsReadiness.s3BoardRiskApprovalDescription') },
+      { id: 's3_metrics', label: t('esg.ifrsReadiness.s3MetricsLabel'), description: t('esg.ifrsReadiness.s3MetricsDescription') },
+      { id: 's3_board_metrics_approval', label: t('esg.ifrsReadiness.s3BoardMetricsApprovalLabel'), description: t('esg.ifrsReadiness.s3BoardMetricsApprovalDescription') },
+      { id: 's3_financial_effect', label: t('esg.ifrsReadiness.s3FinancialEffectLabel'), description: t('esg.ifrsReadiness.s3FinancialEffectDescription') },
+      { id: 's3_icsr', label: t('esg.ifrsReadiness.s3IcsrLabel'), description: t('esg.ifrsReadiness.s3IcsrDescription') },
     ],
   },
 ];
 
-const ADOPTION_PHASES = [
-  { phase: 'Phase 1', label: 'Early Adopters', period: 'Dec 31, 2023', status: 'closed' },
-  { phase: 'Phase 2', label: 'Voluntary Adopters (incl. CPSEs)', period: '2024–2027', status: 'active' },
-  { phase: 'Phase 3', label: 'Mandatory – All PIEs', period: 'Jan 1, 2028', status: 'upcoming' },
-  { phase: 'Phase 4', label: 'SMEs & Government Orgs', period: 'Jan 1, 2030', status: 'upcoming' },
+const getAdoptionPhases = (t: (key: string) => string) => [
+  { phase: t('esg.ifrsReadiness.phase1Name'), label: t('esg.ifrsReadiness.phase1Label'), period: t('esg.ifrsReadiness.phase1Period'), status: 'closed' },
+  { phase: t('esg.ifrsReadiness.phase2Name'), label: t('esg.ifrsReadiness.phase2Label'), period: t('esg.ifrsReadiness.phase2Period'), status: 'active' },
+  { phase: t('esg.ifrsReadiness.phase3Name'), label: t('esg.ifrsReadiness.phase3Label'), period: t('esg.ifrsReadiness.phase3Period'), status: 'upcoming' },
+  { phase: t('esg.ifrsReadiness.phase4Name'), label: t('esg.ifrsReadiness.phase4Label'), period: t('esg.ifrsReadiness.phase4Period'), status: 'upcoming' },
 ];
 
-const ASSURANCE_TIMELINE = [
-  { year: 'Years 1–3', requirement: 'No mandatory assurance', detail: 'Voluntary assurance encouraged' },
-  { year: 'Years 4–5', requirement: 'Limited assurance', detail: 'S1 and S2 disclosures excluding Scope 3 emissions, scenario analysis, and transition plans' },
-  { year: 'Year 6', requirement: 'Limited + Reasonable', detail: 'Limited assurance on Scope 3, scenarios, transition plans; reasonable assurance on all other disclosures' },
-  { year: 'Year 7+', requirement: 'Full reasonable assurance', detail: 'Reasonable assurance on all sustainability disclosures (ISSA 5000)' },
+const getAssuranceTimeline = (t: (key: string) => string) => [
+  { year: t('esg.ifrsReadiness.assuranceYear1Range'), requirement: t('esg.ifrsReadiness.assuranceYear1Requirement'), detail: t('esg.ifrsReadiness.assuranceYear1Detail') },
+  { year: t('esg.ifrsReadiness.assuranceYear2Range'), requirement: t('esg.ifrsReadiness.assuranceYear2Requirement'), detail: t('esg.ifrsReadiness.assuranceYear2Detail') },
+  { year: t('esg.ifrsReadiness.assuranceYear3Range'), requirement: t('esg.ifrsReadiness.assuranceYear3Requirement'), detail: t('esg.ifrsReadiness.assuranceYear3Detail') },
+  { year: t('esg.ifrsReadiness.assuranceYear4Range'), requirement: t('esg.ifrsReadiness.assuranceYear4Requirement'), detail: t('esg.ifrsReadiness.assuranceYear4Detail') },
 ];
 
 interface IFRSReadinessAssessmentProps {
@@ -84,7 +85,12 @@ interface IFRSReadinessAssessmentProps {
 }
 
 export default function IFRSReadinessAssessment({ organizationId, organizationName }: IFRSReadinessAssessmentProps) {
+  const { t } = useTranslation();
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+
+  const FRC_READINESS_STAGES = getFrcReadinessStages(t);
+  const ADOPTION_PHASES = getAdoptionPhases(t);
+  const ASSURANCE_TIMELINE = getAssuranceTimeline(t);
 
   const totalItems = FRC_READINESS_STAGES.reduce((sum, stage) => sum + stage.items.length, 0);
   const completedCount = completedItems.size;
@@ -105,9 +111,9 @@ export default function IFRSReadinessAssessment({ organizationId, organizationNa
   };
 
   const getReadinessStatus = () => {
-    if (progressPercent >= 100) return { label: 'Fully Ready', color: 'bg-green-500/10 text-green-700', icon: <CheckCircle2 className="h-4 w-4" /> };
-    if (progressPercent >= 60) return { label: 'Progressing', color: 'bg-yellow-500/10 text-yellow-700', icon: <AlertTriangle className="h-4 w-4" /> };
-    return { label: 'Early Stage', color: 'bg-orange-500/10 text-orange-700', icon: <Clock className="h-4 w-4" /> };
+    if (progressPercent >= 100) return { label: t('esg.ifrsReadiness.statusFullyReady'), color: 'bg-green-500/10 text-green-700', icon: <CheckCircle2 className="h-4 w-4" /> };
+    if (progressPercent >= 60) return { label: t('esg.ifrsReadiness.statusProgressing'), color: 'bg-yellow-500/10 text-yellow-700', icon: <AlertTriangle className="h-4 w-4" /> };
+    return { label: t('esg.ifrsReadiness.statusEarlyStage'), color: 'bg-orange-500/10 text-orange-700', icon: <Clock className="h-4 w-4" /> };
   };
 
   const status = getReadinessStatus();
@@ -121,10 +127,10 @@ export default function IFRSReadinessAssessment({ organizationId, organizationNa
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                FRC IFRS SDS Readiness Assessment
+                {t('esg.ifrsReadiness.assessmentTitle')}
               </CardTitle>
               <CardDescription>
-                Nigeria FRC Sustainability Reporting Guideline (SRG1) 2026 — 3-stage readiness checklist
+                {t('esg.ifrsReadiness.assessmentSubtitle')}
               </CardDescription>
             </div>
             <Badge className={status.color}>
@@ -135,7 +141,7 @@ export default function IFRSReadinessAssessment({ organizationId, organizationNa
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
             <Progress value={progressPercent} className="flex-1" />
-            <span className="text-sm font-medium text-muted-foreground">{completedCount}/{totalItems} items</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('esg.ifrsReadiness.itemsCount', { completed: completedCount, total: totalItems })}</span>
           </div>
 
           {/* Adoption Phase Indicator */}
@@ -201,9 +207,9 @@ export default function IFRSReadinessAssessment({ organizationId, organizationNa
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Nigeria Assurance Roadmap (ISSA 5000)
+            {t('esg.ifrsReadiness.assuranceRoadmapTitle')}
           </CardTitle>
-          <CardDescription>Progressive assurance requirements per FRC Amended Roadmap 2026</CardDescription>
+          <CardDescription>{t('esg.ifrsReadiness.assuranceRoadmapSubtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">

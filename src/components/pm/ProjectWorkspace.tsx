@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -50,6 +51,7 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [milestones, setMilestones] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
@@ -105,8 +107,8 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       created_by: user.id,
       assigned_to: newTaskAssignee || null,
     } as any);
-    if (error) { toast.error("Failed to add task"); return; }
-    toast.success("Task added");
+    if (error) { toast.error(t('pm.toastAddTaskFailed')); return; }
+    toast.success(t('pm.toastTaskAdded'));
     setNewTaskTitle("");
     setNewTaskAssignee("");
     setAddTaskOpen(false);
@@ -127,7 +129,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
     const newVis = visibility === "public" ? "private" : "public";
     await supabase.from("reports").update({ visibility: newVis } as any).eq("id", reportId);
     setVisibility(newVis);
-    toast.success(`Project is now ${newVis}`);
+    toast.success(t('pm.toastProjectVisibility', { visibility: newVis === "public" ? t('pm.visibilityPublicWord') : t('pm.visibilityPrivateWord') }));
   };
 
   if (!report) return null;
@@ -138,11 +140,11 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
   const budgetPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
   const verificationLevels = [
-    { key: "self_report", label: "Self Report" },
-    { key: "citizen", label: "Citizen Verified" },
-    { key: "ngo", label: "NGO Verified" },
-    { key: "government", label: "Government Verified" },
-    { key: "platform_audit", label: "Platform Audited" },
+    { key: "self_report", label: t('pm.verificationLevelSelfReport') },
+    { key: "citizen", label: t('pm.verificationLevelCitizen') },
+    { key: "ngo", label: t('pm.verificationLevelNgo') },
+    { key: "government", label: t('pm.verificationLevelGovernment') },
+    { key: "platform_audit", label: t('pm.verificationLevelPlatformAudit') },
   ];
 
   const getVerificationStatus = (level: string) => {
@@ -165,7 +167,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                   <Badge variant="outline"><MapPin className="h-3 w-3 mr-1" />{report.location}</Badge>
                 )}
                 {report.sdg_goal && (
-                  <Badge variant="secondary"><Target className="h-3 w-3 mr-1" />SDG {report.sdg_goal}</Badge>
+                  <Badge variant="secondary"><Target className="h-3 w-3 mr-1" />{t('pm.sdgGoalBadge', { sdgGoal: report.sdg_goal })}</Badge>
                 )}
                 {report.start_date && (
                   <Badge variant="outline"><Calendar className="h-3 w-3 mr-1" />{report.start_date}</Badge>
@@ -177,11 +179,11 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
               {isOwner && (
                 <Button variant="ghost" size="sm" onClick={toggleVisibility} className="gap-1 text-xs">
                   {visibility === "public" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                  {visibility === "public" ? "Public" : "Private"}
+                  {visibility === "public" ? t('pm.visibilityPublicLabel') : t('pm.visibilityPrivateLabel')}
                 </Button>
               )}
               {report.beneficiaries && (
-                <span className="text-sm text-muted-foreground"><Users className="inline h-3 w-3 mr-1" />{report.beneficiaries.toLocaleString()} beneficiaries</span>
+                <span className="text-sm text-muted-foreground"><Users className="inline h-3 w-3 mr-1" />{t('pm.beneficiariesCount', { formatted: report.beneficiaries.toLocaleString() })}</span>
               )}
             </div>
           </div>
@@ -191,20 +193,20 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       {/* Tabbed Workspace — PRD V8 Carbon Evolution */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="carbon" className="gap-1"><Flame className="h-3 w-3" />Carbon</TabsTrigger>
-          <TabsTrigger value="climate" className="gap-1"><Thermometer className="h-3 w-3" />Climate</TabsTrigger>
-          <TabsTrigger value="circularity" className="gap-1"><Recycle className="h-3 w-3" />Circularity</TabsTrigger>
-          <TabsTrigger value="assets" className="gap-1"><Coins className="h-3 w-3" />Carbon Assets</TabsTrigger>
-          <TabsTrigger value="compliance" className="gap-1"><Scale className="h-3 w-3" />Compliance</TabsTrigger>
-          <TabsTrigger value="financial" className="gap-1"><TrendingUp className="h-3 w-3" />Financial Impact</TabsTrigger>
+          <TabsTrigger value="overview">{t('pm.workspaceTabOverview')}</TabsTrigger>
+          <TabsTrigger value="carbon" className="gap-1"><Flame className="h-3 w-3" />{t('pm.workspaceTabCarbon')}</TabsTrigger>
+          <TabsTrigger value="climate" className="gap-1"><Thermometer className="h-3 w-3" />{t('pm.workspaceTabClimate')}</TabsTrigger>
+          <TabsTrigger value="circularity" className="gap-1"><Recycle className="h-3 w-3" />{t('pm.workspaceTabCircularity')}</TabsTrigger>
+          <TabsTrigger value="assets" className="gap-1"><Coins className="h-3 w-3" />{t('pm.workspaceTabCarbonAssets')}</TabsTrigger>
+          <TabsTrigger value="compliance" className="gap-1"><Scale className="h-3 w-3" />{t('pm.workspaceTabCompliance')}</TabsTrigger>
+          <TabsTrigger value="financial" className="gap-1"><TrendingUp className="h-3 w-3" />{t('pm.workspaceTabFinancialImpact')}</TabsTrigger>
         </TabsList>
 
         {/* OVERVIEW TAB — existing content */}
         <TabsContent value="overview" className="space-y-6 mt-4">
           {/* Project Lifecycle Manager */}
           <Card>
-            <CardHeader><CardTitle className="text-base">Project Lifecycle</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('pm.projectLifecycleTitle')}</CardTitle></CardHeader>
             <CardContent>
               <ProjectLifecycleManager
                 reportId={reportId}
@@ -219,47 +221,47 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Tasks ({tasks.length})</CardTitle>
+                <CardTitle className="text-base">{t('pm.tasksCountTitle', { taskCount: tasks.length })}</CardTitle>
                 {isOwner && (
                   <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
                     <DialogTrigger asChild>
-                      <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" />Add Task</Button>
+                      <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1" />{t('pm.addTaskButton')}</Button>
                     </DialogTrigger>
                     <DialogContent>
-                      <DialogHeader><DialogTitle>Add Task</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>{t('pm.addTaskDialogTitle')}</DialogTitle></DialogHeader>
                       <div className="space-y-3">
-                        <div><Label>Title</Label><Input value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Task title..." /></div>
+                        <div><Label>{t('pm.titleLabel')}</Label><Input value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder={t('pm.taskTitleEllipsisPlaceholder')} /></div>
                         <div>
-                          <Label>Priority</Label>
+                          <Label>{t('pm.priorityLabel')}</Label>
                           <Select value={newTaskPriority} onValueChange={setNewTaskPriority}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
+                              <SelectItem value="low">{t('pm.priorityLow')}</SelectItem>
+                              <SelectItem value="medium">{t('pm.priorityMedium')}</SelectItem>
+                              <SelectItem value="high">{t('pm.priorityHigh')}</SelectItem>
+                              <SelectItem value="urgent">{t('pm.priorityUrgent')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         <div>
-                          <Label>Assign To (optional)</Label>
+                          <Label>{t('pm.assignToOptionalLabel')}</Label>
                           <Select value={newTaskAssignee} onValueChange={setNewTaskAssignee}>
-                            <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder={t('pm.unassignedPlaceholder')} /></SelectTrigger>
                             <SelectContent>
                               {assignableUsers.map((a) => (
                                 <SelectItem key={a.user_id} value={a.user_id}>
-                                  {a.name}{a.source === "org_share" ? " (cross-org access)" : ""}
+                                  {a.name}{a.source === "org_share" ? t('pm.crossOrgAccessSuffix') : ""}
                                 </SelectItem>
                               ))}
                               {assignableUsers.length === 0 && (
                                 <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                  No assignable users yet - add a stakeholder or grant data-share access first
+                                  {t('pm.noAssignableUsersHint')}
                                 </div>
                               )}
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button onClick={addTask} disabled={!newTaskTitle.trim()}>Add Task</Button>
+                        <Button onClick={addTask} disabled={!newTaskTitle.trim()}>{t('pm.addTaskButton')}</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -268,7 +270,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
             </CardHeader>
             <CardContent>
               {tasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No tasks yet. Add tasks to track project work.</p>
+                <p className="text-sm text-muted-foreground">{t('pm.noTasksYetTrackWork')}</p>
               ) : (
                 <KanbanBoard
                   tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: t.tags || [] }))}
@@ -283,22 +285,22 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Budget Summary */}
             <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><DollarSign className="h-4 w-4" />Budget</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2"><DollarSign className="h-4 w-4" />{t('pm.budgetTitle')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {budgets.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No budget entries yet.</p>
+                  <p className="text-sm text-muted-foreground">{t('pm.noBudgetEntriesYet')}</p>
                 ) : (
                   <>
                     <div className="flex justify-between text-sm">
-                      <span>Allocated: <strong>${totalBudget.toLocaleString()}</strong></span>
-                      <span>Spent: <strong>${totalSpent.toLocaleString()}</strong></span>
+                      <span>{t('pm.budgetAllocatedLabel')} <strong>${totalBudget.toLocaleString()}</strong></span>
+                      <span>{t('pm.budgetSpentLabel')} <strong>${totalSpent.toLocaleString()}</strong></span>
                     </div>
                     <Progress value={budgetPct} className="h-2" />
-                    <p className="text-xs text-muted-foreground">{budgetPct}% utilized</p>
+                    <p className="text-xs text-muted-foreground">{t('pm.budgetUtilizedPercent', { percent: budgetPct })}</p>
                     {budgets.map((b: any) => (
                       <div key={b.id} className="text-xs border rounded p-2 space-y-1">
-                        {b.funding_source && <p><strong>Source:</strong> {b.funding_source}</p>}
-                        {b.donor_organization && <p><strong>Donor:</strong> {b.donor_organization}</p>}
+                        {b.funding_source && <p><strong>{t('pm.budgetSourceLabel')}</strong> {b.funding_source}</p>}
+                        {b.donor_organization && <p><strong>{t('pm.budgetDonorLabel')}</strong> {b.donor_organization}</p>}
                       </div>
                     ))}
                   </>
@@ -310,7 +312,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Verification Status</CardTitle>
+                  <CardTitle className="text-base">{t('pm.verificationStatusTitle')}</CardTitle>
                   <SubmitVerificationDialog reportId={reportId} onSubmitted={() => {
                     supabase.from("project_verifications").select("*").eq("report_id", reportId).order("created_at").then(r => { if (r.data) setVerifications(r.data); });
                   }} />
@@ -323,7 +325,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                     <div key={level.key} className="flex items-center justify-between text-sm">
                       <span>{level.label}</span>
                       <Badge variant={status === "approved" ? "default" : status === "pending" ? "outline" : "secondary"}>
-                        {status === "approved" ? "✔ Verified" : status === "rejected" ? "✘ Rejected" : "Pending"}
+                        {status === "approved" ? t('pm.verificationStatusVerified') : status === "rejected" ? t('pm.verificationStatusRejected') : t('pm.verificationStatusPending')}
                       </Badge>
                     </div>
                   );
@@ -336,7 +338,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Milestones</CardTitle>
+                <CardTitle className="text-base">{t('pm.milestonesTitle')}</CardTitle>
                 <AddMilestoneDialog reportId={reportId} onAdded={() => {
                   supabase.from("project_milestones").select("*").eq("report_id", reportId).order("target_date").then(r => { if (r.data) setMilestones(r.data); });
                 }} />
@@ -344,14 +346,14 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
             </CardHeader>
             <CardContent className="space-y-3">
               {milestones.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No milestones yet. Add one to track project phases.</p>
+                <p className="text-sm text-muted-foreground">{t('pm.noMilestonesYet')}</p>
               ) : (
                 milestones.map((m: any) => (
                   <div key={m.id} className="flex items-center gap-3">
                     <CheckCircle2 className={`h-5 w-5 shrink-0 ${m.status === "completed" ? "text-green-500" : "text-muted-foreground"}`} />
                     <div className="flex-1">
                       <p className="text-sm font-medium">{m.title}</p>
-                      {m.target_date && <p className="text-xs text-muted-foreground">Target: {m.target_date}</p>}
+                      {m.target_date && <p className="text-xs text-muted-foreground">{t('pm.milestoneTargetDate', { targetDate: m.target_date })}</p>}
                     </div>
                     <Progress value={m.completion_percentage} className="w-20 h-2" />
                     <span className="text-xs text-muted-foreground w-8">{m.completion_percentage}%</span>
@@ -364,17 +366,17 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
           {/* Recent Updates */}
           {updates.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-base">Recent Progress Updates</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('pm.recentProgressUpdatesTitle')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {updates.map((u: any) => (
                   <div key={u.id} className="border rounded-lg p-3 space-y-1">
                     <div className="flex items-center justify-between">
-                      <Badge variant="outline">{u.progress_percent}% progress</Badge>
+                      <Badge variant="outline">{t('pm.progressPercentBadge', { percent: u.progress_percent })}</Badge>
                       <span className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</span>
                     </div>
                     <p className="text-sm">{u.update_text}</p>
                     {u.evidence_url && (
-                      <a href={u.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View evidence</a>
+                      <a href={u.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">{t('pm.viewEvidenceLink')}</a>
                     )}
                   </div>
                 ))}

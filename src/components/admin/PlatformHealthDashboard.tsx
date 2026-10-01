@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,6 +26,7 @@ interface PlatformStats {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export default function PlatformHealthDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [complianceAlerts, setComplianceAlerts] = useState<any[]>([]);
@@ -115,45 +117,45 @@ export default function PlatformHealthDashboard() {
   if (!stats) return null;
 
   const weeklyGrowth = [
-    { name: 'Reports', value: stats.reports_last_week },
-    { name: 'Users', value: stats.users_last_week },
-    { name: 'Forum Posts', value: stats.forum_posts_last_week },
+    { name: t('admin.platformHealth.chartReports'), value: stats.reports_last_week },
+    { name: t('admin.platformHealth.chartUsers'), value: stats.users_last_week },
+    { name: t('admin.platformHealth.chartForumPosts'), value: stats.forum_posts_last_week },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Platform Health Dashboard</h2>
-        <p className="text-muted-foreground">Real-time metrics and system health monitoring</p>
+        <h2 className="text-2xl font-bold">{t('admin.platformHealth.title')}</h2>
+        <p className="text-muted-foreground">{t('admin.platformHealth.subtitle')}</p>
       </div>
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.platformHealth.statTotalUsers')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total_users.toLocaleString()}</div>
-            <p className="text-xs text-green-500">+{stats.users_last_week} this week</p>
+            <p className="text-xs text-green-500">{t('admin.platformHealth.newThisWeek', { count: stats.users_last_week })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.platformHealth.statTotalReports')}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total_reports.toLocaleString()}</div>
-            <p className="text-xs text-green-500">+{stats.reports_last_week} this week</p>
+            <p className="text-xs text-green-500">{t('admin.platformHealth.newThisWeek', { count: stats.reports_last_week })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Organizations</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.platformHealth.statOrganizations')}</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -163,20 +165,20 @@ export default function PlatformHealthDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Verifications</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.platformHealth.statPendingVerifications')}</CardTitle>
             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pending_verifications}</div>
             {stats.pending_verifications > 10 && (
-              <Badge variant="destructive" className="text-xs mt-1">Needs attention</Badge>
+              <Badge variant="destructive" className="text-xs mt-1">{t('admin.platformHealth.needsAttentionBadge')}</Badge>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Funds Raised</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.platformHealth.statFundsRaised')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -187,9 +189,9 @@ export default function PlatformHealthDashboard() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance Alerts</TabsTrigger>
-          <TabsTrigger value="moderation">Forum Moderation</TabsTrigger>
+          <TabsTrigger value="overview">{t('admin.platformHealth.tabOverview')}</TabsTrigger>
+          <TabsTrigger value="compliance">{t('admin.platformHealth.tabComplianceAlerts')}</TabsTrigger>
+          <TabsTrigger value="moderation">{t('admin.platformHealth.tabForumModeration')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 mt-4">
@@ -199,7 +201,7 @@ export default function PlatformHealthDashboard() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Activity className="h-4 w-4" />
-                  Weekly Activity
+                  {t('admin.platformHealth.weeklyActivityTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -219,7 +221,7 @@ export default function PlatformHealthDashboard() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  User Role Distribution
+                  {t('admin.platformHealth.roleDistributionTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -250,22 +252,22 @@ export default function PlatformHealthDashboard() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Leaf className="h-4 w-4" />
-                ESG Module Usage
+                {t('admin.platformHealth.esgModuleUsageTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-2xl font-bold">{stats.esg_indicators_count}</p>
-                  <p className="text-xs text-muted-foreground">ESG Indicators</p>
+                  <p className="text-xs text-muted-foreground">{t('admin.platformHealth.esgIndicatorsLabel')}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.total_organizations}</p>
-                  <p className="text-xs text-muted-foreground">Orgs with ESG</p>
+                  <p className="text-xs text-muted-foreground">{t('admin.platformHealth.orgsWithEsgLabel')}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.forum_posts_last_week}</p>
-                  <p className="text-xs text-muted-foreground">Forum Activity</p>
+                  <p className="text-xs text-muted-foreground">{t('admin.platformHealth.forumActivityLabel')}</p>
                 </div>
               </div>
             </CardContent>
@@ -277,16 +279,16 @@ export default function PlatformHealthDashboard() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                Recent Compliance Flags
+                {t('admin.platformHealth.recentComplianceFlagsTitle')}
               </CardTitle>
               <CardDescription>
-                Automated compliance check results from weekly scans
+                {t('admin.platformHealth.complianceScanDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {complianceAlerts.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No compliance alerts. System is healthy!
+                  {t('admin.platformHealth.noComplianceAlerts')}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -297,13 +299,13 @@ export default function PlatformHealthDashboard() {
                     >
                       <div>
                         <p className="text-sm font-medium">
-                          {(alert.payload as any)?.issue || 'Compliance Issue'}
+                          {(alert.payload as any)?.issue || t('admin.platformHealth.complianceIssueFallback')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Org: {alert.org_id?.slice(0, 8)}... • {new Date(alert.created_at).toLocaleDateString()}
+                          {t('admin.platformHealth.orgIdLabel', { id: alert.org_id?.slice(0, 8), date: new Date(alert.created_at).toLocaleDateString() })}
                         </p>
                       </div>
-                      <Badge variant="destructive">Action Required</Badge>
+                      <Badge variant="destructive">{t('admin.platformHealth.actionRequiredBadge')}</Badge>
                     </div>
                   ))}
                 </div>

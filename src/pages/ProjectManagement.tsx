@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ const statusIcons: Record<string, React.ReactNode> = {
 };
 
 export default function ProjectManagement() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { userPlan } = useFeatureAccess();
   const [searchParams] = useSearchParams();
@@ -166,9 +168,9 @@ export default function ProjectManagement() {
       estimated_hours: newEstHours ? parseFloat(newEstHours) : null,
       created_by: user.id,
     });
-    if (error) toast.error("Failed to create task");
+    if (error) toast.error(t('pm.toastCreateTaskFailed'));
     else {
-      toast.success("Task created");
+      toast.success(t('pm.toastTaskCreated'));
       setNewTitle(""); setNewDescription(""); setNewPriority("medium");
       setNewDueDate(""); setNewStartDate(""); setNewAssignee(""); setNewEstHours("");
       setDialogOpen(false);
@@ -210,74 +212,74 @@ export default function ProjectManagement() {
       (a.start_date || a.due_date || "").localeCompare(b.start_date || b.due_date || "")
     ), [tasks]);
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Loading projects...</div>;
+  if (loading) return <div className="p-8 text-center text-muted-foreground">{t('pm.loadingProjects')}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Project Management</h1>
-          <p className="text-muted-foreground">Full lifecycle management — plan, implement, monitor, verify</p>
+          <h1 className="text-2xl font-bold">{t('pm.pageTitle')}</h1>
+          <p className="text-muted-foreground">{t('pm.pageSubtitle')}</p>
         </div>
         <div className="flex gap-2">
           {hasAICopilot && (
             <Button variant="outline" onClick={() => setShowAI(!showAI)}>
-              <Bot className="mr-2 h-4 w-4" />{showAI ? "Hide" : "AI"} Copilot
+              <Bot className="mr-2 h-4 w-4" />{showAI ? t('pm.hideAiCopilotButton') : t('pm.aiCopilotButton')}
             </Button>
           )}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={!selectedProject}><Plus className="mr-2 h-4 w-4" />Add Task</Button>
+              <Button disabled={!selectedProject}><Plus className="mr-2 h-4 w-4" />{t('pm.addTaskButton')}</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Create New Task</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t('pm.createTaskDialogTitle')}</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-2">
-                <div><Label>Title</Label><Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Task title" /></div>
-                <div><Label>Description</Label><Textarea value={newDescription} onChange={e => setNewDescription(e.target.value)} placeholder="Task details..." /></div>
+                <div><Label>{t('pm.titleLabel')}</Label><Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder={t('pm.taskTitlePlaceholder')} /></div>
+                <div><Label>{t('pm.descriptionLabel')}</Label><Textarea value={newDescription} onChange={e => setNewDescription(e.target.value)} placeholder={t('pm.taskDetailsPlaceholder')} /></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Priority</Label>
+                    <Label>{t('pm.priorityLabel')}</Label>
                     <Select value={newPriority} onValueChange={setNewPriority}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
+                        <SelectItem value="low">{t('pm.priorityLow')}</SelectItem>
+                        <SelectItem value="medium">{t('pm.priorityMedium')}</SelectItem>
+                        <SelectItem value="high">{t('pm.priorityHigh')}</SelectItem>
+                        <SelectItem value="urgent">{t('pm.priorityUrgent')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Start Date</Label><Input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)} /></div>
+                  <div><Label>{t('pm.startDateLabel')}</Label><Input type="date" value={newStartDate} onChange={e => setNewStartDate(e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Due Date</Label><Input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} /></div>
+                  <div><Label>{t('pm.dueDateLabel')}</Label><Input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} /></div>
                   {hasAssignment ? (
                     <div>
-                      <Label>Assign To</Label>
+                      <Label>{t('pm.assignToLabel')}</Label>
                       <Select value={newAssignee} onValueChange={setNewAssignee}>
-                        <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('pm.unassignedPlaceholder')} /></SelectTrigger>
                         <SelectContent>
                           {assignableUsers.map(a => (
                             <SelectItem key={a.user_id} value={a.user_id}>
-                              {a.name}{a.source === "org_share" ? " (cross-org access)" : ""}
+                              {a.name}{a.source === "org_share" ? t('pm.crossOrgAccessSuffix') : ""}
                             </SelectItem>
                           ))}
                           {assignableUsers.length === 0 && (
                             <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                              No assignable users yet
+                              {t('pm.noAssignableUsersYet')}
                             </div>
                           )}
                         </SelectContent>
                       </Select>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />Upgrade to Lite+ for assignments</div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />{t('pm.upgradeForAssignments')}</div>
                   )}
                 </div>
                 {hasResourceAlloc && (
-                  <div><Label>Estimated Hours</Label><Input type="number" value={newEstHours} onChange={e => setNewEstHours(e.target.value)} placeholder="0" /></div>
+                  <div><Label>{t('pm.estimatedHoursLabel')}</Label><Input type="number" value={newEstHours} onChange={e => setNewEstHours(e.target.value)} placeholder="0" /></div>
                 )}
-                <Button onClick={createTask} className="w-full">Create Task</Button>
+                <Button onClick={createTask} className="w-full">{t('pm.createTaskButton')}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -292,22 +294,22 @@ export default function ProjectManagement() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="md:col-span-2">
           <CardContent className="pt-4">
-            <Label>Select Project</Label>
+            <Label>{t('pm.selectProjectLabel')}</Label>
             <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger><SelectValue placeholder="Choose a project" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('pm.chooseProjectPlaceholder')} /></SelectTrigger>
               <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
             </Select>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Tasks</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('pm.statTasksLabel')}</CardTitle></CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{tasks.length}</div>
-            <p className="text-xs text-muted-foreground">{tasksByStatus.done.length} completed</p>
+            <p className="text-xs text-muted-foreground">{t('pm.completedCount', { doneCount: tasksByStatus.done.length })}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Progress</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('pm.statProgressLabel')}</CardTitle></CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completionPercent}%</div>
             <Progress value={completionPercent} className="mt-1" />
@@ -315,17 +317,17 @@ export default function ProjectManagement() {
         </Card>
         {hasResourceAlloc ? (
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Hours</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('pm.statHoursLabel')}</CardTitle></CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalActHours}/{totalEstHours}</div>
-              <p className="text-xs text-muted-foreground">actual / estimated</p>
+              <p className="text-xs text-muted-foreground">{t('pm.actualEstimatedLabel')}</p>
             </CardContent>
           </Card>
         ) : (
           <Card className="flex items-center justify-center">
             <CardContent className="pt-4 text-center">
               <Lock className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Resource tracking<br />Pro+ plan</p>
+              <p className="text-xs text-muted-foreground">{t('pm.resourceTrackingLine1')}<br />{t('pm.resourceTrackingLine2')}</p>
             </CardContent>
           </Card>
         )}
@@ -334,18 +336,18 @@ export default function ProjectManagement() {
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="workspace"><FolderOpen className="mr-1 h-4 w-4" />Workspace</TabsTrigger>
-          <TabsTrigger value="board"><LayoutGrid className="mr-1 h-4 w-4" />Board</TabsTrigger>
-          <TabsTrigger value="list"><ListTodo className="mr-1 h-4 w-4" />List</TabsTrigger>
+          <TabsTrigger value="workspace"><FolderOpen className="mr-1 h-4 w-4" />{t('pm.tabWorkspace')}</TabsTrigger>
+          <TabsTrigger value="board"><LayoutGrid className="mr-1 h-4 w-4" />{t('pm.tabBoard')}</TabsTrigger>
+          <TabsTrigger value="list"><ListTodo className="mr-1 h-4 w-4" />{t('pm.tabList')}</TabsTrigger>
           <TabsTrigger value="gantt" disabled={!hasGantt}>
-            <Calendar className="mr-1 h-4 w-4" />Gantt {!hasGantt && <Lock className="ml-1 h-3 w-3" />}
+            <Calendar className="mr-1 h-4 w-4" />{t('pm.tabGantt')} {!hasGantt && <Lock className="ml-1 h-3 w-3" />}
           </TabsTrigger>
-          <TabsTrigger value="budget"><DollarSign className="mr-1 h-4 w-4" />Budget</TabsTrigger>
-          <TabsTrigger value="procurement"><Building2 className="mr-1 h-4 w-4" />Procurement</TabsTrigger>
-          <TabsTrigger value="scoring"><Award className="mr-1 h-4 w-4" />DISM Score</TabsTrigger>
-          <TabsTrigger value="indicators"><Activity className="mr-1 h-4 w-4" />Impact</TabsTrigger>
-          <TabsTrigger value="updates"><FileText className="mr-1 h-4 w-4" />Updates</TabsTrigger>
-          <TabsTrigger value="verification"><Shield className="mr-1 h-4 w-4" />Verification</TabsTrigger>
+          <TabsTrigger value="budget"><DollarSign className="mr-1 h-4 w-4" />{t('pm.tabBudget')}</TabsTrigger>
+          <TabsTrigger value="procurement"><Building2 className="mr-1 h-4 w-4" />{t('pm.tabProcurement')}</TabsTrigger>
+          <TabsTrigger value="scoring"><Award className="mr-1 h-4 w-4" />{t('pm.tabDismScore')}</TabsTrigger>
+          <TabsTrigger value="indicators"><Activity className="mr-1 h-4 w-4" />{t('pm.tabImpact')}</TabsTrigger>
+          <TabsTrigger value="updates"><FileText className="mr-1 h-4 w-4" />{t('pm.tabUpdates')}</TabsTrigger>
+          <TabsTrigger value="verification"><Shield className="mr-1 h-4 w-4" />{t('pm.tabVerification')}</TabsTrigger>
         </TabsList>
 
         {/* Project Workspace */}
@@ -353,7 +355,7 @@ export default function ProjectManagement() {
           {selectedProject && selectedReport ? (
             <ProjectWorkspace reportId={selectedProject} report={selectedReport} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project to view its workspace.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectToViewWorkspace')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -375,12 +377,12 @@ export default function ProjectManagement() {
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="todo">Todo</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="review">Review</SelectItem>
-                    <SelectItem value="done">Done</SelectItem>
-                    <SelectItem value="blocked">Blocked</SelectItem>
+                    <SelectItem value="all">{t('pm.statusAll')}</SelectItem>
+                    <SelectItem value="todo">{t('pm.statusTodo')}</SelectItem>
+                    <SelectItem value="in_progress">{t('pm.statusInProgress')}</SelectItem>
+                    <SelectItem value="review">{t('pm.statusReview')}</SelectItem>
+                    <SelectItem value="done">{t('pm.statusDone')}</SelectItem>
+                    <SelectItem value="blocked">{t('pm.statusBlocked')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -400,11 +402,11 @@ export default function ProjectManagement() {
                       <Select value={task.status} onValueChange={v => updateTaskStatus(task.id, v)}>
                         <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="todo">Todo</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="review">Review</SelectItem>
-                          <SelectItem value="done">Done</SelectItem>
-                          <SelectItem value="blocked">Blocked</SelectItem>
+                          <SelectItem value="todo">{t('pm.statusTodo')}</SelectItem>
+                          <SelectItem value="in_progress">{t('pm.statusInProgress')}</SelectItem>
+                          <SelectItem value="review">{t('pm.statusReview')}</SelectItem>
+                          <SelectItem value="done">{t('pm.statusDone')}</SelectItem>
+                          <SelectItem value="blocked">{t('pm.statusBlocked')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -412,7 +414,7 @@ export default function ProjectManagement() {
                 ))}
                 {filteredTasks.length === 0 && (
                   <div className="p-8 text-center text-muted-foreground">
-                    {tasks.length === 0 ? "No tasks yet. Create your first task!" : "No tasks match the filter."}
+                    {tasks.length === 0 ? t('pm.noTasksYetCreateFirst') : t('pm.noTasksMatchFilter')}
                   </div>
                 )}
               </div>
@@ -427,12 +429,12 @@ export default function ProjectManagement() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Gantt Timeline</CardTitle>
-                <p className="text-sm text-muted-foreground">Visual timeline of tasks with start and due dates</p>
+                <CardTitle>{t('pm.ganttTimelineTitle')}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t('pm.ganttTimelineSubtitle')}</p>
               </CardHeader>
               <CardContent>
                 {ganttTasks.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Add start dates and due dates to tasks to see the Gantt view.</p>
+                  <p className="text-center text-muted-foreground py-8">{t('pm.ganttEmptyState')}</p>
                 ) : (
                   <div className="space-y-2 overflow-x-auto">
                     {(() => {
@@ -472,7 +474,7 @@ export default function ProjectManagement() {
           {selectedProject ? (
             <BudgetTracker reportId={selectedProject} isOwner={isOwner} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -481,7 +483,7 @@ export default function ProjectManagement() {
           {selectedProject ? (
             <ProcurementTracker reportId={selectedProject} isOwner={isOwner} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -490,7 +492,7 @@ export default function ProjectManagement() {
           {selectedProject ? (
             <ImpactScorecard reportId={selectedProject} readOnly={!isOwner} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -499,7 +501,7 @@ export default function ProjectManagement() {
           {selectedProject ? (
             <ImpactIndicators reportId={selectedProject} isOwner={isOwner} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -511,7 +513,7 @@ export default function ProjectManagement() {
               <UpdatesList reportId={selectedProject} />
             </div>
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
 
@@ -520,7 +522,7 @@ export default function ProjectManagement() {
           {selectedProject ? (
             <SPVFVerificationPanel reportId={selectedProject} isOwner={isOwner} />
           ) : (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Select a project first.</CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{t('pm.selectProjectFirst')}</CardContent></Card>
           )}
         </TabsContent>
       </Tabs>
@@ -530,6 +532,7 @@ export default function ProjectManagement() {
 
 // Sub-component for updates list
 function UpdatesList({ reportId }: { reportId: string }) {
+  const { t } = useTranslation();
   const [updates, setUpdates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -539,14 +542,14 @@ function UpdatesList({ reportId }: { reportId: string }) {
       .then(({ data }) => { if (data) setUpdates(data); setLoading(false); });
   }, [reportId]);
 
-  if (loading) return <div className="text-center py-4 text-muted-foreground">Loading updates...</div>;
+  if (loading) return <div className="text-center py-4 text-muted-foreground">{t('pm.loadingUpdates')}</div>;
 
   if (updates.length === 0) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
           <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground">No progress updates yet.</p>
+          <p className="text-muted-foreground">{t('pm.noProgressUpdatesYet')}</p>
         </CardContent>
       </Card>
     );
@@ -554,17 +557,17 @@ function UpdatesList({ reportId }: { reportId: string }) {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold">Progress Timeline</h3>
+      <h3 className="font-semibold">{t('pm.progressTimelineHeading')}</h3>
       {updates.map((u: any) => (
         <Card key={u.id}>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <Badge variant="outline">{u.progress_percent}% progress</Badge>
+              <Badge variant="outline">{t('pm.progressPercentBadge', { percent: u.progress_percent })}</Badge>
               <span className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</span>
             </div>
             <p className="text-sm">{u.update_text}</p>
             {u.evidence_url && (
-              <a href={u.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View evidence</a>
+              <a href={u.evidence_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">{t('pm.viewEvidenceLink')}</a>
             )}
           </CardContent>
         </Card>

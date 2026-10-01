@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ export default function ESGDataVerification({
   currentStatus,
   onStatusChange
 }: ESGDataVerificationProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [verificationChecks, setVerificationChecks] = useState<VerificationCheck[]>([]);
@@ -72,37 +74,37 @@ export default function ESGDataVerification({
       const checks: VerificationCheck[] = [
         {
           id: 'data_completeness',
-          label: 'Data Completeness',
-          description: 'All required fields are populated',
+          label: t('esg.dataVerification.checkCompletenessLabel'),
+          description: t('esg.dataVerification.checkCompletenessDescription'),
           status: checkDataCompleteness(indicator),
           details: getCompletenessDetails(indicator)
         },
         {
           id: 'scope_breakdown',
-          label: 'Scope Breakdown',
-          description: 'Emissions are properly categorized by scope',
+          label: t('esg.dataVerification.checkScopeBreakdownLabel'),
+          description: t('esg.dataVerification.checkScopeBreakdownDescription'),
           status: checkScopeBreakdown(indicator),
           details: getScopeDetails(indicator)
         },
         {
           id: 'data_quality',
-          label: 'Data Quality Rating',
-          description: 'Data quality meets minimum standards',
-          status: indicator.data_quality === 'verified' ? 'pass' : 
+          label: t('esg.dataVerification.checkDataQualityLabel'),
+          description: t('esg.dataVerification.checkDataQualityDescription'),
+          status: indicator.data_quality === 'verified' ? 'pass' :
                   indicator.data_quality === 'reported' ? 'warning' : 'fail',
-          details: `Current quality: ${indicator.data_quality || 'not specified'}`
+          details: t('esg.dataVerification.currentQualityDetail', { quality: indicator.data_quality || t('esg.dataVerification.qualityNotSpecified') })
         },
         {
           id: 'temporal_consistency',
-          label: 'Temporal Consistency',
-          description: 'Data falls within expected reporting period',
+          label: t('esg.dataVerification.checkTemporalLabel'),
+          description: t('esg.dataVerification.checkTemporalDescription'),
           status: checkTemporalConsistency(indicator),
-          details: `Reporting year: ${indicator.reporting_year}`
+          details: t('esg.dataVerification.reportingYearDetail', { year: indicator.reporting_year })
         },
         {
           id: 'value_ranges',
-          label: 'Value Range Validation',
-          description: 'Values fall within reasonable ranges',
+          label: t('esg.dataVerification.checkValueRangesLabel'),
+          description: t('esg.dataVerification.checkValueRangesDescription'),
           status: checkValueRanges(indicator),
           details: getValueRangeDetails(indicator)
         }
@@ -118,7 +120,7 @@ export default function ESGDataVerification({
 
     } catch (error) {
       console.error('Error running verification checks:', error);
-      toast.error('Failed to run verification checks');
+      toast.error(t('esg.dataVerification.runChecksFailedError'));
     } finally {
       setLoading(false);
     }
@@ -142,7 +144,7 @@ export default function ESGDataVerification({
       'energy_consumption_kwh', 'water_consumption_m3', 'waste_generated_tonnes'
     ];
     const filled = fields.filter(f => indicator[f] !== null && indicator[f] !== undefined).length;
-    return `${filled}/${fields.length} fields populated`;
+    return t('esg.dataVerification.fieldsPopulatedDetail', { filled, total: fields.length });
   };
 
   const checkScopeBreakdown = (indicator: any): 'pass' | 'fail' | 'warning' => {
@@ -157,10 +159,10 @@ export default function ESGDataVerification({
 
   const getScopeDetails = (indicator: any): string => {
     const scopes = [];
-    if (indicator.carbon_scope1_tonnes !== null) scopes.push('Scope 1');
-    if (indicator.carbon_scope2_tonnes !== null) scopes.push('Scope 2');
-    if (indicator.carbon_scope3_tonnes !== null) scopes.push('Scope 3');
-    return scopes.length > 0 ? `Includes: ${scopes.join(', ')}` : 'No scope data';
+    if (indicator.carbon_scope1_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel1'));
+    if (indicator.carbon_scope2_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel2'));
+    if (indicator.carbon_scope3_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel3'));
+    return scopes.length > 0 ? t('esg.dataVerification.scopeIncludesDetail', { scopes: scopes.join(', ') }) : t('esg.dataVerification.noScopeDataDetail');
   };
 
   const checkTemporalConsistency = (indicator: any): 'pass' | 'fail' | 'warning' => {
@@ -191,12 +193,12 @@ export default function ESGDataVerification({
   const getValueRangeDetails = (indicator: any): string => {
     const issues = [];
     if (indicator.renewable_energy_percentage !== null && (indicator.renewable_energy_percentage < 0 || indicator.renewable_energy_percentage > 100)) {
-      issues.push('Renewable % out of range');
+      issues.push(t('esg.dataVerification.renewableOutOfRangeIssue'));
     }
     if (indicator.esg_score !== null && (indicator.esg_score < 0 || indicator.esg_score > 100)) {
-      issues.push('ESG score out of range');
+      issues.push(t('esg.dataVerification.esgScoreOutOfRangeIssue'));
     }
-    return issues.length > 0 ? issues.join(', ') : 'All values within expected ranges';
+    return issues.length > 0 ? issues.join(', ') : t('esg.dataVerification.allValuesWithinRangeDetail');
   };
 
   const submitForVerification = async () => {
@@ -224,11 +226,11 @@ export default function ESGDataVerification({
         }
       });
 
-      toast.success('Submitted for verification');
+      toast.success(t('esg.dataVerification.submitSuccess'));
       onStatusChange?.('pending');
     } catch (error) {
       console.error('Error submitting for verification:', error);
-      toast.error('Failed to submit for verification');
+      toast.error(t('esg.dataVerification.submitFailedError'));
     } finally {
       setSubmitting(false);
     }
@@ -250,13 +252,13 @@ export default function ESGDataVerification({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'verified':
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Verified</Badge>;
+        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />{t('esg.dataVerification.verifiedBadge')}</Badge>;
       case 'pending':
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending Review</Badge>;
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />{t('esg.dataVerification.pendingReviewBadge')}</Badge>;
       case 'rejected':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />{t('esg.dataVerification.rejectedBadge')}</Badge>;
       default:
-        return <Badge variant="outline"><AlertTriangle className="w-3 h-3 mr-1" />Unverified</Badge>;
+        return <Badge variant="outline"><AlertTriangle className="w-3 h-3 mr-1" />{t('esg.dataVerification.unverifiedBadge')}</Badge>;
     }
   };
 
@@ -269,10 +271,10 @@ export default function ESGDataVerification({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />
-                Data Verification
+                {t('esg.dataVerification.title')}
               </CardTitle>
               <CardDescription>
-                Validate and verify your ESG data for audit-ready compliance
+                {t('esg.dataVerification.subtitle')}
               </CardDescription>
             </div>
             {getStatusBadge(currentStatus)}
@@ -283,7 +285,7 @@ export default function ESGDataVerification({
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                No ESG data available for verification. Please add indicators first.
+                {t('esg.dataVerification.noDataMessage')}
               </AlertDescription>
             </Alert>
           ) : (
@@ -291,12 +293,12 @@ export default function ESGDataVerification({
               {/* Overall Score */}
               <div className="p-4 bg-muted rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">Data Quality Score</span>
+                  <span className="font-medium">{t('esg.dataVerification.dataQualityScoreLabel')}</span>
                   <span className="text-2xl font-bold">{overallScore}%</span>
                 </div>
                 <Progress value={overallScore} className="h-2" />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Based on automated validation checks
+                  {t('esg.dataVerification.basedOnChecksNote')}
                 </p>
               </div>
 
@@ -304,7 +306,7 @@ export default function ESGDataVerification({
               <div className="flex justify-end">
                 <Button variant="outline" size="sm" onClick={runVerificationChecks} disabled={loading}>
                   <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Rerun Checks
+                  {t('esg.dataVerification.rerunChecksButton')}
                 </Button>
               </div>
             </div>
@@ -318,7 +320,7 @@ export default function ESGDataVerification({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <FileCheck className="w-5 h-5" />
-              Automated Checks
+              {t('esg.dataVerification.automatedChecksTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -353,15 +355,15 @@ export default function ESGDataVerification({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageSquare className="w-5 h-5" />
-              Request Verification
+              {t('esg.dataVerification.requestVerificationTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="verification-notes">Additional Notes</Label>
+              <Label htmlFor="verification-notes">{t('esg.dataVerification.additionalNotesLabel')}</Label>
               <Textarea
                 id="verification-notes"
-                placeholder="Provide any additional context or documentation references for the verifier..."
+                placeholder={t('esg.dataVerification.additionalNotesPlaceholder')}
                 value={verificationNotes}
                 onChange={(e) => setVerificationNotes(e.target.value)}
                 rows={3}
@@ -371,8 +373,7 @@ export default function ESGDataVerification({
             <Alert>
               <User className="h-4 w-4" />
               <AlertDescription>
-                Verification requests are reviewed by platform administrators. 
-                You'll be notified when the review is complete.
+                {t('esg.dataVerification.verificationReviewNote')}
               </AlertDescription>
             </Alert>
 
@@ -380,22 +381,22 @@ export default function ESGDataVerification({
 
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Quality Score: {overallScore}%
-                {overallScore < 60 && ' (Consider improving data quality before submission)'}
+                {t('esg.dataVerification.qualityScoreLabel', { score: overallScore })}
+                {overallScore < 60 && ` ${t('esg.dataVerification.improveQualityNote')}`}
               </div>
-              <Button 
-                onClick={submitForVerification} 
+              <Button
+                onClick={submitForVerification}
                 disabled={submitting || overallScore < 40}
               >
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t('esg.dataVerification.submittingButton')}
                   </>
                 ) : (
                   <>
                     <Shield className="w-4 h-4 mr-2" />
-                    Submit for Verification
+                    {t('esg.dataVerification.submitButton')}
                   </>
                 )}
               </Button>
@@ -409,7 +410,7 @@ export default function ESGDataVerification({
         <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
           <Clock className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
-            Your verification request is being reviewed. You'll be notified once the review is complete.
+            {t('esg.dataVerification.pendingStatusNote')}
           </AlertDescription>
         </Alert>
       )}
@@ -419,7 +420,7 @@ export default function ESGDataVerification({
         <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-200">
-            Your ESG data has been verified and is audit-ready. Verification badges will appear on exported reports.
+            {t('esg.dataVerification.verifiedStatusNote')}
           </AlertDescription>
         </Alert>
       )}

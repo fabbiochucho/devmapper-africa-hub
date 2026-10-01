@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,32 +25,50 @@ interface EmissionsManagerProps {
   onDataChange: () => void;
 }
 
-const SCOPE_INFO = {
+const getScopeInfo = (t: (key: string) => string) => ({
   scope1: {
-    label: 'Scope 1 — Direct Emissions',
+    label: t('esg.emissionsManager.scope1Label'),
     icon: <Flame className="w-4 h-4" />,
     color: '#ef4444',
-    description: 'Direct GHG emissions from owned/controlled sources (fuel combustion, company vehicles, fugitive emissions)',
-    examples: ['On-site fuel combustion', 'Company-owned vehicles', 'Refrigerant leaks', 'Industrial processes'],
+    description: t('esg.emissionsManager.scope1Description'),
+    examples: [
+      t('esg.emissionsManager.scope1Example1'),
+      t('esg.emissionsManager.scope1Example2'),
+      t('esg.emissionsManager.scope1Example3'),
+      t('esg.emissionsManager.scope1Example4'),
+    ],
   },
   scope2: {
-    label: 'Scope 2 — Indirect (Energy)',
+    label: t('esg.emissionsManager.scope2Label'),
     icon: <Zap className="w-4 h-4" />,
     color: '#f97316',
-    description: 'Indirect GHG emissions from purchased electricity, steam, heating and cooling',
-    examples: ['Purchased electricity', 'Purchased steam', 'Purchased heating', 'Purchased cooling'],
+    description: t('esg.emissionsManager.scope2Description'),
+    examples: [
+      t('esg.emissionsManager.scope2Example1'),
+      t('esg.emissionsManager.scope2Example2'),
+      t('esg.emissionsManager.scope2Example3'),
+      t('esg.emissionsManager.scope2Example4'),
+    ],
   },
   scope3: {
-    label: 'Scope 3 — Value Chain',
+    label: t('esg.emissionsManager.scope3Label'),
     icon: <Truck className="w-4 h-4" />,
     color: '#eab308',
-    description: 'All other indirect emissions in the value chain (upstream and downstream)',
-    examples: ['Business travel', 'Employee commuting', 'Purchased goods', 'Waste disposal', 'Product use'],
+    description: t('esg.emissionsManager.scope3Description'),
+    examples: [
+      t('esg.emissionsManager.scope3Example1'),
+      t('esg.emissionsManager.scope3Example2'),
+      t('esg.emissionsManager.scope3Example3'),
+      t('esg.emissionsManager.scope3Example4'),
+      t('esg.emissionsManager.scope3Example5'),
+    ],
   },
-};
+});
 
 export default function EmissionsManager({ organizationId, indicators, onDataChange }: EmissionsManagerProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const SCOPE_INFO = getScopeInfo(t);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -78,7 +97,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
           })
           .eq('id', editingId);
         if (error) throw error;
-        toast.success('Emissions data updated');
+        toast.success(t('esg.emissionsManager.updateSuccess'));
       } else {
         const { error } = await supabase
           .from('esg_indicators')
@@ -89,7 +108,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
             esg_score: calculateScore(form),
           }]);
         if (error) throw error;
-        toast.success('Emissions data recorded');
+        toast.success(t('esg.emissionsManager.recordSuccess'));
       }
       setAddDialogOpen(false);
       setEditingId(null);
@@ -97,7 +116,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
       onDataChange();
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || 'Failed to save');
+      toast.error(err.message || t('esg.emissionsManager.saveFailedError'));
     } finally {
       setSaving(false);
     }
@@ -171,13 +190,13 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Factory className="w-5 h-5" />
-            Emissions Tracking (Scope 1, 2, 3)
+            {t('esg.emissionsManager.headerTitle')}
           </h2>
-          <p className="text-sm text-muted-foreground">GHG Protocol compliant carbon accounting</p>
+          <p className="text-sm text-muted-foreground">{t('esg.emissionsManager.headerSubtitle')}</p>
         </div>
         <Button onClick={() => { resetForm(); setEditingId(null); setAddDialogOpen(true); }} className="gap-2">
           <Plus className="w-4 h-4" />
-          Record Emissions
+          {t('esg.emissionsManager.recordEmissionsButton')}
         </Button>
       </div>
 
@@ -200,7 +219,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{val.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">tonnes CO2e</p>
+                <p className="text-xs text-muted-foreground">{t('esg.emissionsManager.tonnesCo2eUnit')}</p>
                 <p className="text-xs text-muted-foreground mt-2">{info.description}</p>
               </CardContent>
             </Card>
@@ -222,12 +241,12 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                 {yoyChange > 0 ? '+' : ''}{yoyChange.toFixed(1)}%
               </span>
               <span className="text-sm text-muted-foreground ml-2">
-                year-over-year change ({prev?.reporting_year} → {latest?.reporting_year})
+                {t('esg.emissionsManager.yoyChangeLabel', { prevYear: prev?.reporting_year, latestYear: latest?.reporting_year })}
               </span>
             </div>
             <div className="ml-auto text-right">
-              <div className="text-sm font-medium">{totalLatest.toLocaleString()} tCO2e</div>
-              <div className="text-xs text-muted-foreground">Current total</div>
+              <div className="text-sm font-medium">{t('esg.emissionsManager.tco2eValue', { value: totalLatest.toLocaleString() })}</div>
+              <div className="text-xs text-muted-foreground">{t('esg.emissionsManager.currentTotalLabel')}</div>
             </div>
           </CardContent>
         </Card>
@@ -236,14 +255,14 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
       {/* Charts */}
       <Tabs defaultValue="trend">
         <TabsList>
-          <TabsTrigger value="trend">Trend</TabsTrigger>
-          <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="trend">{t('esg.emissionsManager.trendTab')}</TabsTrigger>
+          <TabsTrigger value="breakdown">{t('esg.emissionsManager.breakdownTab')}</TabsTrigger>
+          <TabsTrigger value="history">{t('esg.emissionsManager.historyTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="trend">
           <Card>
-            <CardHeader><CardTitle>Emissions Trend by Scope</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('esg.emissionsManager.trendChartTitle')}</CardTitle></CardHeader>
             <CardContent>
               {emissionsOverTime.length > 0 ? (
                 <ResponsiveContainer width="100%" height={350}>
@@ -259,7 +278,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-center text-muted-foreground py-12">No emissions data yet. Click "Record Emissions" to start.</p>
+                <p className="text-center text-muted-foreground py-12">{t('esg.emissionsManager.noTrendDataMessage')}</p>
               )}
             </CardContent>
           </Card>
@@ -267,7 +286,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
 
         <TabsContent value="breakdown">
           <Card>
-            <CardHeader><CardTitle>Current Year Scope Breakdown</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('esg.emissionsManager.breakdownChartTitle')}</CardTitle></CardHeader>
             <CardContent>
               {pieData.some(d => d.value > 0) ? (
                 <ResponsiveContainer width="100%" height={350}>
@@ -281,7 +300,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-center text-muted-foreground py-12">No data for current period.</p>
+                <p className="text-center text-muted-foreground py-12">{t('esg.emissionsManager.noBreakdownDataMessage')}</p>
               )}
             </CardContent>
           </Card>
@@ -289,7 +308,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
 
         <TabsContent value="history">
           <Card>
-            <CardHeader><CardTitle>Reporting History</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('esg.emissionsManager.historyTitle')}</CardTitle></CardHeader>
             <CardContent>
               {indicators.length > 0 ? (
                 <div className="space-y-3">
@@ -298,26 +317,26 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                     return (
                       <div key={ind.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                         <div>
-                          <div className="font-medium">Reporting Year {ind.reporting_year}</div>
+                          <div className="font-medium">{t('esg.emissionsManager.reportingYearHeading', { year: ind.reporting_year })}</div>
                           <div className="text-sm text-muted-foreground">
-                            S1: {(ind.carbon_scope1_tonnes || 0).toLocaleString()} • 
-                            S2: {(ind.carbon_scope2_tonnes || 0).toLocaleString()} • 
-                            S3: {(ind.carbon_scope3_tonnes || 0).toLocaleString()}
+                            {t('esg.emissionsManager.scopeS1Prefix')} {(ind.carbon_scope1_tonnes || 0).toLocaleString()} •
+                            {t('esg.emissionsManager.scopeS2Prefix')} {(ind.carbon_scope2_tonnes || 0).toLocaleString()} •
+                            {t('esg.emissionsManager.scopeS3Prefix')} {(ind.carbon_scope3_tonnes || 0).toLocaleString()}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <div className="font-semibold">{total.toLocaleString()} tCO2e</div>
+                            <div className="font-semibold">{t('esg.emissionsManager.tco2eValue', { value: total.toLocaleString() })}</div>
                             <Badge variant="secondary" className="text-xs">{ind.data_quality || 'estimated'}</Badge>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(ind)}>Edit</Button>
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(ind)}>{t('esg.emissionsManager.editButton')}</Button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">No records yet.</p>
+                <p className="text-center text-muted-foreground py-8">{t('esg.emissionsManager.noRecordsMessage')}</p>
               )}
             </CardContent>
           </Card>
@@ -328,14 +347,14 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit' : 'Record'} Emissions Data</DialogTitle>
-            <DialogDescription>Enter GHG emissions and resource consumption data following GHG Protocol standards.</DialogDescription>
+            <DialogTitle>{t('esg.emissionsManager.dialogTitle', { action: editingId ? t('esg.emissionsManager.editAction') : t('esg.emissionsManager.recordAction') })}</DialogTitle>
+            <DialogDescription>{t('esg.emissionsManager.dialogDescription')}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Reporting Year</Label>
+                <Label>{t('esg.emissionsManager.reportingYearLabel')}</Label>
                 <Select value={form.reporting_year.toString()} onValueChange={v => setForm(f => ({ ...f, reporting_year: parseInt(v) }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -346,13 +365,13 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Data Quality</Label>
+                <Label>{t('esg.emissionsManager.dataQualityLabel')}</Label>
                 <Select value={form.data_quality} onValueChange={v => setForm(f => ({ ...f, data_quality: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="estimated">Estimated</SelectItem>
-                    <SelectItem value="measured">Measured</SelectItem>
-                    <SelectItem value="verified">Third-Party Verified</SelectItem>
+                    <SelectItem value="estimated">{t('esg.emissionsManager.dataQualityEstimated')}</SelectItem>
+                    <SelectItem value="measured">{t('esg.emissionsManager.dataQualityMeasured')}</SelectItem>
+                    <SelectItem value="verified">{t('esg.emissionsManager.dataQualityVerified')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -375,7 +394,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
                       onChange={e => setForm(f => ({ ...f, [fieldKey]: parseFloat(e.target.value) || 0 }))}
                       className="max-w-xs"
                     />
-                    <span className="text-sm text-muted-foreground">tonnes CO2e</span>
+                    <span className="text-sm text-muted-foreground">{t('esg.emissionsManager.tonnesCo2eUnit')}</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {info.examples.map(ex => (
@@ -391,27 +410,27 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
             {/* Resource Consumption */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Energy Consumption (kWh)</Label>
+                <Label>{t('esg.emissionsManager.energyConsumptionLabel')}</Label>
                 <Input type="number" min={0} value={form.energy_consumption_kwh}
                   onChange={e => setForm(f => ({ ...f, energy_consumption_kwh: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="space-y-2">
-                <Label>Water Consumption (m³)</Label>
+                <Label>{t('esg.emissionsManager.waterConsumptionLabel')}</Label>
                 <Input type="number" min={0} value={form.water_consumption_m3}
                   onChange={e => setForm(f => ({ ...f, water_consumption_m3: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="space-y-2">
-                <Label>Waste Generated (tonnes)</Label>
+                <Label>{t('esg.emissionsManager.wasteGeneratedLabel')}</Label>
                 <Input type="number" min={0} value={form.waste_generated_tonnes}
                   onChange={e => setForm(f => ({ ...f, waste_generated_tonnes: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="space-y-2">
-                <Label>Renewable Energy (%)</Label>
+                <Label>{t('esg.emissionsManager.renewableEnergyLabel')}</Label>
                 <Input type="number" min={0} max={100} value={form.renewable_energy_percentage}
                   onChange={e => setForm(f => ({ ...f, renewable_energy_percentage: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="space-y-2 col-span-2">
-                <Label>Community Investment ($)</Label>
+                <Label>{t('esg.emissionsManager.communityInvestmentLabel')}</Label>
                 <Input type="number" min={0} value={form.community_investment}
                   onChange={e => setForm(f => ({ ...f, community_investment: parseFloat(e.target.value) || 0 }))} />
               </div>
@@ -419,10 +438,10 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>{t('esg.emissionsManager.cancelButton')}</Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {saving ? 'Saving...' : editingId ? 'Update' : 'Save'}
+              {saving ? t('esg.emissionsManager.savingButton') : editingId ? t('esg.emissionsManager.updateButton') : t('esg.emissionsManager.saveButton')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,23 +21,26 @@ interface Broadcast {
   is_read_by: any;
 }
 
+// value fields are stored/matched (recipient_type, priority columns) - do not translate them.
+// Display labels are resolved at render time via getRecipientLabel/getPriorityLabel below.
 const RECIPIENT_TYPES = [
-  { value: "all", label: "All Users" },
-  { value: "role:citizen_reporter", label: "Citizen Reporters" },
-  { value: "role:ngo_member", label: "NGO Members" },
-  { value: "role:government_official", label: "Government Officials" },
-  { value: "role:company_representative", label: "Corporate Representatives" },
-  { value: "role:change_maker", label: "Change Makers" },
+  { value: "all" },
+  { value: "role:citizen_reporter" },
+  { value: "role:ngo_member" },
+  { value: "role:government_official" },
+  { value: "role:company_representative" },
+  { value: "role:change_maker" },
 ];
 
 const PRIORITIES = [
-  { value: "low", label: "Low", color: "bg-gray-100 text-gray-700" },
-  { value: "normal", label: "Normal", color: "bg-blue-100 text-blue-700" },
-  { value: "high", label: "High", color: "bg-orange-100 text-orange-700" },
-  { value: "urgent", label: "Urgent", color: "bg-red-100 text-red-700" },
+  { value: "low", color: "bg-gray-100 text-gray-700" },
+  { value: "normal", color: "bg-blue-100 text-blue-700" },
+  { value: "high", color: "bg-orange-100 text-orange-700" },
+  { value: "urgent", color: "bg-red-100 text-red-700" },
 ];
 
 const BroadcastManager = () => {
+  const { t } = useTranslation();
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -69,7 +73,7 @@ const BroadcastManager = () => {
 
   const sendBroadcast = async () => {
     if (!subject.trim() || !message.trim()) {
-      toast.error("Subject and message are required");
+      toast.error(t('admin.broadcast.subjectMessageRequired'));
       return;
     }
 
@@ -90,7 +94,7 @@ const BroadcastManager = () => {
 
       if (error) throw error;
 
-      toast.success("Broadcast sent successfully");
+      toast.success(t('admin.broadcast.sendSuccess'));
       setSubject("");
       setMessage("");
       setRecipientType("all");
@@ -98,18 +102,36 @@ const BroadcastManager = () => {
       loadBroadcasts();
     } catch (error) {
       console.error("Error sending broadcast:", error);
-      toast.error("Failed to send broadcast");
+      toast.error(t('admin.broadcast.sendError'));
     } finally {
       setSending(false);
     }
   };
 
   const getRecipientLabel = (type: string) => {
-    return RECIPIENT_TYPES.find(r => r.value === type)?.label || type;
+    switch (type) {
+      case "all": return t('admin.broadcast.recipientAll');
+      case "role:citizen_reporter": return t('admin.broadcast.recipientCitizenReporters');
+      case "role:ngo_member": return t('admin.broadcast.recipientNgoMembers');
+      case "role:government_official": return t('admin.broadcast.recipientGovernmentOfficials');
+      case "role:company_representative": return t('admin.broadcast.recipientCorporateRepresentatives');
+      case "role:change_maker": return t('admin.broadcast.recipientChangeMakers');
+      default: return type;
+    }
+  };
+
+  const getPriorityLabel = (p: string) => {
+    switch (p) {
+      case "low": return t('admin.broadcast.priorityLow');
+      case "high": return t('admin.broadcast.priorityHigh');
+      case "urgent": return t('admin.broadcast.priorityUrgent');
+      default: return t('admin.broadcast.priorityNormal');
+    }
   };
 
   const getPriorityConfig = (p: string) => {
-    return PRIORITIES.find(pr => pr.value === p) || PRIORITIES[1];
+    const config = PRIORITIES.find(pr => pr.value === p) || PRIORITIES[1];
+    return { ...config, label: getPriorityLabel(config.value) };
   };
 
   return (
@@ -119,35 +141,35 @@ const BroadcastManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Megaphone className="w-5 h-5" />
-            Send Broadcast
+            {t('admin.broadcast.sendBroadcastTitle')}
           </CardTitle>
           <CardDescription>
-            Send messages to all users or specific user groups
+            {t('admin.broadcast.sendBroadcastDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Subject</Label>
+            <Label>{t('admin.broadcast.subjectLabel')}</Label>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Broadcast subject"
+              placeholder={t('admin.broadcast.subjectPlaceholder')}
             />
           </div>
 
           <div>
-            <Label>Message</Label>
+            <Label>{t('admin.broadcast.messageLabel')}</Label>
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write your message here..."
+              placeholder={t('admin.broadcast.messagePlaceholder')}
               rows={6}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Recipients</Label>
+              <Label>{t('admin.broadcast.recipientsLabel')}</Label>
               <Select value={recipientType} onValueChange={setRecipientType}>
                 <SelectTrigger>
                   <SelectValue />
@@ -155,7 +177,7 @@ const BroadcastManager = () => {
                 <SelectContent>
                   {RECIPIENT_TYPES.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                      {getRecipientLabel(type.value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -163,7 +185,7 @@ const BroadcastManager = () => {
             </div>
 
             <div>
-              <Label>Priority</Label>
+              <Label>{t('admin.broadcast.priorityLabel')}</Label>
               <Select value={priority} onValueChange={setPriority}>
                 <SelectTrigger>
                   <SelectValue />
@@ -171,7 +193,7 @@ const BroadcastManager = () => {
                 <SelectContent>
                   {PRIORITIES.map((p) => (
                     <SelectItem key={p.value} value={p.value}>
-                      {p.label}
+                      {getPriorityLabel(p.value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -185,7 +207,7 @@ const BroadcastManager = () => {
             ) : (
               <Send className="w-4 h-4 mr-2" />
             )}
-            Send Broadcast
+            {t('admin.broadcast.sendBroadcastButton')}
           </Button>
         </CardContent>
       </Card>
@@ -195,7 +217,7 @@ const BroadcastManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
-            Recent Broadcasts
+            {t('admin.broadcast.recentBroadcastsTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -204,7 +226,7 @@ const BroadcastManager = () => {
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
           ) : broadcasts.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No broadcasts sent yet</p>
+            <p className="text-center text-muted-foreground py-8">{t('admin.broadcast.noBroadcastsYet')}</p>
           ) : (
             <div className="space-y-3 max-h-[500px] overflow-y-auto">
               {broadcasts.map((broadcast) => {

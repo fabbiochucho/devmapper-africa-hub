@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,7 @@ export default function ESGScenarioAnalysis({
   currentEmissions,
   scenariosLimit 
 }: ESGScenarioAnalysisProps) {
+  const { t } = useTranslation();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -94,7 +96,7 @@ export default function ESGScenarioAnalysis({
       setScenarios(typedScenarios);
     } catch (error) {
       console.error('Error loading scenarios:', error);
-      toast.error('Failed to load scenarios');
+      toast.error(t('esg.scenarioAnalysis.loadFailedError'));
     } finally {
       setLoading(false);
     }
@@ -139,7 +141,7 @@ export default function ESGScenarioAnalysis({
 
   const createScenario = async () => {
     if (scenarios.length >= scenariosLimit && scenariosLimit > 0) {
-      toast.error(`You've reached your limit of ${scenariosLimit} scenarios. Upgrade to create more.`);
+      toast.error(t('esg.scenarioAnalysis.limitReachedError', { limit: scenariosLimit }));
       return;
     }
 
@@ -183,10 +185,10 @@ export default function ESGScenarioAnalysis({
           carbon_price: 50
         }
       });
-      toast.success('Scenario created successfully');
+      toast.success(t('esg.scenarioAnalysis.createSuccess'));
     } catch (error) {
       console.error('Error creating scenario:', error);
-      toast.error('Failed to create scenario');
+      toast.error(t('esg.scenarioAnalysis.createFailedError'));
     }
   };
 
@@ -201,10 +203,10 @@ export default function ESGScenarioAnalysis({
       
       setScenarios(prev => prev.filter(s => s.id !== id));
       if (selectedScenario?.id === id) setSelectedScenario(null);
-      toast.success('Scenario deleted');
+      toast.success(t('esg.scenarioAnalysis.deleteSuccess'));
     } catch (error) {
       console.error('Error deleting scenario:', error);
-      toast.error('Failed to delete scenario');
+      toast.error(t('esg.scenarioAnalysis.deleteFailedError'));
     }
   };
 
@@ -231,38 +233,38 @@ export default function ESGScenarioAnalysis({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Scenario Analysis</h2>
+          <h2 className="text-2xl font-bold">{t('esg.scenarioAnalysis.title')}</h2>
           <p className="text-muted-foreground">
-            Model different decarbonization pathways and their financial impact
+            {t('esg.scenarioAnalysis.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline">
-            {scenarios.length} / {scenariosLimit > 0 ? scenariosLimit : '∞'} scenarios
+            {t('esg.scenarioAnalysis.scenarioCountBadge', { count: scenarios.length, limit: scenariosLimit > 0 ? scenariosLimit : '∞' })}
           </Badge>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                New Scenario
+                {t('esg.scenarioAnalysis.newScenarioButton')}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Create New Scenario</DialogTitle>
+                <DialogTitle>{t('esg.scenarioAnalysis.createDialogTitle')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-6 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Scenario Name</Label>
-                    <Input 
+                    <Label>{t('esg.scenarioAnalysis.scenarioNameLabel')}</Label>
+                    <Input
                       value={newScenario.name}
                       onChange={e => setNewScenario(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Net Zero 2030"
+                      placeholder={t('esg.scenarioAnalysis.scenarioNamePlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Target Year</Label>
+                    <Label>{t('esg.scenarioAnalysis.targetYearLabel')}</Label>
                     <Input 
                       type="number"
                       value={newScenario.target_year}
@@ -274,21 +276,21 @@ export default function ESGScenarioAnalysis({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea 
+                  <Label>{t('esg.scenarioAnalysis.descriptionLabel')}</Label>
+                  <Textarea
                     value={newScenario.description}
                     onChange={e => setNewScenario(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Describe the key assumptions and strategies..."
+                    placeholder={t('esg.scenarioAnalysis.descriptionPlaceholder')}
                     rows={2}
                   />
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Assumptions</h4>
-                  
+                  <h4 className="font-medium">{t('esg.scenarioAnalysis.assumptionsHeading')}</h4>
+
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Renewable Energy Target</Label>
+                      <Label>{t('esg.scenarioAnalysis.renewableEnergyTargetLabel')}</Label>
                       <span className="text-sm text-muted-foreground">
                         {newScenario.assumptions.renewable_target}%
                       </span>
@@ -306,7 +308,7 @@ export default function ESGScenarioAnalysis({
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Energy Efficiency Improvement</Label>
+                      <Label>{t('esg.scenarioAnalysis.efficiencyImprovementLabel')}</Label>
                       <span className="text-sm text-muted-foreground">
                         {newScenario.assumptions.efficiency_improvement}%
                       </span>
@@ -324,7 +326,7 @@ export default function ESGScenarioAnalysis({
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Scope 3 Reduction Target</Label>
+                      <Label>{t('esg.scenarioAnalysis.scope3ReductionLabel')}</Label>
                       <span className="text-sm text-muted-foreground">
                         {newScenario.assumptions.scope3_reduction}%
                       </span>
@@ -342,7 +344,7 @@ export default function ESGScenarioAnalysis({
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Carbon Price ($/tonne)</Label>
+                      <Label>{t('esg.scenarioAnalysis.carbonPriceLabel')}</Label>
                       <span className="text-sm text-muted-foreground">
                         ${newScenario.assumptions.carbon_price}
                       </span>
@@ -361,11 +363,11 @@ export default function ESGScenarioAnalysis({
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                  Cancel
+                  {t('esg.scenarioAnalysis.cancelButton')}
                 </Button>
                 <Button onClick={createScenario} disabled={!newScenario.name}>
                   <Save className="w-4 h-4 mr-2" />
-                  Create Scenario
+                  {t('esg.scenarioAnalysis.createScenarioButton')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -376,20 +378,20 @@ export default function ESGScenarioAnalysis({
       {scenarios.length === 0 ? (
         <Card className="p-8 text-center">
           <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Scenarios Yet</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('esg.scenarioAnalysis.noScenariosTitle')}</h3>
           <p className="text-muted-foreground mb-4">
-            Create your first scenario to model different decarbonization pathways
+            {t('esg.scenarioAnalysis.noScenariosDescription')}
           </p>
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Create First Scenario
+            {t('esg.scenarioAnalysis.createFirstScenarioButton')}
           </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Scenario List */}
           <div className="space-y-4">
-            <h3 className="font-medium">Your Scenarios</h3>
+            <h3 className="font-medium">{t('esg.scenarioAnalysis.yourScenariosHeading')}</h3>
             {scenarios.map(scenario => (
               <Card 
                 key={scenario.id}
@@ -425,14 +427,14 @@ export default function ESGScenarioAnalysis({
                   {scenario.results && (
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Savings</span>
+                        <span className="text-muted-foreground">{t('esg.scenarioAnalysis.savingsLabel')}</span>
                         <p className="font-medium text-green-600">
                           ${scenario.results.cost_savings.toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">ROI</span>
-                        <p className="font-medium">{scenario.results.roi_years} years</p>
+                        <span className="text-muted-foreground">{t('esg.scenarioAnalysis.roiLabel')}</span>
+                        <p className="font-medium">{t('esg.scenarioAnalysis.roiYearsValue', { years: scenario.results.roi_years })}</p>
                       </div>
                     </div>
                   )}
@@ -459,27 +461,27 @@ export default function ESGScenarioAnalysis({
                           (selectedScenario.results?.projected_emissions?.slice(-1)[0] || 0)) / 
                           (currentEmissions.scope1 + currentEmissions.scope2 + currentEmissions.scope3) * 100)}%
                       </p>
-                      <p className="text-sm text-muted-foreground">Emission Reduction</p>
+                      <p className="text-sm text-muted-foreground">{t('esg.scenarioAnalysis.emissionReductionLabel')}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <Leaf className="w-6 h-6 mx-auto text-green-600 mb-2" />
                       <p className="text-2xl font-bold">
                         ${(selectedScenario.results?.cost_savings || 0).toLocaleString()}
                       </p>
-                      <p className="text-sm text-muted-foreground">Cost Savings</p>
+                      <p className="text-sm text-muted-foreground">{t('esg.scenarioAnalysis.costSavingsLabel')}</p>
                     </div>
                     <div className="text-center p-4 bg-muted rounded-lg">
                       <Target className="w-6 h-6 mx-auto text-blue-600 mb-2" />
                       <p className="text-2xl font-bold">
-                        {selectedScenario.results?.roi_years || '-'} yrs
+                        {t('esg.scenarioAnalysis.paybackYrsValue', { years: selectedScenario.results?.roi_years || '-' })}
                       </p>
-                      <p className="text-sm text-muted-foreground">Payback Period</p>
+                      <p className="text-sm text-muted-foreground">{t('esg.scenarioAnalysis.paybackPeriodLabel')}</p>
                     </div>
                   </div>
 
                   {/* Projection Chart */}
                   <div>
-                    <h4 className="font-medium mb-4">Emissions Projection</h4>
+                    <h4 className="font-medium mb-4">{t('esg.scenarioAnalysis.emissionsProjectionHeading')}</h4>
                     <ResponsiveContainer width="100%" height={300}>
                       <AreaChart data={getProjectionChartData(selectedScenario)}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -493,7 +495,7 @@ export default function ESGScenarioAnalysis({
                           stroke="#8884d8" 
                           fill="#8884d8" 
                           fillOpacity={0.3}
-                          name="Projected Emissions (tonnes)"
+                          name={t('esg.scenarioAnalysis.projectedEmissionsLegendName')}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -501,23 +503,23 @@ export default function ESGScenarioAnalysis({
 
                   {/* Assumptions Summary */}
                   <div>
-                    <h4 className="font-medium mb-3">Assumptions</h4>
+                    <h4 className="font-medium mb-3">{t('esg.scenarioAnalysis.assumptionsHeading')}</h4>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex justify-between p-2 bg-muted rounded">
-                        <span>Renewable Energy Target</span>
+                        <span>{t('esg.scenarioAnalysis.renewableEnergyTargetLabel')}</span>
                         <span className="font-medium">{selectedScenario.assumptions.renewable_target}%</span>
                       </div>
                       <div className="flex justify-between p-2 bg-muted rounded">
-                        <span>Efficiency Improvement</span>
+                        <span>{t('esg.scenarioAnalysis.summaryEfficiencyImprovementLabel')}</span>
                         <span className="font-medium">{selectedScenario.assumptions.efficiency_improvement}%</span>
                       </div>
                       <div className="flex justify-between p-2 bg-muted rounded">
-                        <span>Scope 3 Reduction</span>
+                        <span>{t('esg.scenarioAnalysis.summaryScope3ReductionLabel')}</span>
                         <span className="font-medium">{selectedScenario.assumptions.scope3_reduction}%</span>
                       </div>
                       <div className="flex justify-between p-2 bg-muted rounded">
-                        <span>Carbon Price</span>
-                        <span className="font-medium">${selectedScenario.assumptions.carbon_price}/tonne</span>
+                        <span>{t('esg.scenarioAnalysis.summaryCarbonPriceLabel')}</span>
+                        <span className="font-medium">{t('esg.scenarioAnalysis.carbonPricePerTonneValue', { price: selectedScenario.assumptions.carbon_price })}</span>
                       </div>
                     </div>
                   </div>
@@ -527,7 +529,7 @@ export default function ESGScenarioAnalysis({
               <Card className="h-full flex items-center justify-center">
                 <CardContent className="text-center py-12">
                   <Target className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Select a scenario to view details</p>
+                  <p className="text-muted-foreground">{t('esg.scenarioAnalysis.selectScenarioPrompt')}</p>
                 </CardContent>
               </Card>
             )}

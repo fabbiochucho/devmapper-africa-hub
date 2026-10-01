@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
+import { useTranslation } from 'react-i18next';
 
 interface ForumPostData {
   id: string;
@@ -44,6 +45,7 @@ interface ForumStats {
 }
 
 const Forum = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isAdmin } = useAdminVerification();
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,9 +108,9 @@ const Forum = () => {
         content: post.content,
         author: {
           id: post.author_id,
-          name: prof?.full_name || 'Anonymous',
+          name: prof?.full_name || t('forum.anonymous'),
           avatar: prof?.avatar_url || '/placeholder.svg',
-          role: 'Community Member',
+          role: t('forum.communityMember'),
           verified: prof?.is_verified || false
         },
         category: post.category,
@@ -131,7 +133,7 @@ const Forum = () => {
       setPage(pageNum);
     } catch (error) {
       console.error('Error fetching posts:', error);
-      toast.error('Failed to load forum posts');
+      toast.error(t('forum.toastLoadPostsFailed'));
     } finally {
       setLoading(false);
     }
@@ -162,11 +164,11 @@ const Forum = () => {
   };
 
   const categories = [
-    { id: 'all', name: 'All Posts', count: posts.length },
-    { id: 'Discussion', name: 'Discussions', count: posts.filter(p => p.category === 'Discussion').length },
-    { id: 'Question', name: 'Questions', count: posts.filter(p => p.category === 'Question').length },
-    { id: 'Announcement', name: 'Announcements', count: posts.filter(p => p.category === 'Announcement').length },
-    { id: 'Project Update', name: 'Project Updates', count: posts.filter(p => p.category === 'Project Update').length }
+    { id: 'all', name: t('forum.categoryAll'), count: posts.length },
+    { id: 'Discussion', name: t('forum.categoryDiscussions'), count: posts.filter(p => p.category === 'Discussion').length },
+    { id: 'Question', name: t('forum.categoryQuestions'), count: posts.filter(p => p.category === 'Question').length },
+    { id: 'Announcement', name: t('forum.categoryAnnouncements'), count: posts.filter(p => p.category === 'Announcement').length },
+    { id: 'Project Update', name: t('forum.categoryProjectUpdates'), count: posts.filter(p => p.category === 'Project Update').length }
   ];
 
   const trendingTags = [
@@ -187,7 +189,7 @@ const Forum = () => {
 
   const handleCreatePost = async (newPostData: any) => {
     if (!user) {
-      toast.error('Please sign in to create a post');
+      toast.error(t('forum.toastSignInToCreate'));
       return;
     }
 
@@ -226,9 +228,9 @@ const Forum = () => {
         content: data.content,
         author: {
           id: user.id,
-          name: (prof as any)?.full_name || 'Anonymous',
+          name: (prof as any)?.full_name || t('forum.anonymous'),
           avatar: (prof as any)?.avatar_url || '/placeholder.svg',
-          role: 'Community Member',
+          role: t('forum.communityMember'),
           verified: (prof as any)?.is_verified || false
         },
         category: data.category,
@@ -236,22 +238,22 @@ const Forum = () => {
         likes: 0,
         replies: 0,
         views: 0,
-        createdAt: 'just now',
+        createdAt: t('forum.justNow'),
         isPinned: false,
         isLiked: false
       };
 
       setPosts(prev => [newPost, ...prev]);
-      toast.success('Post created successfully!');
+      toast.success(t('forum.toastCreateSuccess'));
     } catch (error) {
       console.error('Error creating post:', error);
-      toast.error('Failed to create post');
+      toast.error(t('forum.toastCreateFailed'));
     }
   };
 
   const handleLike = async (postId: string) => {
     if (!user) {
-      toast.error('Please sign in to like posts');
+      toast.error(t('forum.toastSignInToLike'));
       return;
     }
 
@@ -284,12 +286,12 @@ const Forum = () => {
       ));
     } catch (error) {
       console.error('Error toggling like:', error);
-      toast.error('Failed to update like status');
+      toast.error(t('forum.toastLikeFailed'));
     }
   };
 
   const handleReply = async (postId: string, content: string) => {
-    if (!user) { toast.error('Please sign in to reply'); return; }
+    if (!user) { toast.error(t('forum.toastSignInToReply')); return; }
     const violations = detectPrivacyViolations(content);
     if (violations.length > 0) { toast.error(formatPrivacyError(violations)); return; }
     try {
@@ -303,9 +305,9 @@ const Forum = () => {
       setPosts(prev => prev.map(p =>
         p.id === postId ? { ...p, replies: p.replies + 1 } : p
       ));
-      toast.success('Reply posted!');
+      toast.success(t('forum.toastReplySuccess'));
     } catch (err) {
-      toast.error('Failed to post reply');
+      toast.error(t('forum.toastReplyFailed'));
     }
   };
 
@@ -315,9 +317,9 @@ const Forum = () => {
       const { error } = await supabase.from('forum_posts').delete().eq('id', postId);
       if (error) throw error;
       setPosts(prev => prev.filter(p => p.id !== postId));
-      toast.success('Post deleted');
+      toast.success(t('forum.toastDeleteSuccess'));
     } catch (err) {
-      toast.error('Failed to delete post');
+      toast.error(t('forum.toastDeleteFailed'));
     }
   };
 
@@ -334,16 +336,16 @@ const Forum = () => {
       setPosts(prev => prev.map(p =>
         p.id === postId ? { ...p, isPinned: !p.isPinned } : p
       ));
-      toast.success(post.isPinned ? 'Post unpinned' : 'Post pinned');
+      toast.success(post.isPinned ? t('forum.toastUnpinned') : t('forum.toastPinned'));
     } catch (err) {
-      toast.error('Failed to update pin status');
+      toast.error(t('forum.toastPinFailed'));
     }
   };
 
   const handleShare = (postId: string) => {
     const url = `${window.location.origin}/forum/post/${postId}`;
     navigator.clipboard.writeText(url);
-    toast.success('Post link copied to clipboard!');
+    toast.success(t('forum.toastShareSuccess'));
   };
 
   if (loading) {
@@ -362,9 +364,9 @@ const Forum = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Community Forum</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('forum.title')}</h1>
             <p className="text-muted-foreground">
-              Connect, share knowledge, and collaborate with the DevMapper community
+              {t('forum.subtitle')}
             </p>
           </div>
           <CreatePostDialog onCreatePost={handleCreatePost} />
@@ -375,7 +377,7 @@ const Forum = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Search posts, topics, or users..."
+                placeholder={t('forum.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -403,9 +405,9 @@ const Forum = () => {
         <div className="lg:col-span-3 space-y-4">
           <Tabs defaultValue="recent" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="recent">Recent</TabsTrigger>
-              <TabsTrigger value="trending">Trending</TabsTrigger>
-              <TabsTrigger value="pinned">Pinned</TabsTrigger>
+              <TabsTrigger value="recent">{t('forum.tabRecent')}</TabsTrigger>
+              <TabsTrigger value="trending">{t('forum.tabTrending')}</TabsTrigger>
+              <TabsTrigger value="pinned">{t('forum.tabPinned')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="recent" className="space-y-4 mt-4">
@@ -424,7 +426,7 @@ const Forum = () => {
               {hasMore && (
                 <div className="flex justify-center pt-4">
                   <Button variant="outline" onClick={() => fetchPosts(page + 1)}>
-                    Load More Posts
+                    {t('forum.loadMore')}
                   </Button>
                 </div>
               )}
@@ -472,7 +474,7 @@ const Forum = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
-                Trending Tags
+                {t('forum.trendingTags')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -493,25 +495,25 @@ const Forum = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Community Stats
+                {t('forum.communityStats')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm">Total Members</span>
+                  <span className="text-sm">{t('forum.totalMembers')}</span>
                   <span className="font-semibold">{stats.totalMembers.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Active Today</span>
+                  <span className="text-sm">{t('forum.activeToday')}</span>
                   <span className="font-semibold">{stats.activeToday}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Posts This Week</span>
+                  <span className="text-sm">{t('forum.postsThisWeek')}</span>
                   <span className="font-semibold">{stats.postsThisWeek}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">New Members</span>
+                  <span className="text-sm">{t('forum.newMembers')}</span>
                   <span className="font-semibold">{stats.newMembers}</span>
                 </div>
               </div>
@@ -522,22 +524,22 @@ const Forum = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
-                Quick Actions
+                {t('forum.quickActions')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <Button variant="outline" className="w-full justify-start">
                   <Pin className="w-4 h-4 mr-2" />
-                  View Guidelines
+                  {t('forum.viewGuidelines')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Users className="w-4 h-4 mr-2" />
-                  Find Members
+                  {t('forum.findMembers')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Get Support
+                  {t('forum.getSupport')}
                 </Button>
               </div>
             </CardContent>
