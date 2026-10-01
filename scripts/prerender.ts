@@ -79,7 +79,15 @@ async function main() {
   try {
     await waitForServer(BASE)
 
-    const browser = await chromium.launch()
+    let browser
+    try {
+      browser = await chromium.launch()
+    } catch (launchError) {
+      // Build environments without a Playwright browser installed (e.g. the hosted publish
+      // pipeline) shouldn't fail the whole deploy - fall back to the plain SPA shell.
+      console.warn(`Prerender skipped: Chromium unavailable (${(launchError as Error).message.split("\n")[0]})`)
+      return
+    }
     const page = await browser.newPage()
 
     for (const routePath of PUBLIC_ROUTES) {
