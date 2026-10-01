@@ -1,4 +1,4 @@
-const CACHE_NAME = 'devmapper-v2';
+const CACHE_NAME = 'devmapper-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -44,6 +44,27 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // HTML documents (navigations): network-first, not stale-while-revalidate.
+  // This is the file that names the current build's content-hashed chunk
+  // filenames - serving a stale copy sends the browser looking for JS chunks
+  // from a deploy that's since been pruned from the server, which is exactly
+  // what breaks a returning visitor after a new deploy ships (lazy-loaded
+  // chunks 404 at the origin, Suspense throws, the page shows the error
+  // boundary). Hashed assets below are safe to cache stale since a given
+  // filename's content never changes.
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
     );
     return;
   }
