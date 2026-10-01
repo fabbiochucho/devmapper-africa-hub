@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { sdgGoals } from '@/lib/constants';
 import { getCountries, Country } from '@/data/countries';
-import { Search, FolderKanban, User, Building } from 'lucide-react';
+import { Search, FolderKanban, User, Building, SearchX, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 
 interface SearchProject {
@@ -203,10 +203,15 @@ const SearchPage = () => {
 
       <div>
         {loading ? (
-          <p>Loading...</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-3 text-sm text-muted-foreground">Searching...</p>
+          </div>
         ) : results ? (
-          <div className="space-y-6">
-            <p className="text-muted-foreground">{totalResults} results found for "{searchParams.get('q')}".</p>
+          <div className="space-y-6 animate-in fade-in-0 duration-300 motion-reduce:duration-0">
+            <p className="text-muted-foreground">
+              {totalResults} {totalResults === 1 ? 'result' : 'results'} found for "{searchParams.get('q')}".
+            </p>
             {results.projects.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Projects</h2>
@@ -254,10 +259,20 @@ const SearchPage = () => {
                 </div>
               </section>
             )}
-            {totalResults === 0 && <p>No results found.</p>}
+            {totalResults === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <SearchX className="h-10 w-10 text-muted-foreground" />
+                <h3 className="mt-3 text-sm font-medium text-foreground">No results found</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Try a different search term or clear a filter.</p>
+              </div>
+            )}
           </div>
         ) : (
-          <p>Please enter a search query (at least 2 characters) to begin.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Search className="h-10 w-10 text-muted-foreground" />
+            <h3 className="mt-3 text-sm font-medium text-foreground">Search Dev Mapper</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Enter at least 2 characters to search projects, people, or organizations.</p>
+          </div>
         )}
       </div>
     </div>

@@ -123,23 +123,22 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "project": return <FileText className="w-4 h-4 text-green-500" />;
-      case "user": return <Users className="w-4 h-4 text-blue-500" />;
-      case "forum": return <MessageSquare className="w-4 h-4 text-purple-500" />;
-      case "changemaker": return <Target className="w-4 h-4 text-pink-500" />;
-      default: return <Search className="w-4 h-4" />;
+      case "project": return <FileText className="w-4 h-4 text-muted-foreground" />;
+      case "user": return <Users className="w-4 h-4 text-muted-foreground" />;
+      case "forum": return <MessageSquare className="w-4 h-4 text-muted-foreground" />;
+      case "changemaker": return <Target className="w-4 h-4 text-muted-foreground" />;
+      default: return <Search className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getTypeBadge = (type: string) => {
-    const config: Record<string, { label: string; className: string }> = {
-      project: { label: "Project", className: "bg-green-100 text-green-700" },
-      user: { label: "User", className: "bg-blue-100 text-blue-700" },
-      forum: { label: "Forum", className: "bg-purple-100 text-purple-700" },
-      changemaker: { label: "Change Maker", className: "bg-pink-100 text-pink-700" },
+    const labels: Record<string, string> = {
+      project: "Project",
+      user: "User",
+      forum: "Forum",
+      changemaker: "Change Maker",
     };
-    const c = config[type] || { label: type, className: "" };
-    return <Badge variant="outline" className={`text-[10px] ${c.className}`}>{c.label}</Badge>;
+    return <Badge variant="outline" className="text-[10px]">{labels[type] || type}</Badge>;
   };
 
   const groupedResults = {
@@ -175,7 +174,7 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
         )}
 
         {!loading && groupedResults.projects.length > 0 && (
-          <CommandGroup heading="Projects">
+          <CommandGroup heading="Projects" className="animate-in fade-in-0 slide-in-from-top-1 duration-200 motion-reduce:slide-in-from-top-0">
             {groupedResults.projects.map((result) => (
               <CommandItem key={result.id} onSelect={() => handleSelect(result)}>
                 <div className="flex items-center gap-3 w-full">
@@ -194,7 +193,7 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
         {!loading && groupedResults.users.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Users">
+            <CommandGroup heading="Users" className="animate-in fade-in-0 slide-in-from-top-1 duration-200 delay-[40ms] motion-reduce:slide-in-from-top-0 motion-reduce:delay-0">
               {groupedResults.users.map((result) => (
                 <CommandItem key={result.id} onSelect={() => handleSelect(result)}>
                   <div className="flex items-center gap-3 w-full">
@@ -214,7 +213,7 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
         {!loading && groupedResults.forum.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Forum Posts">
+            <CommandGroup heading="Forum Posts" className="animate-in fade-in-0 slide-in-from-top-1 duration-200 delay-[80ms] motion-reduce:slide-in-from-top-0 motion-reduce:delay-0">
               {groupedResults.forum.map((result) => (
                 <CommandItem key={result.id} onSelect={() => handleSelect(result)}>
                   <div className="flex items-center gap-3 w-full">
@@ -234,7 +233,7 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
         {!loading && groupedResults.changemakers.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Change Makers">
+            <CommandGroup heading="Change Makers" className="animate-in fade-in-0 slide-in-from-top-1 duration-200 delay-[120ms] motion-reduce:slide-in-from-top-0 motion-reduce:delay-0">
               {groupedResults.changemakers.map((result) => (
                 <CommandItem key={result.id} onSelect={() => handleSelect(result)}>
                   <div className="flex items-center gap-3 w-full">

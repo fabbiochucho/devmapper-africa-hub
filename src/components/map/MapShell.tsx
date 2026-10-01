@@ -3,6 +3,26 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 
+// MapLibre's paint properties need real color values, not Tailwind classes -
+// read the design tokens' actual HSL from the live theme so markers stay
+// correct in dark mode instead of carrying their own hardcoded palette.
+function cssToken(name: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value ? `hsl(${value})` : '#000000';
+}
+
+// Popup content is built as an HTML string (MapLibre's Popup API has no JSX
+// escape hatch) from report title/description fields a user controls -
+// escape before interpolating so a crafted title can't inject markup.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 interface MapShellProps {
   center?: [number, number];
   zoom?: number;
@@ -120,7 +140,10 @@ export default function MapShell({
       clusterRadius: 50
     });
 
-    // Add cluster layer
+    // Add cluster layer - color steps encode attention level (more projects
+    // clustered together warrants a warmer, more attention-grabbing color),
+    // using the same semantic tokens as the rest of the app rather than an
+    // arbitrary hardcoded palette.
     if (enableClusters) {
       map.current.addLayer({
         id: 'markers-cluster',
@@ -131,11 +154,11 @@ export default function MapShell({
           'circle-color': [
             'step',
             ['get', 'point_count'],
-            '#51bbd6',
+            cssToken('--info'),
             10,
-            '#f1f075',
+            cssToken('--primary'),
             30,
-            '#f28cb1'
+            cssToken('--warning')
           ],
           'circle-radius': [
             'step',
@@ -172,10 +195,10 @@ export default function MapShell({
       source: 'markers',
       filter: ['!', ['has', 'point_count']],
       paint: {
-        'circle-color': '#11b4da',
+        'circle-color': cssToken('--primary'),
         'circle-radius': 8,
         'circle-stroke-width': 2,
-        'circle-stroke-color': '#fff'
+        'circle-stroke-color': cssToken('--background')
       }
     });
 
@@ -186,14 +209,23 @@ export default function MapShell({
       const feature = e.features[0];
       const coordinates = (feature.geometry as any).coordinates.slice();
       
-      new maplibregl.Popup()
+      const title = escapeHtml(feature.properties?.title || 'Project');
+      const description = escapeHtml((feature.properties?.description || '').substring(0, 100));
+      const status = escapeHtml(feature.properties?.status || 'N/A');
+      const sdg = escapeHtml(String(feature.properties?.sdg ?? ''));
+      const projectId = encodeURIComponent(feature.properties?.id || '');
+
+      new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
         .setLngLat(coordinates)
         .setHTML(`
-          <div class="p-2">
-            <h3 class="font-bold">${feature.properties?.title || 'Project'}</h3>
-            <p class="text-sm">${feature.properties?.description?.substring(0, 100) || ''}</p>
-            <p class="text-xs mt-1">Status: ${feature.properties?.status || 'N/A'} | SDG ${feature.properties?.sdg || ''}</p>
-            <a href="/project/${feature.properties?.id}" class="text-xs text-blue-600 underline mt-1 inline-block">View Details →</a>
+          <div class="p-3 space-y-2 min-w-[200px]">
+            <h3 class="font-semibold text-sm leading-snug text-foreground">${title}</h3>
+            ${description ? `<p class="text-xs text-muted-foreground line-clamp-2">${description}</p>` : ''}
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium text-foreground">${status}</span>
+              ${sdg ? `<span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium text-foreground">SDG ${sdg}</span>` : ''}
+            </div>
+            <a href="/project/${projectId}" class="inline-flex items-center justify-center rounded-md text-xs font-medium h-7 px-3 w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">View details</a>
           </div>
         `)
         .addTo(map.current!);

@@ -201,24 +201,28 @@ const UnifiedDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
+            <div className="flex flex-col items-center gap-1.5 text-center rounded-lg border bg-card p-3">
+              <Users className="h-4 w-4 text-primary" />
               <div className="text-2xl font-bold text-primary">{roles.length}</div>
               <p className="text-muted-foreground text-sm">Active Roles</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="flex flex-col items-center gap-1.5 text-center rounded-lg border bg-card p-3">
+              {profile?.is_verified ? <UserCheck className="h-4 w-4 text-success" /> : <Clock className="h-4 w-4 text-warning" />}
+              <div className={`text-2xl font-bold ${profile?.is_verified ? 'text-success' : 'text-warning'}`}>
                 {profile?.is_verified ? 'Verified' : 'Pending'}
               </div>
               <p className="text-muted-foreground text-sm">Account Status</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="flex flex-col items-center gap-1.5 text-center rounded-lg border bg-card p-3">
+              <Globe className="h-4 w-4 text-info" />
+              <div className="text-2xl font-bold text-info">
                 {profile?.country || 'Global'}
               </div>
               <p className="text-muted-foreground text-sm">Location</p>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="flex flex-col items-center gap-1.5 text-center rounded-lg border bg-card p-3">
+              <span className="text-muted-foreground">{getRoleIcon(currentRole)}</span>
+              <div className="text-2xl font-bold text-foreground">
                 {getRoleDisplayName(currentRole)}
               </div>
               <p className="text-muted-foreground text-sm">Current Role</p>
@@ -236,7 +240,7 @@ const UnifiedDashboard = () => {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 motion-reduce:slide-in-from-bottom-0 motion-reduce:duration-150">
           <div className="grid gap-4">
             {/* Recent Activity */}
             <Card>
@@ -347,7 +351,7 @@ const UnifiedDashboard = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="analytics">
+        <TabsContent value="analytics" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 motion-reduce:slide-in-from-bottom-0 motion-reduce:duration-150">
           <Card>
             <CardHeader><CardTitle>Analytics & Insights</CardTitle></CardHeader>
             <CardContent className="space-y-4">
@@ -357,7 +361,7 @@ const UnifiedDashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="actions">
+        <TabsContent value="actions" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 motion-reduce:slide-in-from-bottom-0 motion-reduce:duration-150">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
@@ -378,7 +382,7 @@ const UnifiedDashboard = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 motion-reduce:slide-in-from-bottom-0 motion-reduce:duration-150">
           <Card>
             <CardHeader><CardTitle>Account Settings</CardTitle></CardHeader>
             <CardContent className="space-y-4">
