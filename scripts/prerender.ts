@@ -71,10 +71,23 @@ function outputPathFor(routePath: string): string {
 }
 
 async function main() {
-  const preview: ChildProcess = spawn(`npx vite preview --port ${PORT} --strictPort`, { stdio: "pipe", shell: true })
+  // Run vite's entry with node directly, not through a shell: on Linux `sh -c` doesn't exec,
+  // so preview.kill() only killed the shell, vite kept the stdout pipe open and the build
+  // never exited (CI hung in the build step).
+  const preview: ChildProcess = spawn(process.execPath, [resolve("node_modules/vite/bin/vite.js"), "preview", "--port", String(PORT), "--strictPort"], { stdio: "pipe" })
   let previewOutput = ""
   preview.stdout?.on("data", (d) => (previewOutput += d.toString()))
   preview.stderr?.on("data", (d) => (previewOutput += d.toString()))
+  // If our preview dies early (e.g. --strictPort and the port is taken), the readiness check
+  // would happily get answers from whatever else holds the port and prerender someone
+  // else's build. Fail loudly instead.
+  let finished = false
+  preview.on("exit", (code) => {
+    if (finished) return
+    console.error(`Prerender failed: vite preview exited early (code ${code}). Is port ${PORT} in use?`)
+    console.error(previewOutput)
+    process.exit(1)
+  })
 
   try {
     await waitForServer(BASE)
@@ -115,6 +128,7 @@ async function main() {
     console.error(previewOutput)
     process.exitCode = 1
   } finally {
+    finished = true
     preview.kill()
   }
 }
