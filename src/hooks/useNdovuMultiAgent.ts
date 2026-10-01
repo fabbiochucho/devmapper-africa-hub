@@ -6,7 +6,7 @@ export interface SynthesisOutput {
   keyInsights: string[];
   risks: string[];
   recommendedActions: string[];
-  agentContributions: { agentName: string; mainContribution: string }[];
+  agentContributions: { agentName: string; mainContribution: string; confidence?: number }[];
   overallConfidence: number;
   requiresHumanApproval: boolean;
   disclaimer: string;
