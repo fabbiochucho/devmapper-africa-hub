@@ -42,8 +42,8 @@ export default defineConfig(({ mode }) => ({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           // Heavy charting library
           'vendor-recharts': ['recharts'],
-          // Map libraries - only loaded on map pages
-          'vendor-maps': ['leaflet', 'react-leaflet', 'maplibre-gl'],
+          // Map library - only loaded on map pages
+          'vendor-maps': ['maplibre-gl'],
           // UI framework
           'vendor-radix': [
             '@radix-ui/react-dialog',

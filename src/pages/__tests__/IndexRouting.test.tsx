@@ -31,14 +31,6 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 // Mock heavy map dependencies
 vi.mock("maplibre-gl", () => ({ default: {} }));
-vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children }: any) => <div data-testid="mock-map">{children}</div>,
-  TileLayer: () => null,
-  Marker: () => null,
-  Popup: () => null,
-  useMap: () => ({}),
-}));
-vi.mock("react-leaflet-cluster", () => ({ default: ({ children }: any) => <div>{children}</div> }));
 vi.mock("@/components/map/MapShell", () => ({ default: () => <div data-testid="mock-mapshell" /> }));
 vi.mock("@/components/map/EnhancedProjectMap", () => ({ default: () => <div data-testid="mock-enhanced-map" /> }));
 
