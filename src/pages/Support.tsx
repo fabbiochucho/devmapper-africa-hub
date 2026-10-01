@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, MessageSquare, Phone, Mail, Clock, AlertCircle, Search, BookOpen, Shield, Users, FileText, Globe, CreditCard, Zap, ExternalLink, MapPin } from 'lucide-react';
+import { HelpCircle, MessageSquare, Phone, Mail, Clock, AlertCircle, Search, BookOpen, Shield, FileText, Globe, CreditCard, Zap, ExternalLink, MapPin } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { SEOHead, generateFAQSchema } from '@/components/seo/SEOHead';
 import { supabase } from '@/integrations/supabase/client';

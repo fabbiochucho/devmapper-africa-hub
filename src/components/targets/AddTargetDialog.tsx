@@ -45,7 +45,7 @@ const AddTargetDialog = ({ isOpen, onOpenChange, onTargetAdded }: AddTargetDialo
       onTargetAdded(newTarget);
       onOpenChange(false);
       form.reset();
-    } catch (error) {
+    } catch {
       toast.error("Failed to create target", {
         description: "An unexpected error occurred.",
       });

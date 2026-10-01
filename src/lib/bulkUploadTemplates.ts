@@ -153,7 +153,6 @@ const VALID_STATUSES = ['planned', 'in_progress', 'completed', 'stalled', 'cance
 
 export function validateRows(rows: ParsedRow[], template: BulkUploadTemplate): ValidationError[] {
   const errors: ValidationError[] = [];
-  const headerToKey = new Map(template.columns.map(c => [c.header, c]));
 
   rows.forEach((row, idx) => {
     const rowNum = idx + 2; // +2 for 1-index and header row

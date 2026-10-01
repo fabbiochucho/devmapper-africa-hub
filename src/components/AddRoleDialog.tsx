@@ -37,7 +37,7 @@ export const AddRoleDialog = ({ onClose }: AddRoleDialogProps) => {
       const roleDisplayName = getRoleDisplayName(selectedRole as UserRole);
       toast.success(`${roleDisplayName} role added successfully`);
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to add role");
     }
   };

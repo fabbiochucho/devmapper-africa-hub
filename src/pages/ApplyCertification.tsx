@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Shield, Upload, Award, CheckCircle2, AlertTriangle, ArrowRight, FileText } from 'lucide-react';
+import { Shield, Upload, CheckCircle2, AlertTriangle, ArrowRight, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { appendToLedger } from '@/lib/verification-ledger';

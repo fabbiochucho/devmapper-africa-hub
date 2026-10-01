@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { supabase } from '@/integrations/supabase/client';
 
 interface MapShellProps {
   center?: [number, number];

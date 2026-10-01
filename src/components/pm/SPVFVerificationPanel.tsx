@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,8 +15,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/contexts/UserRoleContext';
 import { toast } from 'sonner';
 import {
-  Shield, CheckCircle2, XCircle, Clock, Award, Upload, FileText,
-  TrendingUp, BarChart3, AlertTriangle, ChevronRight, Star
+  Shield, CheckCircle2, XCircle, Clock, Award, FileText,
+  BarChart3, AlertTriangle, Star
 } from 'lucide-react';
 import {
   VERIFICATION_STAGES,
@@ -28,7 +27,6 @@ import {
   type SISComponents,
   type SISResult,
   type CertificationRating,
-  type VerificationStageKey,
 } from '@/lib/spvf-engine';
 import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
 import AuditTrailExport from '@/components/verification/AuditTrailExport';
@@ -52,7 +50,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
   const [workflowStages, setWorkflowStages] = useState<any[]>([]);
   const [scores, setScores] = useState<any>(null);
   const [evidenceItems, setEvidenceItems] = useState<any[]>([]);
-  const [verifications, setVerifications] = useState<any[]>([]);
+  const [, setVerifications] = useState<any[]>([]);
   const [certifications, setCertifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -264,7 +262,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
-                {VERIFICATION_STAGES.map((stage, idx) => {
+                {VERIFICATION_STAGES.map((stage) => {
                   const wfStage = workflowStages.find(s => s.stage === stage.key);
                   const status = wfStage?.status || 'pending';
                   return (

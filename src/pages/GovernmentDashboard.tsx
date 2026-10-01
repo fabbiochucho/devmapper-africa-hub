@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, Bot, ClipboardCheck, XCircle } from "lucide-react";
+import { DollarSign, ListChecks, Hourglass, CheckCircle2, LayoutDashboard, Loader2, ShieldAlert, Plus, ClipboardCheck, XCircle } from "lucide-react";
 import GovernmentSdgHeatmap from '@/components/government/GovernmentSdgHeatmap';
 import AICopilot from '@/components/ai/AICopilot';
 import BudgetAnalyticsDashboard from '@/components/government/BudgetAnalyticsDashboard';

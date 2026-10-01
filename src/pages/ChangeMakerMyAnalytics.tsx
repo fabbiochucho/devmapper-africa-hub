@@ -3,15 +3,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import {
-  Share2, Copy, ExternalLink, Users, DollarSign, Target, TrendingUp,
-  MapPin, CheckCircle, Heart, Globe, Loader2, BarChart3, Plus, AlertCircle
+  Copy, ExternalLink, Users, DollarSign, TrendingUp,
+  CheckCircle, Heart, Globe, Loader2, BarChart3, Plus, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';

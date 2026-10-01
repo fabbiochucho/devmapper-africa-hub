@@ -113,7 +113,7 @@ export class CancellableFetch {
  * Create a cancellable version of a Supabase query builder
  * Note: Supabase JS v2 supports AbortSignal via .abortSignal()
  */
-export function withCancellation<T>(
+export function withCancellation<_T>(
   queryBuilder: any,
   signal: AbortSignal
 ): any {

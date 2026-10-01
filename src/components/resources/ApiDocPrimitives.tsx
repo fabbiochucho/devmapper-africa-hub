@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Copy } from 'lucide-react';
 
-export const CodeBlock = ({ code, language = 'bash' }: { code: string; language?: string }) => {
+export const CodeBlock = ({ code }: { code: string; language?: string }) => {
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(code);

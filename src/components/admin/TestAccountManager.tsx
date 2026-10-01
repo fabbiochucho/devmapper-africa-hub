@@ -5,11 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { UserRole, ALL_ROLES } from '@/contexts/UserRoleContext';
 import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User } from 'lucide-react';
 
@@ -17,7 +15,6 @@ import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User
 // label/description text is resolved via translation inside the component (see roleConfig below).
 export function TestAccountManager() {
   const { t } = useTranslation();
-  const { user } = useAuth();
 
   const roleConfig: Record<UserRole, { label: string; color: string; icon: any; description: string }> = {
     citizen_reporter: {

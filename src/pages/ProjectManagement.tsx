@@ -24,7 +24,7 @@ import BudgetTracker from "@/components/pm/BudgetTracker";
 import ImpactIndicators from "@/components/pm/ImpactIndicators";
 import {
   Plus, ListTodo, LayoutGrid, Calendar, CheckCircle2, Clock,
-  AlertTriangle, ArrowUpDown, Lock, Users, BarChart3, Bot,
+  AlertTriangle, ArrowUpDown, Lock, Bot,
   FolderOpen, Shield, DollarSign, Activity, FileText, Building2, Award
 } from "lucide-react";
 import KanbanBoard from "@/components/pm/KanbanBoard";

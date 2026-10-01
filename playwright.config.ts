@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Local runs read secrets (E2E_TEST_PASSWORD) from .env; CI provides them as env vars.
+try { process.loadEnvFile(); } catch { /* no .env (CI) */ }
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,

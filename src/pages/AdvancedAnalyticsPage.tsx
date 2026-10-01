@@ -1,9 +1,8 @@
-import React, { lazy, Suspense, useCallback } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Activity, BarChart3, Zap, Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import { PageSkeleton } from '@/components/ui/loading-skeleton';
 
 // Lazy load heavy components
 const AdvancedAnalytics = lazy(() => 

@@ -1,13 +1,11 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useMyProjects } from '@/hooks/useMyProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { sdgGoals, sdgGoalColors } from '@/lib/constants';
-import { Target, TrendingUp, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Target } from 'lucide-react';
 
 const ProjectAnalytics = () => {
   const { projects, loading } = useMyProjects();

@@ -21,7 +21,7 @@ export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps)
   const [dialogOpen, setDialogOpen] = useState(false);
   const [allocated, setAllocated] = useState("");
   const [spent, setSpent] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency] = useState("USD");
   const [source, setSource] = useState("");
   const [donor, setDonor] = useState("");
   const [notes, setNotes] = useState("");

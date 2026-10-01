@@ -4,7 +4,6 @@ import SdgDashboardView from "@/components/analytics/SdgDashboardView";
 import SdgMapView from "@/components/analytics/SdgMapView";
 import { BarChart3, Map, FileText, TrendingUp } from "lucide-react";
 import ProjectReportsView from "@/components/analytics/ProjectReportsView";
-import ShareableAnalytics from "@/components/analytics/ShareableAnalytics";
 import RealTimeAnalytics from "@/components/analytics/RealTimeAnalytics";
 import { useSearchParams } from "react-router-dom";
 

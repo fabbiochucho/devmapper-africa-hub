@@ -21,8 +21,7 @@ import {
   ACTIVITY_CATEGORIES, DEFAULT_EMISSION_FACTORS,
   calculateEmissions, findEmissionFactor, assessDataQuality,
   validateActivityEntry,
-  type ActivityEntry, type CalculationResult, type EmissionFactor
-} from "@/lib/emission-factors";
+  type ActivityEntry} from "@/lib/emission-factors";
 
 const SCOPE_COLORS = { scope1: "#ef4444", scope2: "#f97316", scope3: "#eab308" };
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {

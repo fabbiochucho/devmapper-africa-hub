@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, FileText, MessageSquare, Ticket, TrendingUp, AlertTriangle, CheckCircle, Clock, DollarSign, Shield } from "lucide-react";
+import { Users, FileText, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, DollarSign, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Stats {

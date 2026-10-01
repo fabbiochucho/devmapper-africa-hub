@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Building2, DollarSign, Calendar, FileText } from "lucide-react";
+import { Plus, Building2, Calendar, FileText } from "lucide-react";
 
 interface ProcurementTrackerProps {
   reportId: string;

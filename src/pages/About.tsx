@@ -1,11 +1,9 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Target, Award, Linkedin, Twitter, Globe, GraduationCap, Heart, Building, Zap, BookOpen, ExternalLink, Briefcase, Shield } from 'lucide-react';
+import { MapPin, Users, Target, Award, Linkedin, Globe, GraduationCap, Heart, Building, Zap, BookOpen, Briefcase } from 'lucide-react';
 import { SEOHead, generateOrganizationSchema } from '@/components/seo/SEOHead';
 import WhyNowSection from '@/components/landing/WhyNowSection';
 import ImpactMetricsSection from '@/components/landing/ImpactMetricsSection';
-import { Button } from '@/components/ui/button';
 
 const About = () => {
   return (

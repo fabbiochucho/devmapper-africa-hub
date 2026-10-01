@@ -94,8 +94,6 @@ const ForumPost: React.FC<ForumPostProps> = ({
   const [replies, setReplies] = useState<ForumReply[] | null>(null);
   const [loadingReplies, setLoadingReplies] = useState(false);
 
-  const categoryStyle = categoryConfig[post.category] || { bg: 'bg-muted', text: 'text-muted-foreground' };
-
   const categoryClass = categoryConfig[post.category] ?? 'bg-muted text-muted-foreground';
 
   const handleLike = () => onLike?.(post.id);

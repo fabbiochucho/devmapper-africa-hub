@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, Check, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Badge } from '@/components/ui/badge';
 
 export default function NotificationBell() {
   const { notifications, unreadCount, permission, requestPermission, markAsRead, markAllAsRead } = useNotifications();

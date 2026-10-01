@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
-import { DISM_DIMENSION_DETAILS, DISM_RATING_CONFIG, computeFullDISM, type DISMDimensions, type DISMResult } from '@/lib/dism-engine';
+import { DISM_DIMENSION_DETAILS, computeFullDISM, type DISMDimensions, type DISMResult } from '@/lib/dism-engine';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';

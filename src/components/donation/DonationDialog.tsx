@@ -34,7 +34,7 @@ interface DonationDialogProps {
 
 const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
 
-export function DonationDialog({ campaign, open, onOpenChange, onDonationComplete }: DonationDialogProps) {
+export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogProps) {
   const { user, profile } = useAuth();
   const [amount, setAmount] = useState<string>('25');
   const [email, setEmail] = useState<string>(profile?.email || '');

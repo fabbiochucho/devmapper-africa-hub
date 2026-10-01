@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Ticket, Search, Clock, CheckCircle, AlertCircle, Loader2, MessageSquare, User } from "lucide-react";
+import { Ticket, Search, Clock, CheckCircle, AlertCircle, Loader2, MessageSquare } from "lucide-react";
 
 interface SupportTicket {
   id: string;
@@ -42,7 +41,7 @@ const TicketManager = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [updating, setUpdating] = useState(false);
 

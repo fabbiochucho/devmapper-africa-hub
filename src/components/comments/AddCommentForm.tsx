@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { useUserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addComment } from "@/data/mockComments";
 import { Star } from "lucide-react";
@@ -60,7 +59,7 @@ const AddCommentForm: React.FC<AddCommentFormProps> = ({ projectId, onCommentAdd
       form.reset();
       setRating(null);
       onCommentAdded();
-    } catch (error) {
+    } catch {
       toast.error("Failed to add comment.");
     }
   }

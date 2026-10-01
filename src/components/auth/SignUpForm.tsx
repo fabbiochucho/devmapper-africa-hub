@@ -128,7 +128,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
         toast.success("Check your email to confirm your account!");
         onAuthSuccess();
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during sign up");
       setCaptchaToken(null); // Reset captcha on error
     } finally {

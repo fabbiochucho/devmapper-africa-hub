@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Pin, PinOff, Trash2, Eye, Flag, Loader2, MessageSquare, ThumbsUp } from "lucide-react";
+import { Search, Pin, PinOff, Trash2, Eye, Loader2, MessageSquare, ThumbsUp } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,

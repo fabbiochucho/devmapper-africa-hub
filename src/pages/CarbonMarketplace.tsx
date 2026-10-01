@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ShoppingCart, Plus, Leaf, MapPin, Calendar, DollarSign, TrendingUp, Package, CheckCircle, Filter, ArrowUpDown, Briefcase, FileCheck } from "lucide-react";
+import { ShoppingCart, Plus, Leaf, MapPin, Calendar, Package, CheckCircle, Filter, ArrowUpDown, Briefcase, FileCheck } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";

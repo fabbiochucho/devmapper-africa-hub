@@ -7,9 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Users, Plus, UserPlus, Building2, X } from "lucide-react";
+import { Users, UserPlus, Building2, X } from "lucide-react";
 
 const AFFILIATION_ROLES = [
   { value: "owner", label: "Owner" },
@@ -34,7 +33,6 @@ interface StakeholderAffiliationProps {
 }
 
 export default function StakeholderAffiliation({ reportId, isOwner }: StakeholderAffiliationProps) {
-  const { user } = useAuth();
   const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");

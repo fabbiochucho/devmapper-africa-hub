@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, ExternalLink, Upload, X, Image } from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -74,9 +74,6 @@ export default function PartnerManagement() {
     // Upload to Supabase storage or use data URL
     setUploadingLogo(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `partner-logo-${Date.now()}.${fileExt}`;
-      
       // Convert to base64 data URL for simplicity (works without storage bucket)
       const base64 = await new Promise<string>((resolve) => {
         const r = new FileReader();

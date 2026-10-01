@@ -66,10 +66,6 @@ export default function SdgMapView() {
     }
   }, [filters, selectedReport]);
 
-  const handleMarkerClick = (report: Report) => {
-    setSelectedReport(report);
-  }
-
   const formatBudget = (budget: number): string => {
     if (budget >= 1000000) {
       return `$${(budget / 1000000).toFixed(1)}M`

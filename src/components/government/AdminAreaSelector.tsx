@@ -21,7 +21,7 @@ interface AdminAreaSelectorProps {
 
 const LEVELS = ["country", "state", "district", "ward"] as const;
 
-const AdminAreaSelector = ({ countryCode, value, onChange }: AdminAreaSelectorProps) => {
+const AdminAreaSelector = ({ countryCode, onChange }: AdminAreaSelectorProps) => {
   const [areas, setAreas] = useState<Record<string, AdminArea[]>>({});
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);

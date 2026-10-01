@@ -1,15 +1,14 @@
 import { useState, useCallback } from "react";
 import { 
   Home, Search, Users, Heart, Inbox, MessageSquare, 
-  BarChart3, TrendingUp, FileText, UserPlus, Target, 
+  BarChart3, TrendingUp, FileText, Target, 
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
   ChevronRight, ChevronDown, User, Briefcase, ListTodo, FileSpreadsheet,
-  FolderOpen, Layers, ShoppingCart, Award
+  Layers, ShoppingCart, Award
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { prefetchRoute } from "@/lib/route-prefetch";
-import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -163,10 +162,7 @@ const getSubmissionItems = (hasRole: (role: UserRole) => boolean) => {
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const location = useLocation();
-  const { user } = useAuth();
-  const { hasRole, isAuthenticated, currentRole, roles } = useUserRole();
-  const currentPath = location.pathname;
+  const { hasRole, isAuthenticated, currentRole } = useUserRole();
 
   const collapsed = state === "collapsed";
   

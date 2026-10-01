@@ -24,7 +24,7 @@ const NotificationCenter = () => {
   const { session } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const loadNotifications = useCallback(async () => {
     if (!session?.user) return;

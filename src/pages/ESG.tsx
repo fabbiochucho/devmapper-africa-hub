@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserRole } from '@/contexts/UserRoleContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,7 +24,6 @@ import { toast } from 'sonner';
 
 const ESGPage = () => {
   const { user } = useAuth();
-  const { currentRole } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [organizations, setOrganizations] = useState<any[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
@@ -300,7 +298,7 @@ const ESGPage = () => {
                             
                             await loadOrganizations();
                             toast.success('ESG settings updated');
-                          } catch (error) {
+                          } catch {
                             toast.error('Failed to update settings');
                           }
                         }}

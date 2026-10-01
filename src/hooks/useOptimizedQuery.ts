@@ -2,7 +2,7 @@
  * Optimized React Query hooks with standardized caching strategies
  */
 import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import { deduplicateRequest, handleQueryError } from '@/lib/query-utils';
+import { deduplicateRequest } from '@/lib/query-utils';
 
 /**
  * Default stale times based on data volatility

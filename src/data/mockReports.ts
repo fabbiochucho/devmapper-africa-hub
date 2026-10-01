@@ -1,4 +1,3 @@
-import { reverseGeocode } from "@/lib/geocode";
 
 // Type definitions are kept to maintain the data contract with other components.
 export type Verification = {

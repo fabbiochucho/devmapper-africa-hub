@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { Send, ImagePlus } from "lucide-react";
+import { Send } from "lucide-react";
 
 interface ProgressUpdateFormProps {
   reportId: string;

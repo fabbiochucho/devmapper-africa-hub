@@ -13,10 +13,7 @@ import {
   Download, 
   FileText, 
   CheckCircle, 
-  AlertCircle,
-  Users,
-  Zap
-} from 'lucide-react';
+  AlertCircle} from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { enrichSuppliers } from '@/lib/alphaearth-client';

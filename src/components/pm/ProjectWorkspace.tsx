@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Plus, Eye, EyeOff, Flame, Thermometer, Recycle, Coins, Scale, TrendingUp } from "lucide-react";
@@ -36,19 +35,6 @@ interface ProjectWorkspaceProps {
   report: any;
 }
 
-const LIFECYCLE_STEPS = [
-  { key: "idea", label: "Idea / Proposal" },
-  { key: "planning", label: "Planning" },
-  { key: "funded", label: "Funding Secured" },
-  { key: "implementation", label: "Implementation" },
-  { key: "monitoring", label: "Monitoring" },
-  { key: "completed", label: "Completion" },
-  { key: "verified", label: "Verified" },
-];
-
-const STATUS_ORDER: Record<string, number> = {
-  idea: 0, planning: 1, funded: 2, implementation: 3, monitoring: 4, delayed: 3, "on-hold": 3, cancelled: -1, completed: 5, verified: 6,
-};
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
   const { t } = useTranslation();
@@ -134,7 +120,6 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
 
   if (!report) return null;
 
-  const currentStep = STATUS_ORDER[report.project_status] ?? 0;
   const totalBudget = budgets.reduce((s, b) => s + Number(b.budget_allocated || 0), 0);
   const totalSpent = budgets.reduce((s, b) => s + Number(b.budget_spent || 0), 0);
   const budgetPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
