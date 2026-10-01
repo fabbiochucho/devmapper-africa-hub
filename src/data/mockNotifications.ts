@@ -1,4 +1,3 @@
-import { formatDistanceToNow } from "date-fns";
 
 export interface Notification {
   id: number;

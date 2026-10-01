@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
   const verifiedUserId = user.id;
   let body: any;
   try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
-  const { userMessage, userRole, contextData, expertMode } = body ?? {};
+  const { userMessage, userRole } = body ?? {};
 
   // Input validation
   if (typeof userMessage !== "string" || userMessage.length === 0 || userMessage.length > 4000) {

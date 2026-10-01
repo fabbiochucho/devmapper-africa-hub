@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CommandDialog,
@@ -10,7 +10,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Users, MessageSquare, Search, MapPin, Target, Loader2 } from "lucide-react";
+import { FileText, Users, MessageSquare, Search, Target, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface SearchResult {

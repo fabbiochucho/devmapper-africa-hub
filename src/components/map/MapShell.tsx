@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { supabase } from '@/integrations/supabase/client';
 
 // MapLibre's paint properties need real color values, not Tailwind classes -
 // read the design tokens' actual HSL from the live theme so markers stay

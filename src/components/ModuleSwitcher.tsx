@@ -7,20 +7,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import { 
   Globe, 
   Leaf, 
-  ChevronDown, 
-  BarChart3, 
-  Users, 
-  Target,
-  Building,
-  Factory,
-  Zap
-} from 'lucide-react';
+  ChevronDown} from 'lucide-react';
 
 interface ModuleSwitcherProps {
   currentModule?: 'sdg' | 'esg';
@@ -29,8 +20,6 @@ interface ModuleSwitcherProps {
 }
 
 const ModuleSwitcher = ({ 
-  currentModule = 'sdg', 
-  organizationId,
   showCompact = false 
 }: ModuleSwitcherProps) => {
   const navigate = useNavigate();

@@ -27,7 +27,6 @@ const planFeatures: Record<string, string[]> = {
 };
 
 export default function UpgradePrompt({ 
-  feature, 
   requiredPlan,
   inline = false 
 }: UpgradePromptProps) {

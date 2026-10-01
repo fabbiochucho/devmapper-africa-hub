@@ -2,16 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  CheckCircle2, AlertTriangle, Clock, Shield, FileText, 
-  Building, Users, BarChart3, Target, Leaf 
-} from 'lucide-react';
-import { toast } from 'sonner';
+  CheckCircle2, AlertTriangle, Clock, Shield, FileText} from 'lucide-react';
 
 interface ReadinessStage {
   id: string;
@@ -84,7 +78,7 @@ interface IFRSReadinessAssessmentProps {
   organizationName: string;
 }
 
-export default function IFRSReadinessAssessment({ organizationId, organizationName }: IFRSReadinessAssessmentProps) {
+export default function IFRSReadinessAssessment(_props: IFRSReadinessAssessmentProps) {
   const { t } = useTranslation();
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
 

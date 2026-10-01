@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense } from "react";
-import { Outlet, useNavigate, useLocation, Link, createSearchParams } from "react-router-dom";
+import { useState, useEffect, useCallback, memo } from "react";
+import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Report } from "@/data/mockReports";
 import { Button } from "./ui/button";
 import { Home, ArrowLeft, LogOut, MessageCircle, Search } from "lucide-react";
 import PWAInstallPrompt from "./pwa/PWAInstallPrompt";
@@ -61,7 +60,7 @@ const LayoutHeader = memo(({
               loading="eager"
             />
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-foreground">Dev Mapper</h1>
+              <span className="text-lg font-bold text-foreground">Dev Mapper</span>
               <p className="text-[10px] text-muted-foreground">Africa SDG Tracker</p>
             </div>
           </Link>
@@ -124,7 +123,7 @@ LayoutHeader.displayName = 'LayoutHeader';
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile, signOut, session, isAdmin } = useAuth();
+  const { user, profile, signOut, session } = useAuth();
   const { currentRole, setCurrentRole } = useUserRole();
   const { trackPageView } = useAnalytics();
 

@@ -9,8 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Loader2, Download, Globe, Building, BarChart3, Users, TrendingDown, Target, Leaf, Shield } from 'lucide-react';
+import { FileText, Loader2, Download, Globe, BarChart3, Target, Leaf, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ESGReportDialogProps {
@@ -139,7 +138,7 @@ const STANDARDS: StandardConfig[] = [
 ];
 
 export default function ESGReportDialog({
-  organizationName, organizationId, indicators, suppliers, scenarios, benchmark, planType,
+  organizationName, indicators, suppliers, scenarios, benchmark, planType,
 }: ESGReportDialogProps) {
   const [open, setOpen] = useState(false);
   const [generating, setGenerating] = useState(false);

@@ -57,7 +57,7 @@ export function useFileUpload({
         setProgress(prev => Math.min(prev + 10, 90));
       }, 100);
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',

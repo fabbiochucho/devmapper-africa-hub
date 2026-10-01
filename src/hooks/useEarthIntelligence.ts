@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 type LayerType = 'ndvi' | 'water' | 'urban';
-type ClimateDataType = 'emissions';
 
 interface Bounds {
   north: number;

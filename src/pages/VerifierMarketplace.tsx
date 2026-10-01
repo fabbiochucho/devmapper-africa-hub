@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Shield, Star, Award, Users, CheckCircle, Clock, MapPin, Search, Plus, TrendingUp, Send } from "lucide-react";
+import { Shield, Star, Award, CheckCircle, Clock, MapPin, Search, Plus, Send } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { listUsersByRole, routeToGovernmentReviewer, type RoleUserOption } from "@/lib/report-workflow";
 import { UserBadgeList } from "@/components/badges/UserBadgeList";

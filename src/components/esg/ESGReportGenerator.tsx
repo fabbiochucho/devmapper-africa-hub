@@ -11,7 +11,6 @@ import {
   FileText, 
   Download, 
   Loader2, 
-  CheckCircle,
   BarChart3,
   Users,
   Target,
@@ -50,7 +49,6 @@ const reportSections: ReportSection[] = [
 
 export default function ESGReportGenerator({
   organizationName,
-  organizationId,
   indicators,
   suppliers,
   scenarios,

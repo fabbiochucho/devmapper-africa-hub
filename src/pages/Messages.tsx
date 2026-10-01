@@ -3,17 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Send, Smile, Paperclip, MoreVertical, Phone, Video, Info,
-  Search, Plus, Users, MessageCircle, Pin, Check, CheckCheck
-} from 'lucide-react';
+  Send, Paperclip, Phone, Video, Info,
+  Search, Plus, Users, MessageCircle, Pin} from 'lucide-react';
 import { useMessages, Conversation, DirectMessage } from '@/hooks/useMessages';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from '@/components/ui/dialog';
+  Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 
 // ── Conversation List ────────────────────────────────────────────────────────
 function ConversationListPanel({

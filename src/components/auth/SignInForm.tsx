@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -54,7 +54,7 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
         toast.success("Signed in successfully!");
         onAuthSuccess();
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during sign in");
       setCaptchaToken(null); // Reset captcha on error
     } finally {

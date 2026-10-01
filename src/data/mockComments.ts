@@ -1,5 +1,4 @@
 
-import { formatDistanceToNow } from "date-fns";
 
 export interface Comment {
   id: number;

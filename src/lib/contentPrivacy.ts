@@ -7,7 +7,7 @@
 // Emails — standard form and "(at)" / "[at]" / " at " obfuscations
 const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const OBFUSCATED_EMAIL_REGEX =
-  /[A-Z0-9._%+-]+\s*[\(\[\{]?\s*(?:at|@)\s*[\)\]\}]?\s*[A-Z0-9.-]+\s*[\(\[\{]?\s*(?:dot|\.)\s*[\)\]\}]?\s*[A-Z]{2,}/i;
+  /[A-Z0-9._%+-]+\s*[([{]?\s*(?:at|@)\s*[)\]}]?\s*[A-Z0-9.-]+\s*[([{]?\s*(?:dot|\.)\s*[)\]}]?\s*[A-Z]{2,}/i;
 
 // Phone numbers — 7+ digits, optionally separated by spaces, dashes, dots,
 // parentheses, or "+". Catches international and local formats.

@@ -13,8 +13,6 @@ interface AnalyticsData {
   statusData: Array<{ status: string, count: number, color: string }>;
 }
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe'];
-
 export default function RealTimeAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalProjects: 0,

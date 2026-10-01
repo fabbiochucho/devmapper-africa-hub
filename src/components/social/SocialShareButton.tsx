@@ -16,11 +16,9 @@ import {
   Facebook, 
   Twitter, 
   Linkedin, 
-  Instagram, 
   MessageCircle,
   Copy,
   Download,
-  Eye,
   Globe
 } from 'lucide-react';
 
@@ -37,7 +35,6 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   title,
   description,
   url,
-  imageUrl,
   data,
   type
 }) => {
@@ -200,7 +197,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     try {
       await navigator.clipboard.writeText(textToCopy);
       toast("Shareable content copied to clipboard");
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy to clipboard");
     }
   };

@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Building, Shield, Users, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthModalProps {
@@ -39,15 +38,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     phone: "",
     document: "",
   });
-
-  const handleDemoLogin = (userData: any) => {
-    const { password, ...userToStore } = userData;
-    const token = "demo-auth-token";
-    onAuthSuccess(userToStore, token);
-    onClose();
-    setError(null);
-    setLoginData({ email: "", password: "" });
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

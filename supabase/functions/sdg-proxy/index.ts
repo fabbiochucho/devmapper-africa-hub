@@ -108,7 +108,7 @@ serve(async (req) => {
   }
 });
 
-function generateMockSDGData(goal: number, country: string) {
+function generateMockSDGData(_goal: number, _country: string) {
   const years = [2018, 2019, 2020, 2021, 2022];
   return years.map(year => ({
     year,

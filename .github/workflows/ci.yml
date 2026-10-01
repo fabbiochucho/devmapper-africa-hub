@@ -91,12 +91,11 @@ jobs:
       # ─────────────────────────────────────────────────────
       # 4️⃣ LINT: Code quality check (warnings OK, errors block)
       # ─────────────────────────────────────────────────────
+      # Previously every failure fell through to an echo, so lint never blocked.
       - name: Run linter
         run: |
           echo "🔍 Running ESLint..."
-          npm run lint --if-present || \
-          npx eslint . --ext .ts,.tsx --max-warnings=0 --cache || \
-          echo "✓ Lint skipped or passed with warnings"
+          npm run lint
 
       # ─────────────────────────────────────────────────────
       # 5️⃣ TYPECHECK: TypeScript validation (blocking)
@@ -132,11 +131,12 @@ jobs:
       # 8️⃣ BUILD: Create production bundle (REQUIRED — fails explicitly)
       # ─────────────────────────────────────────────────────
       - name: Build application
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           echo "🏗️ Building application..."
-          npm run build --if-present || \
-          npm run preview -- --build 2>/dev/null || \
-          (echo "::error::Build failed — no 'build' or 'preview --build' script found" && exit 1)
+          npm run build
           
           # Verify build output exists
           if [ ! -d dist ] && [ ! -d .next ] && [ ! -d build ]; then
@@ -177,6 +177,7 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
           CI: "true"
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}  # rotated 2026-10-01; never commit it
         continue-on-error: true  # Keep E2E non-blocking (adjust per team policy)
         timeout-minutes: 15  # Prevent hung E2E tests
 

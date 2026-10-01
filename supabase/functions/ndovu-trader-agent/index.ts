@@ -15,7 +15,7 @@ IMPORTANT: This agent advises on tracking and strategy only. It does NOT execute
 Always include this disclaimer: "This is strategic guidance, not financial advice."
 Output format: Summary → Key Insights → Risks → Recommended Actions`;
 
-Deno.serve((req) => handleAgent(req, "carbon_trader_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
+Deno.serve((req) => handleAgent(req, "carbon_trader_ai", SYSTEM_PROMPT, async (supabase) => {
   const dataSources = ["carbon_assets", "carbon_compliance", "carbon_transfer_logs"];
   let contextStr = "";
 

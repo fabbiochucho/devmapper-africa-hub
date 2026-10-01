@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -40,7 +39,6 @@ export default function GeoLayers({ map }: GeoLayersProps) {
   const [layerSources, setLayerSources] = useState<Partial<Record<LayerType, { source: string; isEstimated: boolean; note?: string }>>>({});
 
   const hasEarthIntel = canAccess('view_earth_intelligence');
-  const hasAdvancedIntel = canAccess('advanced_earth_intel');
 
   const toggleLayer = async (layerType: LayerType) => {
     if (!map) {

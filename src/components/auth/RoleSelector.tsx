@@ -11,9 +11,7 @@ import { SELF_ASSIGNABLE_ROLES, type UserRole } from "@/contexts/UserRoleContext
 import { 
   validateEmailForRole, 
   getRoleConfig, 
-  getSuggestedRoleForEmail,
-  roleDomainConfigs 
-} from "@/lib/emailDomainValidation";
+  getSuggestedRoleForEmail} from "@/lib/emailDomainValidation";
 
 interface RoleSelectorProps {
   value: UserRole;

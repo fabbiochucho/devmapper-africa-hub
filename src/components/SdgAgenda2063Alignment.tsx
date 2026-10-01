@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Globe, Target, BookOpen, MapPin, BarChart3, AlertTriangle } from "lucide-react";
+import { Globe, Target, BarChart3, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { africaCountries } from "@/lib/constants";
 

@@ -19,7 +19,7 @@ const DEVMAPPER_TABLES = [
   "corporate_targets", "organizations", "profiles",
 ];
 
-function runRules(output: Record<string, unknown>, contextData?: Record<string, unknown>): RuleEngineCheck {
+function runRules(output: Record<string, unknown>, _contextData?: Record<string, unknown>): RuleEngineCheck {
   const violations: string[] = [];
   const sanitized = { ...output };
 

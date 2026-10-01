@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ListTodo, Clock, ArrowUpDown, CheckCircle2, AlertTriangle, Users, GripVertical } from "lucide-react";
 
@@ -67,16 +66,6 @@ export default function KanbanBoard({ tasks, onStatusChange, hasAssignment, assi
   };
 
   const handleDragEnd = () => setDraggedTask(null);
-
-  const getNextStatus = (current: string): string => {
-    const flow: Record<string, string> = {
-      todo: "in_progress",
-      in_progress: "review",
-      review: "done",
-      blocked: "todo",
-    };
-    return flow[current] || current;
-  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-3">

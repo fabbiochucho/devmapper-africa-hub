@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck, AlertTriangle, CheckCircle, ExternalLink, Globe, Shield, BookOpen } from "lucide-react";
-import { ESG_FRAMEWORKS, analyzeFrameworkGaps, type Framework, type FrameworkGapResult } from "@/lib/esg-frameworks";
+import { FileCheck, AlertTriangle, CheckCircle, ExternalLink, Globe } from "lucide-react";
+import { ESG_FRAMEWORKS, analyzeFrameworkGaps, type FrameworkGapResult } from "@/lib/esg-frameworks";
 
 interface FrameworkGapAnalysisProps {
   availableData?: {

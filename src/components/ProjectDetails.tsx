@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +14,6 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
-import { useUserRole } from "@/contexts/UserRoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getComments, addComment, Comment } from "@/data/mockComments";
 import { Report, Verification } from "@/data/mockReports";

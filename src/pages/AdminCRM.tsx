@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
-import { Loader2, LayoutDashboard, FileText, MessageSquare, Users, Settings, Ticket, Send, Megaphone } from "lucide-react";
+import { Loader2, LayoutDashboard, FileText, MessageSquare, Users, Ticket, Megaphone } from "lucide-react";
 import CMSManager from "@/components/admin/CMSManager";
 import BroadcastManager from "@/components/admin/BroadcastManager";
 import TicketManager from "@/components/admin/TicketManager";

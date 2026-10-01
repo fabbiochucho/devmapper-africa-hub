@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -39,7 +39,7 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<UserRoleData[]>([]);
   const [currentRole, setCurrentRole] = useState<UserRole>('citizen_reporter');
   const [loading, setLoading] = useState(true);
-  const { user: authUser, session, loading: authLoading, userRoles: authRoles } = useAuth();
+  const { user: authUser, loading: authLoading, userRoles: authRoles } = useAuth();
 
   const isAuthenticated = !!authUser;
 

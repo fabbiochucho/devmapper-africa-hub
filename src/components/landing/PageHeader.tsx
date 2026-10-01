@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotificationSystem from "@/components/NotificationSystem";
 import { UserRole } from "@/contexts/UserRoleContext";
-import { Building, Globe, LogOut, Shield, Users, MessageCircle } from "lucide-react";
+import { Building, LogOut, Shield, Users, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface UserType {
@@ -60,7 +60,7 @@ export default function PageHeader({ user, handleLogout, setShowAuthModal }: Pag
               className="w-16 h-16 mr-4"
             />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Dev Mapper</h1>
+              <span className="text-2xl font-bold text-foreground">Dev Mapper</span>
               <p className="text-sm text-muted-foreground font-medium">Africa SDG Tracker</p>
             </div>
           </Link>

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Download, FileJson, FileText, Search, Shield, Link2 } from "lucide-react";
+import { FileJson, FileText, Search, Shield, Link2 } from "lucide-react";
 
 const AuditTrailExport = ({ reportId }: { reportId?: string }) => {
   const { user } = useAuth();

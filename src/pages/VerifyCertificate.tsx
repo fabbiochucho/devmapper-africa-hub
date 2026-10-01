@@ -45,6 +45,7 @@ const VerifyCertificate = () => {
       .eq('certificate_number', num.trim())
       .maybeSingle();
 
+    if (error) console.error('Certificate lookup failed:', error);
     if (data) {
       // Fetch report info separately
       const { data: report } = await supabase

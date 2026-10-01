@@ -98,7 +98,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
             toast.success("Location data extracted from photo and pre-filled.");
             break; 
           }
-        } catch (error) {
+        } catch {
           // Ignore errors
         }
       }

@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEOHead } from "@/components/seo/SEOHead";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Leaf, Recycle, Thermometer, Scale, DollarSign, BarChart3 } from "lucide-react";
+import { Leaf, Recycle, Thermometer, Scale, BarChart3 } from "lucide-react";
 import CarbonCalculator from "@/components/carbon/CarbonCalculator";
 import ProductLifecycle from "@/components/carbon/ProductLifecycle";
 import SupplyChainLogistics from "@/components/carbon/SupplyChainLogistics";

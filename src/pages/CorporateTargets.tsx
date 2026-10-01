@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building, Download, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserRole } from "@/contexts/UserRoleContext";
 import { getCorporateTargets, addCorporateEsgTarget, updateCorporateTarget, CorporateTarget } from "@/data/mockCorporateTargets";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";

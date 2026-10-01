@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Users, Globe2, CheckCircle, DollarSign, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

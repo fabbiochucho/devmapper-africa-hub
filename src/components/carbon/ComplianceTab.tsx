@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Scale, Globe, FileCheck, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Scale, Globe, AlertTriangle } from "lucide-react";
 
 interface ComplianceTabProps {
   reportId: string;

@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, MapPin, Calendar, Award, TrendingUp } from "lucide-react"
 import { Report, mockReports } from "@/data/mockReports"
-import { UserRole } from "@/contexts/UserRoleContext"
 
 interface UserData {
   id: number;

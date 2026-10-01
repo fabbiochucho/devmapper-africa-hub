@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  Users, FileText, Building2, ShieldCheck, MessageSquare, 
-  TrendingUp, DollarSign, Leaf, AlertTriangle, Activity 
+  Users, FileText, Building2, ShieldCheck, 
+  DollarSign, Leaf, AlertTriangle, Activity 
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import ForumModeration from './ForumModeration';

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -306,7 +306,7 @@ const Forum = () => {
         p.id === postId ? { ...p, replies: p.replies + 1 } : p
       ));
       toast.success(t('forum.toastReplySuccess'));
-    } catch (err) {
+    } catch {
       toast.error(t('forum.toastReplyFailed'));
     }
   };
@@ -318,7 +318,7 @@ const Forum = () => {
       if (error) throw error;
       setPosts(prev => prev.filter(p => p.id !== postId));
       toast.success(t('forum.toastDeleteSuccess'));
-    } catch (err) {
+    } catch {
       toast.error(t('forum.toastDeleteFailed'));
     }
   };
@@ -337,7 +337,7 @@ const Forum = () => {
         p.id === postId ? { ...p, isPinned: !p.isPinned } : p
       ));
       toast.success(post.isPinned ? t('forum.toastUnpinned') : t('forum.toastPinned'));
-    } catch (err) {
+    } catch {
       toast.error(t('forum.toastPinFailed'));
     }
   };

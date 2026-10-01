@@ -1,14 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator';
-import { Search, Database, Filter, Download, BarChart3, Target, Globe } from 'lucide-react';
+import { Search, Database, Download, BarChart3 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { SDG_INDICATOR_LIBRARY, type SDGIndicator } from '@/data/sdgIndicatorLibrary';
+import { SDG_INDICATOR_LIBRARY } from '@/data/sdgIndicatorLibrary';
 
 const SDG_NAMES: Record<number, string> = {
   1: 'No Poverty', 2: 'Zero Hunger', 3: 'Good Health & Well-being',

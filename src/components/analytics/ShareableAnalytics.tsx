@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SocialShareButton from '@/components/social/SocialShareButton';
-import { BarChart3, TrendingUp, Globe, Users } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 interface ShareableAnalyticsProps {
   data: {
