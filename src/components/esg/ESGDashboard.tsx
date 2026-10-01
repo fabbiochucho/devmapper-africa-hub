@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
-  BarChart, 
-  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -38,6 +35,7 @@ import ESGReportGenerator from './ESGReportGenerator';
 import ESGReportDialog from './ESGReportDialog';
 import ESGDataVerification from './ESGDataVerification';
 import SupplierCSVImporter from './SupplierCSVImporter';
+import { ManualSupplierEntry } from './ManualSupplierEntry';
 import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 import IFRSReadinessAssessment from './IFRSReadinessAssessment';
@@ -71,7 +69,6 @@ interface Organization {
 
 const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [indicators, setIndicators] = useState<ESGIndicators[]>([]);
@@ -512,8 +509,9 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
 
           {/* Supplier List */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>{t('esg.dashboard.supplierEmissionsTitle')}</CardTitle>
+              <ManualSupplierEntry organizationId={organizationId} onSupplierAdded={() => loadESGData()} />
             </CardHeader>
             <CardContent>
               {suppliers.length > 0 ? (

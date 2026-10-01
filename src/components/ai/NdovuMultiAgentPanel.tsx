@@ -201,7 +201,7 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
                 sessionId={sessionId}
                 entries={synthesis.agentContributions?.map(a => ({
                   agentName: a.agentName,
-                  confidenceScore: synthesis.overallConfidence,
+                  confidenceScore: a.confidence ?? synthesis.overallConfidence,
                   dataSources: [],
                   createdAt: new Date().toISOString(),
                 })) || []}

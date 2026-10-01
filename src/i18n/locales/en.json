@@ -558,7 +558,22 @@
       "entryWaste": "Waste: {{value}}t",
       "entryRecycled": "Recycled: {{value}}t",
       "entryReuse": "Reuse: {{value}}%"
-    }
+    },
+    "categoryElectricity": "Purchased electricity",
+    "categoryStationaryCombustion": "Stationary combustion",
+    "categoryMobileCombustion": "Mobile combustion",
+    "categoryFugitive": "Fugitive emissions",
+    "categoryHeatSteam": "Purchased heat & steam",
+    "categoryPurchasedGoods": "Purchased goods & services",
+    "categoryFuelEnergy": "Fuel- and energy-related activities",
+    "categoryUpstreamTransport": "Upstream transportation",
+    "categoryWasteGenerated": "Waste generated in operations",
+    "categoryBusinessTravel": "Business travel",
+    "categoryEmployeeCommuting": "Employee commuting",
+    "categoryDownstreamTransport": "Downstream transportation",
+    "categoryCapitalGoods": "Capital goods",
+    "categoryEndOfLife": "End-of-life treatment of sold products",
+    "categoryElectricityLifecycle": "Electricity (lifecycle estimate)"
   },
   "forum": {
     "anonymous": "Anonymous",

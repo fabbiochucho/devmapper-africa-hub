@@ -52,7 +52,8 @@ interface CarbonEntry {
 const EMISSION_SOURCES = ["Energy", "Transport", "Agriculture", "Waste", "Industrial"];
 const SCOPE_TYPES = ["Scope 1", "Scope 2", "Scope 3"];
 const FUNDING_SOURCES = ["Government", "Donor", "Corporate", "Self-funded"];
-const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "#10b981", "#f59e0b"];
+// --secondary/--accent are near-white surface tokens, so they made pie slices invisible.
+const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--info))", "hsl(var(--warning))", "#8b5cf6", "#ef4444"];
 
 const CATEGORY_LABEL_KEYS: Record<string, string> = {
   electricity: "carbon.categoryElectricity",
