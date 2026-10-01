@@ -168,54 +168,12 @@ jobs:
           echo "🌐 Installing Playwright browsers..."
           npx playwright install --with-deps chromium
           
-          # Start preview server with port conflict handling
-          echo "🚀 Starting preview server on port 4173..."
-          npm run preview -- --port 4173 --host &
-          SERVER_PID=$!
-          
-          # Wait for server to respond (with timeout)
-          echo "⏳ Waiting for server..."
-          for i in {1..30}; do
-            if curl -sf http://localhost:4173 > /dev/null 2>&1; then
-              echo "✓ Server ready at http://localhost:4173"
-              break
-            fi
-            sleep 2
-          done
-          
-          # Run tests with CLI flags that override config (no file edits needed)
+          # playwright.config.ts starts its own 'vite preview' on :4173 when CI is set, so no
+          # manual server here. (The previous inline config was a heredoc at column 0 inside
+          # this block scalar, which made the whole workflow invalid YAML from 17 May 2026.)
+          # Only the chromium project runs: 'mobile' emulates an iPhone and needs WebKit.
           echo "🧪 Running Playwright tests..."
-          npx playwright test \
-            --project=chromium \
-            --reporter=list \
-            --timeout=30000 \
-            --retries=1 \
-            --workers=1 \
-            --output-dir=playwright-report \
-            --config=<(cat <<'EOF'
-import { defineConfig, devices } from '@playwright/test';
-export default defineConfig({
-  use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4173',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-  webServer: {
-    command: 'npm run preview -- --port 4173',
-    url: 'http://localhost:4173',
-    reuseExistingServer: true,  // ← Prevents port conflict errors
-    timeout: 30000,
-  },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-});
-EOF
-) || TEST_EXIT=$?
-          
-          # Cleanup: kill server process
-          kill $SERVER_PID 2>/dev/null || true
-          
-          # Exit with test result (0 = success)
-          exit ${TEST_EXIT:-0}
+          npx playwright test --project=chromium --reporter=list
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
           CI: "true"
