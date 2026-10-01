@@ -112,7 +112,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "🧪 Running unit tests..."
-          npm test -- --passWithNoTests --coverage=false --reporters=default
+          npm test -- --passWithNoTests --coverage=false --reporter=default
 
       # ─────────────────────────────────────────────────────
       # 7️⃣ SECURITY AUDIT: Non-blocking vulnerability scan
