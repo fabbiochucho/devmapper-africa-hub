@@ -1,3 +1,4 @@
+import type { Db } from "./db.ts";
 // deno-lint-ignore-file no-explicit-any
 
 export interface ConfirmOrderPaidResult {
@@ -13,7 +14,7 @@ export interface ConfirmOrderPaidResult {
  * and Paystack webhook handlers.
  */
 export async function confirmOrderPaid(
-  supabase: any,
+  supabase: Db,
   orderId: string,
   paymentReference: string,
 ): Promise<ConfirmOrderPaidResult> {

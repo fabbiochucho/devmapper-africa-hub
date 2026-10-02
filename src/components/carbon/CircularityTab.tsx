@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,17 +42,17 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
   const [wasteRec, setWasteRec] = useState("");
   const [reusePct, setReusePct] = useState("");
 
-  useEffect(() => { fetchData(); }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from("project_circularity")
       .select("*")
       .eq("report_id", reportId)
       .order("created_at", { ascending: false });
-    if (data) setEntries(data as any);
+    if (data) setEntries(data);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchData(); }, [fetchData, reportId]);
 
   const calcCircularityScore = (wasteG: number, wasteR: number, reuse: number): number => {
     const diversionFactor = wasteG > 0 ? (wasteR / wasteG) * 0.5 : 0;
@@ -80,7 +80,7 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
       waste_recycled_tonnes: wr || null,
       reuse_percentage: rp || null,
       circularity_score: score,
-    } as any);
+    });
     if (error) { toast.error(t("carbon.circularity.saveFailed")); return; }
     toast.success(t("carbon.circularity.saved"));
     resetForm();

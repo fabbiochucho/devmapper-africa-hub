@@ -61,7 +61,7 @@ serve(async (req) => {
 
     // Check if GEE service account is configured
     const geeServiceAccount = Deno.env.get('GEE_SERVICE_ACCOUNT_KEY');
-    let geeData: any;
+    let geeData: unknown;
 
     if (geeServiceAccount) {
       console.log('[GEE-PROXY] Using live GEE API');
@@ -208,7 +208,7 @@ async function fetchLiveGEEData(body: GEERequest, serviceAccountKey: string) {
   };
 }
 
-function generateEstimatedGEEData(type: string, bounds: any) {
+function generateEstimatedGEEData(type: string, bounds: GEERequest['bounds']) {
   const resolution = 0.1;
   const data = [];
   const latDiff = Math.min(bounds.north - bounds.south, 10);

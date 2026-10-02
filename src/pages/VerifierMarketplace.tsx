@@ -17,6 +17,7 @@ import { Shield, Star, Award, CheckCircle, Clock, MapPin, Search, Plus, Send } f
 import { SEOHead } from "@/components/seo/SEOHead";
 import { listUsersByRole, routeToGovernmentReviewer, type RoleUserOption } from "@/lib/report-workflow";
 import { UserBadgeList } from "@/components/badges/UserBadgeList";
+import { errorMessageOf } from '@/lib/error-handler';
 
 const VerifierMarketplace = () => {
   const { user } = useAuth();
@@ -150,8 +151,8 @@ const VerifierMarketplace = () => {
       toast.success("Assignment completed and routed to government reviewer");
       setRoutingAssignment(null);
       queryClient.invalidateQueries({ queryKey: ["my-verification-assignments"] });
-    } catch (e: any) {
-      toast.error("Failed to route to government reviewer", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Failed to route to government reviewer", { description: errorMessageOf(e) });
     } finally {
       setRoutingSubmitting(false);
     }

@@ -5,6 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// What each agent stores in ai_agent_outputs.structured_output (written by the LLM, so all optional)
+interface AgentStructuredOutput {
+  keyInsights?: string[];
+  risks?: string[];
+  recommendedActions?: string[];
+  requiresHumanReview?: boolean;
+  confidenceScore?: number;
+  summary?: string;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -15,7 +25,7 @@ Deno.serve(async (req) => {
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-  let body: any;
+  let body: { sessionId?: unknown } | null;
   try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
   const { sessionId } = body ?? {};
   if (typeof sessionId !== "string" || sessionId.length < 8) {
@@ -62,7 +72,7 @@ Deno.serve(async (req) => {
 
   for (let i = 0; i < outputs.length; i++) {
     const output = outputs[i];
-    const so = (output.structured_output ?? {}) as Record<string, any>;
+    const so = (output.structured_output ?? {}) as AgentStructuredOutput;
     if (Array.isArray(so.keyInsights)) allInsights.push(...so.keyInsights);
     if (Array.isArray(so.risks)) allRisks.push(...so.risks);
     if (Array.isArray(so.recommendedActions)) allActions.push(...so.recommendedActions);

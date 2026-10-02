@@ -18,6 +18,7 @@ import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";
 import { sdgGoals, carbonProjectTypes as PROJECT_TYPES } from "@/lib/constants";
+import type { Tables } from "@/integrations/supabase/types";
 
 const CarbonMarketplace = () => {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ const CarbonMarketplace = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [selectedListing, setSelectedListing] = useState<Tables<'marketplace_listings'> | null>(null);
   const [purchaseQty, setPurchaseQty] = useState("");
 
   const [listingForm, setListingForm] = useState({
@@ -88,7 +89,7 @@ const CarbonMarketplace = () => {
         seller_id: user.id,
         title: listingForm.title,
         description: listingForm.description,
-        project_type: listingForm.project_type as any,
+        project_type: listingForm.project_type,
         methodology: listingForm.methodology || null,
         vintage_year: parseInt(listingForm.vintage_year),
         country_code: listingForm.country_code || null,
@@ -371,7 +372,7 @@ const CarbonMarketplace = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {myOrders.map((o: any) => (
+                      {myOrders.map((o) => (
                         <TableRow key={o.id}>
                           <TableCell className="font-medium">{o.marketplace_listings?.title || "Unknown"}</TableCell>
                           <TableCell>{o.quantity} tCO2e</TableCell>

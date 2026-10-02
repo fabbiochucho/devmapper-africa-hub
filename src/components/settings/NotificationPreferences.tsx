@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Bell, Mail, MessageSquare, Megaphone, Save } from 'lucide-react';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface NotificationPrefs {
   email_notifications: boolean;
@@ -68,8 +69,8 @@ export default function NotificationPreferences() {
 
       if (error) throw error;
       toast.success('Notification preferences saved');
-    } catch (error: any) {
-      toast.error('Failed to save preferences: ' + error.message);
+    } catch (error: unknown) {
+      toast.error('Failed to save preferences: ' + errorMessageOf(error));
     } finally {
       setSaving(false);
     }

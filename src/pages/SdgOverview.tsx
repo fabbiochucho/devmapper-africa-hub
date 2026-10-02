@@ -289,7 +289,7 @@ export default function SdgOverview() {
                   <Tooltip
                     contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }}
                   />
-                  <Bar dataKey="score" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: any) => handleGoalSelect(d.goal)}>
+                  <Bar dataKey="score" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: { payload?: { goal?: number } }) => { if (d.payload?.goal) handleGoalSelect(d.payload.goal); }}>
                     {overviewChartData.map((entry, index) => (
                       <Cell key={index} fill={entry.fill} />
                     ))}

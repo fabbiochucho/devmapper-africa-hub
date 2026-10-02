@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,20 +40,7 @@ import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 import IFRSReadinessAssessment from './IFRSReadinessAssessment';
 import FrameworkGapAnalysis from './FrameworkGapAnalysis';
-
-interface ESGIndicators {
-  id: string;
-  reporting_year: number;
-  carbon_scope1_tonnes: number;
-  carbon_scope2_tonnes: number;
-  carbon_scope3_tonnes: number;
-  energy_consumption_kwh: number;
-  water_consumption_m3: number;
-  waste_generated_tonnes: number;
-  renewable_energy_percentage: number;
-  esg_score: number;
-  verification_status: string;
-}
+import type { Tables } from "@/integrations/supabase/types";
 
 interface Organization {
   id: string;
@@ -71,20 +58,14 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [indicators, setIndicators] = useState<ESGIndicators[]>([]);
-  const [benchmark, setBenchmark] = useState<any>(null);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [indicators, setIndicators] = useState<Tables<'esg_indicators'>[]>([]);
+  const [benchmark, setBenchmark] = useState<AlphaEarthBenchmark | null>(null);
+  const [suppliers, setSuppliers] = useState<Tables<'esg_suppliers'>[]>([]);
   const [supplierEmissions, setSupplierEmissions] = useState<Record<string, { total: number; year: number; quality: string }>>({});
   const [sectorBenchmarks, setSectorBenchmarks] = useState<Record<string, AlphaEarthBenchmark>>({});
-  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [scenarios, setScenarios] = useState<Tables<'esg_scenarios'>[]>([]);
 
-  useEffect(() => {
-    if (organizationId) {
-      loadESGData();
-    }
-  }, [organizationId]);
-
-  const loadESGData = async () => {
+  const loadESGData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -189,7 +170,13 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
+
+  useEffect(() => {
+    if (organizationId) {
+      loadESGData();
+    }
+  }, [loadESGData, organizationId]);
 
   const enableESG = async () => {
     try {

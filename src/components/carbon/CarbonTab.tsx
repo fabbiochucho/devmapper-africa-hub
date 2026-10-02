@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,11 +111,6 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     vendor: string | null; billing_period: string | null; confidence: string;
   } | null>(null);
 
-  useEffect(() => {
-    fetchEntries();
-    fetchFactors();
-  }, [reportId]);
-
   const fetchFactors = async () => {
     const { data } = await supabase
       .from("emission_factors")
@@ -130,15 +125,20 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
     ? (parseFloat(activityQuantity) * selectedFactor.factor_kgco2e) / 1000
     : null;
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     const { data, error } = await supabase
       .from("project_carbon_data")
       .select("*, emission_factors(activity, source, source_year, region)")
       .eq("report_id", reportId)
       .order("created_at", { ascending: false });
-    if (!error && data) setEntries(data as any);
+    if (!error && data) setEntries(data);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    fetchEntries();
+    fetchFactors();
+  }, [fetchEntries, reportId]);
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -161,7 +161,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       activity_quantity: isActivityBased ? parseFloat(activityQuantity) : null,
       activity_unit: isActivityBased ? selectedFactor!.unit : null,
       emission_factor_id: isActivityBased ? selectedFactor!.id : null,
-    } as any);
+    });
     if (error) { toast.error(t("carbon.failedToSaveCarbonData")); return; }
     toast.success(t("carbon.carbonDataSaved"));
     resetForm();

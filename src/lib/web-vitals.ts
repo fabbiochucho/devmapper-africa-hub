@@ -5,6 +5,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+// Fields not yet in TypeScript's DOM lib: layout-shift entries and Chromium's navigator hints.
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+interface NavigatorWithHints extends Navigator {
+  connection?: { effectiveType?: string };
+  deviceMemory?: number;
+}
+
 interface WebVitalMetric {
   name: string;
   value: number;
@@ -57,8 +67,8 @@ async function flushMetrics() {
         metric_delta: Math.round(metric.delta * 100) / 100,
         metric_id: metric.id,
         navigation_type: metric.navigationType,
-        connection_type: (navigator as any).connection?.effectiveType || 'unknown',
-        device_memory: (navigator as any).deviceMemory || null,
+        connection_type: (navigator as NavigatorWithHints).connection?.effectiveType || 'unknown',
+        device_memory: (navigator as NavigatorWithHints).deviceMemory || null,
         hardware_concurrency: navigator.hardwareConcurrency || null,
         timestamp: Date.now(),
       }
@@ -89,7 +99,7 @@ function onMetric(name: string, entry: PerformanceEntry, navigationType: string)
   switch (name) {
     case 'CLS':
       // CLS is accumulated from layout shift entries
-      value = (entry as any).value || 0;
+      value = (entry as LayoutShiftEntry).value || 0;
       break;
     case 'LCP':
       value = (entry as PerformanceEntry).startTime;
@@ -98,7 +108,7 @@ function onMetric(name: string, entry: PerformanceEntry, navigationType: string)
       value = (entry as PerformanceEventTiming).processingStart - entry.startTime;
       break;
     case 'INP':
-      value = (entry as any).duration || 0;
+      value = (entry).duration || 0;
       break;
     default:
       value = entry.startTime;
@@ -158,7 +168,7 @@ export function initWebVitals() {
     const clsObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         // Only count layout shifts without recent user input
-        if (!(entry as any).hadRecentInput) {
+        if (!(entry as LayoutShiftEntry).hadRecentInput) {
           const firstSessionEntry = sessionEntries[0];
           const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
 
@@ -172,10 +182,10 @@ export function initWebVitals() {
             entry.startTime - lastSessionEntry.startTime < 1000 &&
             entry.startTime - firstSessionEntry.startTime < 5000
           ) {
-            sessionValue += (entry as any).value;
+            sessionValue += (entry as LayoutShiftEntry).value;
             sessionEntries.push(entry);
           } else {
-            sessionValue = (entry as any).value;
+            sessionValue = (entry as LayoutShiftEntry).value;
             sessionEntries = [entry];
           }
 
@@ -188,7 +198,7 @@ export function initWebVitals() {
 
       // Report CLS with accumulated value
       if (clsEntries.length > 0) {
-        const syntheticEntry = { ...clsEntries[clsEntries.length - 1], value: clsValue } as any;
+        const syntheticEntry = { ...clsEntries[clsEntries.length - 1], value: clsValue };
         onMetric('CLS', syntheticEntry, navigationType);
       }
     });
@@ -213,7 +223,7 @@ export function initWebVitals() {
     const navEntries = performance.getEntriesByType('navigation');
     if (navEntries.length > 0) {
       const navEntry = navEntries[0] as PerformanceNavigationTiming;
-      const ttfbEntry = { ...navEntry, startTime: navEntry.responseStart } as any;
+      const ttfbEntry = { ...navEntry, startTime: navEntry.responseStart };
       onMetric('TTFB', ttfbEntry, navigationType);
     }
   } catch { /* Not available */ }
@@ -224,11 +234,11 @@ export function initWebVitals() {
       const entries = list.getEntries();
       // Report the worst interaction
       const worstEntry = entries.reduce((worst, entry) => {
-        return (!worst || (entry as any).duration > (worst as any).duration) ? entry : worst;
+        return (!worst || (entry).duration > (worst).duration) ? entry : worst;
       }, null as PerformanceEntry | null);
       if (worstEntry) onMetric('INP', worstEntry, navigationType);
     });
-    inpObserver.observe({ type: 'event', buffered: true } as any);
+    inpObserver.observe({ type: 'event', buffered: true });
   } catch { /* Observer not supported */ }
 
   // Flush remaining metrics when page is unloaded

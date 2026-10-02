@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,9 +72,7 @@ export default function ProcurementTracker({ reportId, isOwner }: ProcurementTra
   const [scope, setScope] = useState("");
   const [evidenceUrl, setEvidenceUrl] = useState("");
 
-  useEffect(() => { fetchContracts(); }, [reportId]);
-
-  const fetchContracts = async () => {
+  const fetchContracts = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("project_procurement")
@@ -86,7 +84,9 @@ export default function ProcurementTracker({ reportId, isOwner }: ProcurementTra
       setContracts(data);
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchContracts(); }, [fetchContracts, reportId]);
 
   const addContract = async () => {
     if (!contractorName.trim() || !contractValue || !user) return;

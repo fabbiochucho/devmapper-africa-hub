@@ -138,7 +138,3 @@ export default function ProductWalkthrough() {
   );
 }
 
-/** Call this to reset the walkthrough (e.g., from settings) */
-export function resetWalkthrough() {
-  localStorage.removeItem(STORAGE_KEY);
-}

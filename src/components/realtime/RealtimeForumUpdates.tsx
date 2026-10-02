@@ -3,6 +3,7 @@ import { useRealtime } from '@/hooks/useRealtime';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Heart } from 'lucide-react';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface ForumPost {
   id: string;
@@ -13,7 +14,7 @@ interface ForumPost {
 }
 
 export function RealtimeForumUpdates() {
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<{ type: 'new_post' | 'new_like'; title?: string; time: Date; id: string }[]>([]);
 
   // Listen for new forum posts
   useRealtime<{ new: ForumPost }>(
@@ -36,7 +37,7 @@ export function RealtimeForumUpdates() {
   );
 
   // Listen for likes
-  useRealtime<{ new: any }>(
+  useRealtime<{ new: Tables<'forum_post_likes'> }>(
     'forum_post_likes',
     'INSERT',
     (payload) => {

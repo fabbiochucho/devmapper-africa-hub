@@ -6,6 +6,8 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
+import { errorMessageOf } from '@/lib/error-handler';
 
 export interface LedgerEntry {
   id: string;
@@ -45,10 +47,10 @@ async function sha256(message: string): Promise<string> {
 export async function appendToLedger(
   reportId: string,
   eventType: LedgerEventType,
-  payload: Record<string, unknown> = {}
+  payload: { [key: string]: Json | undefined } = {}
 ): Promise<{ data: LedgerEntry | null; error: string | null }> {
   try {
-    const { data: lastEntry } = await (supabase as any)
+    const { data: lastEntry } = await (supabase)
       .from('verification_ledger')
       .select('entry_hash, sequence_number')
       .eq('report_id', reportId)
@@ -65,7 +67,7 @@ export async function appendToLedger(
 
     const { data: user } = await supabase.auth.getUser();
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('verification_ledger')
       .insert({
         report_id: reportId,
@@ -82,8 +84,8 @@ export async function appendToLedger(
 
     if (error) return { data: null, error: error.message };
     return { data: data as LedgerEntry, error: null };
-  } catch (err: any) {
-    return { data: null, error: err.message };
+  } catch (err: unknown) {
+    return { data: null, error: errorMessageOf(err) };
   }
 }
 
@@ -92,7 +94,7 @@ export async function fetchAndVerifyLedger(reportId: string): Promise<{
   isValid: boolean;
   brokenAt: number | null;
 }> {
-  const { data: entries, error } = await (supabase as any)
+  const { data: entries, error } = await (supabase)
     .from('verification_ledger')
     .select('*')
     .eq('report_id', reportId)

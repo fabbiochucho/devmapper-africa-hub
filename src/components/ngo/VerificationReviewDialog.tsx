@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapPin, Target, Calendar, FileText, Image, CheckCircle2, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { errorMessageOf } from '@/lib/error-handler';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface VerificationReviewDialogProps {
   open: boolean;
@@ -38,7 +40,7 @@ export default function VerificationReviewDialog({
   const [decision, setDecision] = useState<'approved' | 'rejected' | 'needs_revision'>('approved');
   const [comments, setComments] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [evidence, setEvidence] = useState<any[]>([]);
+  const [evidence, setEvidence] = useState<Tables<'evidence_items'>[]>([]);
   const [loadingEvidence, setLoadingEvidence] = useState(false);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export default function VerificationReviewDialog({
         verification_level: 'ngo',
         status: decision,
         comments: comments.trim(),
-      } as any);
+      });
 
       if (error) throw error;
 
@@ -88,8 +90,8 @@ export default function VerificationReviewDialog({
       setDecision('approved');
       onVerified();
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error('Failed to submit verification: ' + error.message);
+    } catch (error: unknown) {
+      toast.error('Failed to submit verification: ' + errorMessageOf(error));
     } finally {
       setSubmitting(false);
     }
@@ -215,7 +217,7 @@ export default function VerificationReviewDialog({
           <TabsContent value="decision" className="space-y-4 mt-4">
             <div className="space-y-3">
               <Label>Verification Decision</Label>
-              <RadioGroup value={decision} onValueChange={(v) => setDecision(v as any)}>
+              <RadioGroup value={decision} onValueChange={(v) => setDecision(v as typeof decision)}>
                 <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
                   <RadioGroupItem value="approved" id="approved" />
                   <Label htmlFor="approved" className="flex items-center gap-2 cursor-pointer flex-1">

@@ -65,7 +65,7 @@ serve(async (req) => {
     if (country) apiUrl += `&countries=${country.toUpperCase()}`;
     if (sector) apiUrl += `&sector=${sector}`;
 
-    let emissionsData: any;
+    let emissionsData: { metadata?: { source?: string; [key: string]: unknown } } & Record<string, unknown>;
 
     try {
       const apiResponse = await fetch(apiUrl, {

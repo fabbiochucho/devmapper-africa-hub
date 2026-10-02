@@ -11,14 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { FileText, Loader2, Download, Globe, BarChart3, Target, Leaf, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Tables } from "@/integrations/supabase/types";
+import type { AlphaEarthBenchmark } from "@/lib/alphaearth-client";
 
 interface ESGReportDialogProps {
   organizationName: string;
   organizationId: string;
-  indicators: any[];
-  suppliers: any[];
-  scenarios: any[];
-  benchmark: any;
+  indicators: Tables<'esg_indicators'>[];
+  suppliers: Tables<'esg_suppliers'>[];
+  scenarios: Tables<'esg_scenarios'>[];
+  benchmark: AlphaEarthBenchmark | null;
   planType: 'free' | 'lite' | 'pro';
 }
 
@@ -349,11 +351,11 @@ function buildReport(opts: {
   standard: StandardConfig;
   org: string;
   year: string;
-  indicators: any;
+  indicators: Tables<'esg_indicators'> | undefined;
   totalEmissions: number;
-  suppliers: any[];
-  scenarios: any[];
-  benchmark: any;
+  suppliers: Tables<'esg_suppliers'>[];
+  scenarios: Tables<'esg_scenarios'>[];
+  benchmark: AlphaEarthBenchmark | null;
   sections: string[];
   countryStandard: string;
 }) {

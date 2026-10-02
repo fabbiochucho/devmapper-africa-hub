@@ -22,12 +22,13 @@ interface Notification {
 
 const NotificationCenter = () => {
   const { session } = useAuth();
+  const userId = session?.user?.id;
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [, setLoading] = useState(false);
 
   const loadNotifications = useCallback(async () => {
-    if (!session?.user) return;
+    if (!userId) return;
     setLoading(true);
     try {
       // Batch both queries in parallel
@@ -40,7 +41,7 @@ const NotificationCenter = () => {
         supabase
           .from("conversation_participants")
           .select("conversation_id")
-          .eq("user_id", session.user.id),
+          .eq("user_id", userId),
       ]);
 
       let messageNotifications: Notification[] = [];
@@ -51,7 +52,7 @@ const NotificationCenter = () => {
           .from("direct_messages")
           .select("id, content, created_at")
           .in("conversation_id", conversationIds)
-          .neq("sender_id", session.user.id)
+          .neq("sender_id", userId)
           .order("created_at", { ascending: false })
           .limit(10);
 
@@ -72,7 +73,7 @@ const NotificationCenter = () => {
         title: b.subject,
         content: b.message.substring(0, 100) + (b.message.length > 100 ? "..." : ""),
         priority: b.priority,
-        isRead: Array.isArray(b.is_read_by) && b.is_read_by.includes(session.user.id),
+        isRead: Array.isArray(b.is_read_by) && b.is_read_by.includes(userId),
         createdAt: b.created_at,
       }));
 
@@ -85,18 +86,18 @@ const NotificationCenter = () => {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [userId]);
 
   // Load on open
   useEffect(() => {
-    if (session?.user && open) {
+    if (userId && open) {
       loadNotifications();
     }
-  }, [session?.user, open, loadNotifications]);
+  }, [userId, open, loadNotifications]);
 
   // Realtime: listen for new broadcasts and messages
   useEffect(() => {
-    if (!session?.user) return;
+    if (!userId) return;
 
     const channel = supabase
       .channel('notification-center')
@@ -105,7 +106,7 @@ const NotificationCenter = () => {
         schema: 'public',
         table: 'admin_broadcasts',
       }, (payload) => {
-        const b = payload.new as any;
+        const b = payload.new;
         const notif: Notification = {
           id: b.id,
           type: "broadcast",
@@ -122,8 +123,8 @@ const NotificationCenter = () => {
         schema: 'public',
         table: 'direct_messages',
       }, (payload) => {
-        const msg = payload.new as any;
-        if (msg.sender_id === session.user.id) return;
+        const msg = payload.new;
+        if (msg.sender_id === userId) return;
         const notif: Notification = {
           id: msg.id,
           type: "message",
@@ -140,7 +141,7 @@ const NotificationCenter = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]);
+  }, [userId]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -149,7 +150,7 @@ const NotificationCenter = () => {
       .filter(n => n.type === "broadcast" && !n.isRead)
       .map(n => n.id);
 
-    if (broadcastIds.length > 0 && session?.user?.id) {
+    if (broadcastIds.length > 0 && userId) {
       // Appends the caller's own id server-side (mark_broadcast_read RPC) -
       // a plain .update() here would overwrite the shared is_read_by array
       // and wipe out every other recipient's read receipt, and would be
@@ -161,7 +162,7 @@ const NotificationCenter = () => {
 
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     toast.success("All notifications marked as read");
-  }, [notifications, session?.user?.id]);
+  }, [notifications, userId]);
 
   const getIcon = (type: string, priority: string) => {
     if (type === "message") return <MessageSquare className="w-4 h-4 text-info" />;
@@ -176,7 +177,7 @@ const NotificationCenter = () => {
   const broadcastNotifs = notifications.filter(n => n.type === "broadcast");
   const messageNotifs = notifications.filter(n => n.type === "message");
 
-  if (!session?.user) return null;
+  if (!userId) return null;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

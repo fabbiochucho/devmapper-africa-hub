@@ -1,4 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database, Db } from "./db.ts";
+
+/** What every agent's data fetcher receives: the caller plus any client-supplied context. */
+export type AgentContext = { userId: string } & Record<string, unknown>;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,7 +85,7 @@ async function embedText(text: string): Promise<{ vector: number[] | null; error
 }
 
 /** Generates and upserts an embedding for a single report's title+description. Best-effort. */
-async function indexReportEmbedding(supabaseAdmin: any, reportId: string): Promise<{ ok: boolean; error?: string }> {
+async function indexReportEmbedding(supabaseAdmin: Db, reportId: string): Promise<{ ok: boolean; error?: string }> {
   const { data: report, error: fetchError } = await supabaseAdmin
     .from("reports")
     .select("id, title, description")
@@ -95,7 +99,7 @@ async function indexReportEmbedding(supabaseAdmin: any, reportId: string): Promi
 
   const { error: upsertError } = await supabaseAdmin
     .from("report_embeddings")
-    .upsert({ report_id: report.id, embedding: vector, source_text: sourceText, updated_at: new Date().toISOString() });
+    .upsert({ report_id: report.id, embedding: JSON.stringify(vector), source_text: sourceText, updated_at: new Date().toISOString() });
   if (upsertError) return { ok: false, error: upsertError.message };
 
   return { ok: true };
@@ -103,7 +107,7 @@ async function indexReportEmbedding(supabaseAdmin: any, reportId: string): Promi
 
 /** Embeds a free-text query and returns the top-K semantically similar reports the given user can access. */
 async function fetchSimilarReports(
-  supabaseAdmin: any,
+  supabaseAdmin: Db,
   queryText: string,
   requestingUserId: string,
   matchCount = 5,
@@ -112,7 +116,7 @@ async function fetchSimilarReports(
   if (!vector) return { matches: [], error };
 
   const { data, error: rpcError } = await supabaseAdmin.rpc("match_report_embeddings", {
-    query_embedding: vector,
+    query_embedding: JSON.stringify(vector), // pgvector accepts its text form
     match_count: matchCount,
     requesting_user_id: requestingUserId,
   });
@@ -158,22 +162,22 @@ async function handleAgent(
   req: Request,
   agentName: string,
   systemPrompt: string,
-  dataFetcher: (supabase: any, context: any) => Promise<{ contextStr: string; dataSources: string[] }>
+  dataFetcher: (supabase: Db, context: AgentContext) => Promise<{ contextStr: string; dataSources: string[] }>
 ) {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return jsonError("Unauthorized", 401);
 
-  const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabaseAdmin = createClient<Database>(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) return jsonError("Invalid token", 401);
 
-  const supabaseUser = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+  const supabaseUser = createClient<Database>(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authHeader } },
   });
 
-  let body: any;
+  let body: { sessionId?: unknown; userMessage?: unknown; contextData?: Record<string, unknown>; expertMode?: unknown } | null;
   try { body = await req.json(); } catch { return jsonError("Invalid JSON body", 400); }
 
   const { sessionId, userMessage, contextData, expertMode } = body ?? {};

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { GraduationCap, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ScholarshipApplication {
   id: string;
@@ -33,11 +34,7 @@ export function ScholarshipManager() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
 
-  useEffect(() => {
-    fetchApplications();
-  }, [filter]);
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('scholarships')
@@ -56,7 +53,11 @@ export function ScholarshipManager() {
       setApplications(data as ScholarshipApplication[]);
     }
     setLoading(false);
-  };
+  }, [filter, t]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications, filter]);
 
   const handleApprove = async (app: ScholarshipApplication) => {
     try {
@@ -91,8 +92,8 @@ export function ScholarshipManager() {
 
       toast.success(t('admin.scholarships.approveSuccess'));
       fetchApplications();
-    } catch (error: any) {
-      toast.error(error.message || t('admin.scholarships.approveError'));
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || t('admin.scholarships.approveError'));
     }
   };
 

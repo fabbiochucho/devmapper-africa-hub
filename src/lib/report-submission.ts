@@ -19,7 +19,7 @@ export async function submitReportToServer(
   values: ReportFormValues,
   photos: File[],
   userId: string,
-  fetchGEEData: (params: { type: 'ndvi'; bounds: { north: number; south: number; east: number; west: number } }) => Promise<any>,
+  fetchGEEData: (params: { type: 'ndvi'; bounds: { north: number; south: number; east: number; west: number } }) => Promise<{ data?: { value: number; lat: number; lng: number }[]; metadata?: { source?: string } } | null>,
 ): Promise<SubmitReportResult> {
   const { data: report, error: reportError } = await supabase
     .from('reports')

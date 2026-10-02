@@ -2,7 +2,6 @@
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) {
-    console.log('Service Worker not supported');
     return null;
   }
 
@@ -20,7 +19,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
         );
       }
 
-      console.log('SW disabled in development');
     } catch (error) {
       console.error('SW cleanup failed:', error);
     }
@@ -30,7 +28,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
 
   try {
     const registration = await navigator.serviceWorker.register('/sw.js');
-    console.log('SW registered:', registration.scope);
     return registration;
   } catch (error) {
     console.error('SW registration failed:', error);
@@ -40,7 +37,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
 
 export async function subscribeToPush(registration: ServiceWorkerRegistration): Promise<PushSubscription | null> {
   if (!('PushManager' in window)) {
-    console.log('Push not supported');
     return null;
   }
 
@@ -50,7 +46,7 @@ export async function subscribeToPush(registration: ServiceWorkerRegistration): 
     if (existing) return existing;
 
     // For web push, we'd need a VAPID key. For now, return null until configured.
-    console.log('Push subscription requires VAPID key configuration');
+    console.warn('Push subscription requires VAPID key configuration');
     return null;
   } catch (error) {
     console.error('Push subscription failed:', error);
@@ -60,5 +56,5 @@ export async function subscribeToPush(registration: ServiceWorkerRegistration): 
 
 export function isPWAInstalled(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches
-    || (window.navigator as any).standalone === true;
+    || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 }

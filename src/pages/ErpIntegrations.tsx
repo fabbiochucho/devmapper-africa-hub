@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plug, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ErpConnection {
   id: string;
@@ -66,8 +67,8 @@ export default function ErpIntegrations() {
       setBaseUrl('');
       setSecretName('');
       await loadConnections(organizationId);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create connection');
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || 'Failed to create connection');
     } finally {
       setCreating(false);
     }
@@ -83,8 +84,8 @@ export default function ErpIntegrations() {
       if (error) throw error;
       toast.success(`Synced ${data?.processed ?? 0} line items (${data?.matched ?? 0} matched to emission factors)`);
       if (organizationId) await loadConnections(organizationId);
-    } catch (error: any) {
-      toast.error(error.message || 'Sync failed');
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || 'Sync failed');
     } finally {
       setSyncingId(null);
     }
@@ -92,7 +93,7 @@ export default function ErpIntegrations() {
 
   const statusBadge = (status: string) => {
     const variant = status === 'connected' ? 'default' : status === 'error' ? 'destructive' : status === 'syncing' ? 'secondary' : 'outline';
-    return <Badge variant={variant as any}>{status.replace('_', ' ')}</Badge>;
+    return <Badge variant={variant}>{status.replace('_', ' ')}</Badge>;
   };
 
   return (

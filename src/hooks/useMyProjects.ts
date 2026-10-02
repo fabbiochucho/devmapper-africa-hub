@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Tables } from "@/integrations/supabase/types";
 
 export interface ProjectReport {
   id: string;
@@ -80,7 +81,7 @@ export function useMyProjects() {
         ?.map(a => a.report_id)
         .filter(id => !ownReports?.some(r => r.id === id)) || [];
 
-      let affiliatedReports: any[] = [];
+      let affiliatedReports: Tables<'reports'>[] = [];
       if (affiliatedIds.length > 0) {
         const { data, error } = await supabase
           .from('reports')

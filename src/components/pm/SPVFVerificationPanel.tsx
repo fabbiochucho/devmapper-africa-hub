@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,8 @@ import {
 import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
 import AuditTrailExport from '@/components/verification/AuditTrailExport';
 import AICopilot from '@/components/ai/AICopilot';
+import type { Tables } from "@/integrations/supabase/types";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 
 interface SPVFVerificationPanelProps {
   reportId: string;
@@ -47,11 +49,11 @@ const STAGE_STATUS_ICONS: Record<string, React.ReactNode> = {
 export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerificationPanelProps) {
   const { user } = useAuth();
   const { hasRole } = useUserRole();
-  const [workflowStages, setWorkflowStages] = useState<any[]>([]);
-  const [scores, setScores] = useState<any>(null);
-  const [evidenceItems, setEvidenceItems] = useState<any[]>([]);
-  const [, setVerifications] = useState<any[]>([]);
-  const [certifications, setCertifications] = useState<any[]>([]);
+  const [workflowStages, setWorkflowStages] = useState<Tables<'verification_workflow_stages'>[]>([]);
+  const [scores, setScores] = useState<Tables<'verification_scores'> | null>(null);
+  const [evidenceItems, setEvidenceItems] = useState<Tables<'evidence_items'>[]>([]);
+  const [, setVerifications] = useState<Tables<'project_verifications'>[]>([]);
+  const [certifications, setCertifications] = useState<Tables<'project_certifications'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Scoring form state
@@ -68,11 +70,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
   // Stage update form
   const [stageNotes, setStageNotes] = useState('');
 
-  useEffect(() => {
-    if (reportId) fetchAll();
-  }, [reportId]);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     const [wfRes, scRes, evRes, vrRes, crRes] = await Promise.all([
       supabase.from('verification_workflow_stages').select('*').eq('report_id', reportId).order('created_at'),
@@ -99,14 +97,18 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
     if (vrRes.data) setVerifications(vrRes.data);
     if (crRes.data) setCertifications(crRes.data);
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    if (reportId) fetchAll();
+  }, [fetchAll, reportId]);
 
   const sisResult: SISResult = computeFullSIS(scoreForm);
   const isVerifier = hasRole('admin') || hasRole('platform_admin') || hasRole('government_official') || hasRole('ngo_member');
 
   const updateStageStatus = async (stage: string, status: string) => {
     const now = new Date().toISOString();
-    const updates: any = { status, updated_at: now, notes: stageNotes || null };
+    const updates: TablesUpdate<'verification_workflow_stages'> = { status, updated_at: now, notes: stageNotes || null };
     if (status === 'in_progress') updates.started_at = now;
     if (status === 'completed') updates.completed_at = now;
 

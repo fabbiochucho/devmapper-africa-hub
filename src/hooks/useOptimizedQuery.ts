@@ -67,7 +67,7 @@ export function useOptimizedQuery<T>(
     // Retry failed requests with exponential backoff
     retry: restOptions.retry ?? 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  } as any);
+  });
 }
 
 /**
@@ -117,7 +117,7 @@ export function useListQuery<T>(
     staleTime: STALE_TIMES.DYNAMIC,
     gcTime: GC_TIMES.MEDIUM,
     // Keep previous data while fetching to avoid layout shift
-    placeholderData: options.keepPreviousData ? (prev: any) => prev : undefined,
+    placeholderData: options.keepPreviousData ? (prev: T[] | undefined) => prev : undefined,
   });
 }
 

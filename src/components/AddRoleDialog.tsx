@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useUserRole, UserRole, SELF_ASSIGNABLE_ROLES } from "@/contexts/UserRoleContext";
+import { useUserRole, UserRole } from "@/contexts/UserRoleContext";
+import { SELF_ASSIGNABLE_ROLES } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

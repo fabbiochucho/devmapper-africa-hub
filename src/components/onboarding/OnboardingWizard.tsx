@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { User, Building2, Users, Briefcase, Heart, MapPin, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
@@ -16,7 +17,7 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-const ROLES = [
+const ROLES: { value: Database["public"]["Enums"]["app_role"]; label: string; description: string; icon: typeof User }[] = [
   { value: "citizen_reporter", label: "Citizen Reporter", description: "Track community projects", icon: User },
   { value: "ngo_member", label: "NGO Member", description: "Manage organization projects", icon: Users },
   { value: "government_official", label: "Government Official", description: "Oversee public projects", icon: Building2 },
@@ -32,7 +33,7 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
   const [fullName, setFullName] = useState("");
   const [organization, setOrganization] = useState("");
   const [country, setCountry] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState<Database["public"]["Enums"]["app_role"] | "">("");
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
@@ -80,7 +81,7 @@ const OnboardingWizard = ({ open, onComplete }: OnboardingWizardProps) => {
         .from("user_roles")
         .upsert({
           user_id: session?.user?.id,
-          role: selectedRole as any,
+          role: selectedRole,
           is_active: true,
         }, {
           onConflict: "user_id,role"

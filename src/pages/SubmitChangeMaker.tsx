@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { useUserRole } from '@/contexts/UserRoleContext';
 import { useNavigate } from 'react-router-dom';
+import { errorMessageOf } from '@/lib/error-handler';
 
 const SubmitChangeMaker = () => {
   const [step, setStep] = React.useState(1);
@@ -71,7 +72,7 @@ const SubmitChangeMaker = () => {
         if (existing) {
           setExistingProfileId(existing.id);
           form.reset({
-            type: 'individual' as any,
+            type: 'individual',
             name: existing.title || "",
             bio: existing.impact_description || "",
             description: existing.description || "",
@@ -93,7 +94,7 @@ const SubmitChangeMaker = () => {
     };
 
     loadExistingProfile();
-  }, [user?.id]);
+  }, [user?.id, form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -153,9 +154,9 @@ const SubmitChangeMaker = () => {
         setExistingProfileId(data.id);
         toast.success("Change Maker profile created successfully!");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving profile:', error);
-      toast.error(error.message || 'Failed to save profile');
+      toast.error(errorMessageOf(error) || 'Failed to save profile');
     }
   }
 

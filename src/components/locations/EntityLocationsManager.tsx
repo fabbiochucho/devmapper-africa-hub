@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface EntityLocation {
   id: string;
@@ -39,11 +40,7 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
     is_headquarters: false,
   });
 
-  useEffect(() => {
-    if (user) fetchLocations();
-  }, [user]);
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("entity_locations")
@@ -59,7 +56,11 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType, user]);
+
+  useEffect(() => {
+    if (user) fetchLocations();
+  }, [fetchLocations, user]);
 
   const handleAdd = async () => {
     if (!form.country) {
@@ -91,8 +92,8 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
       setForm({ country: "", country_code: "", city: "", address: "", is_headquarters: false });
       setShowAdd(false);
       fetchLocations();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add location");
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || "Failed to add location");
     }
   };
 
@@ -102,8 +103,8 @@ const EntityLocationsManager = ({ entityType }: EntityLocationsManagerProps) => 
       if (error) throw error;
       toast.success("Location removed");
       fetchLocations();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to remove location");
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || "Failed to remove location");
     }
   };
 

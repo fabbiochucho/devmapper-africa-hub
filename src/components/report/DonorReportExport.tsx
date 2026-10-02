@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 const DONOR_TEMPLATES = [
   { value: "world_bank", label: "World Bank ICR", description: "Implementation Completion Report format" },
@@ -18,10 +19,10 @@ const DONOR_TEMPLATES = [
 ];
 
 interface DonorReportExportProps {
-  report: any;
-  milestones?: any[];
-  budgets?: any[];
-  indicators?: any[];
+  report?: Partial<Tables<'reports'>>;
+  milestones?: Tables<'project_milestones'>[];
+  budgets?: Tables<'project_budgets'>[];
+  indicators?: Tables<'project_indicators'>[];
 }
 
 export default function DonorReportExport({ report, milestones = [], budgets = [], indicators = [] }: DonorReportExportProps) {
@@ -43,13 +44,14 @@ export default function DonorReportExport({ report, milestones = [], budgets = [
             body: { countryCode: report.country_code },
           });
           if (!error && data?.indicators) {
-            const rows = data.indicators
-              .filter((i: any) => i.value != null)
-              .map((i: any) => {
+            const indicators: { code: string; label: string; value: number | null; year?: string }[] = data.indicators; // worldbank-proxy response
+            const rows = indicators
+              .filter((i): i is typeof i & { value: number } => i.value != null)
+              .map((i) => {
                 const formatted = i.code === 'SI.POV.DDAY' || i.code === 'EN.ATM.CO2E.PC'
                   ? i.value.toFixed(1)
                   : Math.round(i.value).toLocaleString();
-                return `<tr><td>${escapeHtml(i.label)}</td><td>${formatted}</td><td>${escapeHtml(i.year) || '-'}</td></tr>`;
+                return `<tr><td>${escapeHtml(i.label)}</td><td>${formatted}</td><td>${escapeHtml(i.year || '') || '-'}</td></tr>`;
               })
               .join('');
             if (rows) {
@@ -65,15 +67,15 @@ export default function DonorReportExport({ report, milestones = [], budgets = [
       }
 
       const milestoneRows = milestones.map(m =>
-        `<tr><td>${escapeHtml(m.title)}</td><td>${escapeHtml(m.target_date) || '-'}</td><td>${m.completed ? '✅ Complete' : '⏳ Pending'}</td></tr>`
+        `<tr><td>${escapeHtml(m.title)}</td><td>${escapeHtml(m.target_date) || '-'}</td><td>${m.status === 'completed' ? '✅ Complete' : '⏳ Pending'}</td></tr>`
       ).join('');
 
       const budgetRows = budgets.map(b =>
-        `<tr><td>${escapeHtml(b.source) || '-'}</td><td>${escapeHtml(b.currency)} ${(b.allocated || 0).toLocaleString()}</td><td>${escapeHtml(b.currency)} ${(b.spent || 0).toLocaleString()}</td><td>${b.allocated > 0 ? Math.round((b.spent / b.allocated) * 100) : 0}%</td></tr>`
+        `<tr><td>${escapeHtml(b.funding_source || b.donor_organization || '') || '-'}</td><td>${escapeHtml(b.currency)} ${(b.budget_allocated || 0).toLocaleString()}</td><td>${escapeHtml(b.currency)} ${(b.budget_spent || 0).toLocaleString()}</td><td>${(b.budget_allocated || 0) > 0 ? Math.round(((b.budget_spent || 0) / b.budget_allocated) * 100) : 0}%</td></tr>`
       ).join('');
 
       const indicatorRows = indicators.map(i =>
-        `<tr><td>${escapeHtml(i.name)}</td><td>${escapeHtml(i.baseline) || '-'}</td><td>${escapeHtml(i.current_value) || '-'}</td><td>${escapeHtml(i.target_value) || '-'}</td><td>${escapeHtml(i.unit) || '-'}</td></tr>`
+        `<tr><td>${escapeHtml(i.indicator_name)}</td><td>${i.baseline_value ?? '-'}</td><td>${i.current_value ?? '-'}</td><td>${i.target_value ?? '-'}</td><td>${escapeHtml(i.unit || '') || '-'}</td></tr>`
       ).join('');
 
       const html = `<!DOCTYPE html>

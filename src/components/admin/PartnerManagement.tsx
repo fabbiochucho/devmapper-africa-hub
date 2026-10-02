@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, ExternalLink, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface Partner {
   id: string;
@@ -39,11 +40,7 @@ export default function PartnerManagement() {
     is_active: true
   });
 
-  useEffect(() => {
-    fetchPartners();
-  }, []);
-
-  const fetchPartners = async () => {
+  const fetchPartners = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('partners')
@@ -58,7 +55,11 @@ export default function PartnerManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchPartners();
+  }, [fetchPartners]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -141,9 +142,9 @@ export default function PartnerManagement() {
       setShowDialog(false);
       resetForm();
       fetchPartners();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving partner:', error);
-      const errorMessage = error.message || t('admin.partners.unknownError');
+      const errorMessage = errorMessageOf(error) || t('admin.partners.unknownError');
       toast.error(editingPartner
         ? t('admin.partners.updateFailed', { error: errorMessage })
         : t('admin.partners.addFailed', { error: errorMessage }));

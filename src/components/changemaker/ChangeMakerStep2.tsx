@@ -4,14 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UseFormReturn, UseFieldArrayReturn } from "react-hook-form";
+import { UseFormReturn, UseFieldArrayReturn, FieldArrayWithId } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
+import type { ChangeMakerFormValues } from "@/lib/changeMakerSchema";
 
 interface ChangeMakerStep2Props {
-  form: UseFormReturn<any>;
-  fields: any[];
-  append: UseFieldArrayReturn<any>['append'];
-  remove: UseFieldArrayReturn<any>['remove'];
+  form: UseFormReturn<ChangeMakerFormValues>;
+  fields: FieldArrayWithId<ChangeMakerFormValues, 'members'>[];
+  append: UseFieldArrayReturn<ChangeMakerFormValues, 'members'>['append'];
+  remove: UseFieldArrayReturn<ChangeMakerFormValues, 'members'>['remove'];
 }
 
 const ChangeMakerStep2: React.FC<ChangeMakerStep2Props> = ({ form, fields, append, remove }) => {

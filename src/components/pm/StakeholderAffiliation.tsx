@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,11 +39,7 @@ export default function StakeholderAffiliation({ reportId, isOwner }: Stakeholde
   const [role, setRole] = useState("partner");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchAffiliations();
-  }, [reportId]);
-
-  const fetchAffiliations = async () => {
+  const fetchAffiliations = useCallback(async () => {
     const { data } = await supabase
       .from("project_affiliations")
       .select("id, user_id, relationship_type, created_at")
@@ -67,7 +63,11 @@ export default function StakeholderAffiliation({ reportId, isOwner }: Stakeholde
     } else {
       setAffiliations([]);
     }
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    fetchAffiliations();
+  }, [fetchAffiliations, reportId]);
 
   const handleAdd = async () => {
     if (!email.trim()) return;

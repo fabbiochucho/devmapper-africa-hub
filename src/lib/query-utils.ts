@@ -4,7 +4,7 @@
  */
 
 // Request deduplication cache
-const requestCache = new Map<string, Promise<any>>();
+const requestCache = new Map<string, Promise<unknown>>();
 
 /**
  * Deduplicate identical concurrent requests
@@ -14,7 +14,7 @@ export function deduplicateRequest<T>(
   key: string,
   requestFn: () => Promise<T>
 ): Promise<T> {
-  const existing = requestCache.get(key);
+  const existing = requestCache.get(key) as Promise<T> | undefined; // keys are unique per request shape
   if (existing) {
     return existing;
   }
@@ -98,7 +98,7 @@ export const QueryFilters = {
   }) => {
     const { limit = 20, offset = 0, userId, sdgGoal, countryCode, status } = options;
     
-    const query: any = { limit, offset };
+    const query: Record<string, string | number> = { limit, offset };
     if (userId) query.user_id = userId;
     if (sdgGoal) query.sdg_goal = sdgGoal;
     if (countryCode) query.country_code = countryCode;
@@ -134,12 +134,12 @@ export const CacheKeys = {
   
   userProfile: (userId: string) => `profile-${userId}`,
   
-  userReports: (userId: string, filters?: any) => 
+  userReports: (userId: string, filters?: Record<string, unknown>) => 
     `reports-${userId}-${JSON.stringify(filters || {})}`,
   
   reportDetails: (reportId: string) => `report-${reportId}`,
   
-  campaignsList: (filters?: any) => 
+  campaignsList: (filters?: Record<string, unknown>) => 
     `campaigns-${JSON.stringify(filters || {})}`,
   
   organizationDetails: (orgId: string) => `org-${orgId}`,
@@ -163,7 +163,7 @@ export function calculatePagination(page: number, pageSize: number = 20) {
 /**
  * Error handler for queries
  */
-export function handleQueryError(error: any, context: string): Error {
+export function handleQueryError(error: { message?: string; code?: string } | null | undefined, context: string): Error {
   console.error(`[Query Error - ${context}]`, error);
   
   if (error?.message?.includes('JWT')) {

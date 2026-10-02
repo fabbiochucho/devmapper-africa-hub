@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { DollarSign, Plus, TrendingUp, Wallet } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface BudgetTrackerProps {
   reportId: string;
@@ -17,7 +18,7 @@ interface BudgetTrackerProps {
 
 export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps) {
   const { user } = useAuth();
-  const [budgets, setBudgets] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<Tables<'project_budgets'>[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [allocated, setAllocated] = useState("");
   const [spent, setSpent] = useState("");
@@ -26,12 +27,12 @@ export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps)
   const [donor, setDonor] = useState("");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => { fetchBudgets(); }, [reportId]);
-
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
     const { data } = await supabase.from("project_budgets").select("*").eq("report_id", reportId);
     if (data) setBudgets(data);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchBudgets(); }, [fetchBudgets, reportId]);
 
   const totalAllocated = budgets.reduce((s, b) => s + Number(b.budget_allocated || 0), 0);
   const totalSpent = budgets.reduce((s, b) => s + Number(b.budget_spent || 0), 0);
@@ -98,7 +99,7 @@ export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps)
         <Card>
           <CardHeader><CardTitle className="text-base">Funding Sources</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {budgets.map((b: any) => (
+            {budgets.map((b) => (
               <div key={b.id} className="border rounded-lg p-3 space-y-1">
                 <div className="flex justify-between">
                   <span className="font-medium text-sm">{b.funding_source || "General"}</span>

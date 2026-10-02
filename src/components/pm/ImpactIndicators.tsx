@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Activity, Target } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface ImpactIndicatorsProps {
   reportId: string;
@@ -19,7 +20,7 @@ interface ImpactIndicatorsProps {
 
 export default function ImpactIndicators({ reportId, isOwner }: ImpactIndicatorsProps) {
   const { user } = useAuth();
-  const [indicators, setIndicators] = useState<any[]>([]);
+  const [indicators, setIndicators] = useState<Tables<'project_indicators'>[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
   const [baseline, setBaseline] = useState("");
@@ -28,12 +29,12 @@ export default function ImpactIndicators({ reportId, isOwner }: ImpactIndicators
   const [unit, setUnit] = useState("");
   const [sdgGoal, setSdgGoal] = useState("");
 
-  useEffect(() => { fetchIndicators(); }, [reportId]);
-
-  const fetchIndicators = async () => {
+  const fetchIndicators = useCallback(async () => {
     const { data } = await supabase.from("project_indicators").select("*").eq("report_id", reportId);
     if (data) setIndicators(data);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchIndicators(); }, [fetchIndicators, reportId]);
 
   const createIndicator = async () => {
     if (!name.trim() || !user) return;
@@ -73,7 +74,7 @@ export default function ImpactIndicators({ reportId, isOwner }: ImpactIndicators
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {indicators.map((ind: any) => {
+          {indicators.map((ind) => {
             const pct = ind.target_value ? Math.min(Math.round(((ind.current_value - ind.baseline_value) / (ind.target_value - ind.baseline_value)) * 100), 100) : 0;
             return (
               <Card key={ind.id}>

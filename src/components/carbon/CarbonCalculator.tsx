@@ -218,7 +218,7 @@ export default function CarbonCalculator() {
               </div>
               <div>
                 <Label>Data Quality</Label>
-                <Select value={dataQuality} onValueChange={v => setDataQuality(v as any)}>
+                <Select value={dataQuality} onValueChange={v => setDataQuality(v as typeof dataQuality)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="measured">Measured (actual data)</SelectItem>

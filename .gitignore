@@ -44,3 +44,7 @@ supabase/.temp/
 /playwright/.cache/
 e2e/tmp-*
 bun.lock
+
+# local tooling output
+.scratch/
+deno.lock

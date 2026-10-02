@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,9 +39,7 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
   const [efficiency, setEfficiency] = useState("");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => { fetchData(); }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     // Also auto-calculate carbon credit value from carbon_assets
     const [finResult, assetResult] = await Promise.all([
       supabase.from("project_financial_impact").select("*").eq("report_id", reportId).maybeSingle(),
@@ -51,7 +49,7 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
     const autoCredit = assetResult.data?.estimated_value_usd || 0;
 
     if (finResult.data) {
-      const d = finResult.data as any;
+      const d = finResult.data;
       setEntry(d);
       setSavings(d.operational_cost_savings?.toString() || "");
       setRevenue(d.revenue_generated?.toString() || "");
@@ -62,7 +60,9 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
       setCreditValue(autoCredit.toString());
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchData(); }, [fetchData, reportId]);
 
   const calcROI = (): number => {
     const s = parseFloat(savings) || 0;
@@ -87,9 +87,9 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
 
     let error;
     if (entry) {
-      ({ error } = await supabase.from("project_financial_impact").update(payload as any).eq("id", entry.id));
+      ({ error } = await supabase.from("project_financial_impact").update(payload).eq("id", entry.id));
     } else {
-      ({ error } = await supabase.from("project_financial_impact").insert(payload as any));
+      ({ error } = await supabase.from("project_financial_impact").insert(payload));
     }
     if (error) { toast.error("Failed to save"); return; }
     toast.success("Financial impact saved");

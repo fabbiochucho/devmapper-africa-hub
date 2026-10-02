@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Info } from 'lucide-react';
@@ -32,11 +32,7 @@ export default function Agenda2063Badge({
   const [alignments, setAlignments] = useState<Agenda2063Data[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAgenda2063Alignment();
-  }, [sdgGoal]);
-
-  const fetchAgenda2063Alignment = async () => {
+  const fetchAgenda2063Alignment = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .rpc('get_agenda2063_for_sdg', { p_sdg_goal: sdgGoal });
@@ -48,7 +44,11 @@ export default function Agenda2063Badge({
     } finally {
       setLoading(false);
     }
-  };
+  }, [sdgGoal]);
+
+  useEffect(() => {
+    fetchAgenda2063Alignment();
+  }, [fetchAgenda2063Alignment, sdgGoal]);
 
   if (loading || alignments.length === 0) {
     return null;

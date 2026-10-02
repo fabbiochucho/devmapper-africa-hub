@@ -69,8 +69,8 @@ export function useCancellableOperation<T>() {
       const result = await operation(controller.signal);
       if (!mountedRef.current) return null;
       return result;
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         return null; // Silently handle aborted requests
       }
       throw error;
@@ -109,16 +109,3 @@ export class CancellableFetch {
   }
 }
 
-/**
- * Create a cancellable version of a Supabase query builder
- * Note: Supabase JS v2 supports AbortSignal via .abortSignal()
- */
-export function withCancellation<_T>(
-  queryBuilder: any,
-  signal: AbortSignal
-): any {
-  if (typeof queryBuilder.abortSignal === 'function') {
-    return queryBuilder.abortSignal(signal);
-  }
-  return queryBuilder;
-}

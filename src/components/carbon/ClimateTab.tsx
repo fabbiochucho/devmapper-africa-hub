@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,18 +44,14 @@ export default function ClimateTab({ reportId, isOwner }: ClimateTabProps) {
   const [methane, setMethane] = useState("");
   const [methaneSector, setMethaneSector] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from("project_decarbonisation")
       .select("*")
       .eq("report_id", reportId)
       .maybeSingle();
     if (data) {
-      setEntry(data as any);
+      setEntry(data);
       setBaseline(data.baseline_emissions?.toString() || "");
       setTargetEm(data.target_emissions?.toString() || "");
       setStrategy(data.reduction_strategy || "");
@@ -64,7 +60,11 @@ export default function ClimateTab({ reportId, isOwner }: ClimateTabProps) {
       setMethaneSector(data.methane_sector || "");
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData, reportId]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -80,9 +80,9 @@ export default function ClimateTab({ reportId, isOwner }: ClimateTabProps) {
 
     let error;
     if (entry) {
-      ({ error } = await supabase.from("project_decarbonisation").update(payload as any).eq("id", entry.id));
+      ({ error } = await supabase.from("project_decarbonisation").update(payload).eq("id", entry.id));
     } else {
-      ({ error } = await supabase.from("project_decarbonisation").insert(payload as any));
+      ({ error } = await supabase.from("project_decarbonisation").insert(payload));
     }
     if (error) { toast.error("Failed to save"); return; }
     toast.success("Decarbonisation plan saved");

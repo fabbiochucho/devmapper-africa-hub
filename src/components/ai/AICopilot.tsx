@@ -6,16 +6,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Loader2, FileText, Shield, Sparkles, Leaf, History, GraduationCap, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { toast } from "@/components/ui/sonner";
 import { useLocation } from "react-router-dom";
 import AICopilotQuickActions from "./AICopilotQuickActions";
 import NdovuMultiAgentPanel from "./NdovuMultiAgentPanel";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
 
-interface Message {
+type Message = {
   role: "user" | "assistant";
   content: string;
-}
+};
+
+// Saved conversations come back as jsonb; keep only well-formed messages.
+const isMessage = (m: Json): m is Message =>
+  typeof m === "object" && m !== null && !Array.isArray(m) &&
+  (m.role === "user" || m.role === "assistant") && typeof m.content === "string";
 
 type CopilotContext = "general" | "compliance" | "report_draft" | "carbon";
 
@@ -31,7 +37,7 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
 type PageContext = "general" | "emissions" | "verification" | "marketplace" | "compliance" | "government" | "investor";
 
 interface AICopilotProps {
-  projectData?: any;
+  projectData?: { id?: string; [key: string]: unknown };
   /** Overrides the route-derived page context - for callers embedded on a
    * page whose URL doesn't reflect what's actually being worked on (e.g. a
    * verification panel mounted inside /project-management's tabs). */
@@ -81,9 +87,9 @@ export default function AICopilot({ projectData, pageContextOverride }: AICopilo
       .then(({ data }) => {
         if (data?.[0]) {
           setConversationId(data[0].id);
-          const saved = data[0].messages as any[];
+          const saved = data[0].messages;
           if (Array.isArray(saved) && saved.length > 0) {
-            setMessages(saved.map((m: any) => ({ role: m.role, content: m.content })));
+            setMessages(saved.filter(isMessage).map((m) => ({ role: m.role, content: m.content })));
           }
         }
       });
@@ -95,7 +101,7 @@ export default function AICopilot({ projectData, pageContextOverride }: AICopilo
       user_id: user.id,
       context_type: context,
       context_id: projectData?.id || null,
-      messages: msgs as any,
+      messages: msgs,
       title: msgs[0]?.content?.slice(0, 80) || "Untitled",
       updated_at: new Date().toISOString(),
     };
@@ -103,7 +109,7 @@ export default function AICopilot({ projectData, pageContextOverride }: AICopilo
     if (conversationId) {
       await supabase
         .from("ai_conversations")
-        .update({ messages: msgs as any, updated_at: new Date().toISOString() })
+        .update({ messages: msgs, updated_at: new Date().toISOString() })
         .eq("id", conversationId);
     } else {
       const { data } = await supabase

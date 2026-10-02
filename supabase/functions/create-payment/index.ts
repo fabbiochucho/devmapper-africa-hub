@@ -144,7 +144,8 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       const flutterwaveData = await response.json();
-      console.log('Flutterwave response:', flutterwaveData);
+      // Log the outcome only - the full response carries customer details and the payment link.
+      console.log('Flutterwave response status:', flutterwaveData?.status);
 
       if (flutterwaveData.status === 'success' && flutterwaveData.data?.link) {
         // Update donation with transaction reference (only if not already linked)

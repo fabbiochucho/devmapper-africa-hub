@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,16 +44,14 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
   const [refPrice, setRefPrice] = useState("");
   const [issuanceDate, setIssuanceDate] = useState("");
 
-  useEffect(() => { fetchData(); }, [reportId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from("carbon_assets")
       .select("*")
       .eq("report_id", reportId)
       .maybeSingle();
     if (data) {
-      setAsset(data as any);
+      setAsset(data);
       setGenerated(data.credits_generated?.toString() || "");
       setOwned(data.credits_owned?.toString() || "");
       setRetired(data.credits_retired?.toString() || "");
@@ -63,7 +61,9 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
       setIssuanceDate(data.issuance_date || "");
     }
     setLoading(false);
-  };
+  }, [reportId]);
+
+  useEffect(() => { fetchData(); }, [fetchData, reportId]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -83,9 +83,9 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
 
     let error;
     if (asset) {
-      ({ error } = await supabase.from("carbon_assets").update(payload as any).eq("id", asset.id));
+      ({ error } = await supabase.from("carbon_assets").update(payload).eq("id", asset.id));
     } else {
-      ({ error } = await supabase.from("carbon_assets").insert(payload as any));
+      ({ error } = await supabase.from("carbon_assets").insert(payload));
     }
     if (error) { toast.error("Failed to save carbon assets"); return; }
     toast.success("Carbon assets saved");

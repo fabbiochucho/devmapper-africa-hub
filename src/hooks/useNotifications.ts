@@ -86,7 +86,7 @@ export function useNotifications() {
         table: 'notifications',
         filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        const n = payload.new as any;
+        const n = payload.new;
         const notif: AppNotification = {
           id: n.id,
           title: n.title,

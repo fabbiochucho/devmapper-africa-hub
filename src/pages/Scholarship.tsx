@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { errorMessageOf } from '@/lib/error-handler';
 
 const Scholarship = () => {
   const { user } = useAuth();
@@ -52,9 +53,9 @@ const Scholarship = () => {
       if (error) throw error;
       setSubmitted(true);
       toast.success('Fellowship application submitted successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting scholarship:', error);
-      toast.error(error.message || 'Failed to submit application');
+      toast.error(errorMessageOf(error) || 'Failed to submit application');
     } finally {
       setLoading(false);
     }

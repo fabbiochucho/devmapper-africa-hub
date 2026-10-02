@@ -10,6 +10,8 @@ import { Heart, MapPin, Calendar, CreditCard, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { errorMessageOf } from '@/lib/error-handler';
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 interface Campaign {
   id: string;
@@ -81,7 +83,7 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
 
     try {
       // Create donation record
-      const donationData: any = {
+      const donationData: TablesInsert<'campaign_donations'> = {
         campaign_id: campaign.id,
         amount: donationAmount,
         currency: campaign.currency,
@@ -124,9 +126,9 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
       } else {
         throw new Error('Payment link not received');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Donation error:', error);
-      toast.error(error.message || 'Failed to process donation');
+      toast.error(errorMessageOf(error) || 'Failed to process donation');
       setLoading(false);
     }
   };

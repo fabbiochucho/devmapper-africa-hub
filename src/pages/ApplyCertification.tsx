@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { appendToLedger } from '@/lib/verification-ledger';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
+import type { Tables } from "@/integrations/supabase/types";
 
 const SDG_GOALS = Array.from({ length: 17 }, (_, i) => ({
   id: i + 1,
@@ -55,20 +56,20 @@ const ApplyCertification = () => {
   const [evidenceSummary, setEvidenceSummary] = useState('');
   const [agreed, setAgreed] = useState(false);
 
-  useEffect(() => {
-    if (user) fetchData();
-  }, [user]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     const [reportsRes, appsRes] = await Promise.all([
       supabase.from('reports').select('id, title, sdg_goal, project_status, country_code').eq('user_id', user!.id).order('submitted_at', { ascending: false }),
-      (supabase as any).from('certification_applications').select('report_id').eq('applicant_id', user!.id),
+      (supabase).from('certification_applications').select('report_id').eq('applicant_id', user!.id),
     ]);
     if (reportsRes.data) setReports(reportsRes.data);
-    if (appsRes.data) setExistingApps((appsRes.data as any[]).map((a: any) => a.report_id));
+    if (appsRes.data) setExistingApps((appsRes.data).map((a) => a.report_id));
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchData();
+  }, [fetchData, user]);
 
   const eligibleReports = reports.filter(r => !existingApps.includes(r.id));
 
@@ -76,7 +77,7 @@ const ApplyCertification = () => {
     if (!user || !selectedReport || !agreed) return;
     setSubmitting(true);
 
-    const { data, error } = await (supabase as any).from('certification_applications').insert({
+    const { data, error } = await (supabase).from('certification_applications').insert({
       report_id: selectedReport,
       applicant_id: user.id,
       requested_tier: requestedTier,
@@ -325,15 +326,15 @@ const ApplyCertification = () => {
 };
 
 function ExistingApplicationsList({ userId }: { userId: string }) {
-  const [apps, setApps] = useState<any[]>([]);
+  const [apps, setApps] = useState<Pick<Tables<'certification_applications'>, 'id' | 'report_id' | 'requested_tier' | 'status' | 'submitted_at'>[]>([]);
 
   useEffect(() => {
-    (supabase as any)
+    (supabase)
       .from('certification_applications')
       .select('id, report_id, requested_tier, status, submitted_at')
       .eq('applicant_id', userId)
       .order('submitted_at', { ascending: false })
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         if (data) setApps(data);
       });
   }, [userId]);
@@ -342,7 +343,7 @@ function ExistingApplicationsList({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-2">
-      {apps.map((app: any) => (
+      {apps.map((app) => (
         <div key={app.id} className="flex items-center justify-between border rounded-lg p-3">
           <div>
             <p className="text-sm font-medium">Application #{app.id.slice(0, 8)}</p>

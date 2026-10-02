@@ -1,3 +1,4 @@
+import type { Db } from "./db.ts";
 // deno-lint-ignore-file no-explicit-any
 
 import { getPlanQuotas } from "./planQuotas.ts";
@@ -22,7 +23,7 @@ export interface RefundDowngradeResult {
  * downgrade identically.
  */
 export async function downgradeOrganizationForRefund(
-  supabase: any,
+  supabase: Db,
   params: RefundDowngradeParams,
 ): Promise<RefundDowngradeResult> {
   const { organizationId, provider, amount, currency, externalId } = params;
@@ -75,7 +76,7 @@ export async function downgradeOrganizationForRefund(
   }
 
   await supabase.rpc("log_audit_event", {
-    p_actor_id: null,
+    p_actor_id: null as unknown as string, // SQL arg is nullable; generated rpc types drop that
     p_actor_type: "webhook",
     p_org_id: organizationId,
     p_action: "plan_downgraded_refund",

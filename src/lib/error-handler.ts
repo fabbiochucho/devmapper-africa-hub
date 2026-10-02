@@ -30,6 +30,17 @@ export function getErrorMessage(error: unknown): string {
 }
 
 /**
+ * The error's own message, or '' when it has none - so callers can keep their
+ * own (translated) fallback: `errorMessageOf(error) || t('...')`.
+ */
+export function errorMessageOf(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message;
+  return '';
+}
+
+/**
  * Log error with context
  */
 export function logError(context: string, error: unknown): void {

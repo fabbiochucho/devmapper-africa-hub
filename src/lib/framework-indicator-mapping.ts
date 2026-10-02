@@ -74,7 +74,7 @@ function resolveMetricValue(metricKey: string | null, row: EsgIndicatorsRow | nu
     case 'carbon_scope3_tonnes':
     case 'renewable_energy_percentage':
     case 'waste_generated_tonnes':
-      return { dataAvailable: true, value: (row as any)[metricKey] ?? null };
+      return { dataAvailable: true, value: (row)[metricKey] ?? null };
 
     // Derived: sum of the three scopes.
     case 'carbon_total_tonnes': {

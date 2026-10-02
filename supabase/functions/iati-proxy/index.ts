@@ -15,6 +15,15 @@ const corsHeaders = {
 // precedent (#83) for the same situation.
 const IATI_API = "https://api.iatistandard.org/datastore/activity/select";
 
+// IATI Datastore Solr doc, fields we read only
+interface IatiDoc {
+  iati_identifier?: string;
+  title_narrative?: string[];
+  reporting_org_narrative?: string[];
+  sector_code?: string[];
+  transaction_value?: number[];
+}
+
 interface IatiRequest {
   countryCode: string;
 }
@@ -97,7 +106,7 @@ serve(async (req) => {
     }
 
     const raw = await resp.json();
-    const activities = (raw?.response?.docs ?? []).map((doc: any) => ({
+    const activities = (raw?.response?.docs ?? []).map((doc: IatiDoc) => ({
       iatiIdentifier: doc.iati_identifier,
       title: doc.title_narrative?.[0] ?? null,
       reportingOrg: doc.reporting_org_narrative?.[0] ?? null,

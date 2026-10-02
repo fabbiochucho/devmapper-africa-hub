@@ -31,7 +31,7 @@ interface MapShellProps {
   markers?: Array<{
     id: string;
     coordinates: [number, number];
-    properties: Record<string, any>;
+    properties: Record<string, unknown>;
   }>;
 }
 
@@ -46,6 +46,12 @@ export default function MapShell({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  // The map is created once; it starts at the initial view and calls the latest onLoad.
+  const initialView = useRef({ center, zoom });
+  const onLoadRef = useRef(onLoad);
+  useEffect(() => {
+    onLoadRef.current = onLoad;
+  });
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -73,8 +79,8 @@ export default function MapShell({
           }
         ]
       },
-      center,
-      zoom
+      center: initialView.current.center,
+      zoom: initialView.current.zoom
     });
 
     // Add navigation controls
@@ -84,8 +90,8 @@ export default function MapShell({
 
     map.current.on('load', () => {
       setMapLoaded(true);
-      if (onLoad && map.current) {
-        onLoad(map.current);
+      if (onLoadRef.current && map.current) {
+        onLoadRef.current(map.current);
       }
     });
 
@@ -206,7 +212,8 @@ export default function MapShell({
       if (!e.features || e.features.length === 0) return;
       
       const feature = e.features[0];
-      const coordinates = (feature.geometry as any).coordinates.slice();
+      if (feature.geometry.type !== 'Point') return;
+      const coordinates = feature.geometry.coordinates.slice() as [number, number];
       
       const title = escapeHtml(feature.properties?.title || 'Project');
       const description = escapeHtml((feature.properties?.description || '').substring(0, 100));

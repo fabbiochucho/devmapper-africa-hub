@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,13 @@ import ForumPost from '@/components/forum/ForumPost';
 import CreatePostDialog from '@/components/forum/CreatePostDialog';
 import { RealtimeForumUpdates } from '@/components/realtime/RealtimeForumUpdates';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
 import { useTranslation } from 'react-i18next';
+import type { NewPostInput } from '@/components/forum/CreatePostDialog';
 
 interface ForumPostData {
   id: string;
@@ -62,12 +64,7 @@ const Forum = () => {
     newMembers: 0
   });
 
-  useEffect(() => {
-    fetchPosts(0);
-    fetchStats();
-  }, []);
-
-  const fetchPosts = async (pageNum: number) => {
+  const fetchPosts = useCallback(async (pageNum: number) => {
     try {
       const from = pageNum * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
@@ -82,26 +79,26 @@ const Forum = () => {
 
       const likesPromise = user
         ? supabase.from('forum_post_likes').select('post_id').eq('user_id', user.id)
-        : Promise.resolve({ data: [] as any[] });
+        : Promise.resolve({ data: [] });
 
       const [{ data: postsData, error: postsError }, { data: likesData }] = await Promise.all([postsPromise, likesPromise]);
 
       if (postsError) throw postsError;
 
       // Fetch author profiles separately from the public_profiles view
-      const authorIds = Array.from(new Set((postsData || []).map((p: any) => p.author_id).filter(Boolean)));
+      const authorIds = Array.from(new Set((postsData || []).map((p) => p.author_id).filter(Boolean)));
       const { data: authorProfiles } = authorIds.length
         ? await supabase
             .from('public_profiles')
             .select('user_id, full_name, avatar_url, is_verified')
             .in('user_id', authorIds)
-        : { data: [] as any[] };
-      const profileMap = new Map((authorProfiles || []).map((p: any) => [p.user_id, p]));
+        : { data: [] };
+      const profileMap = new Map<string, Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url' | 'is_verified'>>((authorProfiles || []).map((p) => [p.user_id, p]));
 
       const userLikes = likesData || [];
 
       const formattedPosts = postsData?.map(post => {
-        const prof: any = profileMap.get(post.author_id);
+        const prof = profileMap.get(post.author_id);
         return ({
         id: post.id,
         title: post.title,
@@ -137,7 +134,12 @@ const Forum = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t, user]);
+
+  useEffect(() => {
+    fetchPosts(0);
+    fetchStats();
+  }, [fetchPosts]);
 
   const fetchStats = async () => {
     try {
@@ -187,7 +189,7 @@ const Forum = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreatePost = async (newPostData: any) => {
+  const handleCreatePost = async (newPostData: NewPostInput) => {
     if (!user) {
       toast.error(t('forum.toastSignInToCreate'));
       return;
@@ -228,10 +230,10 @@ const Forum = () => {
         content: data.content,
         author: {
           id: user.id,
-          name: (prof as any)?.full_name || t('forum.anonymous'),
-          avatar: (prof as any)?.avatar_url || '/placeholder.svg',
+          name: (prof)?.full_name || t('forum.anonymous'),
+          avatar: (prof)?.avatar_url || '/placeholder.svg',
           role: t('forum.communityMember'),
-          verified: (prof as any)?.is_verified || false
+          verified: (prof)?.is_verified || false
         },
         category: data.category,
         tags: data.tags || [],

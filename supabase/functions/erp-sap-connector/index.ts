@@ -1,6 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database, Db, Tables } from "../_shared/db.ts";
+
+// SAP Business One Service Layer invoice, fields we read only
+interface SapInvoice {
+  CardName?: string;
+  DocumentLines?: { ItemDescription?: string; ItemCode?: string; LineTotal?: number }[];
+}
 import { syncErpLineItems, type ErpLineItem } from "../_shared/erpEmissionsSync.ts";
 
 const corsHeaders = {
@@ -46,8 +53,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let connection: any = null;
-  let supabase: any = null;
+  let connection: Pick<Tables<'erp_connections'>, 'id' | 'organization_id' | 'provider' | 'base_url' | 'api_key_secret_name'> | null = null;
+  let supabase: Db | null = null;
   let sessionCookie: string | null = null;
 
   try {
@@ -74,7 +81,7 @@ serve(async (req) => {
       });
     }
 
-    supabase = createClient(supabaseUrl, supabaseServiceKey);
+    supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
     const { connectionId }: SyncRequest = await req.json();
 
     const { data: connectionRow, error: connError } = await supabase
@@ -166,10 +173,10 @@ serve(async (req) => {
       }
 
       const invoicesData = await invoicesResponse.json();
-      const invoices: any[] = invoicesData.value ?? [];
+      const invoices: SapInvoice[] = invoicesData.value ?? [];
 
       const lineItems: ErpLineItem[] = invoices.flatMap((invoice) =>
-        (invoice.DocumentLines ?? []).map((line: any) => ({
+        (invoice.DocumentLines ?? []).map((line) => ({
           vendorName: invoice.CardName || 'Unknown vendor',
           description: line.ItemDescription || line.ItemCode || '',
           amount: Number(line.LineTotal ?? 0),

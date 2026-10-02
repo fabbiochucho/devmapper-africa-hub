@@ -178,7 +178,6 @@ jobs:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
           CI: "true"
           E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}  # rotated 2026-10-01; never commit it
-        continue-on-error: true  # Keep E2E non-blocking (adjust per team policy)
         timeout-minutes: 15  # Prevent hung E2E tests
 
       # ─────────────────────────────────────────────────────

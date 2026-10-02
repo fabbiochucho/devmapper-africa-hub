@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -13,6 +13,7 @@ import RiskFlagsList from '@/components/scoring/RiskFlagsList';
 import { calculateFundingReadinessScore } from '@/lib/funding-readiness';
 import { deriveRiskFlags } from '@/lib/risk-flags';
 import { useAuth } from '@/contexts/AuthContext';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ReportRow {
   id: string;
@@ -54,7 +55,7 @@ export default function FunderDashboard() {
   const [amountDrafts, setAmountDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  const loadDecisions = () => {
+  const loadDecisions = useCallback(() => {
     if (!user) return;
     supabase
       .from('funder_decisions')
@@ -62,10 +63,15 @@ export default function FunderDashboard() {
       .eq('funder_id', user.id)
       .then(({ data }) => {
         const map: Record<string, FunderDecision> = {};
-        (data ?? []).forEach((d: any) => { map[d.report_id] = { decision: d.decision, amount_committed: d.amount_committed }; });
+        (data ?? []).forEach((d) => {
+          // decision is a text column; ignore anything this UI doesn't know how to show
+          if (d.decision === 'interested' || d.decision === 'passed') {
+            map[d.report_id] = { decision: d.decision, amount_committed: d.amount_committed };
+          }
+        });
         setDecisions(map);
       });
-  };
+  }, [user]);
 
   useEffect(() => {
     supabase
@@ -78,7 +84,7 @@ export default function FunderDashboard() {
         setLoading(false);
       });
     loadDecisions();
-  }, [user]);
+  }, [loadDecisions, user]);
 
   const recordDecision = async (reportId: string, decision: 'interested' | 'passed') => {
     if (!user) return;
@@ -98,8 +104,8 @@ export default function FunderDashboard() {
       if (error) throw error;
       toast.success(decision === 'interested' ? 'Marked as interested' : 'Passed on this project');
       loadDecisions();
-    } catch (e: any) {
-      toast.error('Failed to save decision', { description: e.message });
+    } catch (e: unknown) {
+      toast.error('Failed to save decision', { description: errorMessageOf(e) });
     } finally {
       setSavingId(null);
     }

@@ -1,10 +1,11 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Json } from '@/integrations/supabase/types';
 
 interface AnalyticsEvent {
   event_type: string;
-  event_data?: any;
+  event_data?: { [key: string]: Json | undefined };
   page_url?: string;
   referrer?: string;
 }
@@ -79,7 +80,7 @@ export function useAnalytics() {
     });
   }, [queueEvent]);
 
-  const trackClick = useCallback((element: string, data?: any) => {
+  const trackClick = useCallback((element: string, data?: { [key: string]: Json | undefined }) => {
     queueEvent({
       event_type: 'click',
       event_data: {
@@ -90,7 +91,7 @@ export function useAnalytics() {
     });
   }, [queueEvent]);
 
-  const trackCustomEvent = useCallback((eventType: string, data?: any) => {
+  const trackCustomEvent = useCallback((eventType: string, data?: { [key: string]: Json | undefined }) => {
     queueEvent({
       event_type: eventType,
       event_data: {

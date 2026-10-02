@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,21 +21,41 @@ import { GrantVerifierAccessDialog } from '@/components/compliance/GrantVerifier
 import StandardsPhase2Panel from '@/components/esg/StandardsPhase2Panel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Tables } from "@/integrations/supabase/types";
 
 const ESGPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [organizations, setOrganizations] = useState<Tables<'organizations'>[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [selectedOrg, setSelectedOrg] = useState<Tables<'organizations'> | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadOrganizations();
+  const createDefaultOrganization = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('organizations')
+        .insert([{
+          name: `${user!.email?.split('@')[0]}'s Organization`,
+          created_by: user!.id,
+          esg_enabled: false,
+          plan_type: 'lite'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setOrganizations([data]);
+      setSelectedOrgId(data.id);
+      setSelectedOrg(data);
+      
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      toast.error('Failed to create organization');
     }
   }, [user]);
 
-  const loadOrganizations = async () => {
+  const loadOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -64,32 +84,13 @@ const ESGPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [createDefaultOrganization, user]);
 
-  const createDefaultOrganization = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .insert([{
-          name: `${user!.email?.split('@')[0]}'s Organization`,
-          created_by: user!.id,
-          esg_enabled: false,
-          plan_type: 'lite'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setOrganizations([data]);
-      setSelectedOrgId(data.id);
-      setSelectedOrg(data);
-      
-    } catch (error) {
-      console.error('Error creating organization:', error);
-      toast.error('Failed to create organization');
+  useEffect(() => {
+    if (user) {
+      loadOrganizations();
     }
-  };
+  }, [loadOrganizations, user]);
 
   const handleOrgChange = (orgId: string) => {
     const org = organizations.find(o => o.id === orgId);

@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import type { Database } from '../_shared/db.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+    const supabaseAdmin = createClient<Database>(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
       .select('role')
       .eq('user_id', userData.user.id)
       .eq('is_active', true)
-    const isAdmin = (roles || []).some((r: any) => r.role === 'admin' || r.role === 'platform_admin')
+    const isAdmin = (roles || []).some((r) => r.role === 'admin' || r.role === 'platform_admin')
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
       throw new Error('nominee_email and nominee_name are required')
     }
 
-    console.log(`Processing changemaker nomination for ${nominee_email}`)
+    console.log('Processing changemaker nomination')
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()

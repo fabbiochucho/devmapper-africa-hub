@@ -28,6 +28,7 @@ import { WifiOff, RefreshCw } from 'lucide-react';
 import { SDG_INDICATOR_LIBRARY } from '@/data/sdgIndicatorLibrary';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { supabase } from '@/integrations/supabase/client';
+import { errorMessageOf } from '@/lib/error-handler';
 
 const SubmitReport = () => {
   const [step, setStep] = React.useState(1);
@@ -48,7 +49,7 @@ const SubmitReport = () => {
     setSyncing(true);
     try {
       const { succeeded, failed } = await flushQueuedReports((payload, photos) =>
-        submitReportToServer(payload as any, photos, user.id, fetchGEEData)
+        submitReportToServer(payload, photos, user.id, fetchGEEData)
       );
       if (succeeded > 0) toast.success(`${succeeded} offline report${succeeded > 1 ? 's' : ''} synced`);
       if (failed > 0) toast.warning(`${failed} queued report${failed > 1 ? 's' : ''} still pending sync`);
@@ -127,8 +128,8 @@ const SubmitReport = () => {
         setStep(1);
         refreshPendingCount();
         navigate('/my-projects');
-      } catch (error: any) {
-        toast.error("Failed to save report offline", { description: error.message || "Please try again." });
+      } catch (error: unknown) {
+        toast.error("Failed to save report offline", { description: errorMessageOf(error) || "Please try again." });
       }
       return;
     }
@@ -172,10 +173,10 @@ const SubmitReport = () => {
       form.reset();
       setStep(1);
       navigate('/my-projects');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submit error:", error);
       toast.error("Failed to submit report", {
-        description: error.message || "Please try again.",
+        description: errorMessageOf(error) || "Please try again.",
       });
     }
   }

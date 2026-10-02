@@ -151,12 +151,12 @@ const CorporateTargets = () => {
               <div className="text-sm text-gray-600">Active Targets</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{targets.filter((t: any) => t.progress >= 80).length}</div>
+              <div className="text-2xl font-bold text-green-600">{targets.filter((t) => t.progress >= 80).length}</div>
               <div className="text-sm text-gray-600">On Track</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {Math.round(targets.reduce((sum: number, t: any) => sum + t.progress, 0) / (targets.length || 1))}%
+                {Math.round(targets.reduce((sum: number, t) => sum + t.progress, 0) / (targets.length || 1))}%
               </div>
               <div className="text-sm text-gray-600">Avg Progress</div>
             </div>
@@ -180,7 +180,7 @@ const CorporateTargets = () => {
 
         <TabsContent value="targets">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {targets.map((target: any) => (
+            {targets.map((target) => (
               <Card key={target.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -235,11 +235,11 @@ const CorporateTargets = () => {
             <CardHeader><CardTitle>Progress Timeline</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {targets.map((target: any) => (
+                {targets.map((target) => (
                   <div key={target.id} className="border rounded-lg p-4">
                     <h3 className="font-semibold mb-4">{target.title}</h3>
                     <div className="space-y-3">
-                      {target.progressHistory?.map((entry: any, index: number) => (
+                      {target.progressHistory?.map((entry, index: number) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                           <div>
                             <span className="font-medium">{entry.value.toLocaleString()} {target.targetUnit}</span>

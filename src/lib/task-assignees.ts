@@ -29,8 +29,8 @@ export async function fetchAssignableUsers(reportId: string, reportOwnerId: stri
     const grantLists = await Promise.all(orgs.data.map((o) => listGrantsForOrg(o.id)));
     orgShareIds = grantLists
       .flat()
-      .filter((g: any) => !g.revoked_at && g.expires_at > now)
-      .map((g: any) => g.grantee_user_id);
+      .filter((g) => !g.revoked_at && g.expires_at > now)
+      .map((g) => g.grantee_user_id);
   }
 
   const idToSource = new Map<string, 'affiliation' | 'org_share'>();

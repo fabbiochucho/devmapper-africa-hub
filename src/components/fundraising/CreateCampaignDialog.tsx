@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SDG_OPTIONS, CURRENCY_OPTIONS } from "@/data/fundraisingOptions";
+import { errorMessageOf } from '@/lib/error-handler';
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 interface CreateCampaignDialogProps {
   open: boolean;
@@ -130,7 +132,7 @@ export const CreateCampaignDialog = ({ open, onOpenChange, onCreated, initialSdg
     else category = 'small';
 
     try {
-      const insertData: any = {
+      const insertData: TablesInsert<'fundraising_campaigns'> = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         target_amount: amount,
@@ -156,9 +158,9 @@ export const CreateCampaignDialog = ({ open, onOpenChange, onCreated, initialSdg
       onOpenChange(false);
       resetForm();
       onCreated();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating campaign:', error);
-      toast.error(error.message || 'Failed to create campaign');
+      toast.error(errorMessageOf(error) || 'Failed to create campaign');
     } finally {
       setCreating(false);
     }

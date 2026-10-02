@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,11 +27,7 @@ export default function ImpactScorecard({ reportId, initialDimensions, readOnly 
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    if (reportId) fetchExistingScore();
-  }, [reportId]);
-
-  const fetchExistingScore = async () => {
+  const fetchExistingScore = useCallback(async () => {
     if (!reportId) return;
     const { data } = await supabase
       .from('project_dism_scores')
@@ -51,7 +47,11 @@ export default function ImpactScorecard({ reportId, initialDimensions, readOnly 
         innovationReplicability: data.innovation_replicability,
       });
     }
-  };
+  }, [reportId]);
+
+  useEffect(() => {
+    if (reportId) fetchExistingScore();
+  }, [fetchExistingScore, reportId]);
 
   const saveScore = async () => {
     if (!reportId || !user) return;

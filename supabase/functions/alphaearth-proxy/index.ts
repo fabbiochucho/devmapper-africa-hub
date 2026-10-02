@@ -1,3 +1,4 @@
+import type { Db } from "../_shared/db.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -57,7 +58,7 @@ serve(async (req) => {
     const action = url.searchParams.get('action') || 'benchmark';
     const body = await req.json();
 
-    console.log('[ALPHAEARTH-PROXY] Action:', action, 'Body:', body);
+    console.log('[ALPHAEARTH-PROXY] Action:', action);
 
     let result;
 
@@ -95,7 +96,7 @@ serve(async (req) => {
 
 async function handleBenchmark(
   request: BenchmarkRequest, 
-  supabase: any,
+  supabase: Db,
   userId: string
 ) {
   const { country, sector, year, organizationId } = request;
@@ -111,7 +112,7 @@ async function handleBenchmark(
 
   if (cached) {
     console.log('[ALPHAEARTH-PROXY] Cache hit for benchmark');
-    return { ...cached.payload, cached: true };
+    return { ...(cached.payload as Record<string, unknown>), cached: true };
   }
 
   // Get organization plan type
@@ -197,7 +198,7 @@ async function handleBenchmark(
   await supabase.rpc('log_audit_event', {
     p_actor_id: userId,
     p_actor_type: 'user',
-    p_org_id: organizationId || null,
+    p_org_id: (organizationId || null) as string, // SQL arg is nullable; generated rpc types drop that
     p_action: 'alphaearth_benchmark_request',
     p_payload: { country, sector, year, plan_type: planType }
   });
@@ -207,7 +208,7 @@ async function handleBenchmark(
 
 async function handleSupplierEnrichment(
   request: SupplierEnrichRequest,
-  supabase: any,
+  supabase: Db,
   userId: string
 ) {
   const { organizationId, suppliers, year = new Date().getFullYear() } = request;

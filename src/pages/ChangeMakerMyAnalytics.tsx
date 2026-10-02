@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import SocialShareButton from '@/components/social/SocialShareButton';
 import { useNavigate } from 'react-router-dom';
+import type { Tables } from "@/integrations/supabase/types";
 
 const SDG_COLORS = [
   '#E5243B', '#DDA63A', '#4C9F38', '#C5192D', '#FF3A21', '#26BDE2',
@@ -26,17 +27,13 @@ const ChangeMakerMyAnalytics = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [reports, setReports] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [donations, setDonations] = useState<any[]>([]);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Tables<'change_makers'> | null>(null);
+  const [reports, setReports] = useState<Tables<'reports'>[]>([]);
+  const [campaigns, setCampaigns] = useState<Tables<'fundraising_campaigns'>[]>([]);
+  const [donations, setDonations] = useState<Tables<'campaign_donations'>[]>([]);
+  const [userProfile, setUserProfile] = useState<Tables<'profiles'> | null>(null);
 
-  useEffect(() => {
-    if (user) loadData();
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [profileRes, changeMakerRes, reportsRes, campaignsRes] = await Promise.all([
@@ -62,7 +59,11 @@ const ChangeMakerMyAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) loadData();
+  }, [loadData, user]);
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;

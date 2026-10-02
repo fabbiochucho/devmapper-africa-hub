@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,18 +49,14 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchFeedback();
-  }, [reportId]);
-
-  const fetchFeedback = async () => {
+  const fetchFeedback = useCallback(async () => {
     const { data } = await supabase
       .from('citizen_project_feedback')
       .select('*')
       .eq('report_id', reportId)
       .order('created_at', { ascending: false });
     
-    const feedbackItems = (data || []) as any[];
+    const feedbackItems = (data || []);
     
     // Fetch votes for all feedback items
     const feedbackIds = feedbackItems.map(f => f.id);
@@ -91,7 +87,11 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
       userVote: votesMap[f.id]?.userVote || null,
     })));
     setLoading(false);
-  };
+  }, [reportId, user]);
+
+  useEffect(() => {
+    fetchFeedback();
+  }, [fetchFeedback, reportId]);
 
   const handleVote = async (feedbackId: string, voteType: 'up' | 'down') => {
     if (!user) { toast.error('Sign in to vote'); return; }
@@ -114,7 +114,7 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
         feedback_id: feedbackId,
         user_id: user.id,
         vote_type: voteType,
-      } as any, { onConflict: 'feedback_id,user_id' });
+      }, { onConflict: 'feedback_id,user_id' });
       
       if (error) { toast.error('Failed to vote'); return; }
       

@@ -131,7 +131,7 @@ serve(async (req) => {
     const uid = await rpc('common', 'authenticate', [db, username, apiKey]);
     if (!uid) throw new Error('Odoo authentication failed');
 
-    const lines: any[] = await rpc('object', 'execute_kw', [
+    const lines: { partner_id?: [number, string] | false; name?: string | false; price_subtotal?: number }[] = await rpc('object', 'execute_kw', [
       db, uid, apiKey, 'account.move.line', 'search_read',
       [[['move_id.move_type', '=', 'in_invoice'], ['display_type', '=', false]]],
       { fields: ['id', 'partner_id', 'name', 'quantity', 'price_subtotal', 'product_id'], limit: 200 },

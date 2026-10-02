@@ -547,7 +547,7 @@ const Pricing = () => {
                           <td className="px-4 py-2 text-muted-foreground">{feat.label}</td>
                           {plans.map((plan) => (
                             <td key={plan.id} className="px-4 py-2 text-center">
-                              {renderFeatureCell((plan.features as any)[feat.key])}
+                              {renderFeatureCell((plan.features)[feat.key])}
                             </td>
                           ))}
                         </tr>

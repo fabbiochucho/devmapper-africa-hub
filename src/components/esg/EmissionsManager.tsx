@@ -18,10 +18,12 @@ import { Factory, Plus, Save, Loader2, TrendingDown, TrendingUp, Flame, Zap, Tru
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface EmissionsManagerProps {
   organizationId: string;
-  indicators: any[];
+  indicators: Tables<'esg_indicators'>[];
   onDataChange: () => void;
 }
 
@@ -114,9 +116,9 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
       setEditingId(null);
       resetForm();
       onDataChange();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || t('esg.emissionsManager.saveFailedError'));
+      toast.error(errorMessageOf(err) || t('esg.emissionsManager.saveFailedError'));
     } finally {
       setSaving(false);
     }
@@ -131,7 +133,7 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
     });
   };
 
-  const openEdit = (ind: any) => {
+  const openEdit = (ind: Tables<'esg_indicators'>) => {
     setForm({
       reporting_year: ind.reporting_year,
       carbon_scope1_tonnes: ind.carbon_scope1_tonnes || 0,

@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { enrichSuppliers } from '@/lib/alphaearth-client';
 import { ESGAuditHelpers } from '@/lib/esg-audit';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ImportResult {
   success: boolean;
@@ -313,8 +314,8 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
               enrichedCount = enrichedRows.length;
             }
           }
-        } catch (enrichError: any) {
-          errors.push(t('esg.csvImporter.autoEnrichmentFailedError', { message: enrichError.message }));
+        } catch (enrichError: unknown) {
+          errors.push(t('esg.csvImporter.autoEnrichmentFailedError', { message: errorMessageOf(enrichError) }));
         }
       }
 
@@ -350,9 +351,9 @@ Tech Solutions Inc,GB,technology,sales@techsolutions.com,75000,45.2,Software lic
       if (onImportComplete) {
         onImportComplete(data);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Import error:', error);
-      toast.error(error.message || t('esg.csvImporter.importFailedGenericError'));
+      toast.error(errorMessageOf(error) || t('esg.csvImporter.importFailedGenericError'));
     } finally {
       setImporting(false);
     }

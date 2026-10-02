@@ -93,7 +93,7 @@ export const addCorporateTarget = async (
 
 // New function for the ESG Dashboard dialog
 export const addCorporateEsgTarget = async (
-  targetData: any
+  targetData: { title: string; description: string; targetValue: string | number; targetUnit: string; targetDate: string; sdgGoal: string | number; countryCode: string }
 ): Promise<CorporateTarget> => {
   const newTarget: CorporateTarget = {
     id: corporateTargets.length > 0 ? Math.max(...corporateTargets.map((t) => t.id)) + 1 : 1,

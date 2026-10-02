@@ -1,3 +1,4 @@
+import type { Db } from "./db.ts";
 // deno-lint-ignore-file no-explicit-any
 
 export interface ErpLineItem {
@@ -68,7 +69,7 @@ export function matchEmissionFactorKeyword(text: string): { category: string; ac
  * so the matching logic (and its limitations) only live in one place.
  */
 export async function syncErpLineItems(
-  supabase: any,
+  supabase: Db,
   organizationId: string,
   provider: 'odoo' | 'sap',
   lineItems: ErpLineItem[],

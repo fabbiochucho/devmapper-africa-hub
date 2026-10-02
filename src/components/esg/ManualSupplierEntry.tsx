@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ManualSupplierEntryProps {
   organizationId: string;
@@ -57,8 +58,8 @@ export function ManualSupplierEntry({ organizationId, onSupplierAdded }: ManualS
       setForm({ name: '', sector: '', country_code: '', contact_email: '', annual_spend: '' });
       setOpen(false);
       onSupplierAdded();
-    } catch (error: any) {
-      toast.error(error.message || t('esg.manualSupplierEntry.addFailedError'));
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || t('esg.manualSupplierEntry.addFailedError'));
     } finally {
       setLoading(false);
     }

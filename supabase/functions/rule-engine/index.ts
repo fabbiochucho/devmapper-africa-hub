@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database } from "../_shared/db.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization");
 
-    const supabase = createClient(
+    const supabase = createClient<Database>(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
@@ -50,13 +51,13 @@ serve(async (req) => {
       }
 
       // Filter frameworks by actor type applicability
-      const applicable = frameworks.filter((f: any) => {
+      const applicable = frameworks.filter((f) => {
         const types = f.applicable_entity_types as string[];
         return types?.includes(actor_type) || types?.includes("all");
       });
 
       // Build exposure profile
-      const results: ExposureResult[] = applicable.map((f: any) => {
+      const results: ExposureResult[] = applicable.map((f) => {
         const gaps: string[] = [];
         
         // Simple rule matching based on framework category

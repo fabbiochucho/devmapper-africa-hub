@@ -14,6 +14,8 @@ const changeMakerMemberSchema = z.object({
   }).optional(),
 });
 
+export type ChangeMakerFormValues = z.infer<typeof changeMakerSchema>;
+
 export const changeMakerSchema = z.object({
   type: z.enum(['individual', 'group', 'ngo', 'corporate'], {
     required_error: "Please select a change maker type.",

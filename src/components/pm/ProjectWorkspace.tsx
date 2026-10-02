@@ -29,22 +29,23 @@ import CarbonAssetsTab from "@/components/carbon/CarbonAssetsTab";
 import ComplianceTab from "@/components/carbon/ComplianceTab";
 import FinancialImpactTab from "@/components/carbon/FinancialImpactTab";
 import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface ProjectWorkspaceProps {
   reportId: string;
-  report: any;
+  report?: Partial<Tables<"reports">>;
 }
 
 
 export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [milestones, setMilestones] = useState<any[]>([]);
-  const [verifications, setVerifications] = useState<any[]>([]);
-  const [budgets, setBudgets] = useState<any[]>([]);
-  const [updates, setUpdates] = useState<any[]>([]);
-  const [indicators, setIndicators] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [milestones, setMilestones] = useState<Tables<'project_milestones'>[]>([]);
+  const [verifications, setVerifications] = useState<Tables<'project_verifications'>[]>([]);
+  const [budgets, setBudgets] = useState<Tables<'project_budgets'>[]>([]);
+  const [updates, setUpdates] = useState<Tables<'project_updates'>[]>([]);
+  const [indicators, setIndicators] = useState<Tables<'project_indicators'>[]>([]);
+  const [tasks, setTasks] = useState<Tables<'project_tasks'>[]>([]);
   const [currentStatus, setCurrentStatus] = useState(report?.project_status || "idea");
   const [visibility, setVisibility] = useState(report?.visibility || "public");
   const [addTaskOpen, setAddTaskOpen] = useState(false);
@@ -73,7 +74,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       if (ind.data) setIndicators(ind.data);
       if (t.data) {
         setTasks(t.data);
-        const assignedIds = t.data.map((task: any) => task.assigned_to).filter(Boolean);
+        const assignedIds = t.data.map((task) => task.assigned_to).filter(Boolean);
         if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
       }
     });
@@ -92,7 +93,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       priority: newTaskPriority,
       created_by: user.id,
       assigned_to: newTaskAssignee || null,
-    } as any);
+    });
     if (error) { toast.error(t('pm.toastAddTaskFailed')); return; }
     toast.success(t('pm.toastTaskAdded'));
     setNewTaskTitle("");
@@ -101,19 +102,19 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
     const { data } = await supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at");
     if (data) {
       setTasks(data);
-      const assignedIds = data.map((task: any) => task.assigned_to).filter(Boolean);
+      const assignedIds = data.map((task) => task.assigned_to).filter(Boolean);
       if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
     }
   };
 
   const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
-    await supabase.from("project_tasks").update({ status: newStatus } as any).eq("id", taskId);
+    await supabase.from("project_tasks").update({ status: newStatus }).eq("id", taskId);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
   };
 
   const toggleVisibility = async () => {
     const newVis = visibility === "public" ? "private" : "public";
-    await supabase.from("reports").update({ visibility: newVis } as any).eq("id", reportId);
+    await supabase.from("reports").update({ visibility: newVis }).eq("id", reportId);
     setVisibility(newVis);
     toast.success(t('pm.toastProjectVisibility', { visibility: newVis === "public" ? t('pm.visibilityPublicWord') : t('pm.visibilityPrivateWord') }));
   };
@@ -133,7 +134,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
   ];
 
   const getVerificationStatus = (level: string) => {
-    const v = verifications.find((vr: any) => vr.verification_level === level);
+    const v = verifications.find((vr) => vr.verification_level === level);
     if (!v) return "pending";
     return v.status;
   };
@@ -258,7 +259,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                 <p className="text-sm text-muted-foreground">{t('pm.noTasksYetTrackWork')}</p>
               ) : (
                 <KanbanBoard
-                  tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: t.tags || [] }))}
+                  tasks={tasks.map(t => ({ id: t.id, title: t.title, description: t.description, priority: t.priority, status: t.status, due_date: t.due_date, assigned_to: t.assigned_to, tags: Array.isArray(t.tags) ? t.tags.filter((tag): tag is string => typeof tag === "string") : [] }))}
                   onStatusChange={handleTaskStatusChange}
                   hasAssignment={tasks.some(t => t.assigned_to)}
                   assigneeNames={assigneeNames}
@@ -282,7 +283,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
                     </div>
                     <Progress value={budgetPct} className="h-2" />
                     <p className="text-xs text-muted-foreground">{t('pm.budgetUtilizedPercent', { percent: budgetPct })}</p>
-                    {budgets.map((b: any) => (
+                    {budgets.map((b) => (
                       <div key={b.id} className="text-xs border rounded p-2 space-y-1">
                         {b.funding_source && <p><strong>{t('pm.budgetSourceLabel')}</strong> {b.funding_source}</p>}
                         {b.donor_organization && <p><strong>{t('pm.budgetDonorLabel')}</strong> {b.donor_organization}</p>}
@@ -333,7 +334,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
               {milestones.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('pm.noMilestonesYet')}</p>
               ) : (
-                milestones.map((m: any) => (
+                milestones.map((m) => (
                   <div key={m.id} className="flex items-center gap-3">
                     <CheckCircle2 className={`h-5 w-5 shrink-0 ${m.status === "completed" ? "text-green-500" : "text-muted-foreground"}`} />
                     <div className="flex-1">
@@ -353,7 +354,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
             <Card>
               <CardHeader><CardTitle className="text-base">{t('pm.recentProgressUpdatesTitle')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                {updates.map((u: any) => (
+                {updates.map((u) => (
                   <div key={u.id} className="border rounded-lg p-3 space-y-1">
                     <div className="flex items-center justify-between">
                       <Badge variant="outline">{t('pm.progressPercentBadge', { percent: u.progress_percent })}</Badge>

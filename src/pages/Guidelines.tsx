@@ -2,7 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, Users, Shield, MessageCircle, Flag, FileText, Eye, Globe, Scale, Heart, Lock, Camera, BarChart3 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { SEOHead, generateFAQSchema } from '@/components/seo/SEOHead';
+import { SEOHead } from '@/components/seo/SEOHead';
+import { generateFAQSchema } from '@/lib/seoSchemas';
 
 const Guidelines = () => {
   const coreGuidelines = [

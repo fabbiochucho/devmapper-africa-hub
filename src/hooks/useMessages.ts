@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type ProfileSummary = Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url'>;
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Participant {
   user_id: string;
@@ -46,8 +50,8 @@ export function useMessages() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const realtimeRef = useRef<any>(null);
+  const [searchResults, setSearchResults] = useState<(Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url' | 'organization'> & { email: string | null })[]>([]);
+  const realtimeRef = useRef<RealtimeChannel | null>(null);
 
   const fetchConversations = useCallback(async () => {
     if (!user) return;
@@ -88,8 +92,8 @@ export function useMessages() {
             .from('public_profiles')
             .select('user_id, full_name, avatar_url')
             .in('user_id', userIds)
-        : { data: [] as any[] };
-      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+        : { data: [] };
+      const profileMap = new Map<string, ProfileSummary>((profilesData || []).map((p) => [p.user_id, p]));
 
       // Fetch last message per conversation
       const lastMsgPromises = convIds.map(id =>
@@ -107,7 +111,7 @@ export function useMessages() {
         const parts = (allParts || [])
           .filter(p => p.conversation_id === conv.id)
           .map(p => {
-            const prof: any = profileMap.get(p.user_id);
+            const prof = profileMap.get(p.user_id);
             return {
               user_id: p.user_id,
               full_name: prof?.full_name ?? null,
@@ -157,20 +161,20 @@ export function useMessages() {
 
       if (error) throw error;
 
-      const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)));
+      const senderIds = Array.from(new Set((data || []).map((m) => m.sender_id)));
       const { data: profilesData } = senderIds.length
         ? await supabase
             .from('public_profiles')
             .select('user_id, full_name, avatar_url')
             .in('user_id', senderIds)
-        : { data: [] as any[] };
-      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+        : { data: [] };
+      const profileMap = new Map<string, ProfileSummary>((profilesData || []).map((p) => [p.user_id, p]));
 
-      const withProfiles = (data || []).map((m: any) => ({
+      const withProfiles = (data || []).map((m) => ({
         ...m,
-        profiles: profileMap.get(m.sender_id) || null,
+        sender_profile: profileMap.get(m.sender_id) || undefined,
       }));
-      setMessages(withProfiles as any);
+      setMessages(withProfiles);
 
       // Mark as read
       await supabase
@@ -275,7 +279,7 @@ export function useMessages() {
         .limit(10);
 
       if (error) throw error;
-      setSearchResults((data || []).map((p: any) => ({ ...p, email: p.organization })));
+      setSearchResults((data || []).map((p) => ({ ...p, email: p.organization })));
     } catch (err) {
       console.error('Error searching users:', err);
     }
@@ -321,7 +325,7 @@ export function useMessages() {
 
           setMessages(prev => [
             ...prev,
-            { ...newMsg, profiles: profile } as any
+            { ...newMsg, sender_profile: profile || undefined }
           ]);
         }
       )

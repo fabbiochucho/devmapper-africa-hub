@@ -20,6 +20,8 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import LanguagePromptBanner from "./LanguagePromptBanner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import type { UserProfile } from "@/lib/types";
 
 const roleDisplayNames: Record<string, string> = {
   'citizen_reporter': 'Citizen',
@@ -40,8 +42,8 @@ const LayoutHeader = memo(({
   onLogout, 
   onSearchOpen 
 }: {
-  user: any;
-  profile: any;
+  user: User | null;
+  profile: UserProfile | null;
   currentRole: string;
   onLogout: () => void;
   onSearchOpen: () => void;
@@ -139,21 +141,22 @@ const Layout = () => {
   }, [location.pathname, trackPageView]);
 
   // Optimized onboarding check - single batched query
+  const sessionUserId = session?.user?.id;
   useEffect(() => {
     const checkOnboarding = async () => {
-      if (!session?.user) return;
+      if (!sessionUserId) return;
       
       // Batch both queries in parallel
       const [profileResult, rolesResult] = await Promise.all([
         supabase
           .from("profiles")
           .select("full_name, country")
-          .eq("user_id", session.user.id)
+          .eq("user_id", sessionUserId)
           .maybeSingle(),
         supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", session.user.id)
+          .eq("user_id", sessionUserId)
           .eq("is_active", true)
       ]);
 
@@ -161,7 +164,7 @@ const Layout = () => {
       const roles = rolesResult.data;
 
       // Admins skip onboarding entirely
-      const hasAdminRole = roles?.some((r: any) => 
+      const hasAdminRole = roles?.some((r) => 
         ['admin', 'platform_admin', 'country_admin'].includes(r.role)
       );
       if (hasAdminRole) return;
@@ -177,7 +180,7 @@ const Layout = () => {
     };
 
     checkOnboarding();
-  }, [session?.user?.id]);
+  }, [sessionUserId]);
 
   // Keyboard shortcut for search (Cmd+K or Ctrl+K)
   useEffect(() => {

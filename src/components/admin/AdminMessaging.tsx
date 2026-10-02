@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Search, Send, MessageSquare, Loader2, Plus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface UserProfile {
   user_id: string;
@@ -26,7 +27,7 @@ const AdminMessaging = () => {
   const { session } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Tables<'direct_messages'>[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -38,16 +39,12 @@ const AdminMessaging = () => {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
-
-  useEffect(() => {
     if (selectedConversation) {
       loadMessages(selectedConversation.id);
     }
   }, [selectedConversation]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     setLoading(true);
     try {
       const { data: participations } = await supabase
@@ -97,7 +94,11 @@ const AdminMessaging = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   const loadMessages = async (conversationId: string) => {
     try {
