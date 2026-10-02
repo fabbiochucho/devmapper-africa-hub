@@ -1,6 +1,5 @@
 // Public contact-form intake. verify_jwt = false; persists to contact_submissions
-// and notifies all admins via the notifications table. Email delivery is layered
-// on later when an email provider is configured.
+// and notifies all admins in-app and, when RESEND_API_KEY is set, by email.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
@@ -72,6 +71,31 @@ Deno.serve(async (req) => {
           link: '/admin/crm',
         }))
       );
+    }
+
+    // Email the admins too. Plain text so user input can't inject markup; a send
+    // failure is logged, not returned, since the submission is already saved.
+    const resendKey = Deno.env.get('RESEND_API_KEY');
+    if (resendKey && admins?.length) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('email')
+        .in('user_id', admins.map((a: { user_id: string }) => a.user_id));
+      const to = [...new Set((profiles ?? []).map((p: { email: string | null }) => p.email).filter(Boolean))];
+      if (to.length) {
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'DevMapper Africa <noreply@devmapper.africa>',
+            to,
+            reply_to: email,
+            subject: `[Contact] ${subject ?? 'No subject'}`.replace(/[\r\n]+/g, ' '),
+            text: `From: ${name} <${email}>\n${body.source_url ? `Page: ${body.source_url}\n` : ''}\n${message}`,
+          }),
+        });
+        if (!resp.ok) console.error('contact email send failed', resp.status, await resp.text());
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, id: inserted?.id }), {
