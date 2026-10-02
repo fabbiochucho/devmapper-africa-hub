@@ -33,25 +33,20 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabase = createClient(supabaseUrl, expectedServiceKey);
 
-    // Get users with email notifications enabled
-    const { data: notifPrefs } = await supabase
+    // Email is on unless the user turned it off - matching the settings page, which shows it
+    // on when no preferences have been saved.
+    const { data: optedOut } = await supabase
       .from('notification_preferences')
       .select('user_id')
-      .eq('email_notifications', true);
+      .eq('email_notifications', false);
+    const off = new Set((optedOut ?? []).map((p: { user_id: string }) => p.user_id));
 
-    if (!notifPrefs?.length) {
-      return new Response(JSON.stringify({ message: 'No users with email notifications enabled' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const userIds = notifPrefs.map(p => p.user_id);
-
-    // Get user profiles
-    const { data: profiles } = await supabase
+    // ponytail: loads every profile and queries per user; batch when users reach the thousands.
+    const { data: allProfiles } = await supabase
       .from('profiles')
       .select('user_id, email, full_name')
-      .in('user_id', userIds);
+      .not('email', 'is', null);
+    const profiles = (allProfiles ?? []).filter((p: DigestUser) => !off.has(p.user_id));
 
     if (!profiles?.length) {
       return new Response(JSON.stringify({ message: 'No profiles found' }), {

@@ -39,3 +39,7 @@ export const CURRENCY_OPTIONS = [
 export const getCurrencySymbol = (code: string) => {
   return CURRENCY_OPTIONS.find(c => c.value === code)?.symbol || code;
 };
+
+// Currencies the Paystack account can charge donations in (NGN by default; USD once enabled on the
+// account). Campaigns in any other currency could never take a donation.
+export const DONATION_CURRENCIES = ["NGN", "USD"];

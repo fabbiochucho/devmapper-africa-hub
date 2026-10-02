@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { SDG_OPTIONS, CURRENCY_OPTIONS } from "@/data/fundraisingOptions";
+import { SDG_OPTIONS, CURRENCY_OPTIONS, DONATION_CURRENCIES } from "@/data/fundraisingOptions";
 import { errorMessageOf } from '@/lib/error-handler';
 import type { TablesInsert } from "@/integrations/supabase/types";
 
@@ -24,7 +24,7 @@ const emptyFormData = {
   title: '',
   description: '',
   target_amount: '',
-  currency: 'USD',
+  currency: 'NGN',
   sdg_goals: [] as number[],
   location: '',
   category: 'nano' as 'nano' | 'micro' | 'small',
@@ -238,7 +238,7 @@ export const CreateCampaignDialog = ({ open, onOpenChange, onCreated, initialSdg
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CURRENCY_OPTIONS.map(c => (
+                  {CURRENCY_OPTIONS.filter(c => DONATION_CURRENCIES.includes(c.value)).map(c => (
                     <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                   ))}
                 </SelectContent>
