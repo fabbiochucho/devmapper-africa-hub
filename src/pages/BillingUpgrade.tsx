@@ -3,8 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Check, Crown, Shield, Zap, Building2, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +11,7 @@ import { errorMessageOf } from '@/lib/error-handler';
 import type { LucideIcon } from "lucide-react";
 
 type PlanId = 'lite' | 'individual' | 'pro' | 'advanced' | 'enterprise';
+type Interval = 'monthly' | 'quarterly' | 'yearly';
 const PLAN_ORDER = ['free', 'lite', 'individual', 'pro', 'advanced', 'enterprise'];
 
 interface Organization {
@@ -24,12 +23,12 @@ interface Organization {
   project_cap: number;
 }
 
-const planDetails: Record<string, { name: string; icon: LucideIcon; color: string; price: { monthly: number; yearly: number }; features: string[] }> = {
+const planDetails: Record<string, { name: string; icon: LucideIcon; color: string; price: { monthly: number; quarterly: number; yearly: number }; features: string[] }> = {
   lite: {
     name: 'Lite',
     icon: Shield,
     color: 'text-blue-500',
-    price: { monthly: 0, yearly: 0 },
+    price: { monthly: 0, quarterly: 0, yearly: 0 },
     features: ['Up to 10 projects', 'Basic SDG tracking', 'PDF export', 'Community support'],
   },
   individual: {
@@ -37,28 +36,28 @@ const planDetails: Record<string, { name: string; icon: LucideIcon; color: strin
     icon: User,
     color: 'text-sky-500',
     // Provisional price; must match getPlanPrice() in supabase/functions/_shared/planQuotas.ts.
-    price: { monthly: 15, yearly: 150 },
+    price: { monthly: 15, quarterly: 40, yearly: 150 },
     features: ['For researchers, journalists, consultants and analysts', '20 Ndovu Akili analyses a day', 'Live-source search and investigations', 'Report and investigation exports', 'Full earth intelligence'],
   },
   pro: {
     name: 'Pro',
     icon: Zap,
     color: 'text-amber-500',
-    price: { monthly: 49, yearly: 490 },
+    price: { monthly: 49, quarterly: 129, yearly: 490 },
     features: ['Up to 40 projects', 'Advanced analytics', 'Team collaboration', 'API access', 'Excel/JSON export', 'Email support'],
   },
   advanced: {
     name: 'Advanced',
     icon: Crown,
     color: 'text-purple-500',
-    price: { monthly: 149, yearly: 1490 },
+    price: { monthly: 149, quarterly: 399, yearly: 1490 },
     features: ['Up to 150 projects', 'Scenario analysis', 'Custom dashboards', 'Audit trails', 'AlphaEarth Pro', 'Priority support', 'Roles & permissions'],
   },
   enterprise: {
     name: 'Enterprise',
     icon: Building2,
     color: 'text-emerald-500',
-    price: { monthly: -1, yearly: -1 },
+    price: { monthly: -1, quarterly: -1, yearly: -1 },
     features: ['Unlimited projects', 'Custom integrations', 'SLA', 'Dedicated manager', 'Sovereign frameworks'],
   },
 };
@@ -67,7 +66,10 @@ const BillingUpgrade = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [isYearly, setIsYearly] = useState(false);
+  const [interval, setBillingInterval] = useState<Interval>(() => {
+    const i = searchParams.get('interval');
+    return i === 'quarterly' || i === 'yearly' ? i : 'monthly';
+  });
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
@@ -126,8 +128,7 @@ const BillingUpgrade = () => {
     }
 
     setUpgrading(`${provider}-${planType}`);
-    const interval = isYearly ? 'yearly' : 'monthly';
-    const amount = isYearly ? details.price.yearly : details.price.monthly;
+    const amount = details.price[interval];
 
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
@@ -197,9 +198,13 @@ const BillingUpgrade = () => {
 
         {/* Billing Toggle */}
         <div className="flex items-center justify-center mb-10 gap-3">
-          <Label>Monthly</Label>
-          <Switch checked={isYearly} onCheckedChange={setIsYearly} />
-          <Label>Yearly <Badge variant="secondary" className="ml-1">~17% off</Badge></Label>
+          {(['monthly', 'quarterly', 'yearly'] as const).map((i) => (
+            <Button key={i} size="sm" variant={interval === i ? 'default' : 'outline'} onClick={() => setBillingInterval(i)}>
+              {i[0].toUpperCase() + i.slice(1)}
+              {i === 'quarterly' && <Badge variant="secondary" className="ml-1">~12% off</Badge>}
+              {i === 'yearly' && <Badge variant="secondary" className="ml-1">~17% off</Badge>}
+            </Button>
+          ))}
         </div>
 
         {/* Plan Cards */}
@@ -208,7 +213,7 @@ const BillingUpgrade = () => {
             const plan = planDetails[planId];
             const Icon = plan.icon;
             const isCurrent = effectivePlan === planId;
-            const price = isYearly ? plan.price.yearly : plan.price.monthly;
+            const price = plan.price[interval];
 
             return (
               <Card key={planId} className={`${isCurrent ? 'ring-2 ring-primary' : ''}`}>
@@ -219,7 +224,7 @@ const BillingUpgrade = () => {
                     {price > 0 ? (
                       <>
                         <span className="text-4xl font-bold">${price}</span>
-                        <span className="text-muted-foreground">/{isYearly ? 'year' : 'month'}</span>
+                        <span className="text-muted-foreground">/{interval === 'yearly' ? 'year' : interval === 'quarterly' ? 'quarter' : 'month'}</span>
                       </>
                     ) : (
                       <span className="text-2xl font-bold">Custom</span>

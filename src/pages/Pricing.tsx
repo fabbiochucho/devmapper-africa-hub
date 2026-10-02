@@ -64,7 +64,7 @@ const plans = [
     icon: User,
     iconColor: 'text-sky-500',
     // Provisional price; must match getPlanPrice() in supabase/functions/_shared/planQuotas.ts.
-    price: { monthly: 15, quarterly: -2, yearly: 150 },
+    price: { monthly: 15, quarterly: 40, yearly: 150 },
     description: 'A personal plan: more Ndovu Akili analyses, live-source search, investigations and exports. No organisation needed.',
     projectLimit: 'Up to 10',
     monthlyAdd: 3,
@@ -333,7 +333,6 @@ const Pricing = () => {
 
   const getPrice = (plan: typeof plans[0]) => {
     const price = plan.price[billingPeriod];
-    if (price === -2) return 'Monthly or yearly';
     if (price === -1) return 'Custom';
     if (price === 0) return 'Free';
     return `$${price}`;
@@ -459,7 +458,7 @@ const Pricing = () => {
                   ) : (
                     <Button
                       className="w-full"
-                      onClick={() => navigate(`/billing-upgrade?plan=${plan.id}`)}
+                      onClick={() => navigate(`/billing-upgrade?plan=${plan.id}&interval=${billingPeriod}`)}
                     >
                       Upgrade to {plan.name.split(' ')[1]}
                     </Button>

@@ -25,9 +25,9 @@ export function getPlanQuotas(planType: string): PlanQuotas {
   };
 }
 
-/** 30 days for a monthly interval, 365 for yearly — matches existing billing logic. */
+/** 30 days monthly, 90 quarterly, 365 yearly. */
 export function computePlanExpiry(interval: string | undefined): string {
-  const days = interval === "yearly" ? 365 : 30;
+  const days = interval === "yearly" ? 365 : interval === "quarterly" ? 90 : 30;
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
@@ -40,11 +40,12 @@ export function computePlanExpiry(interval: string | undefined): string {
  * getPlanQuotas' comment above) and has no self-serve price.
  */
 export function getPlanPrice(planType: string | undefined, interval: string | undefined): number {
-  const yearly = interval === "yearly";
-  if (planType === "pro") return yearly ? 490 : 49;
-  if (planType === "advanced") return yearly ? 1490 : 149;
+  const pick = (monthly: number, quarterly: number, yearly: number) =>
+    interval === "yearly" ? yearly : interval === "quarterly" ? quarterly : monthly;
+  if (planType === "pro") return pick(49, 129, 490);
+  if (planType === "advanced") return pick(149, 399, 1490);
   // Individual / Professional: a personal plan (researchers, journalists, consultants).
   // ponytail: provisional price pending a pricing decision; change here and in BillingUpgrade.tsx.
-  if (planType === "individual") return yearly ? 150 : 15;
+  if (planType === "individual") return pick(15, 40, 150);
   return 0;
 }

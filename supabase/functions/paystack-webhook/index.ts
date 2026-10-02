@@ -68,7 +68,7 @@ serve(async (req: Request) => {
       if (metadata?.payment_type === 'individual_subscription' && metadata?.user_id) {
         const failure = await activateIndividualPlan(supabase, {
           userId: metadata.user_id, interval: metadata.interval, provider: 'paystack',
-          amount: amount / 100, currency: currency || 'NGN', reference,
+          amount: amount / 100, currency: currency || 'USD', reference,
         });
         await supabase.rpc('record_webhook_event', {
           p_event_id: eventId, p_provider: 'paystack', p_event_type: event.event,
@@ -164,7 +164,7 @@ serve(async (req: Request) => {
             old_plan: oldPlan,
             new_plan: requestedPlan,
             amount: amount / 100,
-            currency: currency || 'NGN',
+            currency: currency || 'USD',
             transaction_id: reference,
             provider: 'paystack'
           }
@@ -178,7 +178,7 @@ serve(async (req: Request) => {
           new_plan: metadata.plan_type,
           provider: 'paystack',
           amount: amount / 100, // Paystack amounts are in kobo/cents
-          currency: currency || 'NGN',
+          currency: currency || 'USD',
           external_id: reference,
         }]);
       }

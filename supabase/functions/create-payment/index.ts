@@ -12,7 +12,7 @@ interface PaymentRequest {
   organizationId?: string;
   provider?: 'flutterwave' | 'paystack';
   planType?: 'lite' | 'individual' | 'pro' | 'advanced' | 'enterprise';
-  interval?: 'monthly' | 'yearly';
+  interval?: 'monthly' | 'quarterly' | 'yearly';
   // Donation payment
   payment_type?: 'subscription' | 'donation' | 'marketplace_purchase';
   amount: number;
@@ -331,6 +331,9 @@ const handler = async (req: Request): Promise<Response> => {
     // the org to the full plan on "payment success". "enterprise" has no
     // self-serve price (sales-assisted only, matches getPlanQuotas'
     // comment) so it's rejected here rather than silently priced at $0.
+    if (!['monthly', 'quarterly', 'yearly'].includes(interval ?? '')) {
+      throw new Error('interval must be monthly, quarterly or yearly');
+    }
     const subscriptionAmount = getPlanPrice(planType, interval);
     if (subscriptionAmount <= 0) {
       throw new Error('This plan is not available for self-serve checkout');
@@ -366,7 +369,7 @@ const handler = async (req: Request): Promise<Response> => {
         },
         customizations: {
           title: 'DevMapper Subscription',
-          description: `${planType} plan - ${interval}ly`,
+          description: `${planType} plan - ${interval}`,
           logo: 'https://devmapper.africa/logo.png'
         },
         meta: payer.meta
@@ -427,8 +430,8 @@ const handler = async (req: Request): Promise<Response> => {
       const tx_ref = `${payer.refPrefix}_${Date.now()}`;
       const paystackPayload = {
         email: user.email,
-        amount: subscriptionAmount * 100, // Paystack uses kobo/cents
-        currency: 'NGN',
+        amount: subscriptionAmount * 100, // Paystack amounts are in the currency's subunit (cents)
+        currency: 'USD', // plan prices are USD; requires USD enabled on the Paystack account
         reference: tx_ref,
         // Post-checkout browser landing page only - the real webhook is
         // configured separately in the Paystack dashboard.
@@ -455,7 +458,7 @@ const handler = async (req: Request): Promise<Response> => {
           new_plan: planType,
           provider: 'paystack',
           amount: subscriptionAmount,
-          currency: 'NGN',
+          currency: 'USD',
           external_id: tx_ref,
         }]);
 
