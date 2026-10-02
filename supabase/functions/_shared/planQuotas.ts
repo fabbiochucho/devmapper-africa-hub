@@ -49,3 +49,17 @@ export function getPlanPrice(planType: string | undefined, interval: string | un
   if (planType === "individual") return pick(15, 40, 150);
   return 0;
 }
+
+/**
+ * Whether a webhook charge paid what we expected. Anyone can open a gateway checkout with our
+ * public key and attach their own metadata (plan, org, donation or order id), so a verified
+ * signature alone proves only that *some* payment happened - the amount and currency must match too.
+ */
+export function paidInFull(
+  paid: { amount: number; currency?: string | null },
+  expected: { amount: number; currency: string },
+): boolean {
+  return expected.amount > 0 &&
+    (paid.currency ?? "").toUpperCase() === expected.currency.toUpperCase() &&
+    paid.amount + 0.005 >= expected.amount; // half a cent of float slack
+}

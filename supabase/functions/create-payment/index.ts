@@ -20,7 +20,8 @@ interface PaymentRequest {
   email?: string;
   name?: string;
   campaign_id?: string;
-  donation_id?: string;
+  message?: string;
+  anonymous?: boolean;
   redirect_url?: string;
   // Marketplace purchase payment
   order_id?: string;
@@ -39,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const requestData: PaymentRequest = await req.json();
-    const { payment_type, amount, currency = 'USD' } = requestData;
+    const { payment_type, amount } = requestData;
 
     // Log identifying/routing fields only - never the raw request, which
     // can carry a donor's email and name.
@@ -54,46 +55,50 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Handle donation payments (can be anonymous)
     if (payment_type === 'donation') {
-      const { email, name, campaign_id, donation_id, redirect_url } = requestData;
+      const { email, name, campaign_id, message, anonymous } = requestData;
 
       // Input validation
       const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (
-        !email || !campaign_id || !donation_id ||
+        !email || !campaign_id ||
         typeof email !== 'string' || email.length > 255 || !emailRe.test(email) ||
-        !uuidRe.test(campaign_id) || !uuidRe.test(donation_id) ||
-        typeof amount !== 'number' || !isFinite(amount) || amount <= 0 || amount > 1_000_000 ||
+        !uuidRe.test(campaign_id) ||
+        typeof amount !== 'number' || !isFinite(amount) || amount < 1 || amount > 1_000_000 ||
         (name && (typeof name !== 'string' || name.length > 200)) ||
-        (currency && !/^[A-Z]{3}$/.test(currency))
+        (message && (typeof message !== 'string' || message.length > 500))
       ) {
         return new Response(JSON.stringify({ error: 'Invalid donation payload' }), {
           status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
 
-      // Verify the donation row exists, matches the request, and has not already been linked
-      const { data: existingDonation, error: donationLookupError } = await supabase
-        .from('campaign_donations')
-        .select('id, campaign_id, amount, status, payment_intent_id')
-        .eq('id', donation_id)
-        .maybeSingle();
-
-      if (donationLookupError || !existingDonation) {
-        return new Response(JSON.stringify({ error: 'Donation not found' }), {
-          status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
-      }
-      if (
-        existingDonation.campaign_id !== campaign_id ||
-        Number(existingDonation.amount) !== Number(amount) ||
-        existingDonation.payment_intent_id !== null ||
-        (existingDonation.status && !['pending', 'created'].includes(existingDonation.status))
-      ) {
-        return new Response(JSON.stringify({ error: 'Donation cannot be processed' }), {
+      const { data: campaign } = await supabase
+        .from('fundraising_campaigns').select('currency, status, deadline').eq('id', campaign_id).maybeSingle();
+      if (!campaign || campaign.status !== 'active' || (campaign.deadline && new Date(campaign.deadline) < new Date())) {
+        return new Response(JSON.stringify({ error: 'This campaign is not accepting donations' }), {
           status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
+
+      // The donation row is created here, not by the browser, so guests can give and the
+      // currency/status can't be chosen by the client. Signed-in donors are linked by their JWT.
+      const jwt = req.headers.get('Authorization')?.replace('Bearer ', '');
+      const { data: { user: donor } } = jwt ? await supabase.auth.getUser(jwt) : { data: { user: null } };
+      const { data: donationRow, error: donationInsertError } = await supabase
+        .from('campaign_donations')
+        .insert({
+          campaign_id, amount, currency: campaign.currency, status: 'pending',
+          donor_id: donor?.id ?? null, anonymous: anonymous === true, message: message || null,
+        })
+        .select('id')
+        .single();
+      if (donationInsertError || !donationRow) throw donationInsertError ?? new Error('Could not record donation');
+      const donation_id = donationRow.id;
+      const currency = campaign.currency;
+      // Only send donors back to our own site.
+      const siteUrl = Deno.env.get('SITE_URL') ?? 'https://devmapper.africa';
+      const redirect_url = requestData.redirect_url?.startsWith(siteUrl) ? requestData.redirect_url : `${siteUrl}/fundraising?donation=success`;
 
       const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
       

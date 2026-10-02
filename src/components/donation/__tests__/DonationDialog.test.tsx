@@ -80,22 +80,21 @@ describe("DonationDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /Donate/ }));
 
     await waitFor(() => {
-      expect(insertSingle).not.toHaveBeenCalled();
+      expect(invokeMock).not.toHaveBeenCalled();
     });
   });
 
-  it("creates a donation record and redirects to the returned payment link", async () => {
+  it("asks create-payment to record the donation and redirects to the returned payment link", async () => {
     renderWithAuth(<DonationDialog campaign={campaign} open onOpenChange={() => {}} onDonationComplete={() => {}} />);
 
     fireEvent.change(screen.getByLabelText(/Email Address/), { target: { value: "donor@example.com" } });
     fireEvent.click(screen.getByRole("button", { name: /Donate/ }));
 
     await waitFor(() => {
-      expect(insertSingle).toHaveBeenCalled();
       expect(invokeMock).toHaveBeenCalledWith(
         "create-payment",
         expect.objectContaining({
-          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1" }),
+          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1", amount: 25, email: "donor@example.com" }),
         }),
       );
     });
@@ -103,5 +102,7 @@ describe("DonationDialog", () => {
     await waitFor(() => {
       expect(window.location.href).toBe("https://pay.example/checkout");
     });
+    // The donation row is created server-side now; the browser must not insert it.
+    expect(insertSingle).not.toHaveBeenCalled();
   });
 });

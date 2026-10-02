@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { constantTimeEqual } from "../_shared/webhookSignature.ts";
 import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
-import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
+import { computePlanExpiry, getPlanPrice, getPlanQuotas, paidInFull } from "../_shared/planQuotas.ts";
 import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
 import { activateIndividualPlan } from "../_shared/individualPlan.ts";
 
@@ -94,6 +94,18 @@ serve(async (req) => {
       const metadata = data.meta || data.metadata || {};
       const paymentType = metadata.payment_type || metadata.paymentType;
       const externalId = (data.id ?? data.tx_ref)?.toString();
+      // Metadata is caller-controlled (anyone can open a checkout with our public key), so every
+      // branch below also checks the charge covers what is owed. 200 so the gateway doesn't retry.
+      const paid = { amount: Number(data.amount) || 0, currency: data.currency };
+      const rejectUnderpaid = async (what: string) => {
+        console.error(`Charge does not cover ${what}`);
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+          p_payload: payload, p_status: 'failed', p_error_message: `Underpaid: ${what}`,
+        });
+        return new Response(JSON.stringify({ error: "Payment does not cover the amount due" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      };
 
       // Marketplace credit purchases and donations are keyed off payment_type
       // in the charge's meta - anything else falls through to the existing
@@ -113,7 +125,8 @@ serve(async (req) => {
           );
         }
 
-        const result = await confirmOrderPaid(supabase, orderId, externalId);
+        const result = await confirmOrderPaid(supabase, orderId, externalId, { ...paid, defaultCurrency: 'USD' });
+        if (result.reason === 'underpaid') return rejectUnderpaid(`order ${orderId}`);
         await supabase.rpc('record_webhook_event', {
           p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
           p_payload: payload, p_status: result.success ? 'success' : 'failed',
@@ -144,6 +157,12 @@ serve(async (req) => {
         // double-increment the campaign total. Use the donation's own
         // stored amount (not the gateway's amount field) since it's
         // already in the campaign's currency/unit.
+        const { data: owed } = await supabase
+          .from('campaign_donations').select('amount, currency').eq('id', donationId).maybeSingle();
+        if (owed && !paidInFull(paid, { amount: Number(owed.amount), currency: owed.currency })) {
+          return rejectUnderpaid(`donation ${donationId}`);
+        }
+
         const { data: donation, error: donationError } = await supabase
           .from('campaign_donations')
           .update({ status: 'completed', payment_intent_id: externalId })
@@ -174,6 +193,9 @@ serve(async (req) => {
       }
 
       if (paymentType === 'individual_subscription' && metadata.user_id) {
+        if (!paidInFull(paid, { amount: getPlanPrice('individual', metadata.interval), currency: 'USD' })) {
+          return rejectUnderpaid(`individual plan for ${metadata.user_id}`);
+        }
         const failure = await activateIndividualPlan(supabase, {
           userId: metadata.user_id, interval: metadata.interval, provider: 'flutterwave',
           amount: Number(data.amount) || 0, currency: data.currency || 'USD', reference: externalId ?? '',
@@ -200,6 +222,9 @@ serve(async (req) => {
         );
       }
       const newPlan = requestedPlan;
+      if (!paidInFull(paid, { amount: getPlanPrice(newPlan, interval), currency: 'USD' })) {
+        return rejectUnderpaid(`${newPlan} plan for ${organizationId}`);
+      }
 
       if (!organizationId) {
         console.error("Missing organizationId in metadata");
