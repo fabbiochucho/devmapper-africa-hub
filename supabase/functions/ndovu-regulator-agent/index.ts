@@ -19,7 +19,7 @@ Deno.serve((req) => handleAgent(req, "regulator_ai", SYSTEM_PROMPT, async (db, c
   let policies = db.from("regulatory_frameworks").select("id, name, regulator_name, category, country_code, mandatory, status, effective_date, reporting_frequency, enforcement_risk, source_url").limit(15);
   if (countries.length) policies = policies.in("country_code", countries);
   const { data: regs } = await policies;
-  ev.rows(regs, { label: (r) => `Regulation: ${r.name} (${r.country_code})`, entityType: "policy", id: (r) => r.id, path: (r) => `/explore/policy/${r.id}`, url: (r) => r.source_url ?? undefined, pick: ["name", "regulator_name", "category", "country_code", "mandatory", "status", "effective_date", "reporting_frequency", "enforcement_risk"] });
+  ev.rows(regs, { label: (r) => `${r.category === "development_plan" ? "National development plan" : "Regulation"}: ${r.name} (${r.country_code})`, entityType: "policy", id: (r) => r.id, path: (r) => `/explore/policy/${r.id}`, url: (r) => r.source_url ?? undefined, pick: ["name", "regulator_name", "category", "country_code", "mandatory", "status", "effective_date", "reporting_frequency", "enforcement_risk"] });
   const { data: frameworks } = await db.from("reporting_frameworks").select("id, code, name, is_mandatory, applicable_regions, version");
   ev.rows(frameworks, { label: (f) => `Framework: ${f.name}`, entityType: "framework", id: (f) => f.id, path: (f) => `/explore/framework/${f.id}`, pick: ["code", "name", "is_mandatory", "applicable_regions", "version"] });
   if (countries.length) {

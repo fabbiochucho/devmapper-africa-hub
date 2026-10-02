@@ -5438,6 +5438,13 @@ export type Database = {
         }
         Returns: string
       }
+      entities_missing_embeddings: {
+        Args: { p_limit?: number }
+        Returns: {
+          entity_id: string
+          entity_type: string
+        }[]
+      }
       entity_label: {
         Args: {
           p_id: string

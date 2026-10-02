@@ -3,6 +3,7 @@ import type { Database } from "../_shared/db.ts";
 import { corsHeaders, jsonError } from "../_shared/agent-utils.ts";
 import { indexEntity, keywordSearch, mergeHits, semanticSearch, type EntityHit } from "../_shared/intel.ts";
 import { countryCodes, liveSearch } from "../_shared/connectors.ts";
+import { isServiceRoleRequest } from "../_shared/serviceAuth.ts";
 
 // Development-intelligence search and indexing.
 //   search {q, types?, country?, semantic?, live?} - keyword hits across every entity type the
@@ -10,20 +11,39 @@ import { countryCodes, liveSearch } from "../_shared/connectors.ts";
 //          live: true it also queries OpenAlex, World Bank, IATI and the EU funding portal,
 //          imports what they return (with source + URL) and includes it.
 //   index  {type, id} - (re)embed one entity the caller can see.
+//   backfill {limit?} - service role only (nightly cron): embed entities that have no embedding yet.
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return jsonError("Unauthorized", 401);
 
-  const url = Deno.env.get("SUPABASE_URL")!;
-  const userDb = createClient<Database>(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
-  const { data: { user } } = await userDb.auth.getUser(authHeader.replace("Bearer ", ""));
-  if (!user) return jsonError("Unauthorized", 401);
-
-  let body: { action?: unknown; q?: unknown; types?: unknown; country?: unknown; semantic?: unknown; live?: unknown; type?: unknown; id?: unknown } | null;
+  let body: { action?: unknown; q?: unknown; types?: unknown; country?: unknown; semantic?: unknown; live?: unknown; type?: unknown; id?: unknown; limit?: unknown } | null;
   try { body = await req.json(); } catch { return jsonError("Invalid JSON body", 400); }
   const json = (data: unknown, status = 200) =>
     new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+
+  if (body?.action === "backfill") {
+    if (!isServiceRoleRequest(authHeader)) return jsonError("Unauthorized", 401);
+    const admin = createClient<Database>(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const limit = typeof body.limit === "number" ? Math.min(Math.max(body.limit, 1), 100) : 50;
+    const { data: missing, error } = await admin.rpc("entities_missing_embeddings", { p_limit: limit });
+    if (error) return jsonError(error.message, 500);
+    let indexed = 0;
+    const errors: string[] = [];
+    // Sequential: keeps the embeddings gateway well under its rate limit.
+    for (const m of missing ?? []) {
+      const r = await indexEntity(admin, { type: m.entity_type, id: m.entity_id });
+      if (r.ok) indexed++;
+      else errors.push(`${m.entity_type}:${m.entity_id} ${r.error}`);
+    }
+    return json({ indexed, failed: errors.length, errors: errors.slice(0, 10), batchFull: (missing?.length ?? 0) === limit });
+  }
+
+  const userDb = createClient<Database>(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+  const { data: { user } } = await userDb.auth.getUser(authHeader.replace("Bearer ", ""));
+  if (!user) return jsonError("Unauthorized", 401);
 
   if (body?.action === "search") {
     const q = typeof body.q === "string" ? body.q.trim().slice(0, 300) : "";
@@ -59,7 +79,7 @@ Deno.serve(async (req) => {
     return json(result, result.ok ? 200 : 502);
   }
 
-  return jsonError("action must be 'search' or 'index'", 400);
+  return jsonError("action must be 'search', 'index' or 'backfill'", 400);
 
   async function runLive(q: string, country: string | undefined): Promise<{ hits: EntityHit[]; errors: Record<string, string> }> {
     const admin = createClient<Database>(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);

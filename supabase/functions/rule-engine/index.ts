@@ -41,7 +41,8 @@ serve(async (req) => {
         .from("regulatory_frameworks")
         .select("*")
         .eq("country_code", country_code)
-        .eq("status", "active");
+        .eq("status", "active")
+        .neq("category", "development_plan"); // national plans give context, not obligations
 
       if (!frameworks || frameworks.length === 0) {
         return new Response(JSON.stringify({
