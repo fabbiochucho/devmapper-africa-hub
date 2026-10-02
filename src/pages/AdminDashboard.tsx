@@ -36,6 +36,7 @@ interface FlaggedReport {
 }
 
 interface FundraisingCampaign {
+  is_verified?: boolean;
   id: string;
   title: string;
   target_amount: number;
@@ -255,7 +256,7 @@ export default function AdminDashboard() {
 
       if (campaignsRes.error) throw campaignsRes.error;
 
-      const rawCampaigns = (campaignsRes.data as any[]) || [];
+      const rawCampaigns = (campaignsRes.data) || [];
       // Creator names fetched separately from public_profiles - this used
       // to be a PostgREST embed (public_profiles!fkey(...)), but that
       // relied on public_profiles being a view with special auth.users
@@ -272,7 +273,7 @@ export default function AdminDashboard() {
       })) as FundraisingCampaign[];
       setCampaigns(loadedCampaigns);
 
-      const pending = (pendingProfilesRes.data || []).map((p: any) => ({
+      const pending = (pendingProfilesRes.data || []).map((p) => ({
         id: p.user_id, name: p.full_name || t('admin.dashboard.unnamedFallback'), email: p.email || '—',
         organization: p.organization, country: p.country, createdAt: p.created_at,
       }));
@@ -281,15 +282,15 @@ export default function AdminDashboard() {
       // Load flagged content with report titles
       const flags = flagsRes.data || [];
       if (flags.length > 0) {
-        const reportIds = [...new Set(flags.map((f: any) => f.report_id))];
+        const reportIds = [...new Set(flags.map((f) => f.report_id))];
         const [reportsRes, profilesRes] = await Promise.all([
           supabase.from('reports').select('id, title').in('id', reportIds),
-          supabase.from('profiles').select('user_id, full_name').in('user_id', flags.map((f: any) => f.flagged_by)),
+          supabase.from('profiles').select('user_id, full_name').in('user_id', flags.map((f) => f.flagged_by)),
         ]);
-        const reportMap = new Map((reportsRes.data || []).map((r: any) => [r.id, r.title]));
-        const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p.full_name || t('admin.dashboard.unknownFallback')]));
+        const reportMap = new Map((reportsRes.data || []).map((r) => [r.id, r.title]));
+        const profileMap = new Map((profilesRes.data || []).map((p) => [p.user_id, p.full_name || t('admin.dashboard.unknownFallback')]));
 
-        setFlaggedReports(flags.map((f: any) => ({
+        setFlaggedReports(flags.map((f) => ({
           id: f.id, report_id: f.report_id, report_title: reportMap.get(f.report_id) || t('admin.dashboard.unknownFallback'),
           flagged_by_name: profileMap.get(f.flagged_by) || t('admin.dashboard.unknownFallback'), reason: f.reason,
           created_at: f.created_at, status: f.status,
@@ -485,7 +486,7 @@ export default function AdminDashboard() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{campaign.title}</h3>
-                          {(campaign as any).is_verified && <Badge variant="default" className="text-xs">✔ {t('admin.dashboard.verifiedBadge')}</Badge>}
+                          {campaign.is_verified && <Badge variant="default" className="text-xs">✔ {t('admin.dashboard.verifiedBadge')}</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground">{t('admin.dashboard.byAuthor', { name: campaign.public_profiles?.full_name || t('admin.dashboard.anonymousFallback') })}</p>
                         <div className="flex items-center gap-2">
@@ -495,9 +496,9 @@ export default function AdminDashboard() {
                         <p className="text-xs text-muted-foreground">{t('admin.dashboard.createdOn', { date: new Date(campaign.created_at).toLocaleDateString() })}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
-                        <Button size="sm" variant={(campaign as any).is_verified ? "outline" : "default"}
-                          onClick={() => handleCampaignVerification(campaign.id, !(campaign as any).is_verified)}>
-                          <CheckCircle className="mr-1 h-4 w-4" />{(campaign as any).is_verified ? t('admin.dashboard.unverifyButton') : t('admin.dashboard.verifyButton')}
+                        <Button size="sm" variant={campaign.is_verified ? "outline" : "default"}
+                          onClick={() => handleCampaignVerification(campaign.id, !campaign.is_verified)}>
+                          <CheckCircle className="mr-1 h-4 w-4" />{campaign.is_verified ? t('admin.dashboard.unverifyButton') : t('admin.dashboard.verifyButton')}
                         </Button>
                       </div>
                     </div>

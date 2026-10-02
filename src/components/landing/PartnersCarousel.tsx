@@ -21,7 +21,7 @@ export default function PartnersCarousel() {
 
   const fetchPartners = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase)
         .from('partners')
         .select('*')
         .eq('is_active', true)

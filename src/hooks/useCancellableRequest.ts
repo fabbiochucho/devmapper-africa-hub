@@ -69,8 +69,8 @@ export function useCancellableOperation<T>() {
       const result = await operation(controller.signal);
       if (!mountedRef.current) return null;
       return result;
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         return null; // Silently handle aborted requests
       }
       throw error;

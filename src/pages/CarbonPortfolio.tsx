@@ -53,7 +53,7 @@ const CarbonPortfolio = () => {
         description: form.description || null,
         target_tonnes: form.target_tonnes ? parseFloat(form.target_tonnes) : null,
         budget_usd: form.budget_usd ? parseFloat(form.budget_usd) : null,
-        risk_level: form.risk_level as any,
+        risk_level: form.risk_level,
         impact_focus: form.impact_focus ? form.impact_focus.split(",").map(s => s.trim()) : null,
       });
       if (error) throw error;
@@ -72,7 +72,7 @@ const CarbonPortfolio = () => {
   const retiredTonnes = holdings?.filter(h => h.status === "retired").reduce((sum, h) => sum + (Number(h.quantity) || 0), 0) || 0;
 
   // Pie chart data by project type
-  const typeBreakdown = holdings?.reduce((acc: any[], h: any) => {
+  const typeBreakdown = holdings?.reduce((acc: any[], h) => {
     const type = h.marketplace_listings?.project_type || "other";
     const existing = acc.find(a => a.name === type);
     if (existing) existing.value += Number(h.quantity) || 0;
@@ -217,7 +217,7 @@ const CarbonPortfolio = () => {
             const pTonnes = pHoldings.reduce((s, h) => s + (Number(h.quantity) || 0), 0);
             const progress = p.target_tonnes ? (pTonnes / Number(p.target_tonnes)) * 100 : 0;
             const diversification = analyzePortfolioDiversification(
-              pHoldings.map((h: any) => ({
+              pHoldings.map((h) => ({
                 projectType: h.marketplace_listings?.project_type ?? null,
                 quantity: Number(h.quantity) || 0,
                 status: h.status,

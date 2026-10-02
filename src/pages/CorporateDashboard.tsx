@@ -19,6 +19,7 @@ import EntityLocationsManager from '@/components/locations/EntityLocationsManage
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { sdgGoals } from '@/lib/constants';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface CorporateTarget {
   id: string;
@@ -452,11 +453,11 @@ const CorporateDashboard = () => {
                 const { data, error } = await supabase.rpc('sync_esg_to_targets', { p_org_id: membership.organization_id });
                 if (error) throw error;
                 
-                const result = data as any;
-                toast.success(`ESG sync complete — ${result?.synced_count || 0} indicators mapped to targets`);
+                const synced = data && typeof data === 'object' && !Array.isArray(data) ? Number(data.synced_count ?? 0) : 0;
+                toast.success(`ESG sync complete — ${synced} indicators mapped to targets`);
                 fetchTargets();
-              } catch (e: any) {
-                toast.error('Sync failed: ' + e.message);
+              } catch (e: unknown) {
+                toast.error('Sync failed: ' + errorMessageOf(e));
               }
             }}>
               Sync ESG → Targets

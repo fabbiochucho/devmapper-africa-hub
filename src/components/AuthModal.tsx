@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -62,8 +63,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           setSuccess(null);
         }, 500);
       }
-    } catch (error: any) {
-      setError(error.message || "Login failed. Please check your credentials.");
+    } catch (error: unknown) {
+      setError(errorMessageOf(error) || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -115,8 +116,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           setSuccess(null);
         }, 2000);
       }
-    } catch (error: any) {
-      setError(error.message || "Registration failed. Please try again.");
+    } catch (error: unknown) {
+      setError(errorMessageOf(error) || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

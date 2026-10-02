@@ -110,8 +110,8 @@ const UnifiedDashboard = () => {
         ]);
 
         const items = [
-          ...(reportsRes.data || []).map((r: any) => ({ id: r.id, type: 'report', title: r.title, ts: r.submitted_at })),
-          ...(campaignsRes.data || []).map((c: any) => ({ id: c.id, type: 'campaign', title: c.title, ts: c.created_at })),
+          ...(reportsRes.data || []).map((r) => ({ id: r.id, type: 'report', title: r.title, ts: r.submitted_at })),
+          ...(campaignsRes.data || []).map((c) => ({ id: c.id, type: 'campaign', title: c.title, ts: c.created_at })),
         ].sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()).slice(0, 8);
 
         setActivity(items);

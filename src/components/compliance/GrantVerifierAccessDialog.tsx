@@ -10,6 +10,7 @@ import { ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { createDataShare, ORG_SHARE_SCOPES, type OrgShareScope } from '@/lib/org-data-shares';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface VerifierOption {
   id: string;
@@ -78,8 +79,8 @@ export function GrantVerifierAccessDialog({ organizationId, onGranted }: GrantVe
       setScope([]);
       setPurpose('');
       onGranted?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to grant access');
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || 'Failed to grant access');
     } finally {
       setLoading(false);
     }

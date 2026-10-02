@@ -9,6 +9,7 @@ import { Check, Crown, Shield, Zap, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 type PlanId = 'lite' | 'pro' | 'advanced' | 'enterprise';
 
@@ -132,8 +133,8 @@ const BillingUpgrade = () => {
         toast.success('Payment processed!');
         fetchOrganization();
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Payment failed');
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || 'Payment failed');
     } finally {
       setUpgrading(null);
     }

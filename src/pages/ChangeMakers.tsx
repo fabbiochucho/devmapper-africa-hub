@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { errorMessageOf } from '@/lib/error-handler';
 
 type ChangeMaker = Database['public']['Tables']['change_makers']['Row'];
 type Report = Database['public']['Tables']['reports']['Row'];
@@ -90,9 +91,9 @@ const ChangeMakers = () => {
       toast.success(data?.message || t('changeMakers.nominationSent'));
       setShowNominateDialog(false);
       setNomineeData({ name: '', email: '', reason: '' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Nomination error:', error);
-      toast.error(error.message || t('changeMakers.nominationFailed'));
+      toast.error(errorMessageOf(error) || t('changeMakers.nominationFailed'));
     } finally {
       setNominating(false);
     }

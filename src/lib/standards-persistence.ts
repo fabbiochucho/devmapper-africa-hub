@@ -89,9 +89,16 @@ export async function listCdpResponses(organizationId: string): Promise<CdpRespo
 
 // ---- GLEC transport factors ----
 
+export interface GlecPayload {
+  mode: TransportMode;
+  distanceKm: number;
+  weightTonnes: number;
+  result: GlecTransportResult;
+}
+
 export interface GlecRecord {
   id: string;
-  payload: unknown;
+  payload: GlecPayload | null;
   created_at: string;
 }
 
@@ -116,7 +123,7 @@ export async function listGlecCalculations(organizationId: string): Promise<Glec
     .eq('organization_id', organizationId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as unknown as GlecRecord[]; // payload written by saveGlecCalculation
 }
 
 export async function deleteGlecCalculation(id: string) {
@@ -126,9 +133,15 @@ export async function deleteGlecCalculation(id: string) {
 
 // ---- LCA assessments ----
 
+export interface LcaPayload {
+  gwp: LcaImpactAssessmentResult;
+  odp: OdpAssessmentResult;
+  ap: ApAssessmentResult;
+}
+
 export interface LcaRecord {
   id: string;
-  payload: unknown;
+  payload: LcaPayload | null;
   created_at: string;
 }
 
@@ -152,7 +165,7 @@ export async function listLcaAssessments(organizationId: string): Promise<LcaRec
     .eq('organization_id', organizationId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as unknown as LcaRecord[]; // payload written by saveLcaAssessment
 }
 
 export async function deleteLcaAssessment(id: string) {
@@ -164,7 +177,7 @@ export async function deleteLcaAssessment(id: string) {
 
 export interface GpcRecord {
   id: string;
-  payload: unknown;
+  payload: GpcAggregationResult | null;
   created_at: string;
 }
 
@@ -183,7 +196,7 @@ export async function listGpcInventories(organizationId: string): Promise<GpcRec
     .eq('organization_id', organizationId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as unknown as GpcRecord[]; // payload written by saveGpcInventory
 }
 
 export async function deleteGpcInventory(id: string) {

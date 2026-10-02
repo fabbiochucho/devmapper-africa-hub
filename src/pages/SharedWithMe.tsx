@@ -36,7 +36,7 @@ function GrantSummary({ grant }: { grant: Grant }) {
     const result: Record<string, number> = {};
     for (const scope of grant.scope as OrgShareScope[]) {
       const { count } = await supabase
-        .from(scope as any)
+        .from(scope)
         .select('id', { count: 'exact', head: true })
         .eq('organization_id', grant.grantor_org_id);
       result[scope] = count ?? 0;

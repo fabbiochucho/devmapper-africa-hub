@@ -67,7 +67,7 @@ export function useOptimizedQuery<T>(
     // Retry failed requests with exponential backoff
     retry: restOptions.retry ?? 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  } as any);
+  });
 }
 
 /**

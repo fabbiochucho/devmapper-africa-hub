@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { fetchGovernmentReviewQueue, submitGovernmentDecision, type GovernmentReviewQueueItem } from "@/lib/report-workflow";
+import { errorMessageOf } from '@/lib/error-handler';
 
 type GovProject = {
   id: string;
@@ -71,8 +72,8 @@ const GovernmentDashboard = () => {
       await submitGovernmentDecision(item.id, decision);
       toast.success(`Project ${decision}`);
       loadReviewQueue();
-    } catch (e: any) {
-      toast.error('Failed to submit decision', { description: e.message });
+    } catch (e: unknown) {
+      toast.error('Failed to submit decision', { description: errorMessageOf(e) });
     } finally {
       setDecidingId(null);
     }

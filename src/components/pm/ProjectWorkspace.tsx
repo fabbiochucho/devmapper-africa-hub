@@ -73,7 +73,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       if (ind.data) setIndicators(ind.data);
       if (t.data) {
         setTasks(t.data);
-        const assignedIds = t.data.map((task: any) => task.assigned_to).filter(Boolean);
+        const assignedIds = t.data.map((task) => task.assigned_to).filter(Boolean);
         if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
       }
     });
@@ -92,7 +92,7 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
       priority: newTaskPriority,
       created_by: user.id,
       assigned_to: newTaskAssignee || null,
-    } as any);
+    });
     if (error) { toast.error(t('pm.toastAddTaskFailed')); return; }
     toast.success(t('pm.toastTaskAdded'));
     setNewTaskTitle("");
@@ -101,19 +101,19 @@ export default function ProjectWorkspace({ reportId, report }: ProjectWorkspaceP
     const { data } = await supabase.from("project_tasks").select("*").eq("report_id", reportId).order("created_at");
     if (data) {
       setTasks(data);
-      const assignedIds = data.map((task: any) => task.assigned_to).filter(Boolean);
+      const assignedIds = data.map((task) => task.assigned_to).filter(Boolean);
       if (assignedIds.length) fetchUserNames(assignedIds).then(setAssigneeNames);
     }
   };
 
   const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
-    await supabase.from("project_tasks").update({ status: newStatus } as any).eq("id", taskId);
+    await supabase.from("project_tasks").update({ status: newStatus }).eq("id", taskId);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
   };
 
   const toggleVisibility = async () => {
     const newVis = visibility === "public" ? "private" : "public";
-    await supabase.from("reports").update({ visibility: newVis } as any).eq("id", reportId);
+    await supabase.from("reports").update({ visibility: newVis }).eq("id", reportId);
     setVisibility(newVis);
     toast.success(t('pm.toastProjectVisibility', { visibility: newVis === "public" ? t('pm.visibilityPublicWord') : t('pm.visibilityPrivateWord') }));
   };

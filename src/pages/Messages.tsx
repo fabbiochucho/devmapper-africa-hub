@@ -241,7 +241,7 @@ function MessageThreadPanel({
         ) : (
           messages.map(msg => {
             const isMine = msg.sender_id === currentUserId;
-            const senderProfile = (msg as any).profiles;
+            const senderProfile = msg.sender_profile;
             return (
               <div key={msg.id} className={`flex gap-2 ${isMine ? 'justify-end' : 'justify-start'}`}>
                 {!isMine && (
@@ -285,7 +285,7 @@ function MessageThreadPanel({
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e as any);
+                handleSubmit(e);
               }
             }}
           />

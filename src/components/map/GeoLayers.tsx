@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type ExpressionSpecification } from 'maplibre-gl';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface GeoLayersProps {
   map: maplibregl.Map | null;
@@ -118,9 +119,9 @@ export default function GeoLayers({ map }: GeoLayersProps) {
       setLayerSources(prev => ({ ...prev, [layerType]: { source, isEstimated, note: data.metadata?.note } }));
 
       toast.success(`${layerType.toUpperCase()} layer loaded${isEstimated ? ' (estimated data)' : ''}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error loading ${layerType} layer:`, error);
-      toast.error(`Failed to load ${layerType} layer: ${error.message}`);
+      toast.error(`Failed to load ${layerType} layer: ${errorMessageOf(error)}`);
       setLayers(prev => ({ ...prev, [layerType]: false }));
     } finally {
       setLoading(prev => ({ ...prev, [layerType]: false }));
@@ -168,9 +169,9 @@ export default function GeoLayers({ map }: GeoLayersProps) {
       type: 'heatmap',
       source: sourceId,
       paint: {
-        'heatmap-weight': ['get', 'value'] as any,
+        'heatmap-weight': ['get', 'value'],
         'heatmap-intensity': 1,
-        'heatmap-color': layerConfig.colorRamp as any,
+        'heatmap-color': layerConfig.colorRamp,
         'heatmap-radius': 20,
         'heatmap-opacity': 0.7
       }
@@ -198,7 +199,7 @@ export default function GeoLayers({ map }: GeoLayersProps) {
   };
 
   const getLayerConfig = (layerType: LayerType) => {
-    const configs = {
+    const configs: Record<string, { colorRamp: ExpressionSpecification }> = {
       ndvi: {
         colorRamp: [
           'interpolate',

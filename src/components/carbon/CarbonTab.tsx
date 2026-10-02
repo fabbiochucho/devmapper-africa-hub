@@ -131,7 +131,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       .select("*, emission_factors(activity, source, source_year, region)")
       .eq("report_id", reportId)
       .order("created_at", { ascending: false });
-    if (!error && data) setEntries(data as any);
+    if (!error && data) setEntries(data);
     setLoading(false);
   }, [reportId]);
 
@@ -161,7 +161,7 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
       activity_quantity: isActivityBased ? parseFloat(activityQuantity) : null,
       activity_unit: isActivityBased ? selectedFactor!.unit : null,
       emission_factor_id: isActivityBased ? selectedFactor!.id : null,
-    } as any);
+    });
     if (error) { toast.error(t("carbon.failedToSaveCarbonData")); return; }
     toast.success(t("carbon.carbonDataSaved"));
     resetForm();

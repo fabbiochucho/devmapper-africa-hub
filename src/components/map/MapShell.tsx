@@ -212,7 +212,8 @@ export default function MapShell({
       if (!e.features || e.features.length === 0) return;
       
       const feature = e.features[0];
-      const coordinates = (feature.geometry as any).coordinates.slice();
+      if (feature.geometry.type !== 'Point') return;
+      const coordinates = feature.geometry.coordinates.slice() as [number, number];
       
       const title = escapeHtml(feature.properties?.title || 'Project');
       const description = escapeHtml((feature.properties?.description || '').substring(0, 100));

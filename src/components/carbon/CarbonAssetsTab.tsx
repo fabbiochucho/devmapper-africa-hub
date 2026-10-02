@@ -51,7 +51,7 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
       .eq("report_id", reportId)
       .maybeSingle();
     if (data) {
-      setAsset(data as any);
+      setAsset(data);
       setGenerated(data.credits_generated?.toString() || "");
       setOwned(data.credits_owned?.toString() || "");
       setRetired(data.credits_retired?.toString() || "");
@@ -83,9 +83,9 @@ export default function CarbonAssetsTab({ reportId, isOwner }: CarbonAssetsTabPr
 
     let error;
     if (asset) {
-      ({ error } = await supabase.from("carbon_assets").update(payload as any).eq("id", asset.id));
+      ({ error } = await supabase.from("carbon_assets").update(payload).eq("id", asset.id));
     } else {
-      ({ error } = await supabase.from("carbon_assets").insert(payload as any));
+      ({ error } = await supabase.from("carbon_assets").insert(payload));
     }
     if (error) { toast.error("Failed to save carbon assets"); return; }
     toast.success("Carbon assets saved");

@@ -65,7 +65,7 @@ export default function MyReportsTracker() {
         .order('submitted_at', { ascending: false });
 
       if (!error && data) {
-        const reportIds = data.map((report: any) => report.id);
+        const reportIds = data.map((report) => report.id);
 
         // Two queries total instead of two per report: fetch all verification/feedback
         // rows for every report at once, then tally counts client-side.
@@ -86,7 +86,7 @@ export default function MyReportsTracker() {
         const verificationCounts = countByReportId(verifications.data);
         const feedbackCounts = countByReportId(feedback.data);
 
-        const enrichedReports = data.map((report: any) => ({
+        const enrichedReports = data.map((report) => ({
           ...report,
           verification_count: verificationCounts.get(report.id) || 0,
           feedback_count: feedbackCounts.get(report.id) || 0,

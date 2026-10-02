@@ -77,20 +77,20 @@ const Forum = () => {
 
       const likesPromise = user
         ? supabase.from('forum_post_likes').select('post_id').eq('user_id', user.id)
-        : Promise.resolve({ data: [] as any[] });
+        : Promise.resolve({ data: [] });
 
       const [{ data: postsData, error: postsError }, { data: likesData }] = await Promise.all([postsPromise, likesPromise]);
 
       if (postsError) throw postsError;
 
       // Fetch author profiles separately from the public_profiles view
-      const authorIds = Array.from(new Set((postsData || []).map((p: any) => p.author_id).filter(Boolean)));
+      const authorIds = Array.from(new Set((postsData || []).map((p) => p.author_id).filter(Boolean)));
       const { data: authorProfiles } = authorIds.length
         ? await supabase
             .from('public_profiles')
             .select('user_id, full_name, avatar_url, is_verified')
             .in('user_id', authorIds)
-        : { data: [] as any[] };
+        : { data: [] };
       const profileMap = new Map((authorProfiles || []).map((p: any) => [p.user_id, p]));
 
       const userLikes = likesData || [];
@@ -228,10 +228,10 @@ const Forum = () => {
         content: data.content,
         author: {
           id: user.id,
-          name: (prof as any)?.full_name || t('forum.anonymous'),
-          avatar: (prof as any)?.avatar_url || '/placeholder.svg',
+          name: (prof)?.full_name || t('forum.anonymous'),
+          avatar: (prof)?.avatar_url || '/placeholder.svg',
           role: t('forum.communityMember'),
-          verified: (prof as any)?.is_verified || false
+          verified: (prof)?.is_verified || false
         },
         category: data.category,
         tags: data.tags || [],

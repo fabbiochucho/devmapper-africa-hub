@@ -88,7 +88,7 @@ export function useMessages() {
             .from('public_profiles')
             .select('user_id, full_name, avatar_url')
             .in('user_id', userIds)
-        : { data: [] as any[] };
+        : { data: [] };
       const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
 
       // Fetch last message per conversation
@@ -157,20 +157,20 @@ export function useMessages() {
 
       if (error) throw error;
 
-      const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)));
+      const senderIds = Array.from(new Set((data || []).map((m) => m.sender_id)));
       const { data: profilesData } = senderIds.length
         ? await supabase
             .from('public_profiles')
             .select('user_id, full_name, avatar_url')
             .in('user_id', senderIds)
-        : { data: [] as any[] };
+        : { data: [] };
       const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
 
-      const withProfiles = (data || []).map((m: any) => ({
+      const withProfiles = (data || []).map((m) => ({
         ...m,
-        profiles: profileMap.get(m.sender_id) || null,
+        sender_profile: profileMap.get(m.sender_id) || undefined,
       }));
-      setMessages(withProfiles as any);
+      setMessages(withProfiles);
 
       // Mark as read
       await supabase
@@ -275,7 +275,7 @@ export function useMessages() {
         .limit(10);
 
       if (error) throw error;
-      setSearchResults((data || []).map((p: any) => ({ ...p, email: p.organization })));
+      setSearchResults((data || []).map((p) => ({ ...p, email: p.organization })));
     } catch (err) {
       console.error('Error searching users:', err);
     }
@@ -321,7 +321,7 @@ export function useMessages() {
 
           setMessages(prev => [
             ...prev,
-            { ...newMsg, profiles: profile } as any
+            { ...newMsg, sender_profile: profile || undefined }
           ]);
         }
       )

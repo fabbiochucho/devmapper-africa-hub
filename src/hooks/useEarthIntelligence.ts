@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 type LayerType = 'ndvi' | 'water' | 'urban';
 
@@ -43,9 +44,9 @@ export function useEarthIntelligence() {
       if (error) throw error;
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching GEE data:', error);
-      toast.error(`Failed to fetch ${request.type} data: ${error.message}`);
+      toast.error(`Failed to fetch ${request.type} data: ${errorMessageOf(error)}`);
       throw error;
     } finally {
       setLoading(false);
@@ -62,9 +63,9 @@ export function useEarthIntelligence() {
       if (error) throw error;
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching climate data:', error);
-      toast.error(`Failed to fetch emissions data: ${error.message}`);
+      toast.error(`Failed to fetch emissions data: ${errorMessageOf(error)}`);
       throw error;
     } finally {
       setLoading(false);
@@ -81,9 +82,9 @@ export function useEarthIntelligence() {
       if (error) throw error;
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching SDG data:', error);
-      toast.error(`Failed to fetch SDG data: ${error.message}`);
+      toast.error(`Failed to fetch SDG data: ${errorMessageOf(error)}`);
       throw error;
     } finally {
       setLoading(false);
@@ -100,9 +101,9 @@ export function useEarthIntelligence() {
       if (error) throw error;
 
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching Sentinel tile:', error);
-      toast.error(`Failed to fetch satellite imagery: ${error.message}`);
+      toast.error(`Failed to fetch satellite imagery: ${errorMessageOf(error)}`);
       throw error;
     } finally {
       setLoading(false);

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/contexts/UserRoleContext';
 import { ALL_ROLES } from '@/lib/roles';
 import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User } from 'lucide-react';
+import { errorMessageOf } from '@/lib/error-handler';
 
 // role keys below are stored UserRole values (used for DB rpc calls, checkbox ids) - never translate the keys.
 // label/description text is resolved via translation inside the component (see roleConfig below).
@@ -147,8 +148,8 @@ export function TestAccountManager() {
       setSelectedRoles([]);
       setOrganization('');
       setCountry('');
-    } catch (error: any) {
-      toast.error(error.message || t('admin.testAccounts.assignError'));
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || t('admin.testAccounts.assignError'));
     } finally {
       setLoading(false);
     }

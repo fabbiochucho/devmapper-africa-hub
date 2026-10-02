@@ -18,6 +18,7 @@ import { Factory, Plus, Save, Loader2, TrendingDown, TrendingUp, Flame, Zap, Tru
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface EmissionsManagerProps {
   organizationId: string;
@@ -114,9 +115,9 @@ export default function EmissionsManager({ organizationId, indicators, onDataCha
       setEditingId(null);
       resetForm();
       onDataChange();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || t('esg.emissionsManager.saveFailedError'));
+      toast.error(errorMessageOf(err) || t('esg.emissionsManager.saveFailedError'));
     } finally {
       setSaving(false);
     }

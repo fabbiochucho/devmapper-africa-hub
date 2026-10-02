@@ -59,10 +59,10 @@ const ApplyCertification = () => {
     setLoading(true);
     const [reportsRes, appsRes] = await Promise.all([
       supabase.from('reports').select('id, title, sdg_goal, project_status, country_code').eq('user_id', user!.id).order('submitted_at', { ascending: false }),
-      (supabase as any).from('certification_applications').select('report_id').eq('applicant_id', user!.id),
+      (supabase).from('certification_applications').select('report_id').eq('applicant_id', user!.id),
     ]);
     if (reportsRes.data) setReports(reportsRes.data);
-    if (appsRes.data) setExistingApps((appsRes.data as any[]).map((a: any) => a.report_id));
+    if (appsRes.data) setExistingApps((appsRes.data).map((a) => a.report_id));
     setLoading(false);
   }, [user]);
 
@@ -76,7 +76,7 @@ const ApplyCertification = () => {
     if (!user || !selectedReport || !agreed) return;
     setSubmitting(true);
 
-    const { data, error } = await (supabase as any).from('certification_applications').insert({
+    const { data, error } = await (supabase).from('certification_applications').insert({
       report_id: selectedReport,
       applicant_id: user.id,
       requested_tier: requestedTier,
@@ -328,12 +328,12 @@ function ExistingApplicationsList({ userId }: { userId: string }) {
   const [apps, setApps] = useState<any[]>([]);
 
   useEffect(() => {
-    (supabase as any)
+    (supabase)
       .from('certification_applications')
       .select('id, report_id, requested_tier, status, submitted_at')
       .eq('applicant_id', userId)
       .order('submitted_at', { ascending: false })
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         if (data) setApps(data);
       });
   }, [userId]);

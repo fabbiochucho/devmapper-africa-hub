@@ -50,7 +50,7 @@ export function useFeatureAccess() {
         .eq('user_id', user.id)
         .single();
 
-      const org = membership?.organizations as any;
+      const org = membership?.organizations;
       const effectivePlan = org?.scholarship_override || org?.plan_type || 'lite';
       setUserPlan(effectivePlan as PlanType);
       setQuotaRemaining(org?.project_quota_remaining ?? null);
@@ -73,7 +73,7 @@ export function useFeatureAccess() {
     const flagsResult = await supabase
       .from('feature_flags')
       .select('feature, enabled')
-      .eq('plan', plan as any)
+      .eq('plan', plan)
       .eq('enabled', true);
 
     const featureMap: FeatureFlags = {};

@@ -48,7 +48,7 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
       .select("*")
       .eq("report_id", reportId)
       .order("created_at", { ascending: false });
-    if (data) setEntries(data as any);
+    if (data) setEntries(data);
     setLoading(false);
   }, [reportId]);
 
@@ -80,7 +80,7 @@ export default function CircularityTab({ reportId, isOwner }: CircularityTabProp
       waste_recycled_tonnes: wr || null,
       reuse_percentage: rp || null,
       circularity_score: score,
-    } as any);
+    });
     if (error) { toast.error(t("carbon.circularity.saveFailed")); return; }
     toast.success(t("carbon.circularity.saved"));
     resetForm();

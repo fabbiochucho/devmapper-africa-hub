@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface UserProfile {
   id: string;
@@ -59,9 +60,9 @@ const VerifyUserDialog = ({ user, open, onOpenChange, onVerified }: VerifyUserDi
       setComments("");
       onVerified();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Verification error:", error);
-      toast.error(error.message || "Verification failed");
+      toast.error(errorMessageOf(error) || "Verification failed");
     } finally {
       setSaving(false);
     }

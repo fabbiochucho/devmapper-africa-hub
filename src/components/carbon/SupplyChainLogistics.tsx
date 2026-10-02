@@ -147,7 +147,7 @@ export default function SupplyChainLogistics() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
               <div>
                 <Label>Transport Mode</Label>
-                <Select value={mode} onValueChange={v => setMode(v as any)}>
+                <Select value={mode} onValueChange={v => setMode(v as typeof mode)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(MODE_CONFIG).map(([k, v]) => (

@@ -49,7 +49,7 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
     const autoCredit = assetResult.data?.estimated_value_usd || 0;
 
     if (finResult.data) {
-      const d = finResult.data as any;
+      const d = finResult.data;
       setEntry(d);
       setSavings(d.operational_cost_savings?.toString() || "");
       setRevenue(d.revenue_generated?.toString() || "");
@@ -87,9 +87,9 @@ export default function FinancialImpactTab({ reportId, isOwner, projectCost }: F
 
     let error;
     if (entry) {
-      ({ error } = await supabase.from("project_financial_impact").update(payload as any).eq("id", entry.id));
+      ({ error } = await supabase.from("project_financial_impact").update(payload).eq("id", entry.id));
     } else {
-      ({ error } = await supabase.from("project_financial_impact").insert(payload as any));
+      ({ error } = await supabase.from("project_financial_impact").insert(payload));
     }
     if (error) { toast.error("Failed to save"); return; }
     toast.success("Financial impact saved");

@@ -47,7 +47,7 @@ const AdminOverview = () => {
       ]);
 
       const campaigns = campaignsRes.data || [];
-      const totalRaised = campaigns.reduce((sum, c: any) => sum + (c.raised_amount || 0), 0);
+      const totalRaised = campaigns.reduce((sum, c) => sum + (c.raised_amount || 0), 0);
 
       // Get recent activity from multiple sources
       const [recentUsers, recentReports, recentPosts] = await Promise.all([
@@ -57,17 +57,17 @@ const AdminOverview = () => {
       ]);
 
       const activity: RecentActivity[] = [
-        ...(recentUsers.data || []).map((u: any) => ({
+        ...(recentUsers.data || []).map((u) => ({
           id: u.user_id, type: "user" as const,
           title: `New user: ${u.full_name || 'Anonymous'}`,
           timestamp: u.created_at,
         })),
-        ...(recentReports.data || []).map((r: any) => ({
+        ...(recentReports.data || []).map((r) => ({
           id: r.id, type: "report" as const,
           title: `Project: ${r.title}`,
           timestamp: r.submitted_at,
         })),
-        ...(recentPosts.data || []).map((p: any) => ({
+        ...(recentPosts.data || []).map((p) => ({
           id: p.id, type: "forum" as const,
           title: `Forum: ${p.title}`,
           timestamp: p.created_at,

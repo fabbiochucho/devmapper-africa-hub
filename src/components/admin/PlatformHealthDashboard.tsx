@@ -299,7 +299,7 @@ export default function PlatformHealthDashboard() {
                     >
                       <div>
                         <p className="text-sm font-medium">
-                          {(alert.payload as any)?.issue || t('admin.platformHealth.complianceIssueFallback')}
+                          {(alert.payload)?.issue || t('admin.platformHealth.complianceIssueFallback')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {t('admin.platformHealth.orgIdLabel', { id: alert.org_id?.slice(0, 8), date: new Date(alert.created_at).toLocaleDateString() })}

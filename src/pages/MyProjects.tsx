@@ -193,7 +193,7 @@ const MyProjects = () => {
         <div className="flex items-center gap-2 flex-wrap">
           <ExportManager
             organizationName={profile?.organization || profile?.full_name || 'My Projects'}
-            planType={(userPlan === 'free' ? 'free' : userPlan === 'lite' ? 'lite' : 'pro') as any}
+            planType={(userPlan === 'free' ? 'free' : userPlan === 'lite' ? 'lite' : 'pro')}
             availableData={[{ type: 'reports', label: 'Projects / Reports', data: projects }]}
           />
           <Button onClick={() => navigate('/submit-report')}>

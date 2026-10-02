@@ -30,6 +30,7 @@ import {
   fetchLatestEsgIndicators, fetchFrameworkIndicators, saveComplianceScore, getComplianceScore, type ComplianceScoreRecord,
 } from '@/lib/standards-persistence';
 import { mapEsgIndicatorsToFramework, type EsgIndicatorsRow, type FrameworkIndicatorSeed } from '@/lib/framework-indicator-mapping';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface StandardsPhase2PanelProps {
   organizationId: string;
@@ -199,8 +200,8 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
       await fn();
       toast.success('Saved');
       refresh();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save');
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || 'Failed to save');
     } finally {
       setSaving(null);
     }
@@ -521,7 +522,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <div className="space-y-1 pt-2 border-t">
                 <p className="text-xs font-medium text-muted-foreground">Saved calculations</p>
                 {glecRecords.map((r) => {
-                  const p = r.payload as any;
+                  const p = r.payload;
                   return (
                     <div key={r.id} className="flex items-center justify-between text-sm">
                       <span>{p?.mode}: {p?.distanceKm}km × {p?.weightTonnes}t → {p?.result?.emissionsKgCo2e?.toLocaleString()} kgCO2e</span>
@@ -570,7 +571,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <div className="space-y-1 pt-2 border-t">
                 <p className="text-xs font-medium text-muted-foreground">Saved assessments</p>
                 {lcaRecords.map((r) => {
-                  const p = r.payload as any;
+                  const p = r.payload;
                   return (
                     <div key={r.id} className="flex items-center justify-between text-sm">
                       <span>{new Date(r.created_at).toLocaleDateString()}: {p?.gwp?.totalKgCo2e?.toLocaleString()} kgCO2e, {p?.odp?.totalKgCfc11e} kg CFC-11-eq, {p?.ap?.totalKgSo2e ?? 0} kg SO2-eq</span>
@@ -612,7 +613,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <div className="space-y-1 pt-2 border-t">
                 <p className="text-xs font-medium text-muted-foreground">Saved inventories</p>
                 {gpcRecords.map((r) => {
-                  const p = r.payload as any;
+                  const p = r.payload;
                   return (
                     <div key={r.id} className="flex items-center justify-between text-sm">
                       <span>{new Date(r.created_at).toLocaleDateString()}: BASIC {p?.byLevel?.BASIC?.toLocaleString()}t, BASIC+ {p?.byLevel?.['BASIC+']?.toLocaleString()}t</span>

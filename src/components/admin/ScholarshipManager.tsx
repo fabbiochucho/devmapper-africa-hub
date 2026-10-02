@@ -9,6 +9,7 @@ import { GraduationCap, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ScholarshipApplication {
   id: string;
@@ -91,8 +92,8 @@ export function ScholarshipManager() {
 
       toast.success(t('admin.scholarships.approveSuccess'));
       fetchApplications();
-    } catch (error: any) {
-      toast.error(error.message || t('admin.scholarships.approveError'));
+    } catch (error: unknown) {
+      toast.error(errorMessageOf(error) || t('admin.scholarships.approveError'));
     }
   };
 

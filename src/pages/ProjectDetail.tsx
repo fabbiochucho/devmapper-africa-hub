@@ -25,6 +25,7 @@ import {
   MapPin, Calendar, Target, Users, DollarSign, CheckCircle2, Clock,
   Shield, ArrowLeft, FileText, Star, AlertTriangle, Eye, Send
 } from "lucide-react";
+import { errorMessageOf } from '@/lib/error-handler';
 
 const VERIFICATION_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
   self_report: { label: "Self Report", icon: <FileText className="h-3 w-3" /> },
@@ -96,8 +97,8 @@ export default function ProjectDetail() {
       toast.success("Routed to verifier for review");
       setSelectedVerifierId("");
       loadAssignments();
-    } catch (e: any) {
-      toast.error("Failed to route report", { description: e.message });
+    } catch (e: unknown) {
+      toast.error("Failed to route report", { description: errorMessageOf(e) });
     } finally {
       setRoutingSubmitting(false);
     }

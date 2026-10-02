@@ -56,7 +56,7 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
       .eq('report_id', reportId)
       .order('created_at', { ascending: false });
     
-    const feedbackItems = (data || []) as any[];
+    const feedbackItems = (data || []);
     
     // Fetch votes for all feedback items
     const feedbackIds = feedbackItems.map(f => f.id);
@@ -114,7 +114,7 @@ export default function CitizenFeedbackPanel({ reportId }: CitizenFeedbackPanelP
         feedback_id: feedbackId,
         user_id: user.id,
         vote_type: voteType,
-      } as any, { onConflict: 'feedback_id,user_id' });
+      }, { onConflict: 'feedback_id,user_id' });
       
       if (error) { toast.error('Failed to vote'); return; }
       

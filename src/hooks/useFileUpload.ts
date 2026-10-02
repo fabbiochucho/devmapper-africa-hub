@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface UseFileUploadOptions {
   bucket: 'avatars' | 'documents' | 'project-files';
@@ -82,9 +83,9 @@ export function useFileUpload({
 
       // For private buckets, return the path
       return filePath;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
-      toast.error('Upload failed: ' + error.message);
+      toast.error('Upload failed: ' + errorMessageOf(error));
       return null;
     } finally {
       setUploading(false);
@@ -103,9 +104,9 @@ export function useFileUpload({
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Delete error:', error);
-      toast.error('Delete failed: ' + error.message);
+      toast.error('Delete failed: ' + errorMessageOf(error));
       return false;
     }
   };

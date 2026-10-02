@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import NdovuAuditTrail from "./NdovuAuditTrail";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface NdovuMultiAgentPanelProps {
   mockSynthesis?: SynthesisOutput;
@@ -78,8 +79,8 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
         })) || []
       );
       setInput("");
-    } catch (e: any) {
-      toast.error(e.message || "Multi-agent analysis failed");
+    } catch (e: unknown) {
+      toast.error(errorMessageOf(e) || "Multi-agent analysis failed");
       setActiveAgents([]);
     }
   };
@@ -87,7 +88,7 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
   const handleApprove = async () => {
     if (!sessionId) return;
     const { error } = await supabase
-      .from('ai_agent_sessions' as any)
+      .from('ai_agent_sessions')
       .update({ approved_by_user: true })
       .eq('id', sessionId);
     if (error) toast.error("Failed to save approval");

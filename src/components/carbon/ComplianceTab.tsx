@@ -51,7 +51,7 @@ export default function ComplianceTab({ reportId, isOwner }: ComplianceTabProps)
     ]);
 
     if (compResult.data) {
-      const d = compResult.data as any;
+      const d = compResult.data;
       setEntry(d);
       setCountry(d.country_of_origin || "");
       setJurisdiction(d.jurisdiction || "");
@@ -60,7 +60,7 @@ export default function ComplianceTab({ reportId, isOwner }: ComplianceTabProps)
       setA6Status(d.article6_status || "");
       setErCredits(d.er_credits_issued?.toString() || "");
     }
-    setTotalEmissions(carbonResult.data?.reduce((s: number, e: any) => s + (e.estimated_emissions_tco2e || 0), 0) || 0);
+    setTotalEmissions(carbonResult.data?.reduce((s: number, e) => s + (e.estimated_emissions_tco2e || 0), 0) || 0);
     setTotalCredits(assetResult.data?.credits_owned || 0);
     setLoading(false);
   }, [reportId]);
@@ -81,9 +81,9 @@ export default function ComplianceTab({ reportId, isOwner }: ComplianceTabProps)
 
     let error;
     if (entry) {
-      ({ error } = await supabase.from("carbon_compliance").update(payload as any).eq("id", entry.id));
+      ({ error } = await supabase.from("carbon_compliance").update(payload).eq("id", entry.id));
     } else {
-      ({ error } = await supabase.from("carbon_compliance").insert(payload as any));
+      ({ error } = await supabase.from("carbon_compliance").insert(payload));
     }
     if (error) { toast.error("Failed to save compliance data"); return; }
     toast.success("Compliance data saved");

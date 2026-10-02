@@ -235,7 +235,7 @@ export default function ProductLifecycle() {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
                       <Label>Stage</Label>
-                      <Select value={stageType} onValueChange={v => setStageType(v as any)}>
+                      <Select value={stageType} onValueChange={v => setStageType(v as typeof stageType)}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {Object.entries(STAGE_CONFIG).map(([k, v]) => (
@@ -250,7 +250,7 @@ export default function ProductLifecycle() {
                     </div>
                     <div>
                       <Label>Data Quality</Label>
-                      <Select value={stageQuality} onValueChange={v => setStageQuality(v as any)}>
+                      <Select value={stageQuality} onValueChange={v => setStageQuality(v as typeof stageQuality)}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="primary">Primary (measured)</SelectItem>

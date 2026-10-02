@@ -106,7 +106,7 @@ const NotificationCenter = () => {
         schema: 'public',
         table: 'admin_broadcasts',
       }, (payload) => {
-        const b = payload.new as any;
+        const b = payload.new;
         const notif: Notification = {
           id: b.id,
           type: "broadcast",
@@ -123,7 +123,7 @@ const NotificationCenter = () => {
         schema: 'public',
         table: 'direct_messages',
       }, (payload) => {
-        const msg = payload.new as any;
+        const msg = payload.new;
         if (msg.sender_id === userId) return;
         const notif: Notification = {
           id: msg.id,

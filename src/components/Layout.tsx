@@ -162,7 +162,7 @@ const Layout = () => {
       const roles = rolesResult.data;
 
       // Admins skip onboarding entirely
-      const hasAdminRole = roles?.some((r: any) => 
+      const hasAdminRole = roles?.some((r) => 
         ['admin', 'platform_admin', 'country_admin'].includes(r.role)
       );
       if (hasAdminRole) return;

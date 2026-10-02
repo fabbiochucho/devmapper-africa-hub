@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, ExternalLink, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface Partner {
   id: string;
@@ -141,9 +142,9 @@ export default function PartnerManagement() {
       setShowDialog(false);
       resetForm();
       fetchPartners();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving partner:', error);
-      const errorMessage = error.message || t('admin.partners.unknownError');
+      const errorMessage = errorMessageOf(error) || t('admin.partners.unknownError');
       toast.error(editingPartner
         ? t('admin.partners.updateFailed', { error: errorMessage })
         : t('admin.partners.addFailed', { error: errorMessage }));

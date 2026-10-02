@@ -123,7 +123,7 @@ export default function ProjectManagement() {
 
     const projectMap = new Map<string, Report>();
     ownResult.data?.forEach(r => projectMap.set(r.id, r as Report));
-    affResult.data?.forEach((a: any) => {
+    affResult.data?.forEach((a) => {
       if (a.reports && !projectMap.has(a.reports.id)) {
         projectMap.set(a.reports.id, a.reports as Report);
       }

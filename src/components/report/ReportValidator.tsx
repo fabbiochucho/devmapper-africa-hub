@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertTriangle, XCircle, Loader2, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errorMessageOf } from '@/lib/error-handler';
 
 interface ValidationIssue {
   field: string;
@@ -39,8 +40,8 @@ export default function ReportValidator({ reportId }: ReportValidatorProps) {
       if (data.status === 'pass') toast.success('Report passed validation!');
       else if (data.status === 'needs_review') toast.warning('Report needs review');
       else toast.error('Report has validation errors');
-    } catch (err: any) {
-      toast.error(err.message || 'Validation failed');
+    } catch (err: unknown) {
+      toast.error(errorMessageOf(err) || 'Validation failed');
     } finally {
       setLoading(false);
     }
