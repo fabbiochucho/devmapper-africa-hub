@@ -76,7 +76,7 @@ serve(async (req) => {
           if (!resp.ok) return { code: indicatorCode, label, value: null, year: null };
 
           const json = await resp.json();
-          const rows: any[] = Array.isArray(json) ? json[1] ?? [] : [];
+          const rows: { value: number | null; date: string }[] = Array.isArray(json) ? json[1] ?? [] : [];
           const withValue = rows.find((r) => r.value != null);
           return { code: indicatorCode, label, value: withValue?.value ?? null, year: withValue?.date ?? null };
         } catch {

@@ -6,6 +6,7 @@ type ProfileSummary = Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Participant {
   user_id: string;
@@ -50,7 +51,7 @@ export function useMessages() {
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<(Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url' | 'organization'> & { email: string | null })[]>([]);
-  const realtimeRef = useRef<any>(null);
+  const realtimeRef = useRef<RealtimeChannel | null>(null);
 
   const fetchConversations = useCallback(async () => {
     if (!user) return;

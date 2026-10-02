@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from "@/integrations/supabase/types";
 
 /**
  * Write ESG audit log entry
@@ -10,7 +11,7 @@ export async function writeESGAuditLog(
   action: string,
   tableName?: string,
   rowId?: string,
-  metadata: any = {}
+  metadata: Record<string, Json | undefined> = {}
 ) {
   try {
     const { error } = await supabase
@@ -137,7 +138,7 @@ export const ESGAuditHelpers = {
     await writeESGAuditLog(orgId, userId, 'esg_indicators', 'created', 'esg_indicators', indicatorId, { year });
   },
 
-  async logIndicatorUpdated(orgId: string, userId: string, indicatorId: string, changes: any) {
+  async logIndicatorUpdated(orgId: string, userId: string, indicatorId: string, changes: Record<string, Json | undefined>) {
     await writeESGAuditLog(orgId, userId, 'esg_indicators', 'updated', 'esg_indicators', indicatorId, { changes });
   },
 
@@ -155,12 +156,12 @@ export const ESGAuditHelpers = {
     await writeESGAuditLog(orgId, userId, 'scenarios', 'created', 'esg_scenarios', scenarioId, { name });
   },
 
-  async logScenarioRun(orgId: string, userId: string, scenarioId: string, results: any) {
+  async logScenarioRun(orgId: string, userId: string, scenarioId: string, results: Json) {
     await writeESGAuditLog(orgId, userId, 'scenarios', 'executed', 'esg_scenarios', scenarioId, { results });
   },
 
   // Benchmarking
-  async logBenchmarkFetched(orgId: string, userId: string, provider: string, params: any) {
+  async logBenchmarkFetched(orgId: string, userId: string, provider: string, params: Record<string, Json | undefined>) {
     await writeESGAuditLog(orgId, userId, 'benchmarking', 'api_call', null, null, { provider, params });
   },
 

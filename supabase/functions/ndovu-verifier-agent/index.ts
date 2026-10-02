@@ -19,17 +19,18 @@ Output format: Summary → Key Insights → Risks → Recommended Actions
 Tone: precise, neutral, cite specific data points. Never invent data.`;
 
 Deno.serve((req) => handleAgent(req, "verifier_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
-  const dataSources = ["reports", "verification_records", "evidence_items", "carbon_assets"];
+  const dataSources = ["reports", "verification_logs", "evidence_items", "carbon_assets"];
   let contextStr = "";
+  const projectId = typeof ctx.projectId === "string" ? ctx.projectId : null;
 
-  if (ctx.projectId) {
-    const { data: report } = await supabase.from("reports").select("*").eq("id", ctx.projectId).maybeSingle();
+  if (projectId) {
+    const { data: report } = await supabase.from("reports").select("*").eq("id", projectId).maybeSingle();
     if (report) contextStr += `Report: ${JSON.stringify(report)}\n`;
 
-    const { data: evidence } = await supabase.from("evidence_items").select("*").eq("report_id", ctx.projectId);
+    const { data: evidence } = await supabase.from("evidence_items").select("*").eq("report_id", projectId);
     contextStr += `Evidence items: ${evidence?.length || 0}\n${JSON.stringify(evidence?.slice(0, 5))}\n`;
 
-    const { data: verifications } = await supabase.from("verification_records").select("*").eq("report_id", ctx.projectId).order("created_at", { ascending: false });
+    const { data: verifications } = await supabase.from("verification_logs").select("*").eq("report_id", projectId).order("created_at", { ascending: false });
     contextStr += `Verifications: ${JSON.stringify(verifications?.slice(0, 5))}\n`;
   }
 

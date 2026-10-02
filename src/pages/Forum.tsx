@@ -16,6 +16,7 @@ import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
 import { useTranslation } from 'react-i18next';
+import type { NewPostInput } from '@/components/forum/CreatePostDialog';
 
 interface ForumPostData {
   id: string;
@@ -188,7 +189,7 @@ const Forum = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreatePost = async (newPostData: any) => {
+  const handleCreatePost = async (newPostData: NewPostInput) => {
     if (!user) {
       toast.error(t('forum.toastSignInToCreate'));
       return;

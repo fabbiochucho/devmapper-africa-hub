@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   }
 
   const verifiedUserId = user.id;
-  let body: any;
+  let body: { userMessage?: unknown; userRole?: unknown } | null;
   try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
   const { userMessage, userRole } = body ?? {};
 
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "userMessage must be a string of 1-4000 chars" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
   const allowedRoles = new Set(["citizen_reporter", "change_maker", "ngo_representative", "company_representative", "government_official", "investor", "verifier", "admin", "platform_admin", "guest"]);
-  const safeRole = allowedRoles.has(userRole) ? userRole : "guest";
+  const safeRole = typeof userRole === "string" && allowedRoles.has(userRole) ? userRole : "guest";
 
   // Re-derive organization server-side
   const supabaseUser = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {

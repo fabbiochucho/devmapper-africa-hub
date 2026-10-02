@@ -1,0 +1,5461 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      admin_areas: {
+        Row: {
+          country_code: string
+          created_at: string
+          id: string
+          level: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          id?: string
+          level: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          level?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_areas_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_broadcasts: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read_by: Json | null
+          message: string
+          priority: string | null
+          recipient_ids: string[] | null
+          recipient_type: string
+          sender_id: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read_by?: Json | null
+          message: string
+          priority?: string | null
+          recipient_ids?: string[] | null
+          recipient_type: string
+          sender_id: string
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read_by?: Json | null
+          message?: string
+          priority?: string | null
+          recipient_ids?: string[] | null
+          recipient_type?: string
+          sender_id?: string
+          subject?: string
+        }
+        Relationships: []
+      }
+      agenda2063_links: {
+        Row: {
+          agenda_aspiration: number
+          agenda_goal: string
+          alignment_description: string
+          created_at: string | null
+          data_source: string | null
+          id: string
+          indicator_code: string | null
+          sdg_goal: number
+          sdg_target: string
+        }
+        Insert: {
+          agenda_aspiration: number
+          agenda_goal: string
+          alignment_description: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          indicator_code?: string | null
+          sdg_goal: number
+          sdg_target: string
+        }
+        Update: {
+          agenda_aspiration?: number
+          agenda_goal?: string
+          alignment_description?: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          indicator_code?: string | null
+          sdg_goal?: number
+          sdg_target?: string
+        }
+        Relationships: []
+      }
+      ai_agent_outputs: {
+        Row: {
+          agent_name: string
+          agent_version: string | null
+          confidence_score: number | null
+          created_at: string | null
+          data_sources: string[] | null
+          id: string
+          raw_output: string | null
+          session_id: string | null
+          structured_output: Json | null
+        }
+        Insert: {
+          agent_name: string
+          agent_version?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          data_sources?: string[] | null
+          id?: string
+          raw_output?: string | null
+          session_id?: string | null
+          structured_output?: Json | null
+        }
+        Update: {
+          agent_name?: string
+          agent_version?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          data_sources?: string[] | null
+          id?: string
+          raw_output?: string | null
+          session_id?: string | null
+          structured_output?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_outputs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_sessions: {
+        Row: {
+          agents_invoked: string[] | null
+          approved_by_user: boolean | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          intent: string | null
+          session_type: string
+          synthesis_output: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agents_invoked?: string[] | null
+          approved_by_user?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          intent?: string | null
+          session_type: string
+          synthesis_output?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agents_invoked?: string[] | null
+          approved_by_user?: boolean | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          intent?: string | null
+          session_type?: string
+          synthesis_output?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_audit_log: {
+        Row: {
+          action: string | null
+          agent_name: string | null
+          created_at: string | null
+          human_approved: boolean | null
+          id: string
+          input_summary: string | null
+          output_summary: string | null
+          rule_engine_result: Json | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          agent_name?: string | null
+          created_at?: string | null
+          human_approved?: boolean | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          rule_engine_result?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          agent_name?: string | null
+          created_at?: string | null
+          human_approved?: boolean | null
+          id?: string
+          input_summary?: string | null
+          output_summary?: string | null
+          rule_engine_result?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_audit_log_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_conversations: {
+        Row: {
+          context_id: string | null
+          context_type: string
+          created_at: string
+          id: string
+          messages: Json
+          metadata: Json | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      alphaearth_cache: {
+        Row: {
+          cache_key: string
+          expires_at: string | null
+          fetched_at: string | null
+          id: string
+          organization_id: string | null
+          payload: Json
+          provider: string
+        }
+        Insert: {
+          cache_key: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          organization_id?: string | null
+          payload: Json
+          provider: string
+        }
+        Update: {
+          cache_key?: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          organization_id?: string | null
+          payload?: Json
+          provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alphaearth_cache_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown
+          organization_id: string | null
+          page_url: string | null
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          created_at: string | null
+          id: string
+          org_id: string | null
+          payload: Json | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type: string
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
+          payload?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string | null
+          id?: string
+          org_id?: string | null
+          payload?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          external_id: string | null
+          id: string
+          new_plan: string | null
+          old_plan: string | null
+          organization_id: string
+          provider: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          external_id?: string | null
+          id?: string
+          new_plan?: string | null
+          old_plan?: string | null
+          organization_id: string
+          provider?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          external_id?: string | null
+          id?: string
+          new_plan?: string | null
+          old_plan?: string | null
+          organization_id?: string
+          provider?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_donations: {
+        Row: {
+          amount: number
+          anonymous: boolean
+          campaign_id: string
+          created_at: string
+          currency: string
+          donor_id: string | null
+          id: string
+          message: string | null
+          payment_intent_id: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          anonymous?: boolean
+          campaign_id: string
+          created_at?: string
+          currency?: string
+          donor_id?: string | null
+          id?: string
+          message?: string | null
+          payment_intent_id?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          anonymous?: boolean
+          campaign_id?: string
+          created_at?: string
+          currency?: string
+          donor_id?: string | null
+          id?: string
+          message?: string | null
+          payment_intent_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_donations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "fundraising_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_assets: {
+        Row: {
+          created_at: string | null
+          credits_generated: number | null
+          credits_owned: number | null
+          credits_retired: number | null
+          estimated_value_usd: number | null
+          id: string
+          issuance_date: string | null
+          methodology: string | null
+          organization_id: string | null
+          reference_price_usd: number | null
+          report_id: string | null
+          updated_at: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credits_generated?: number | null
+          credits_owned?: number | null
+          credits_retired?: number | null
+          estimated_value_usd?: number | null
+          id?: string
+          issuance_date?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          reference_price_usd?: number | null
+          report_id?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits_generated?: number | null
+          credits_owned?: number | null
+          credits_retired?: number | null
+          estimated_value_usd?: number | null
+          id?: string
+          issuance_date?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          reference_price_usd?: number | null
+          report_id?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carbon_assets_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_compliance: {
+        Row: {
+          article6_status: string | null
+          compliance_type: string | null
+          country_of_origin: string | null
+          created_at: string | null
+          er_credits_issued: number | null
+          id: string
+          itmo_eligible: boolean | null
+          jurisdiction: string | null
+          organization_id: string | null
+          report_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          article6_status?: string | null
+          compliance_type?: string | null
+          country_of_origin?: string | null
+          created_at?: string | null
+          er_credits_issued?: number | null
+          id?: string
+          itmo_eligible?: boolean | null
+          jurisdiction?: string | null
+          organization_id?: string | null
+          report_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          article6_status?: string | null
+          compliance_type?: string | null
+          country_of_origin?: string | null
+          created_at?: string | null
+          er_credits_issued?: number | null
+          id?: string
+          itmo_eligible?: boolean | null
+          jurisdiction?: string | null
+          organization_id?: string | null
+          report_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_compliance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carbon_compliance_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_credit_orders: {
+        Row: {
+          buyer_id: string
+          buyer_notes: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          listing_id: string
+          payment_reference: string | null
+          price_per_tonne: number
+          quantity: number
+          retirement_certificate_url: string | null
+          retirement_date: string | null
+          status: string | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          listing_id: string
+          payment_reference?: string | null
+          price_per_tonne: number
+          quantity: number
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          buyer_notes?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          listing_id?: string
+          payment_reference?: string | null
+          price_per_tonne?: number
+          quantity?: number
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_credit_orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carbon_portfolios: {
+        Row: {
+          budget_usd: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          impact_focus: string[] | null
+          name: string
+          risk_level: string | null
+          target_tonnes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget_usd?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_focus?: string[] | null
+          name?: string
+          risk_level?: string | null
+          target_tonnes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget_usd?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_focus?: string[] | null
+          name?: string
+          risk_level?: string | null
+          target_tonnes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      carbon_transfer_logs: {
+        Row: {
+          carbon_asset_id: string | null
+          created_at: string | null
+          credits_transferred: number | null
+          from_entity: string | null
+          id: string
+          ownership_proof: string | null
+          to_entity: string | null
+          transfer_date: string | null
+        }
+        Insert: {
+          carbon_asset_id?: string | null
+          created_at?: string | null
+          credits_transferred?: number | null
+          from_entity?: string | null
+          id?: string
+          ownership_proof?: string | null
+          to_entity?: string | null
+          transfer_date?: string | null
+        }
+        Update: {
+          carbon_asset_id?: string | null
+          created_at?: string | null
+          credits_transferred?: number | null
+          from_entity?: string | null
+          id?: string
+          ownership_proof?: string | null
+          to_entity?: string | null
+          transfer_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_transfer_logs_carbon_asset_id_fkey"
+            columns: ["carbon_asset_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cdp_questionnaire_responses: {
+        Row: {
+          auto_filled: boolean
+          id: string
+          organization_id: string
+          question_code: string
+          response: Json | null
+          updated_at: string
+        }
+        Insert: {
+          auto_filled?: boolean
+          id?: string
+          organization_id: string
+          question_code: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          auto_filled?: boolean
+          id?: string
+          organization_id?: string
+          question_code?: string
+          response?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cdp_questionnaire_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certification_applications: {
+        Row: {
+          applicant_id: string
+          budget_usd: number | null
+          created_at: string
+          evidence_summary: string | null
+          expected_outcomes: string | null
+          geographic_scope: string | null
+          id: string
+          organization_id: string | null
+          project_description: string | null
+          report_id: string
+          requested_tier: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          sdg_goals: number[]
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          budget_usd?: number | null
+          created_at?: string
+          evidence_summary?: string | null
+          expected_outcomes?: string | null
+          geographic_scope?: string | null
+          id?: string
+          organization_id?: string | null
+          project_description?: string | null
+          report_id: string
+          requested_tier?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          sdg_goals?: number[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          budget_usd?: number | null
+          created_at?: string
+          evidence_summary?: string | null
+          expected_outcomes?: string | null
+          geographic_scope?: string | null
+          id?: string
+          organization_id?: string | null
+          project_description?: string | null
+          report_id?: string
+          requested_tier?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          sdg_goals?: number[]
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certification_applications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certification_applications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_makers: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          impact_description: string | null
+          is_verified: boolean | null
+          location: string
+          projects_count: number | null
+          sdg_goals: number[]
+          title: string
+          total_funding: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          impact_description?: string | null
+          is_verified?: boolean | null
+          location: string
+          projects_count?: number | null
+          sdg_goals: number[]
+          title: string
+          total_funding?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          impact_description?: string | null
+          is_verified?: boolean | null
+          location?: string
+          projects_count?: number | null
+          sdg_goals?: number[]
+          title?: string
+          total_funding?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      citizen_project_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          feedback_type: string
+          id: string
+          is_issue_report: boolean
+          issue_severity: string | null
+          photo_url: string | null
+          progress_estimate: number | null
+          rating: number | null
+          report_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          is_issue_report?: boolean
+          issue_severity?: string | null
+          photo_url?: string | null
+          progress_estimate?: number | null
+          rating?: number | null
+          report_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          is_issue_report?: boolean
+          issue_severity?: string | null
+          photo_url?: string | null
+          progress_estimate?: number | null
+          rating?: number | null
+          report_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "citizen_project_feedback_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_content: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          meta: Json | null
+          page_key: string
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta?: Json | null
+          page_key: string
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta?: Json | null
+          page_key?: string
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      cms_sections: {
+        Row: {
+          content: Json
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          page_key: string
+          section_key: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          page_key: string
+          section_key: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          page_key?: string
+          section_key?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      compliance_scores: {
+        Row: {
+          assessed_at: string
+          assessed_by: string | null
+          created_at: string
+          framework_code: string
+          gaps: Json | null
+          id: string
+          organization_id: string
+          reported_indicators: number | null
+          score_percentage: number | null
+          total_indicators: number | null
+          updated_at: string
+        }
+        Insert: {
+          assessed_at?: string
+          assessed_by?: string | null
+          created_at?: string
+          framework_code: string
+          gaps?: Json | null
+          id?: string
+          organization_id: string
+          reported_indicators?: number | null
+          score_percentage?: number | null
+          total_indicators?: number | null
+          updated_at?: string
+        }
+        Update: {
+          assessed_at?: string
+          assessed_by?: string | null
+          created_at?: string
+          framework_code?: string
+          gaps?: Json | null
+          id?: string
+          organization_id?: string
+          reported_indicators?: number | null
+          score_percentage?: number | null
+          total_indicators?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_scores_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_submissions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          source_url: string | null
+          status: string
+          subject: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          source_url?: string | null
+          status?: string
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          source_url?: string | null
+          status?: string
+          subject?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          id: string
+          is_pinned: boolean
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          is_pinned?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string
+          group_name: string | null
+          id: string
+          is_group: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          group_name?: string | null
+          id?: string
+          is_group?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          group_name?: string | null
+          id?: string
+          is_group?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      corporate_targets: {
+        Row: {
+          company_id: string
+          created_at: string
+          current_value: number | null
+          description: string
+          id: string
+          sdg_goals: number[]
+          status: string
+          target_date: string
+          target_value: number | null
+          title: string
+          unit: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          current_value?: number | null
+          description: string
+          id?: string
+          sdg_goals: number[]
+          status?: string
+          target_date: string
+          target_value?: number | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          current_value?: number | null
+          description?: string
+          id?: string
+          sdg_goals?: number[]
+          status?: string
+          target_date?: string
+          target_value?: number | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_targets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      country_intelligence: {
+        Row: {
+          carbon_market_maturity: string | null
+          central_bank_name: string | null
+          climate_disclosure_status: string | null
+          country_code: string
+          country_name: string
+          created_at: string
+          currency_code: string
+          digital_reporting_maturity: string | null
+          enforcement_intensity_index: number | null
+          environmental_agency_name: string | null
+          esg_regulatory_status: string | null
+          iso2_code: string
+          legal_system_type: string | null
+          ngo_regulation_score: number | null
+          official_languages: Json
+          regional_blocs: Json | null
+          stock_exchange_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          carbon_market_maturity?: string | null
+          central_bank_name?: string | null
+          climate_disclosure_status?: string | null
+          country_code: string
+          country_name: string
+          created_at?: string
+          currency_code?: string
+          digital_reporting_maturity?: string | null
+          enforcement_intensity_index?: number | null
+          environmental_agency_name?: string | null
+          esg_regulatory_status?: string | null
+          iso2_code: string
+          legal_system_type?: string | null
+          ngo_regulation_score?: number | null
+          official_languages?: Json
+          regional_blocs?: Json | null
+          stock_exchange_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carbon_market_maturity?: string | null
+          central_bank_name?: string | null
+          climate_disclosure_status?: string | null
+          country_code?: string
+          country_name?: string
+          created_at?: string
+          currency_code?: string
+          digital_reporting_maturity?: string | null
+          enforcement_intensity_index?: number | null
+          environmental_agency_name?: string | null
+          esg_regulatory_status?: string | null
+          iso2_code?: string
+          legal_system_type?: string | null
+          ngo_regulation_score?: number | null
+          official_languages?: Json
+          regional_blocs?: Json | null
+          stock_exchange_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      country_ratings: {
+        Row: {
+          agriculture: number | null
+          civil_registration: number | null
+          country_code: string
+          created_at: string
+          economic_revenue: number | null
+          education: number | null
+          governance: number | null
+          health: number | null
+          id: string
+          infrastructure: number | null
+          rater_id: string
+          rating_period: string
+          water_sanitation: number | null
+        }
+        Insert: {
+          agriculture?: number | null
+          civil_registration?: number | null
+          country_code: string
+          created_at?: string
+          economic_revenue?: number | null
+          education?: number | null
+          governance?: number | null
+          health?: number | null
+          id?: string
+          infrastructure?: number | null
+          rater_id: string
+          rating_period?: string
+          water_sanitation?: number | null
+        }
+        Update: {
+          agriculture?: number | null
+          civil_registration?: number | null
+          country_code?: string
+          created_at?: string
+          economic_revenue?: number | null
+          education?: number | null
+          governance?: number | null
+          health?: number | null
+          id?: string
+          infrastructure?: number | null
+          rater_id?: string
+          rating_period?: string
+          water_sanitation?: number | null
+        }
+        Relationships: []
+      }
+      country_stats_snapshots: {
+        Row: {
+          avg_rating: number | null
+          country_code: string
+          created_at: string
+          id: string
+          snapshot_date: string
+          total_reports: number
+          verified_reports: number
+        }
+        Insert: {
+          avg_rating?: number | null
+          country_code: string
+          created_at?: string
+          id?: string
+          snapshot_date?: string
+          total_reports: number
+          verified_reports: number
+        }
+        Update: {
+          avg_rating?: number | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          snapshot_date?: string
+          total_reports?: number
+          verified_reports?: number
+        }
+        Relationships: []
+      }
+      data_providers: {
+        Row: {
+          category: string
+          consecutive_failures: number
+          created_at: string
+          description: string | null
+          endpoint_or_table: string | null
+          fallback_strategy: string | null
+          geographic_coverage: string | null
+          id: string
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          license: string | null
+          name: string
+          notes: string | null
+          provider_key: string
+          provider_type: string
+          requires_api_key: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          endpoint_or_table?: string | null
+          fallback_strategy?: string | null
+          geographic_coverage?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          license?: string | null
+          name: string
+          notes?: string | null
+          provider_key: string
+          provider_type: string
+          requires_api_key?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          consecutive_failures?: number
+          created_at?: string
+          description?: string | null
+          endpoint_or_table?: string | null
+          fallback_strategy?: string | null
+          geographic_coverage?: string | null
+          id?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          license?: string | null
+          name?: string
+          notes?: string | null
+          provider_key?: string
+          provider_type?: string
+          requires_api_key?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          message_type: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message_type?: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message_type?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emission_factors: {
+        Row: {
+          activity: string
+          category: string
+          created_at: string | null
+          factor_kgco2e: number
+          id: string
+          notes: string | null
+          region: string
+          scope: number
+          source: string
+          source_year: number | null
+          unit: string
+        }
+        Insert: {
+          activity: string
+          category: string
+          created_at?: string | null
+          factor_kgco2e: number
+          id?: string
+          notes?: string | null
+          region?: string
+          scope: number
+          source: string
+          source_year?: number | null
+          unit: string
+        }
+        Update: {
+          activity?: string
+          category?: string
+          created_at?: string | null
+          factor_kgco2e?: number
+          id?: string
+          notes?: string | null
+          region?: string
+          scope?: number
+          source?: string
+          source_year?: number | null
+          unit?: string
+        }
+        Relationships: []
+      }
+      entity_locations: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string
+          country_code: string | null
+          created_at: string
+          entity_type: string
+          id: string
+          is_headquarters: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country: string
+          country_code?: string | null
+          created_at?: string
+          entity_type: string
+          id?: string
+          is_headquarters?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string
+          country_code?: string | null
+          created_at?: string
+          entity_type?: string
+          id?: string
+          is_headquarters?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      erp_connections: {
+        Row: {
+          api_key_secret_name: string | null
+          base_url: string
+          created_at: string
+          created_by: string
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          organization_id: string
+          provider: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          base_url: string
+          created_at?: string
+          created_by: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id: string
+          provider: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          base_url?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          organization_id?: string
+          provider?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          module: string
+          organization_id: string
+          row_id: string | null
+          table_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          module: string
+          organization_id: string
+          row_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          module?: string
+          organization_id?: string
+          row_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_indicators: {
+        Row: {
+          carbon_scope1_tonnes: number | null
+          carbon_scope2_tonnes: number | null
+          carbon_scope3_tonnes: number | null
+          community_investment: number | null
+          created_at: string | null
+          created_by: string | null
+          data_quality: string | null
+          energy_consumption_kwh: number | null
+          esg_score: number | null
+          id: string
+          organization_id: string
+          renewable_energy_percentage: number | null
+          reporting_year: number
+          updated_at: string | null
+          verification_status: string | null
+          waste_generated_tonnes: number | null
+          water_consumption_m3: number | null
+        }
+        Insert: {
+          carbon_scope1_tonnes?: number | null
+          carbon_scope2_tonnes?: number | null
+          carbon_scope3_tonnes?: number | null
+          community_investment?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          data_quality?: string | null
+          energy_consumption_kwh?: number | null
+          esg_score?: number | null
+          id?: string
+          organization_id: string
+          renewable_energy_percentage?: number | null
+          reporting_year: number
+          updated_at?: string | null
+          verification_status?: string | null
+          waste_generated_tonnes?: number | null
+          water_consumption_m3?: number | null
+        }
+        Update: {
+          carbon_scope1_tonnes?: number | null
+          carbon_scope2_tonnes?: number | null
+          carbon_scope3_tonnes?: number | null
+          community_investment?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          data_quality?: string | null
+          energy_consumption_kwh?: number | null
+          esg_score?: number | null
+          id?: string
+          organization_id?: string
+          renewable_energy_percentage?: number | null
+          reporting_year?: number
+          updated_at?: string | null
+          verification_status?: string | null
+          waste_generated_tonnes?: number | null
+          water_consumption_m3?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_indicators_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_scenarios: {
+        Row: {
+          assumptions: Json
+          baseline_year: number
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          results: Json | null
+          status: string | null
+          target_year: number
+          updated_at: string | null
+        }
+        Insert: {
+          assumptions?: Json
+          baseline_year: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          results?: Json | null
+          status?: string | null
+          target_year: number
+          updated_at?: string | null
+        }
+        Update: {
+          assumptions?: Json
+          baseline_year?: number
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          results?: Json | null
+          status?: string | null
+          target_year?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_scenarios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_supplier_emissions: {
+        Row: {
+          activity_description: string | null
+          alphaearth_benchmark_id: string | null
+          created_at: string | null
+          data_quality: string | null
+          emission_factor: number | null
+          emission_factor_source: string | null
+          emissions_tonnes: number
+          evidence_url: string | null
+          id: string
+          organization_id: string
+          reporting_year: number
+          supplier_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          activity_description?: string | null
+          alphaearth_benchmark_id?: string | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor?: number | null
+          emission_factor_source?: string | null
+          emissions_tonnes?: number
+          evidence_url?: string | null
+          id?: string
+          organization_id: string
+          reporting_year: number
+          supplier_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          activity_description?: string | null
+          alphaearth_benchmark_id?: string | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor?: number | null
+          emission_factor_source?: string | null
+          emissions_tonnes?: number
+          evidence_url?: string | null
+          id?: string
+          organization_id?: string
+          reporting_year?: number
+          supplier_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_supplier_emissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "esg_supplier_emissions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "esg_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      esg_suppliers: {
+        Row: {
+          alphaearth_enriched: boolean | null
+          annual_spend: number | null
+          contact_email: string | null
+          country_code: string | null
+          created_at: string | null
+          data_source: string | null
+          id: string
+          name: string
+          organization_id: string
+          sector: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alphaearth_enriched?: boolean | null
+          annual_spend?: number | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          sector?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alphaearth_enriched?: boolean | null
+          annual_spend?: number | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          sector?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "esg_suppliers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          evidence_type: string
+          file_url: string | null
+          id: string
+          report_id: string
+          title: string
+          updated_at: string
+          uploaded_by: string
+          verification_stage: string | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          evidence_type: string
+          file_url?: string | null
+          id?: string
+          report_id: string
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          verification_stage?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_url?: string | null
+          id?: string
+          report_id?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          verification_stage?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_items_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flags: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          feature: string
+          id: string
+          plan: Database["public"]["Enums"]["plan_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature: string
+          id?: string
+          plan: Database["public"]["Enums"]["plan_type"]
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["plan_type"]
+        }
+        Relationships: []
+      }
+      feedback_votes: {
+        Row: {
+          created_at: string
+          feedback_id: string
+          id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_id: string
+          id?: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_votes_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "citizen_project_feedback"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_posts: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          likes_count: number
+          replies_count: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          likes_count?: number
+          replies_count?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          likes_count?: number
+          replies_count?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      forum_replies: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      framework_indicators: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          framework_id: string | null
+          id: string
+          indicator_code: string
+          indicator_name: string
+          metric_key: string | null
+          sdg_alignment: number[] | null
+          unit_of_measure: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          framework_id?: string | null
+          id?: string
+          indicator_code: string
+          indicator_name: string
+          metric_key?: string | null
+          sdg_alignment?: number[] | null
+          unit_of_measure?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          framework_id?: string | null
+          id?: string
+          indicator_code?: string
+          indicator_name?: string
+          metric_key?: string | null
+          sdg_alignment?: number[] | null
+          unit_of_measure?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "framework_indicators_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "reporting_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funder_decisions: {
+        Row: {
+          amount_committed: number | null
+          created_at: string
+          decision: string
+          funder_id: string
+          id: string
+          notes: string | null
+          report_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_committed?: number | null
+          created_at?: string
+          decision: string
+          funder_id: string
+          id?: string
+          notes?: string | null
+          report_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_committed?: number | null
+          created_at?: string
+          decision?: string
+          funder_id?: string
+          id?: string
+          notes?: string | null
+          report_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funder_decisions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraising_campaigns: {
+        Row: {
+          category: string
+          change_maker_id: string | null
+          created_at: string
+          created_by: string
+          currency: string
+          deadline: string
+          description: string
+          id: string
+          image_url: string | null
+          is_verified: boolean
+          location: string
+          raised_amount: number
+          report_id: string | null
+          sdg_goals: number[]
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          change_maker_id?: string | null
+          created_at?: string
+          created_by: string
+          currency?: string
+          deadline: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          location: string
+          raised_amount?: number
+          report_id?: string | null
+          sdg_goals: number[]
+          status?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          change_maker_id?: string | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          deadline?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          location?: string
+          raised_amount?: number
+          report_id?: string | null
+          sdg_goals?: number[]
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraising_campaigns_change_maker_id_fkey"
+            columns: ["change_maker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fundraising_campaigns_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      glec_transport_factors: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "glec_transport_factors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      government_projects: {
+        Row: {
+          admin_area_id: string | null
+          beneficiaries: number | null
+          budget: number | null
+          created_at: string
+          currency: string
+          description: string
+          end_date: string | null
+          government_id: string
+          id: string
+          location: string | null
+          sdg_goals: number[]
+          spent_amount: number | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          admin_area_id?: string | null
+          beneficiaries?: number | null
+          budget?: number | null
+          created_at?: string
+          currency?: string
+          description: string
+          end_date?: string | null
+          government_id: string
+          id?: string
+          location?: string | null
+          sdg_goals: number[]
+          spent_amount?: number | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          admin_area_id?: string | null
+          beneficiaries?: number | null
+          budget?: number | null
+          created_at?: string
+          currency?: string
+          description?: string
+          end_date?: string | null
+          government_id?: string
+          id?: string
+          location?: string | null
+          sdg_goals?: number[]
+          spent_amount?: number | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "government_projects_admin_area_id_fkey"
+            columns: ["admin_area_id"]
+            isOneToOne: false
+            referencedRelation: "admin_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "government_projects_government_id_fkey"
+            columns: ["government_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      gpc_city_inventories: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gpc_city_inventories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lca_assessments: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lca_assessments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_listings: {
+        Row: {
+          available_credits: number | null
+          carbon_asset_id: string | null
+          co_benefits: Json | null
+          country_code: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          documents: string[] | null
+          id: string
+          images: string[] | null
+          listing_status: string | null
+          location: string | null
+          methodology: string | null
+          organization_id: string | null
+          price_per_tonne: number | null
+          project_type: string | null
+          report_id: string | null
+          sdg_goals: number[] | null
+          seller_id: string
+          title: string
+          total_credits: number | null
+          updated_at: string | null
+          verification_status: string | null
+          vintage_year: number | null
+        }
+        Insert: {
+          available_credits?: number | null
+          carbon_asset_id?: string | null
+          co_benefits?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          documents?: string[] | null
+          id?: string
+          images?: string[] | null
+          listing_status?: string | null
+          location?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          price_per_tonne?: number | null
+          project_type?: string | null
+          report_id?: string | null
+          sdg_goals?: number[] | null
+          seller_id: string
+          title: string
+          total_credits?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          vintage_year?: number | null
+        }
+        Update: {
+          available_credits?: number | null
+          carbon_asset_id?: string | null
+          co_benefits?: Json | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          documents?: string[] | null
+          id?: string
+          images?: string[] | null
+          listing_status?: string | null
+          location?: string | null
+          methodology?: string | null
+          organization_id?: string | null
+          price_per_tonne?: number | null
+          project_type?: string | null
+          report_id?: string | null
+          sdg_goals?: number[] | null
+          seller_id?: string
+          title?: string
+          total_credits?: number | null
+          updated_at?: string | null
+          verification_status?: string | null
+          vintage_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_carbon_asset_id_fkey"
+            columns: ["carbon_asset_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          marketing_emails: boolean | null
+          push_notifications: boolean | null
+          sms_notifications: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      organization_data_shares: {
+        Row: {
+          created_at: string
+          expires_at: string
+          granted_by: string | null
+          grantee_user_id: string
+          grantor_org_id: string
+          id: string
+          purpose: string | null
+          revoked_at: string | null
+          scope: string[]
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          granted_by?: string | null
+          grantee_user_id: string
+          grantor_org_id: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope: string[]
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          granted_by?: string | null
+          grantee_user_id?: string
+          grantor_org_id?: string
+          id?: string
+          purpose?: string | null
+          revoked_at?: string | null
+          scope?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_data_shares_grantor_org_id_fkey"
+            columns: ["grantor_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          alphaearth_api_calls_limit: number | null
+          compliance_tier: string | null
+          created_at: string
+          created_by: string
+          esg_enabled: boolean | null
+          esg_scenarios_limit: number | null
+          esg_suppliers_limit: number | null
+          feature_flags: Json | null
+          id: string
+          incorporation_country: string | null
+          monthly_addition: number | null
+          name: string
+          operating_countries: string[] | null
+          ownership_structure: string | null
+          plan_expires_at: string | null
+          plan_started_at: string | null
+          plan_type: string
+          primary_sector: string | null
+          project_cap: number | null
+          project_quota_remaining: number | null
+          registration_id: string | null
+          regulatory_exposure: Json | null
+          reporting_year: number | null
+          revenue_band: string | null
+          rollover_allowed: boolean | null
+          scholarship_override: string | null
+          sector_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          alphaearth_api_calls_limit?: number | null
+          compliance_tier?: string | null
+          created_at?: string
+          created_by: string
+          esg_enabled?: boolean | null
+          esg_scenarios_limit?: number | null
+          esg_suppliers_limit?: number | null
+          feature_flags?: Json | null
+          id?: string
+          incorporation_country?: string | null
+          monthly_addition?: number | null
+          name: string
+          operating_countries?: string[] | null
+          ownership_structure?: string | null
+          plan_expires_at?: string | null
+          plan_started_at?: string | null
+          plan_type?: string
+          primary_sector?: string | null
+          project_cap?: number | null
+          project_quota_remaining?: number | null
+          registration_id?: string | null
+          regulatory_exposure?: Json | null
+          reporting_year?: number | null
+          revenue_band?: string | null
+          rollover_allowed?: boolean | null
+          scholarship_override?: string | null
+          sector_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alphaearth_api_calls_limit?: number | null
+          compliance_tier?: string | null
+          created_at?: string
+          created_by?: string
+          esg_enabled?: boolean | null
+          esg_scenarios_limit?: number | null
+          esg_suppliers_limit?: number | null
+          feature_flags?: Json | null
+          id?: string
+          incorporation_country?: string | null
+          monthly_addition?: number | null
+          name?: string
+          operating_countries?: string[] | null
+          ownership_structure?: string | null
+          plan_expires_at?: string | null
+          plan_started_at?: string | null
+          plan_type?: string
+          primary_sector?: string | null
+          project_cap?: number | null
+          project_quota_remaining?: number | null
+          registration_id?: string | null
+          regulatory_exposure?: Json | null
+          reporting_year?: number | null
+          revenue_band?: string | null
+          rollover_allowed?: boolean | null
+          scholarship_override?: string | null
+          sector_code?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      partners: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          logo_url: string
+          name: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          logo_url: string
+          name: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          logo_url?: string
+          name?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      plan_features: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          feature_key: string
+          id: string
+          plan: string
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature_key: string
+          id?: string
+          plan: string
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          feature_key?: string
+          id?: string
+          plan?: string
+        }
+        Relationships: []
+      }
+      portfolio_holdings: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          id: string
+          listing_id: string | null
+          order_id: string | null
+          portfolio_id: string
+          purchase_price: number | null
+          quantity: number
+          retired_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          portfolio_id: string
+          purchase_price?: number | null
+          quantity: number
+          retired_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          portfolio_id?: string
+          purchase_price?: number | null
+          quantity?: number
+          retired_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_holdings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_holdings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_credit_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_holdings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_credit_orders_seller_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_holdings_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "carbon_portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          impact_area: string | null
+          is_verified: boolean
+          legal_capacity: string | null
+          organization: string | null
+          phone: string | null
+          regulatory_exposure: Json | null
+          sector_classification: string | null
+          updated_at: string
+          user_id: string
+          verification_tier: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          impact_area?: string | null
+          is_verified?: boolean
+          legal_capacity?: string | null
+          organization?: string | null
+          phone?: string | null
+          regulatory_exposure?: Json | null
+          sector_classification?: string | null
+          updated_at?: string
+          user_id: string
+          verification_tier?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          impact_area?: string | null
+          is_verified?: boolean
+          legal_capacity?: string | null
+          organization?: string | null
+          phone?: string | null
+          regulatory_exposure?: Json | null
+          sector_classification?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_tier?: string | null
+        }
+        Relationships: []
+      }
+      project_affiliations: {
+        Row: {
+          created_at: string
+          id: string
+          organization_name: string | null
+          relationship_type: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_name?: string | null
+          relationship_type: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_name?: string | null
+          relationship_type?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_affiliations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_budgets: {
+        Row: {
+          budget_allocated: number | null
+          budget_spent: number | null
+          created_at: string
+          created_by: string
+          currency: string
+          donor_organization: string | null
+          funding_source: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          transparency_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          created_at?: string
+          created_by: string
+          currency?: string
+          donor_organization?: string | null
+          funding_source?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          budget_allocated?: number | null
+          budget_spent?: number | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          donor_organization?: string | null
+          funding_source?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          transparency_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_budgets_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_carbon_data: {
+        Row: {
+          activity_quantity: number | null
+          activity_unit: string | null
+          calculation_method: string
+          carbon_verified: boolean | null
+          created_at: string | null
+          data_quality: string | null
+          emission_factor_id: string | null
+          emission_source: string | null
+          estimated_emissions_tco2e: number | null
+          estimated_savings: number | null
+          evidence_url: string | null
+          funding_source: string | null
+          id: string
+          report_id: string
+          reporting_period_end: string | null
+          reporting_period_start: string | null
+          scope_types: string[] | null
+          updated_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          activity_quantity?: number | null
+          activity_unit?: string | null
+          calculation_method?: string
+          carbon_verified?: boolean | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor_id?: string | null
+          emission_source?: string | null
+          estimated_emissions_tco2e?: number | null
+          estimated_savings?: number | null
+          evidence_url?: string | null
+          funding_source?: string | null
+          id?: string
+          report_id: string
+          reporting_period_end?: string | null
+          reporting_period_start?: string | null
+          scope_types?: string[] | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          activity_quantity?: number | null
+          activity_unit?: string | null
+          calculation_method?: string
+          carbon_verified?: boolean | null
+          created_at?: string | null
+          data_quality?: string | null
+          emission_factor_id?: string | null
+          emission_source?: string | null
+          estimated_emissions_tco2e?: number | null
+          estimated_savings?: number | null
+          evidence_url?: string | null
+          funding_source?: string | null
+          id?: string
+          report_id?: string
+          reporting_period_end?: string | null
+          reporting_period_start?: string | null
+          scope_types?: string[] | null
+          updated_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_carbon_data_emission_factor_id_fkey"
+            columns: ["emission_factor_id"]
+            isOneToOne: false
+            referencedRelation: "emission_factors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_carbon_data_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_certifications: {
+        Row: {
+          certificate_number: string | null
+          certification_body: string | null
+          certified_by: string | null
+          certified_by_name: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          notes: string | null
+          rating: string
+          report_id: string
+          score_id: string | null
+          status: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          certification_body?: string | null
+          certified_by?: string | null
+          certified_by_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          rating: string
+          report_id: string
+          score_id?: string | null
+          status?: string
+        }
+        Update: {
+          certificate_number?: string | null
+          certification_body?: string | null
+          certified_by?: string | null
+          certified_by_name?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          notes?: string | null
+          rating?: string
+          report_id?: string
+          score_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_certifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_certifications_score_id_fkey"
+            columns: ["score_id"]
+            isOneToOne: false
+            referencedRelation: "verification_scores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_circularity: {
+        Row: {
+          circularity_score: number | null
+          created_at: string | null
+          id: string
+          material_input_quantity: number | null
+          material_input_type: string | null
+          report_id: string
+          reuse_percentage: number | null
+          updated_at: string | null
+          waste_generated_tonnes: number | null
+          waste_recycled_tonnes: number | null
+        }
+        Insert: {
+          circularity_score?: number | null
+          created_at?: string | null
+          id?: string
+          material_input_quantity?: number | null
+          material_input_type?: string | null
+          report_id: string
+          reuse_percentage?: number | null
+          updated_at?: string | null
+          waste_generated_tonnes?: number | null
+          waste_recycled_tonnes?: number | null
+        }
+        Update: {
+          circularity_score?: number | null
+          created_at?: string | null
+          id?: string
+          material_input_quantity?: number | null
+          material_input_type?: string | null
+          report_id?: string
+          reuse_percentage?: number | null
+          updated_at?: string | null
+          waste_generated_tonnes?: number | null
+          waste_recycled_tonnes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_circularity_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_decarbonisation: {
+        Row: {
+          baseline_emissions: number | null
+          created_at: string | null
+          id: string
+          methane_emissions_tco2e: number | null
+          methane_sector: string | null
+          reduction_strategy: string | null
+          report_id: string
+          target_emissions: number | null
+          target_year: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          baseline_emissions?: number | null
+          created_at?: string | null
+          id?: string
+          methane_emissions_tco2e?: number | null
+          methane_sector?: string | null
+          reduction_strategy?: string | null
+          report_id: string
+          target_emissions?: number | null
+          target_year?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          baseline_emissions?: number | null
+          created_at?: string | null
+          id?: string
+          methane_emissions_tco2e?: number | null
+          methane_sector?: string | null
+          reduction_strategy?: string | null
+          report_id?: string
+          target_emissions?: number | null
+          target_year?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_decarbonisation_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_dism_scores: {
+        Row: {
+          created_at: string
+          data_quality: string | null
+          evidence_verification: number
+          governance_ethics: number
+          id: string
+          impact_depth: number
+          impact_scale: number
+          innovation_replicability: number
+          outcome_effectiveness: number
+          report_id: string
+          scored_by: string | null
+          sdg_alignment: number
+          sustainability: number
+          total_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_quality?: string | null
+          evidence_verification?: number
+          governance_ethics?: number
+          id?: string
+          impact_depth?: number
+          impact_scale?: number
+          innovation_replicability?: number
+          outcome_effectiveness?: number
+          report_id: string
+          scored_by?: string | null
+          sdg_alignment?: number
+          sustainability?: number
+          total_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_quality?: string | null
+          evidence_verification?: number
+          governance_ethics?: number
+          id?: string
+          impact_depth?: number
+          impact_scale?: number
+          innovation_replicability?: number
+          outcome_effectiveness?: number
+          report_id?: string
+          scored_by?: string | null
+          sdg_alignment?: number
+          sustainability?: number
+          total_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_dism_scores_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_financial_impact: {
+        Row: {
+          carbon_credit_value: number | null
+          created_at: string | null
+          efficiency_gains_pct: number | null
+          id: string
+          notes: string | null
+          operational_cost_savings: number | null
+          report_id: string
+          revenue_generated: number | null
+          roi_percentage: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          carbon_credit_value?: number | null
+          created_at?: string | null
+          efficiency_gains_pct?: number | null
+          id?: string
+          notes?: string | null
+          operational_cost_savings?: number | null
+          report_id: string
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          carbon_credit_value?: number | null
+          created_at?: string | null
+          efficiency_gains_pct?: number | null
+          id?: string
+          notes?: string | null
+          operational_cost_savings?: number | null
+          report_id?: string
+          revenue_generated?: number | null
+          roi_percentage?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_financial_impact_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_indicators: {
+        Row: {
+          agenda2063_aspiration: string | null
+          baseline_value: number | null
+          created_at: string
+          created_by: string
+          current_value: number | null
+          id: string
+          indicator_name: string
+          report_id: string
+          sdg_goal: number | null
+          target_value: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          agenda2063_aspiration?: string | null
+          baseline_value?: number | null
+          created_at?: string
+          created_by: string
+          current_value?: number | null
+          id?: string
+          indicator_name: string
+          report_id: string
+          sdg_goal?: number | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agenda2063_aspiration?: string | null
+          baseline_value?: number | null
+          created_at?: string
+          created_by?: string
+          current_value?: number | null
+          id?: string
+          indicator_name?: string
+          report_id?: string
+          sdg_goal?: number | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_indicators_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_milestones: {
+        Row: {
+          completion_percentage: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          evidence_url: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completion_percentage?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completion_percentage?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_milestones_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_procurement: {
+        Row: {
+          contract_type: string
+          contract_value: number
+          contractor_name: string
+          created_at: string
+          created_by: string
+          currency: string
+          end_date: string | null
+          evidence_url: string | null
+          id: string
+          procurement_method: string
+          report_id: string
+          scope: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contract_type?: string
+          contract_value?: number
+          contractor_name: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          end_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          procurement_method?: string
+          report_id: string
+          scope?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_type?: string
+          contract_value?: number
+          contractor_name?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          end_date?: string | null
+          evidence_url?: string | null
+          id?: string
+          procurement_method?: string
+          report_id?: string
+          scope?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_procurement_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tasks: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          parent_task_id: string | null
+          priority: string
+          report_id: string
+          sort_order: number | null
+          start_date: string | null
+          status: string
+          tags: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          parent_task_id?: string | null
+          priority?: string
+          report_id: string
+          sort_order?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          parent_task_id?: string | null
+          priority?: string
+          report_id?: string
+          sort_order?: number | null
+          start_date?: string | null
+          status?: string
+          tags?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_updates: {
+        Row: {
+          created_at: string
+          created_by: string
+          evidence_url: string | null
+          id: string
+          photos: Json | null
+          progress_percent: number | null
+          report_id: string
+          update_text: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          evidence_url?: string | null
+          id?: string
+          photos?: Json | null
+          progress_percent?: number | null
+          report_id: string
+          update_text: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          evidence_url?: string | null
+          id?: string
+          photos?: Json | null
+          progress_percent?: number | null
+          report_id?: string
+          update_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_updates_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_verifications: {
+        Row: {
+          assigned_reviewer_id: string | null
+          comments: string | null
+          created_at: string
+          evidence_url: string | null
+          id: string
+          report_id: string
+          status: string
+          verification_level: string
+          verified_at: string | null
+          verifier_id: string
+        }
+        Insert: {
+          assigned_reviewer_id?: string | null
+          comments?: string | null
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          report_id: string
+          status?: string
+          verification_level?: string
+          verified_at?: string | null
+          verifier_id: string
+        }
+        Update: {
+          assigned_reviewer_id?: string | null
+          comments?: string | null
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          report_id?: string
+          status?: string
+          verification_level?: string
+          verified_at?: string | null
+          verifier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_verifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          country: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          is_verified: boolean
+          organization: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          is_verified?: boolean
+          organization?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_verified?: boolean
+          organization?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      regulatory_exposure_profiles: {
+        Row: {
+          actor_type: string
+          compliance_score: number | null
+          country_code: string
+          created_at: string
+          exposure_categories: Json
+          id: string
+          last_assessed_at: string | null
+          mandatory_frameworks: Json | null
+          reporting_frequency: string | null
+          risk_level: string | null
+          sector_code: string | null
+          updated_at: string
+          user_id: string
+          voluntary_frameworks: Json | null
+        }
+        Insert: {
+          actor_type: string
+          compliance_score?: number | null
+          country_code: string
+          created_at?: string
+          exposure_categories?: Json
+          id?: string
+          last_assessed_at?: string | null
+          mandatory_frameworks?: Json | null
+          reporting_frequency?: string | null
+          risk_level?: string | null
+          sector_code?: string | null
+          updated_at?: string
+          user_id: string
+          voluntary_frameworks?: Json | null
+        }
+        Update: {
+          actor_type?: string
+          compliance_score?: number | null
+          country_code?: string
+          created_at?: string
+          exposure_categories?: Json
+          id?: string
+          last_assessed_at?: string | null
+          mandatory_frameworks?: Json | null
+          reporting_frequency?: string | null
+          risk_level?: string | null
+          sector_code?: string | null
+          updated_at?: string
+          user_id?: string
+          voluntary_frameworks?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_exposure_profiles_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_intelligence"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      regulatory_frameworks: {
+        Row: {
+          applicable_entity_types: Json
+          category: string
+          country_code: string
+          created_at: string
+          effective_date: string | null
+          enforcement_risk: string | null
+          id: string
+          mandatory: boolean
+          name: string
+          regulator_name: string | null
+          reporting_frequency: string | null
+          rule_tree: Json | null
+          source_url: string | null
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          applicable_entity_types?: Json
+          category: string
+          country_code: string
+          created_at?: string
+          effective_date?: string | null
+          enforcement_risk?: string | null
+          id?: string
+          mandatory?: boolean
+          name: string
+          regulator_name?: string | null
+          reporting_frequency?: string | null
+          rule_tree?: Json | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          applicable_entity_types?: Json
+          category?: string
+          country_code?: string
+          created_at?: string
+          effective_date?: string | null
+          enforcement_risk?: string | null
+          id?: string
+          mandatory?: boolean
+          name?: string
+          regulator_name?: string | null
+          reporting_frequency?: string | null
+          rule_tree?: Json | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_frameworks_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_intelligence"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      report_embeddings: {
+        Row: {
+          embedding: string
+          report_id: string
+          source_text: string
+          updated_at: string
+        }
+        Insert: {
+          embedding: string
+          report_id: string
+          source_text: string
+          updated_at?: string
+        }
+        Update: {
+          embedding?: string
+          report_id?: string
+          source_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_embeddings_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_flags: {
+        Row: {
+          created_at: string
+          details: string | null
+          flagged_by: string
+          id: string
+          reason: string
+          report_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          flagged_by: string
+          id?: string
+          reason: string
+          report_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          flagged_by?: string
+          id?: string
+          reason?: string
+          report_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_flags_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reporting_frameworks: {
+        Row: {
+          applicable_regions: string[] | null
+          category: string | null
+          code: string
+          created_at: string | null
+          id: string
+          is_mandatory: boolean | null
+          name: string
+          version: string | null
+        }
+        Insert: {
+          applicable_regions?: string[] | null
+          category?: string | null
+          code: string
+          created_at?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name: string
+          version?: string | null
+        }
+        Update: {
+          applicable_regions?: string[] | null
+          category?: string | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          name?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          beneficiaries: number | null
+          contractor: string | null
+          cost: number | null
+          cost_currency: string | null
+          country_code: string | null
+          description: string
+          end_date: string | null
+          escalation_status: string | null
+          evidence_type: string | null
+          evidence_url: string | null
+          funder: string | null
+          id: string
+          is_anonymous: boolean | null
+          is_verified: boolean | null
+          issue_severity: string | null
+          issue_type: string | null
+          lat: number | null
+          lng: number | null
+          location: string | null
+          project_status: string
+          responsibility_area: string | null
+          sdg_goal: number
+          sponsor: string | null
+          start_date: string | null
+          submitted_at: string
+          title: string
+          updated_at: string
+          usd_exchange_rate: number | null
+          user_id: string | null
+          verification_count: number | null
+          visibility: string
+        }
+        Insert: {
+          beneficiaries?: number | null
+          contractor?: string | null
+          cost?: number | null
+          cost_currency?: string | null
+          country_code?: string | null
+          description: string
+          end_date?: string | null
+          escalation_status?: string | null
+          evidence_type?: string | null
+          evidence_url?: string | null
+          funder?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          is_verified?: boolean | null
+          issue_severity?: string | null
+          issue_type?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          project_status?: string
+          responsibility_area?: string | null
+          sdg_goal: number
+          sponsor?: string | null
+          start_date?: string | null
+          submitted_at?: string
+          title: string
+          updated_at?: string
+          usd_exchange_rate?: number | null
+          user_id?: string | null
+          verification_count?: number | null
+          visibility?: string
+        }
+        Update: {
+          beneficiaries?: number | null
+          contractor?: string | null
+          cost?: number | null
+          cost_currency?: string | null
+          country_code?: string | null
+          description?: string
+          end_date?: string | null
+          escalation_status?: string | null
+          evidence_type?: string | null
+          evidence_url?: string | null
+          funder?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          is_verified?: boolean | null
+          issue_severity?: string | null
+          issue_type?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          project_status?: string
+          responsibility_area?: string | null
+          sdg_goal?: number
+          sponsor?: string | null
+          start_date?: string | null
+          submitted_at?: string
+          title?: string
+          updated_at?: string
+          usd_exchange_rate?: number | null
+          user_id?: string | null
+          verification_count?: number | null
+          visibility?: string
+        }
+        Relationships: []
+      }
+      retirement_certificates: {
+        Row: {
+          buyer_id: string
+          certificate_number: string
+          country_code: string | null
+          created_at: string
+          id: string
+          methodology: string | null
+          order_id: string
+          project_title: string
+          project_type: string | null
+          quantity: number
+          retired_at: string
+        }
+        Insert: {
+          buyer_id: string
+          certificate_number: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          methodology?: string | null
+          order_id: string
+          project_title: string
+          project_type?: string | null
+          quantity: number
+          retired_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          certificate_number?: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          methodology?: string | null
+          order_id?: string
+          project_title?: string
+          project_type?: string | null
+          quantity?: number
+          retired_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retirement_certificates_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "carbon_credit_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "retirement_certificates_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "carbon_credit_orders_seller_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sbti_pathways: {
+        Row: {
+          baseline_year: number | null
+          created_at: string
+          id: string
+          organization_id: string
+          pathway_data: Json | null
+          sector: string
+          target_type: string | null
+          target_year: number | null
+        }
+        Insert: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          pathway_data?: Json | null
+          sector: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Update: {
+          baseline_year?: number | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          pathway_data?: Json | null
+          sector?: string
+          target_type?: string | null
+          target_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sbti_pathways_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scholarships: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          country: string | null
+          created_at: string
+          duration_months: number | null
+          expires_at: string | null
+          id: string
+          justification: string
+          org_id: string | null
+          organization_name: string | null
+          requested_plan: string
+          role: string | null
+          status: string
+          updated_at: string
+          use_case: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          country?: string | null
+          created_at?: string
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          justification: string
+          org_id?: string | null
+          organization_name?: string | null
+          requested_plan?: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          country?: string | null
+          created_at?: string
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          justification?: string
+          org_id?: string | null
+          organization_name?: string | null
+          requested_plan?: string
+          role?: string | null
+          status?: string
+          updated_at?: string
+          use_case?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scholarships_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sdg_agenda2063_alignment: {
+        Row: {
+          agenda2063_aspiration: string
+          agenda2063_goal: string
+          alignment_description: string
+          created_at: string
+          id: string
+          sdg_goal: number
+          sdg_target: string
+        }
+        Insert: {
+          agenda2063_aspiration: string
+          agenda2063_goal: string
+          alignment_description: string
+          created_at?: string
+          id?: string
+          sdg_goal: number
+          sdg_target: string
+        }
+        Update: {
+          agenda2063_aspiration?: string
+          agenda2063_goal?: string
+          alignment_description?: string
+          created_at?: string
+          id?: string
+          sdg_goal?: number
+          sdg_target?: string
+        }
+        Relationships: []
+      }
+      sdg_indicators: {
+        Row: {
+          created_at: string
+          frequency: string | null
+          id: string
+          indicator_code: string
+          indicator_name: string
+          is_active: boolean
+          level: string | null
+          measurement_type: string
+          sdg_id: number
+          sector: string | null
+          source: string | null
+          target_id: string
+          unit: string
+          verification_requirement: string | null
+        }
+        Insert: {
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          indicator_code: string
+          indicator_name: string
+          is_active?: boolean
+          level?: string | null
+          measurement_type?: string
+          sdg_id: number
+          sector?: string | null
+          source?: string | null
+          target_id: string
+          unit?: string
+          verification_requirement?: string | null
+        }
+        Update: {
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          indicator_code?: string
+          indicator_name?: string
+          is_active?: boolean
+          level?: string | null
+          measurement_type?: string
+          sdg_id?: number
+          sector?: string | null
+          source?: string | null
+          target_id?: string
+          unit?: string
+          verification_requirement?: string | null
+        }
+        Relationships: []
+      }
+      standards_metadata: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          frameworks: string[] | null
+          id: string
+          methodology: string | null
+          notes: string | null
+          organization_id: string
+          standard: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          frameworks?: string[] | null
+          id?: string
+          methodology?: string | null
+          notes?: string | null
+          organization_id: string
+          standard: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          frameworks?: string[] | null
+          id?: string
+          methodology?: string | null
+          notes?: string | null
+          organization_id?: string
+          standard?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standards_metadata_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          priority: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          priority?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      task_activity: {
+        Row: {
+          activity_type: string
+          content: string | null
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activity_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_dependencies: {
+        Row: {
+          created_at: string
+          dependency_type: string
+          depends_on_task_id: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          dependency_type?: string
+          depends_on_task_id: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          dependency_type?: string
+          depends_on_task_id?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_depends_on_task_id_fkey"
+            columns: ["depends_on_task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_tier: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_tier: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_tier?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          country: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          organization: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          country?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          country?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          organization?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_assignments: {
+        Row: {
+          assigned_by: string | null
+          assignment_type: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          report_id: string
+          review_data: Json | null
+          stage: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          verifier_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assignment_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          report_id: string
+          review_data?: Json | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verifier_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assignment_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          report_id?: string
+          review_data?: Json | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verifier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_assignments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_assignments_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "verifier_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_ledger: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          entry_hash: string
+          event_type: string
+          id: string
+          payload: Json
+          prev_hash: string | null
+          report_id: string | null
+          sequence_number: number
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          entry_hash: string
+          event_type: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          report_id?: string | null
+          sequence_number: number
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          entry_hash?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          prev_hash?: string | null
+          report_id?: string | null
+          sequence_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_ledger_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_logs: {
+        Row: {
+          comments: string | null
+          created_at: string
+          id: string
+          report_id: string | null
+          user_id: string | null
+          verification_type: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id?: string | null
+          verification_type: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id?: string | null
+          verification_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_logs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_scores: {
+        Row: {
+          certification_rating: string | null
+          community_validation_score: number | null
+          created_at: string
+          evidence_strength_score: number | null
+          id: string
+          implementation_integrity_score: number | null
+          outcome_achievement_score: number | null
+          output_delivery_score: number | null
+          report_id: string
+          scored_at: string | null
+          scored_by: string | null
+          sdg_alignment_score: number | null
+          sustainability_score: number | null
+          total_sis: number | null
+          updated_at: string
+        }
+        Insert: {
+          certification_rating?: string | null
+          community_validation_score?: number | null
+          created_at?: string
+          evidence_strength_score?: number | null
+          id?: string
+          implementation_integrity_score?: number | null
+          outcome_achievement_score?: number | null
+          output_delivery_score?: number | null
+          report_id: string
+          scored_at?: string | null
+          scored_by?: string | null
+          sdg_alignment_score?: number | null
+          sustainability_score?: number | null
+          total_sis?: number | null
+          updated_at?: string
+        }
+        Update: {
+          certification_rating?: string | null
+          community_validation_score?: number | null
+          created_at?: string
+          evidence_strength_score?: number | null
+          id?: string
+          implementation_integrity_score?: number | null
+          outcome_achievement_score?: number | null
+          output_delivery_score?: number | null
+          report_id?: string
+          scored_at?: string | null
+          scored_by?: string | null
+          sdg_alignment_score?: number | null
+          sustainability_score?: number | null
+          total_sis?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_scores_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_workflow_stages: {
+        Row: {
+          assigned_verifier: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          report_id: string
+          stage: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          report_id: string
+          stage: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_verifier?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          report_id?: string
+          stage?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_workflow_stages_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verifier_profiles: {
+        Row: {
+          approval_rate: number | null
+          availability_status: string | null
+          bio: string | null
+          created_at: string | null
+          credentials: string[] | null
+          display_name: string
+          id: string
+          is_certified: boolean | null
+          methodologies: string[] | null
+          organization_name: string | null
+          profile_image_url: string | null
+          regions: string[] | null
+          reputation_score: number | null
+          updated_at: string | null
+          user_id: string
+          verification_count: number | null
+        }
+        Insert: {
+          approval_rate?: number | null
+          availability_status?: string | null
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          display_name: string
+          id?: string
+          is_certified?: boolean | null
+          methodologies?: string[] | null
+          organization_name?: string | null
+          profile_image_url?: string | null
+          regions?: string[] | null
+          reputation_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          verification_count?: number | null
+        }
+        Update: {
+          approval_rate?: number | null
+          availability_status?: string | null
+          bio?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          display_name?: string
+          id?: string
+          is_certified?: boolean | null
+          methodologies?: string[] | null
+          organization_name?: string | null
+          profile_image_url?: string | null
+          regions?: string[] | null
+          reputation_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verification_count?: number | null
+        }
+        Relationships: []
+      }
+      verifier_reviews: {
+        Row: {
+          assignment_id: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+          verifier_id: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+          verifier_id: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+          verifier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verifier_reviews_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "verification_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifier_reviews_verifier_id_fkey"
+            columns: ["verifier_id"]
+            isOneToOne: false
+            referencedRelation: "verifier_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verra_methodology_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          methodology_code: string
+          project_type: string
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code: string
+          project_type: string
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          methodology_code?: string
+          project_type?: string
+          source_url?: string | null
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          processing_status: string
+          provider: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          processing_status?: string
+          provider: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_status?: string
+          provider?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      carbon_credit_orders_seller_view: {
+        Row: {
+          buyer_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          listing_id: string | null
+          price_per_tonne: number | null
+          quantity: number | null
+          retirement_certificate_url: string | null
+          retirement_date: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          listing_id?: string | null
+          price_per_tonne?: number | null
+          quantity?: number | null
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string | null
+          listing_id?: string | null
+          price_per_tonne?: number | null
+          quantity?: number | null
+          retirement_certificate_url?: string | null
+          retirement_date?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carbon_credit_orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_stats: {
+        Row: {
+          countries_count: number | null
+          last_updated: string | null
+          total_campaigns: number | null
+          total_change_makers: number | null
+          total_funds_raised: number | null
+          total_reports: number | null
+        }
+        Relationships: []
+      }
+      mv_dashboard_stats: {
+        Row: {
+          countries_count: number | null
+          last_updated: string | null
+          total_campaigns: number | null
+          total_change_makers: number | null
+          total_funds_raised: number | null
+          total_reports: number | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      assign_test_role: {
+        Args: {
+          p_country?: string
+          p_organization?: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: string
+      }
+      auto_assign_verifier: { Args: { p_report_id: string }; Returns: string }
+      block_contact_info_in_text: {
+        Args: { p_text: string }
+        Returns: undefined
+      }
+      can_access_feature: {
+        Args: { p_feature: string; p_user_id: string }
+        Returns: boolean
+      }
+      capture_country_stats_snapshot: { Args: never; Returns: undefined }
+      check_project_quota: { Args: { p_org_id: string }; Returns: boolean }
+      check_webhook_processed: {
+        Args: { p_event_id: string; p_provider: string }
+        Returns: boolean
+      }
+      evaluate_user_badges: { Args: { p_user_id: string }; Returns: undefined }
+      get_agenda2063_for_sdg: {
+        Args: { p_sdg_goal: number }
+        Returns: {
+          aspiration: number
+          data_source: string
+          description: string
+          goal: string
+        }[]
+      }
+      get_country_directory_stats: {
+        Args: never
+        Returns: {
+          country_code: string
+          total_budget: number
+          total_reports: number
+          verified_reports: number
+        }[]
+      }
+      get_country_rating_aggregates: {
+        Args: never
+        Returns: {
+          avg_agriculture: number
+          avg_civil_registration: number
+          avg_economic_revenue: number
+          avg_education: number
+          avg_governance: number
+          avg_health: number
+          avg_infrastructure: number
+          avg_overall: number
+          avg_water_sanitation: number
+          country_code: string
+          rater_count: number
+        }[]
+      }
+      get_dashboard_stats: {
+        Args: never
+        Returns: {
+          countries_count: number
+          last_updated: string
+          total_campaigns: number
+          total_change_makers: number
+          total_funds_raised: number
+          total_reports: number
+        }[]
+      }
+      get_effective_plan: { Args: { p_org_id: string }; Returns: string }
+      get_government_budget_analytics: {
+        Args: { p_user_id: string }
+        Returns: {
+          avg_completion: number
+          project_count: number
+          sdg_goal: number
+          sdg_label: string
+          total_budget: number
+          total_spent: number
+        }[]
+      }
+      get_most_improved_countries: {
+        Args: { p_days?: number }
+        Returns: {
+          country_code: string
+          earliest_date: string
+          earliest_reports: number
+          earliest_verified: number
+          latest_date: string
+          latest_reports: number
+          latest_verified: number
+          report_delta: number
+          verified_delta: number
+        }[]
+      }
+      get_test_accounts: {
+        Args: never
+        Returns: {
+          countries: string[]
+          email: string
+          full_name: string
+          organizations: string[]
+          roles: Database["public"]["Enums"]["app_role"][]
+          user_id: string
+        }[]
+      }
+      has_active_org_share: {
+        Args: { _org_id: string; _scope: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_campaign_raised_amount: {
+        Args: { p_amount: number; p_campaign_id: string }
+        Returns: undefined
+      }
+      is_affiliated_with_report: {
+        Args: { _report_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_owner: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
+      list_users_by_role: {
+        Args: { p_role: Database["public"]["Enums"]["app_role"] }
+        Returns: {
+          full_name: string
+          organization: string
+          user_id: string
+        }[]
+      }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_actor_id: string
+          p_actor_type: string
+          p_org_id: string
+          p_payload?: Json
+          p_target_id?: string
+          p_target_table?: string
+        }
+        Returns: string
+      }
+      mark_broadcast_read: {
+        Args: { p_broadcast_id: string }
+        Returns: undefined
+      }
+      match_report_embeddings: {
+        Args: {
+          match_count: number
+          query_embedding: string
+          requesting_user_id: string
+        }
+        Returns: {
+          description: string
+          report_id: string
+          similarity: number
+          title: string
+        }[]
+      }
+      record_provider_health: {
+        Args: {
+          p_error_message?: string
+          p_provider_key: string
+          p_success: boolean
+        }
+        Returns: undefined
+      }
+      record_webhook_event: {
+        Args: {
+          p_error_message?: string
+          p_event_id: string
+          p_event_type: string
+          p_payload: Json
+          p_provider: string
+          p_status?: string
+        }
+        Returns: string
+      }
+      refresh_dashboard_stats: { Args: never; Returns: undefined }
+      reset_monthly_quotas: { Args: never; Returns: undefined }
+      retire_carbon_credit_order: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
+      sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
+    }
+    Enums: {
+      app_role:
+        | "admin"
+        | "ngo_member"
+        | "government_official"
+        | "company_representative"
+        | "country_admin"
+        | "platform_admin"
+        | "change_maker"
+        | "citizen_reporter"
+        | "funder"
+      plan_type: "free" | "lite" | "pro" | "advanced" | "enterprise"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: [
+        "admin",
+        "ngo_member",
+        "government_official",
+        "company_representative",
+        "country_admin",
+        "platform_admin",
+        "change_maker",
+        "citizen_reporter",
+        "funder",
+      ],
+      plan_type: ["free", "lite", "pro", "advanced", "enterprise"],
+    },
+  },
+} as const

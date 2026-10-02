@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database } from "../_shared/db.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { isServiceRoleRequest } from "../_shared/serviceAuth.ts";
 
@@ -21,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const supabase = createClient(
+    const supabase = createClient<Database>(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
@@ -49,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
         .select('role')
         .eq('user_id', userData.user.id)
         .eq('is_active', true);
-      const isAdmin = (roles || []).some((r: any) => r.role === 'admin' || r.role === 'platform_admin');
+      const isAdmin = (roles || []).some((r) => r.role === 'admin' || r.role === 'platform_admin');
       if (!isAdmin) {
         return new Response(JSON.stringify({ error: 'Forbidden' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -72,8 +73,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Get admin users for the organization
     const adminUserIds = org.organization_members
-      .filter((member: any) => member.role === 'admin' || member.role === 'owner')
-      .map((member: any) => member.user_id);
+      .filter((member) => member.role === 'admin' || member.role === 'owner')
+      .map((member) => member.user_id);
 
     // Get admin user emails
     const { data: profiles, error: profilesError } = await supabase
@@ -85,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw profilesError;
     }
 
-    const adminEmails = profiles?.map(p => p.email).filter(Boolean) || [];
+    const adminEmails = profiles?.map(p => p.email).filter((e): e is string => !!e) || [];
 
     if (adminEmails.length === 0) {
       console.log('No admin emails found for organization:', organizationId);

@@ -31,6 +31,7 @@ import KanbanBoard from "@/components/pm/KanbanBoard";
 import ProcurementTracker from "@/components/pm/ProcurementTracker";
 import ImpactScorecard from "@/components/scoring/ImpactScorecard";
 import { fetchAssignableUsers, fetchUserNames, type AssignableUser } from "@/lib/task-assignees";
+import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 
 interface ProjectTask {
   id: string;
@@ -179,7 +180,7 @@ export default function ProjectManagement() {
   };
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
-    const updates: Record<string, any> = { status: newStatus };
+    const updates: TablesUpdate<'project_tasks'> = { status: newStatus };
     if (newStatus === "done") updates.completed_at = new Date().toISOString();
     else updates.completed_at = null;
     const { error } = await supabase.from("project_tasks").update(updates).eq("id", taskId);
@@ -533,7 +534,7 @@ export default function ProjectManagement() {
 // Sub-component for updates list
 function UpdatesList({ reportId }: { reportId: string }) {
   const { t } = useTranslation();
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<Tables<'project_updates'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -558,7 +559,7 @@ function UpdatesList({ reportId }: { reportId: string }) {
   return (
     <div className="space-y-3">
       <h3 className="font-semibold">{t('pm.progressTimelineHeading')}</h3>
-      {updates.map((u: any) => (
+      {updates.map((u) => (
         <Card key={u.id}>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between">

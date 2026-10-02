@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, X, Image, Link, Hash } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-interface NewPostInput {
+export interface NewPostInput {
   title: string;
   content: string;
   category: string;

@@ -4,7 +4,7 @@
  */
 
 // Map of routes to their lazy import functions
-const routeImports: Record<string, () => Promise<any>> = {
+const routeImports: Record<string, () => Promise<unknown>> = {
   '/analytics': () => import('@/pages/Analytics'),
   '/forum': () => import('@/pages/Forum'),
   '/my-projects': () => import('@/pages/MyProjects'),

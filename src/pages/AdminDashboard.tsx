@@ -339,7 +339,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const convertToCSV = (data: any[]): string => {
+  const convertToCSV = (data: Record<string, unknown>[]): string => {
     if (data.length === 0) return '';
     const headers = Object.keys(data[0]);
     const rows = data.map(row => headers.map(h => {
@@ -352,7 +352,7 @@ export default function AdminDashboard() {
 
   const exportReport = async (type: string, format: 'json' | 'csv' = 'json') => {
     try {
-      let data: any[] = [];
+      let data: Record<string, unknown>[] = [];
       let baseName = '';
 
       switch (type) {

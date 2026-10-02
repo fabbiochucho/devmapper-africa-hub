@@ -17,13 +17,13 @@ Deno.serve(async (req) => {
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) return jsonError("Invalid token", 401);
 
-  let body: any;
+  let body: { action?: unknown; reportId?: unknown; query?: unknown; matchCount?: unknown } | null;
   try { body = await req.json(); } catch { return jsonError("Invalid JSON body", 400); }
 
   const { action } = body ?? {};
 
   if (action === "index") {
-    const { reportId } = body;
+    const { reportId } = body ?? {};
     if (typeof reportId !== "string") return jsonError("reportId is required", 400);
     const result = await indexReportEmbedding(supabaseAdmin, reportId);
     return new Response(JSON.stringify(result), {
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   }
 
   if (action === "search") {
-    const { query, matchCount } = body;
+    const { query, matchCount } = body ?? {};
     if (typeof query !== "string" || query.length === 0) return jsonError("query is required", 400);
     const result = await fetchSimilarReports(supabaseAdmin, query, user.id, typeof matchCount === "number" ? matchCount : 5);
     return new Response(JSON.stringify(result), {

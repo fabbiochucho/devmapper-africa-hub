@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { appendToLedger } from '@/lib/verification-ledger';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
+import type { Tables } from "@/integrations/supabase/types";
 
 const SDG_GOALS = Array.from({ length: 17 }, (_, i) => ({
   id: i + 1,
@@ -325,7 +326,7 @@ const ApplyCertification = () => {
 };
 
 function ExistingApplicationsList({ userId }: { userId: string }) {
-  const [apps, setApps] = useState<any[]>([]);
+  const [apps, setApps] = useState<Pick<Tables<'certification_applications'>, 'id' | 'report_id' | 'requested_tier' | 'status' | 'submitted_at'>[]>([]);
 
   useEffect(() => {
     (supabase)
@@ -342,7 +343,7 @@ function ExistingApplicationsList({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-2">
-      {apps.map((app: any) => (
+      {apps.map((app) => (
         <div key={app.id} className="flex items-center justify-between border rounded-lg p-3">
           <div>
             <p className="text-sm font-medium">Application #{app.id.slice(0, 8)}</p>

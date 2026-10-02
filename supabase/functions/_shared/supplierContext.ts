@@ -1,3 +1,4 @@
+import type { Db } from "./db.ts";
 // Context for the Ndovu supplier agent. Totals and the completeness score are exact over
 // every supplier the caller can see (RLS scopes to their org); only the record lists sent
 // to the model are samples. Previously both queries were a bare .limit(50), so a
@@ -7,8 +8,7 @@ const PAGE = 1000; // PostgREST max rows per request
 const TOP_N = 50;  // emitters sent to the model
 const GAP_N = 25;  // suppliers-without-data sent to the model
 
-// deno-lint-ignore no-explicit-any
-export async function buildSupplierContext(supabase: any): Promise<{ contextStr: string; completeness: number; total: number; withData: number }> {
+export async function buildSupplierContext(supabase: Db): Promise<{ contextStr: string; completeness: number; total: number; withData: number }> {
   const { count: supplierCount } = await supabase.from("esg_suppliers").select("id", { count: "exact", head: true });
 
   // ponytail: pages every emissions row's supplier_id to count distinct suppliers with data;

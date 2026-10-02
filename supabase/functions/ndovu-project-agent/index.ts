@@ -17,9 +17,10 @@ Be specific — reference actual field names and required evidence types.`;
 Deno.serve((req) => handleAgent(req, "project_developer_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
   const dataSources = ["reports", "agenda2063_links"];
   let contextStr = "";
+  const projectId = typeof ctx.projectId === "string" ? ctx.projectId : null;
 
-  if (ctx.projectId) {
-    const { data: report } = await supabase.from("reports").select("*").eq("id", ctx.projectId).maybeSingle();
+  if (projectId) {
+    const { data: report } = await supabase.from("reports").select("*").eq("id", projectId).maybeSingle();
     if (report) {
       contextStr += `Project: ${JSON.stringify(report)}\n`;
 
@@ -34,7 +35,7 @@ Deno.serve((req) => handleAgent(req, "project_developer_ai", SYSTEM_PROMPT, asyn
         5,
       );
       if (matches.length > 0) {
-        const similarOthers = matches.filter((m) => m.report_id !== ctx.projectId);
+        const similarOthers = matches.filter((m) => m.report_id !== projectId);
         if (similarOthers.length > 0) {
           dataSources.push("report_embeddings");
           contextStr += `Similar prior projects (for reference/precedent, most similar first):\n${

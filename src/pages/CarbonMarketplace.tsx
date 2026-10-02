@@ -18,6 +18,7 @@ import { SEOHead } from "@/components/seo/SEOHead";
 import { Link } from "react-router-dom";
 import { SuggestedPriceHint } from "@/components/marketplace/SuggestedPriceHint";
 import { sdgGoals, carbonProjectTypes as PROJECT_TYPES } from "@/lib/constants";
+import type { Tables } from "@/integrations/supabase/types";
 
 const CarbonMarketplace = () => {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ const CarbonMarketplace = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [selectedListing, setSelectedListing] = useState<Tables<'marketplace_listings'> | null>(null);
   const [purchaseQty, setPurchaseQty] = useState("");
 
   const [listingForm, setListingForm] = useState({

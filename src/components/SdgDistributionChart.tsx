@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, type TooltipProps } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +48,7 @@ const SdgDistributionChart = () => {
     };
   });
 
-  const CustomYAxisTick = (props: any) => {
+  const CustomYAxisTick = (props: { x?: number; y?: number; payload?: { value: string } }) => {
     const { x, y, payload } = props;
     const goalInfo = sdgGoals.find(g => sdgGoalMap.get(g.value) === payload.value);
 
@@ -71,7 +71,7 @@ const SdgDistributionChart = () => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

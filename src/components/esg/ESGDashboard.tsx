@@ -42,20 +42,6 @@ import IFRSReadinessAssessment from './IFRSReadinessAssessment';
 import FrameworkGapAnalysis from './FrameworkGapAnalysis';
 import type { Tables } from "@/integrations/supabase/types";
 
-interface ESGIndicators {
-  id: string;
-  reporting_year: number;
-  carbon_scope1_tonnes: number;
-  carbon_scope2_tonnes: number;
-  carbon_scope3_tonnes: number;
-  energy_consumption_kwh: number;
-  water_consumption_m3: number;
-  waste_generated_tonnes: number;
-  renewable_energy_percentage: number;
-  esg_score: number;
-  verification_status: string;
-}
-
 interface Organization {
   id: string;
   name: string;

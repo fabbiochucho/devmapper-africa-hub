@@ -13,6 +13,8 @@ import { useMyProjects } from '@/hooks/useMyProjects';
 import { useNavigate } from 'react-router-dom';
 import { sdgGoals } from '@/lib/constants';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from "@/integrations/supabase/types";
+type PublicProject = Pick<Tables<'reports'>, 'id' | 'title' | 'description' | 'sdg_goal' | 'location' | 'project_status' | 'user_id' | 'submitted_at'>;
 
 const statusConfig: Record<string, { variant: "default" | "secondary" | "outline" | "destructive"; label: string }> = {
   planned: { variant: 'secondary', label: 'Planned' },
@@ -268,7 +270,7 @@ const NgoDashboard = () => {
 
 // Sub-component: shows recent verification-related notifications for NGO
 function VerificationNotificationsPanel({ userId }: { userId: string }) {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Tables<'notifications'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -342,9 +344,9 @@ function VerificationNotificationsPanel({ userId }: { userId: string }) {
 
 // Sub-component: allows NGOs to verify public projects with proper review UI
 function PublicProjectVerifier({ userId }: { userId: string }) {
-  const [publicProjects, setPublicProjects] = useState<any[]>([]);
+  const [publicProjects, setPublicProjects] = useState<PublicProject[]>([]);
   const [loadingVerify, setLoadingVerify] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<PublicProject | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const loadProjects = useCallback(() => {

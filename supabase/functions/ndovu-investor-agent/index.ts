@@ -17,9 +17,10 @@ Never speculate beyond available data. State confidence level explicitly.`;
 Deno.serve((req) => handleAgent(req, "investor_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
   const dataSources = ["reports", "carbon_assets", "fundraising_campaigns"];
   let contextStr = "";
+  const projectId = typeof ctx.projectId === "string" ? ctx.projectId : null;
 
-  if (ctx.projectId) {
-    const { data: report } = await supabase.from("reports").select("title, description, cost, sdg_goal, project_status, country").eq("id", ctx.projectId).maybeSingle();
+  if (projectId) {
+    const { data: report } = await supabase.from("reports").select("title, description, cost, sdg_goal, project_status, country").eq("id", projectId).maybeSingle();
     if (report) contextStr += `Project: ${JSON.stringify(report)}\n`;
   }
 

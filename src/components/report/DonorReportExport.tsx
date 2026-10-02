@@ -44,13 +44,14 @@ export default function DonorReportExport({ report, milestones = [], budgets = [
             body: { countryCode: report.country_code },
           });
           if (!error && data?.indicators) {
-            const rows = data.indicators
-              .filter((i: any) => i.value != null)
-              .map((i: any) => {
+            const indicators: { code: string; label: string; value: number | null; year?: string }[] = data.indicators; // worldbank-proxy response
+            const rows = indicators
+              .filter((i): i is typeof i & { value: number } => i.value != null)
+              .map((i) => {
                 const formatted = i.code === 'SI.POV.DDAY' || i.code === 'EN.ATM.CO2E.PC'
                   ? i.value.toFixed(1)
                   : Math.round(i.value).toLocaleString();
-                return `<tr><td>${escapeHtml(i.label)}</td><td>${formatted}</td><td>${escapeHtml(i.year) || '-'}</td></tr>`;
+                return `<tr><td>${escapeHtml(i.label)}</td><td>${formatted}</td><td>${escapeHtml(i.year || '') || '-'}</td></tr>`;
               })
               .join('');
             if (rows) {

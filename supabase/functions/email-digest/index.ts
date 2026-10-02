@@ -59,7 +59,11 @@ serve(async (req) => {
       });
     }
 
-    const digests: { user_id: string; email: string; digest: any }[] = [];
+    const digests: {
+      user_id: string;
+      email: string;
+      digest: { greeting: string; broadcasts: unknown[]; unread_messages: number; verification_updates: unknown[]; generated_at: string };
+    }[] = [];
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     for (const profile of profiles as DigestUser[]) {

@@ -239,7 +239,7 @@ const CorporateTargets = () => {
                   <div key={target.id} className="border rounded-lg p-4">
                     <h3 className="font-semibold mb-4">{target.title}</h3>
                     <div className="space-y-3">
-                      {target.progressHistory?.map((entry: any, index: number) => (
+                      {target.progressHistory?.map((entry, index: number) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                           <div>
                             <span className="font-medium">{entry.value.toLocaleString()} {target.targetUnit}</span>

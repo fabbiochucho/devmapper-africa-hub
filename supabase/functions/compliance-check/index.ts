@@ -37,7 +37,7 @@ serve(async (req) => {
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    const results: any[] = [];
+    const results: { org_id: string; alerts_count: number }[] = [];
 
     // 1. Get all organizations with ESG enabled
     const { data: orgs } = await supabase

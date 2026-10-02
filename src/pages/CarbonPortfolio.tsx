@@ -72,7 +72,7 @@ const CarbonPortfolio = () => {
   const retiredTonnes = holdings?.filter(h => h.status === "retired").reduce((sum, h) => sum + (Number(h.quantity) || 0), 0) || 0;
 
   // Pie chart data by project type
-  const typeBreakdown = holdings?.reduce((acc: any[], h) => {
+  const typeBreakdown = holdings?.reduce((acc: { name: string; value: number }[], h) => {
     const type = h.marketplace_listings?.project_type || "other";
     const existing = acc.find(a => a.name === type);
     if (existing) existing.value += Number(h.quantity) || 0;

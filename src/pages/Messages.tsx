@@ -310,7 +310,7 @@ function NewConversationDialog({
   onClose: () => void;
   onStart: (userId: string) => void;
   searchUsers: (q: string) => void;
-  searchResults: any[];
+  searchResults: ReturnType<typeof useMessages>['searchResults'];
 }) {
   const [query, setQuery] = useState('');
 
