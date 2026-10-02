@@ -7,25 +7,70 @@ ALTER TABLE public.regulatory_frameworks ADD CONSTRAINT regulatory_frameworks_ca
   CHECK (category = ANY (ARRAY['esg', 'climate', 'carbon', 'financial', 'governance', 'labor', 'health', 'ngo',
                                'procurement', 'tax', 'foreign_funding', 'development_plan']));
 
--- Adopted plans only (as of 2026-10). Drafts (Nigeria MTNDP 2026-2030, Ghana MTNDPF 2026-2029) are left
--- out until adopted.
+-- The current plan for each of the 54 AU member states, as of 2026-10. Plans that have
+-- lapsed with a successor still being drafted are 'superseded' (BEN, MDG, TGO); 'archived' where
+-- nothing newer has been published (ERI, GNB). Drafts not yet adopted (Nigeria MTNDP 2026-2030)
+-- are left out. Bodies, dates and URLs only where confirmed; NULL otherwise.
 INSERT INTO public.regulatory_frameworks
   (country_code, name, category, regulator_name, mandatory, applicable_entity_types, reporting_frequency, effective_date, enforcement_risk, status, source_url)
 SELECT v.country_code, v.name, 'development_plan', v.regulator_name, false, '["government", "ngo", "legal_entity"]'::jsonb,
-       NULL, v.effective_date::date, NULL, 'active', v.source_url
+       NULL, v.effective_date::date, NULL, v.status, v.source_url
 FROM (VALUES
-  ('KEN', 'Kenya Vision 2030 (Fourth Medium Term Plan 2023-2027)', 'State Department for Economic Planning', '2008-06-10', 'https://vision2030.go.ke/'),
-  ('NGA', 'Nigeria Agenda 2050', 'Federal Ministry of Budget and Economic Planning', NULL, 'https://nationalplanning.gov.ng/'),
-  ('ZAF', 'National Development Plan 2030', 'National Planning Commission', NULL, 'https://www.nationalplanningcommission.org.za/'),
-  ('EGY', 'Egypt Vision 2030 (Sustainable Development Strategy)', 'Ministry of Planning, Economic Development and International Cooperation', '2016-02-24', 'https://mped.gov.eg/'),
-  ('ETH', 'Ten Years Development Plan 2021-2030', 'Ministry of Planning and Development', NULL, NULL),
-  ('RWA', 'National Strategy for Transformation (NST2) 2024-2029', 'Ministry of Finance and Economic Planning', NULL, 'https://www.minecofin.gov.rw/'),
-  ('SEN', 'Vision Sénégal 2050 - Agenda national de transformation', 'Ministère de l''Économie, du Plan et de la Coopération', NULL, NULL),
-  ('CIV', 'Plan National de Développement (PND) 2026-2030', 'Ministère du Plan et du Développement', '2026-05-07', 'https://www.gouv.ci/'),
-  ('MAR', 'New Development Model (Nouveau Modèle de Développement)', 'Special Commission on the Development Model', '2021-05-25', 'https://www.csmd.ma/'),
-  ('TZA', 'Tanzania Development Vision 2050', 'National Planning Commission', '2025-07-17', NULL),
-  ('UGA', 'Fourth National Development Plan (NDP IV) 2025/26-2029/30', 'National Planning Authority', '2025-07-01', 'https://www.npa.go.ug/')
-) AS v(country_code, name, regulator_name, effective_date, source_url)
+  ('DZA', 'Plan d''action du Gouvernement (Government Action Plan)', NULL, NULL, NULL, 'active'),
+  ('AGO', 'Plano de Desenvolvimento Nacional (PDN) 2023-2027', 'Ministério da Economia e Planeamento', NULL, NULL, 'active'),
+  ('BEN', 'Programme d''Actions du Gouvernement (PAG) 2021-2026', 'Présidence de la République', NULL, 'https://www.gouv.bj/', 'superseded'),
+  ('BWA', 'National Development Plan 12 (NDP 12) 2025-2030', 'Ministry of Finance', NULL, NULL, 'active'),
+  ('BFA', 'Plan de relance 2026-2030', NULL, NULL, NULL, 'active'),
+  ('BDI', 'Vision Burundi pays émergent en 2040, pays développé en 2060', NULL, NULL, NULL, 'active'),
+  ('CPV', 'Plano Estratégico de Desenvolvimento Sustentável (PEDS II) 2022-2026 - Ambição 2030', NULL, NULL, NULL, 'active'),
+  ('CMR', 'Stratégie Nationale de Développement 2020-2030 (SND30)', 'Ministère de l''Économie, de la Planification et de l''Aménagement du Territoire', NULL, NULL, 'active'),
+  ('CAF', 'Plan National de Développement (PND-RCA) 2024-2028', NULL, NULL, NULL, 'active'),
+  ('TCD', 'Plan National de Développement « Tchad Connexion 2030 » 2025-2030', NULL, '2025-05-29', NULL, 'active'),
+  ('COM', 'Plan Comores Émergent 2030 (PCE)', NULL, NULL, NULL, 'active'),
+  ('COD', 'Plan National Stratégique de Développement (PNSD) 2024-2028', 'Ministère du Plan', NULL, NULL, 'active'),
+  ('COG', 'Plan National de Développement (PND) 2022-2026', NULL, NULL, NULL, 'active'),
+  ('CIV', 'Plan National de Développement (PND) 2026-2030', 'Ministère du Plan et du Développement', '2026-05-07', 'https://www.gouv.ci/', 'active'),
+  ('DJI', 'Vision Djibouti 2035', NULL, NULL, NULL, 'active'),
+  ('EGY', 'Egypt Vision 2030 (Sustainable Development Strategy)', 'Ministry of Planning, Economic Development and International Cooperation', '2016-02-24', 'https://mped.gov.eg/', 'active'),
+  ('GNQ', 'Agenda Guinea Ecuatorial 2035', NULL, NULL, NULL, 'active'),
+  ('ERI', 'National Indicative Development Plan (NIDP) 2014-2018', NULL, NULL, NULL, 'archived'),
+  ('SWZ', 'National Development Plan 2023/24-2027/28', 'Ministry of Economic Planning and Development', NULL, NULL, 'active'),
+  ('ETH', 'Ten Years Development Plan 2021-2030', 'Ministry of Planning and Development', NULL, NULL, 'active'),
+  ('GAB', 'Plan National de Croissance et de Développement (PNCD) 2026-2030', NULL, NULL, NULL, 'active'),
+  ('GMB', 'Recovery-Focused National Development Plan (RF-NDP) 2023-2027', 'Ministry of Finance and Economic Affairs', NULL, NULL, 'active'),
+  ('GHA', 'Medium-Term National Development Policy Framework 2026-2029', 'National Development Planning Commission', NULL, 'https://ndpc.gov.gh/', 'active'),
+  ('GIN', 'Simandou 2040', NULL, NULL, NULL, 'active'),
+  ('GNB', 'Plano Nacional de Desenvolvimento 2020-2023', NULL, NULL, NULL, 'archived'),
+  ('KEN', 'Kenya Vision 2030 (Fourth Medium Term Plan 2023-2027)', 'State Department for Economic Planning', '2008-06-10', 'https://vision2030.go.ke/', 'active'),
+  ('LSO', 'National Strategic Development Plan II (extended to 2027/28)', 'Ministry of Development Planning', NULL, NULL, 'active'),
+  ('LBR', 'ARREST Agenda for Inclusive Development (AAID) 2025-2029', 'Ministry of Finance and Development Planning', NULL, NULL, 'active'),
+  ('LBY', 'Development Plan 2025-2027 (Law No. 3 of 2025)', 'House of Representatives', NULL, NULL, 'active'),
+  ('MDG', 'Plan Émergence Madagascar (PEM)', NULL, NULL, NULL, 'superseded'),
+  ('MWI', 'Malawi 2063 (MW2063)', 'National Planning Commission', NULL, NULL, 'active'),
+  ('MLI', 'Stratégie nationale pour l''émergence et le développement durable (SNEDD) 2024-2033', NULL, NULL, NULL, 'active'),
+  ('MRT', 'Stratégie de Croissance Accélérée et de Prospérité Partagée (SCAPP) 2016-2030', NULL, NULL, NULL, 'active'),
+  ('MUS', 'Vision 2030', NULL, NULL, NULL, 'active'),
+  ('MAR', 'New Development Model (Nouveau Modèle de Développement)', 'Special Commission on the Development Model', '2021-05-25', 'https://www.csmd.ma/', 'active'),
+  ('MOZ', 'Estratégia Nacional de Desenvolvimento (ENDE) 2025-2044', NULL, NULL, NULL, 'active'),
+  ('NAM', 'Sixth National Development Plan (NDP6) 2025/26-2029/30', 'National Planning Commission', NULL, NULL, 'active'),
+  ('NER', 'Programme de Résilience pour la Sauvegarde de la Patrie (PRSP) 2024-2026', NULL, NULL, NULL, 'active'),
+  ('NGA', 'Nigeria Agenda 2050', 'Federal Ministry of Budget and Economic Planning', NULL, 'https://nationalplanning.gov.ng/', 'active'),
+  ('RWA', 'National Strategy for Transformation (NST2) 2024-2029', 'Ministry of Finance and Economic Planning', NULL, 'https://www.minecofin.gov.rw/', 'active'),
+  ('STP', 'Estratégia Nacional de Desenvolvimento Sustentável 2026-2040', NULL, NULL, NULL, 'active'),
+  ('SEN', 'Vision Sénégal 2050 - Agenda national de transformation', 'Ministère de l''Économie, du Plan et de la Coopération', NULL, NULL, 'active'),
+  ('SYC', 'National Development Strategy 2024-2028', 'Ministry of Finance, National Planning and Trade', NULL, 'https://www.finance.gov.sc/', 'active'),
+  ('SLE', 'Medium-Term National Development Plan 2024-2030', 'Ministry of Planning and Economic Development', NULL, NULL, 'active'),
+  ('SOM', 'National Transformation Plan (NTP) 2025-2029', 'Ministry of Planning, Investment and Economic Development', '2025-03-17', 'https://mop.gov.so/', 'active'),
+  ('ZAF', 'National Development Plan 2030', 'National Planning Commission', NULL, 'https://www.nationalplanningcommission.org.za/', 'active'),
+  ('SSD', 'South Sudan Development Plan (SSDP) 2026-2036', 'Ministry of Finance and Planning', NULL, NULL, 'active'),
+  ('SDN', 'National Strategic Plan 2007-2031 (Quarter-Century Strategy)', NULL, NULL, NULL, 'active'),
+  ('TZA', 'Tanzania Development Vision 2050', 'National Planning Commission', '2025-07-17', NULL, 'active'),
+  ('TGO', 'Feuille de route gouvernementale Togo 2020-2025', NULL, NULL, NULL, 'superseded'),
+  ('TUN', 'Plan de développement 2026-2030', NULL, '2026-07-17', NULL, 'active'),
+  ('UGA', 'Fourth National Development Plan (NDP IV) 2025/26-2029/30', 'National Planning Authority', '2025-07-01', 'https://www.npa.go.ug/', 'active'),
+  ('ZMB', 'Eighth National Development Plan (8NDP) 2022-2026', 'Ministry of Finance and National Planning', NULL, NULL, 'active'),
+  ('ZWE', 'National Development Strategy 2 (NDS2) 2026-2030', 'Ministry of Finance, Economic Development and Investment Promotion', NULL, NULL, 'active')
+) AS v(country_code, name, regulator_name, effective_date, source_url, status)
 WHERE NOT EXISTS (SELECT 1 FROM public.regulatory_frameworks rf WHERE rf.country_code = v.country_code AND rf.name = v.name);
 
 -- Types indexEntity() can read source text for (see _shared/intel.ts entitySourceText).
