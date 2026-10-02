@@ -4,6 +4,7 @@ import { constantTimeEqual } from "../_shared/webhookSignature.ts";
 import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
 import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
 import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
+import { activateIndividualPlan } from "../_shared/individualPlan.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -169,6 +170,21 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ message: donationError ? "Donation processing failed" : "Donation processed" }),
           { status: donationError ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (paymentType === 'individual_subscription' && metadata.user_id) {
+        const failure = await activateIndividualPlan(supabase, {
+          userId: metadata.user_id, interval: metadata.interval, provider: 'flutterwave',
+          amount: Number(data.amount) || 0, currency: data.currency || 'USD', reference: externalId ?? '',
+        });
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
+          p_payload: payload, p_status: failure ? 'failed' : 'success', p_error_message: failure,
+        });
+        return new Response(
+          JSON.stringify(failure ? { error: failure } : { message: "Individual plan activated" }),
+          { status: failure ? 500 : 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 

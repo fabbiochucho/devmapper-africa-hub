@@ -20,7 +20,7 @@ const MAX_POLLS = 15; // ~30s total
  */
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
-  const type = searchParams.get("type"); // 'marketplace_purchase' | 'subscription'
+  const type = searchParams.get("type"); // 'marketplace_purchase' | 'subscription' | 'individual_subscription'
   const orderId = searchParams.get("order_id");
   const organizationId = searchParams.get("organization_id");
   const expectedPlan = searchParams.get("plan_type");
@@ -38,7 +38,7 @@ export default function PaymentCallback() {
     }
     if (type === "marketplace_purchase" && !orderId) { setState("failed"); return; }
     if (type === "subscription" && !organizationId) { setState("failed"); return; }
-    if (type !== "marketplace_purchase" && type !== "subscription") { setState("failed"); return; }
+    if (type !== "marketplace_purchase" && type !== "subscription" && type !== "individual_subscription") { setState("failed"); return; }
 
     let cancelled = false;
 
@@ -46,6 +46,10 @@ export default function PaymentCallback() {
       if (type === "marketplace_purchase") {
         const { data } = await supabase.from("carbon_credit_orders").select("status").eq("id", orderId!).maybeSingle();
         return data?.status === "paid";
+      }
+      if (type === "individual_subscription") {
+        const { data } = await supabase.from("user_plans").select("expires_at").maybeSingle();
+        return !!data && new Date(data.expires_at).getTime() > Date.now();
       }
       const { data } = await supabase.from("organizations").select("plan_type").eq("id", organizationId!).maybeSingle();
       return !!data?.plan_type && (!expectedPlan || data.plan_type === expectedPlan);
@@ -91,7 +95,7 @@ export default function PaymentCallback() {
             {state === "polling" && "This usually takes a few seconds."}
             {state === "success" && (type === "marketplace_purchase"
               ? "Your carbon credit purchase has been recorded."
-              : "Your organization's plan has been upgraded.")}
+              : type === "individual_subscription" ? "Your Individual plan is active." : "Your organization's plan has been upgraded.")}
             {state === "failed" && "No charge was completed. You can try again from where you started."}
             {state === "timeout" && "Your payment may still be processing on the provider's side. Check back in a minute — no need to retry."}
           </CardDescription>

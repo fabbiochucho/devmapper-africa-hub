@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Check, Crown, Shield, Zap, Building2 } from 'lucide-react';
+import { Check, Crown, Shield, Zap, Building2, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { errorMessageOf } from '@/lib/error-handler';
 import type { LucideIcon } from "lucide-react";
 
-type PlanId = 'lite' | 'pro' | 'advanced' | 'enterprise';
+type PlanId = 'lite' | 'individual' | 'pro' | 'advanced' | 'enterprise';
+const PLAN_ORDER = ['free', 'lite', 'individual', 'pro', 'advanced', 'enterprise'];
 
 interface Organization {
   id: string;
@@ -30,6 +31,14 @@ const planDetails: Record<string, { name: string; icon: LucideIcon; color: strin
     color: 'text-blue-500',
     price: { monthly: 0, yearly: 0 },
     features: ['Up to 10 projects', 'Basic SDG tracking', 'PDF export', 'Community support'],
+  },
+  individual: {
+    name: 'Individual',
+    icon: User,
+    color: 'text-sky-500',
+    // Provisional price; must match getPlanPrice() in supabase/functions/_shared/planQuotas.ts.
+    price: { monthly: 15, yearly: 150 },
+    features: ['For researchers, journalists, consultants and analysts', '20 Ndovu Akili analyses a day', 'Live-source search and investigations', 'Report and investigation exports', 'Full earth intelligence'],
   },
   pro: {
     name: 'Pro',
@@ -63,6 +72,7 @@ const BillingUpgrade = () => {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const selectedPlan = searchParams.get('plan') as PlanId | null;
+  const [currentPlan, setCurrentPlan] = useState<string>('free');
 
   const fetchOrganization = useCallback(async () => {
     try {
@@ -95,17 +105,21 @@ const BillingUpgrade = () => {
   }, [user]);
 
   useEffect(() => {
-    if (user) fetchOrganization();
-  }, [fetchOrganization, user]);
+    if (!user) return;
+    supabase.rpc('effective_plan').then(({ data }) => { if (typeof data === 'string') setCurrentPlan(data); });
+    // An individual plan needs no organisation, so don't create one just for visiting.
+    if (selectedPlan === 'individual') setLoading(false);
+    else fetchOrganization();
+  }, [fetchOrganization, user, selectedPlan]);
 
   const handleUpgrade = async (provider: 'flutterwave' | 'paystack', planType: PlanId) => {
-    if (!organization) return;
+    const isIndividual = planType === 'individual';
+    if (!isIndividual && !organization) return;
     const details = planDetails[planType];
     if (!details || details.price.monthly <= 0) return;
 
-    const currentPlanOrder = ['lite', 'pro', 'advanced', 'enterprise'];
-    const currentIdx = currentPlanOrder.indexOf(organization.plan_type);
-    const targetIdx = currentPlanOrder.indexOf(planType);
+    const currentIdx = PLAN_ORDER.indexOf(isIndividual ? currentPlan : organization!.plan_type);
+    const targetIdx = PLAN_ORDER.indexOf(planType);
     if (targetIdx <= currentIdx) {
       toast.error('Cannot downgrade from this page');
       return;
@@ -117,14 +131,16 @@ const BillingUpgrade = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          organizationId: organization.id,
-          provider,
-          planType,
-          interval,
-          amount,
-          redirect_url: `${window.location.origin}/payment-callback?type=subscription&organization_id=${organization.id}&plan_type=${planType}`,
-        },
+        body: isIndividual
+          ? { provider, planType, interval, redirect_url: `${window.location.origin}/payment-callback?type=individual_subscription` }
+          : {
+              organizationId: organization!.id,
+              provider,
+              planType,
+              interval,
+              amount,
+              redirect_url: `${window.location.origin}/payment-callback?type=subscription&organization_id=${organization!.id}&plan_type=${planType}`,
+            },
       });
 
       if (error) throw error;
@@ -158,8 +174,8 @@ const BillingUpgrade = () => {
     );
   }
 
-  const effectivePlan = organization?.scholarship_override || organization?.plan_type || 'lite';
-  const plansToShow = selectedPlan ? [selectedPlan] : (['pro', 'advanced'] as PlanId[]);
+  const effectivePlan = currentPlan;
+  const plansToShow = selectedPlan ? [selectedPlan] : (['individual', 'pro', 'advanced'] as PlanId[]);
 
   return (
     <div className="min-h-screen bg-background">

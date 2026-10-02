@@ -12,21 +12,13 @@ For every analysis:
 5. Suggest optimal timing for listing vs retirement based on compliance calendar
 
 IMPORTANT: This agent advises on tracking and strategy only. It does NOT execute trades.
-Always include this disclaimer: "This is strategic guidance, not financial advice."
-Output format: Summary → Key Insights → Risks → Recommended Actions`;
+Always include this disclaimer: "This is strategic guidance, not financial advice."`;
 
-Deno.serve((req) => handleAgent(req, "carbon_trader_ai", SYSTEM_PROMPT, async (supabase) => {
-  const dataSources = ["carbon_assets", "carbon_compliance", "carbon_transfer_logs"];
-  let contextStr = "";
-
-  const { data: assets } = await supabase.from("carbon_assets").select("*").limit(20);
-  contextStr += `Carbon assets: ${JSON.stringify(assets)}\n`;
-
-  const { data: compliance } = await supabase.from("carbon_compliance").select("*").limit(10);
-  contextStr += `Compliance: ${JSON.stringify(compliance)}\n`;
-
-  const { data: transfers } = await supabase.from("carbon_transfer_logs").select("*").limit(10);
-  contextStr += `Transfers: ${JSON.stringify(transfers)}\n`;
-
-  return { contextStr: contextStr || "No carbon portfolio data.", dataSources };
+Deno.serve((req) => handleAgent(req, "carbon_trader_ai", SYSTEM_PROMPT, async (db, _ctx, ev) => {
+  const { data: assets } = await db.from("carbon_assets").select("id, methodology, credits_generated, credits_owned, credits_retired, reference_price_usd, estimated_value_usd, verification_status, issuance_date").limit(20);
+  ev.rows(assets, { label: (a) => `Carbon asset: ${a.methodology ?? "unspecified methodology"} (${a.verification_status ?? "unverified"})`, path: () => "/carbon-portfolio" });
+  const { data: compliance } = await db.from("carbon_compliance").select("compliance_type, jurisdiction, article6_status, itmo_eligible, er_credits_issued, country_of_origin").limit(10);
+  ev.rows(compliance, { label: (c) => `Carbon compliance: ${c.compliance_type} in ${c.jurisdiction ?? "unspecified jurisdiction"}` });
+  const { data: transfers } = await db.from("carbon_transfer_logs").select("transfer_date, credits_transferred, from_entity, to_entity").order("transfer_date", { ascending: false }).limit(10);
+  ev.rows(transfers, { label: (t) => `Credit transfer on ${t.transfer_date}` });
 }));

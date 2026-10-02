@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { 
-  Home, Search, Users, Heart, Inbox, MessageSquare, 
+  Home, Search, Users, Heart, Inbox, MessageSquare, Sparkles, FolderOpen, 
   BarChart3, TrendingUp, FileText, Target, 
   Building2, Shield, BookOpen, Calendar, MapPin, Globe,
   HelpCircle, Info, Phone, Settings, Leaf, CreditCard,
@@ -43,6 +43,8 @@ const roleConfig: Record<UserRole, { label: string; color: string; icon: LucideI
 const coreItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Search", url: "/search", icon: Search },
+  { title: "Ask Ndovu Akili", url: "/ndovu", icon: Sparkles },
+  { title: "Workspace", url: "/workspace", icon: FolderOpen },
 ];
 
 // Role-specific quick links with no other nav path anywhere in the sidebar.

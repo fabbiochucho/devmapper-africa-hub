@@ -7,15 +7,16 @@
     "africaSdgTracker": "Mfuatiliaji wa SDG Afrika"
   },
   "hero": {
-    "liveTracking": "Taarifa za athari zilizothibitishwa katika mataifa 54 ya Afrika",
-    "title": "Fuatilia Malengo. Thibitisha Athari. Fungua Ufadhili. Jenga Imani.",
-    "subtitle": "DevMapper ni miundombinu ya Afrika kwa athari zilizothibitishwa na uwajibikaji wa ESG. Inawezesha serikali, makampuni na washirika wa maendeleo kutoka kwenye athari zilizoripotiwa hadi athari zilizothibitishwa.",
+    "liveTracking": "Taarifa za maendeleo katika mataifa 54 ya Afrika",
+    "title": "Taarifa za Maendeleo. Zimeunganishwa.",
+    "subtitle": "Pata mashirika, miradi, programu, sera, ufadhili na tafiti zinazohusu swali lolote la maendeleo barani Afrika. Ona chanzo cha kila taarifa, na uigeuze kuwa ushahidi unaoweza kuutumia.",
     "getStarted": "Anza bure",
     "watchDemo": "Shirikiana Nasi",
     "projectsMapped": "Miradi iliyochorwa",
     "activeUsers": "Watumiaji hai",
     "sdgGoalsTracked": "Malengo ya SDG yanayofuatiliwa",
-    "verifiedReports": "Ripoti zilizothibitishwa"
+    "verifiedReports": "Ripoti zilizothibitishwa",
+    "exploreCta": "Chunguza data"
   },
   "features": {
     "badge": "Uwezo wa Jukwaa",
@@ -573,7 +574,21 @@
     "categoryDownstreamTransport": "Usafirishaji wa chini wa mnyororo",
     "categoryCapitalGoods": "Bidhaa za mtaji",
     "categoryEndOfLife": "Utupaji wa bidhaa zilizouzwa mwisho wa matumizi",
-    "categoryElectricityLifecycle": "Umeme (makadirio ya mzunguko wa maisha)"
+    "categoryElectricityLifecycle": "Umeme (makadirio ya mzunguko wa maisha)",
+    "categoryUpstreamLeasedAssets": "Mali zilizokodishwa za juu ya mnyororo (Kundi 8)",
+    "categoryProcessingSoldProducts": "Usindikaji wa bidhaa zilizouzwa (Kundi 10)",
+    "categoryUseOfSoldProducts": "Matumizi ya bidhaa zilizouzwa (Kundi 11)",
+    "categoryDownstreamLeasedAssets": "Mali zilizokodishwa za chini ya mnyororo (Kundi 13)",
+    "categoryFranchises": "Franchise (Kundi 14)",
+    "external": {
+      "hint": "Hakuna kipengele kinacholingana hapo juu? Tafuta zaidi ya vipengele 16,000 vyenye vyanzo kutoka GreenCalculus. Unachochagua kinaongezwa kwenye maktaba pamoja na chanzo chake.",
+      "placeholder": "mf. dizeli, umeme wa gridi Kenya, usafirishaji wa anga",
+      "noResults": "Hakuna vipengele vinavyofaa vilivyopatikana. Jaribu neno pana zaidi.",
+      "source": "chanzo",
+      "use": "Tumia",
+      "searchFailed": "Utafutaji wa vipengele umeshindwa",
+      "importFailed": "Imeshindwa kuongeza kipengele hicho"
+    }
   },
   "forum": {
     "anonymous": "Asiyejulikana",

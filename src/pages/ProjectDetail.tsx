@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { LocalConditionsCard } from "@/components/project/LocalConditionsCard";
+import { RelatedEntities } from "@/components/entities/RelatedEntities";
+import { SaveButton } from "@/components/workspace/SaveButton";
 import CitizenFeedbackPanel from "@/components/pm/CitizenFeedbackPanel";
 import ImpactCredibilityBadge from "@/components/scoring/ImpactCredibilityBadge";
 import { calculateCredibilityScore } from "@/lib/impact-credibility";
@@ -190,6 +192,7 @@ export default function ProjectDetail() {
           </div>
           <p className="text-muted-foreground">{report.description}</p>
         </div>
+        <SaveButton type="project" id={report.id} title={report.title} />
       </div>
 
       {riskFlags.length > 0 && (
@@ -308,6 +311,8 @@ export default function ProjectDetail() {
           </div>
         </CardContent>
       </Card>
+
+      <RelatedEntities type="project" id={report.id} />
 
       {user && report.lat != null && report.lng != null && <LocalConditionsCard lat={report.lat} lng={report.lng} />}
 

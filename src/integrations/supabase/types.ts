@@ -173,6 +173,8 @@ export type Database = {
           created_at: string | null
           id: string
           intent: string | null
+          query_plan: Json | null
+          question: string | null
           session_type: string
           synthesis_output: Json | null
           updated_at: string | null
@@ -185,6 +187,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           intent?: string | null
+          query_plan?: Json | null
+          question?: string | null
           session_type: string
           synthesis_output?: Json | null
           updated_at?: string | null
@@ -197,6 +201,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           intent?: string | null
+          query_plan?: Json | null
+          question?: string | null
           session_type?: string
           synthesis_output?: Json | null
           updated_at?: string | null
@@ -426,8 +432,9 @@ export type Database = {
           id: string
           new_plan: string | null
           old_plan: string | null
-          organization_id: string
+          organization_id: string | null
           provider: string | null
+          user_id: string | null
         }
         Insert: {
           amount?: number | null
@@ -438,8 +445,9 @@ export type Database = {
           id?: string
           new_plan?: string | null
           old_plan?: string | null
-          organization_id: string
+          organization_id?: string | null
           provider?: string | null
+          user_id?: string | null
         }
         Update: {
           amount?: number | null
@@ -450,8 +458,9 @@ export type Database = {
           id?: string
           new_plan?: string | null
           old_plan?: string | null
-          organization_id?: string
+          organization_id?: string | null
           provider?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1061,6 +1070,45 @@ export type Database = {
         }
         Relationships: []
       }
+      collections: {
+        Row: {
+          conclusion: string | null
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          question: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conclusion?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          name: string
+          question?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          conclusion?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          question?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       compliance_scores: {
         Row: {
           assessed_at: string
@@ -1558,6 +1606,120 @@ export type Database = {
           source?: string
           source_year?: number | null
           unit?: string
+        }
+        Relationships: []
+      }
+      entities: {
+        Row: {
+          attributes: Json
+          country_code: string | null
+          created_by: string | null
+          entity_type: string
+          external_id: string
+          fetched_at: string
+          id: string
+          published_at: string | null
+          search: unknown
+          source: string
+          source_url: string | null
+          summary: string | null
+          title: string
+        }
+        Insert: {
+          attributes?: Json
+          country_code?: string | null
+          created_by?: string | null
+          entity_type: string
+          external_id: string
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          search?: unknown
+          source: string
+          source_url?: string | null
+          summary?: string | null
+          title: string
+        }
+        Update: {
+          attributes?: Json
+          country_code?: string | null
+          created_by?: string | null
+          entity_type?: string
+          external_id?: string
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          search?: unknown
+          source?: string
+          source_url?: string | null
+          summary?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      entity_embeddings: {
+        Row: {
+          embedding: string
+          entity_id: string
+          entity_type: string
+          source_text: string
+          updated_at: string
+        }
+        Insert: {
+          embedding: string
+          entity_id: string
+          entity_type: string
+          source_text: string
+          updated_at?: string
+        }
+        Update: {
+          embedding?: string
+          entity_id?: string
+          entity_type?: string
+          source_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      entity_links: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string | null
+          from_id: string
+          from_type: string
+          id: string
+          relation: string
+          source: string
+          source_ref: string | null
+          to_id: string
+          to_type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          from_id: string
+          from_type: string
+          id?: string
+          relation: string
+          source: string
+          source_ref?: string | null
+          to_id: string
+          to_type: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string | null
+          from_id?: string
+          from_type?: string
+          id?: string
+          relation?: string
+          source?: string
+          source_ref?: string | null
+          to_id?: string
+          to_type?: string
         }
         Relationships: []
       }
@@ -2444,6 +2606,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investigation_steps: {
+        Row: {
+          ai_session_id: string | null
+          citations: Json
+          collection_id: string
+          content: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          step_type: string
+          user_id: string
+        }
+        Insert: {
+          ai_session_id?: string | null
+          citations?: Json
+          collection_id: string
+          content: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          step_type: string
+          user_id?: string
+        }
+        Update: {
+          ai_session_id?: string | null
+          citations?: Json
+          collection_id?: string
+          content?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          step_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       lca_assessments: {
         Row: {
@@ -4194,6 +4395,39 @@ export type Database = {
           },
         ]
       }
+      saved_items: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          note: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          note?: string | null
+          title: string
+          user_id?: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          note?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sbti_pathways: {
         Row: {
           baseline_year: number | null
@@ -4576,6 +4810,33 @@ export type Database = {
           awarded_at?: string
           badge_tier?: string
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_plans: {
+        Row: {
+          expires_at: string
+          plan: Database["public"]["Enums"]["plan_type"]
+          source: string
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          plan?: Database["public"]["Enums"]["plan_type"]
+          source: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          plan?: Database["public"]["Enums"]["plan_type"]
+          source?: string
+          started_at?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -4993,6 +5254,36 @@ export type Database = {
         }
         Relationships: []
       }
+      watches: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          last_checked_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          last_checked_at?: string
+          title: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          last_checked_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -5132,6 +5423,42 @@ export type Database = {
         Args: { p_event_id: string; p_provider: string }
         Returns: boolean
       }
+      create_user_entity: {
+        Args: {
+          p_country?: string
+          p_summary?: string
+          p_title: string
+          p_type: string
+        }
+        Returns: string
+      }
+      effective_plan: {
+        Args: {
+          p_user_id?: string
+        }
+        Returns: string
+      }
+      entity_label: {
+        Args: {
+          p_id: string
+          p_type: string
+        }
+        Returns: {
+          path: string
+          title: string
+        }[]
+      }
+      entity_types: {
+        Args: never
+        Returns: string[]
+      }
+      entity_visible: {
+        Args: {
+          p_id: string
+          p_type: string
+        }
+        Returns: boolean
+      }
       evaluate_user_badges: { Args: { p_user_id: string }; Returns: undefined }
       get_agenda2063_for_sdg: {
         Args: { p_sdg_goal: number }
@@ -5188,6 +5515,25 @@ export type Database = {
           sdg_label: string
           total_budget: number
           total_spent: number
+        }[]
+      }
+      get_entity_links: {
+        Args: {
+          p_id: string
+          p_limit?: number
+          p_type: string
+        }
+        Returns: {
+          confidence: number
+          direction: string
+          link_id: string
+          other_id: string
+          other_path: string
+          other_title: string
+          other_type: string
+          relation: string
+          source: string
+          source_ref: string
         }[]
       }
       get_most_improved_countries: {
@@ -5255,6 +5601,12 @@ export type Database = {
           user_id: string
         }[]
       }
+      iso3: {
+        Args: {
+          code: string
+        }
+        Returns: string
+      }
       log_audit_event: {
         Args: {
           p_action: string
@@ -5271,6 +5623,21 @@ export type Database = {
         Args: { p_broadcast_id: string }
         Returns: undefined
       }
+      match_entity_embeddings: {
+        Args: {
+          match_count?: number
+          p_types?: string[]
+          query_embedding: string
+        }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          path: string
+          similarity: number
+          source_text: string
+          title: string
+        }[]
+      }
       match_report_embeddings: {
         Args: {
           match_count: number
@@ -5283,6 +5650,16 @@ export type Database = {
           similarity: number
           title: string
         }[]
+      }
+      notify_watch_updates: {
+        Args: never
+        Returns: number
+      }
+      plan_rank: {
+        Args: {
+          p: string
+        }
+        Returns: number
       }
       record_provider_health: {
         Args: {
@@ -5309,6 +5686,29 @@ export type Database = {
         Args: { p_order_id: string }
         Returns: undefined
       }
+      refresh_derived_links: {
+        Args: never
+        Returns: number
+      }
+      search_entities: {
+        Args: {
+          p_country?: string
+          p_limit?: number
+          p_types?: string[]
+          q: string
+        }
+        Returns: {
+          country_code: string
+          entity_id: string
+          entity_type: string
+          path: string
+          rank: number
+          snippet: string
+          source: string
+          source_url: string
+          title: string
+        }[]
+      }
       sync_esg_to_targets: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
@@ -5322,7 +5722,7 @@ export type Database = {
         | "change_maker"
         | "citizen_reporter"
         | "funder"
-      plan_type: "free" | "lite" | "pro" | "advanced" | "enterprise"
+      plan_type: "free" | "lite" | "individual" | "pro" | "advanced" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5461,7 +5861,7 @@ export const Constants = {
         "citizen_reporter",
         "funder",
       ],
-      plan_type: ["free", "lite", "pro", "advanced", "enterprise"],
+      plan_type: ["free", "lite", "individual", "pro", "advanced", "enterprise"],
     },
   },
 } as const

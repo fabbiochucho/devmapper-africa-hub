@@ -7,15 +7,16 @@
     "africaSdgTracker": "Rastreador ODS África"
   },
   "hero": {
-    "liveTracking": "Inteligência de impacto verificado em 54 nações africanas",
-    "title": "Acompanhe metas. Verifique o impacto. Desbloqueie financiamento. Construa confiança.",
-    "subtitle": "A DevMapper é a infraestrutura africana para impacto verificado e responsabilidade ESG. Permite que governos, empresas e parceiros de desenvolvimento passem do impacto reportado ao impacto comprovado.",
+    "liveTracking": "Inteligência de desenvolvimento em 54 nações africanas",
+    "title": "Inteligência de Desenvolvimento. Conectada.",
+    "subtitle": "Encontre as organizações, projetos, programas, políticas, financiamentos e pesquisas por trás de qualquer questão de desenvolvimento em África. Veja de onde vem cada informação e transforme-a em evidências para agir.",
     "getStarted": "Começar gratuitamente",
     "watchDemo": "Seja nosso parceiro",
     "projectsMapped": "Projetos mapeados",
     "activeUsers": "Utilizadores ativos",
     "sdgGoalsTracked": "Objetivos ODS rastreados",
-    "verifiedReports": "Relatórios verificados"
+    "verifiedReports": "Relatórios verificados",
+    "exploreCta": "Explorar os dados"
   },
   "features": {
     "badge": "Capacidades da plataforma",
@@ -573,7 +574,21 @@
     "categoryDownstreamTransport": "Transporte a jusante",
     "categoryCapitalGoods": "Bens de capital",
     "categoryEndOfLife": "Tratamento em fim de vida dos produtos vendidos",
-    "categoryElectricityLifecycle": "Eletricidade (estimativa do ciclo de vida)"
+    "categoryElectricityLifecycle": "Eletricidade (estimativa do ciclo de vida)",
+    "categoryUpstreamLeasedAssets": "Ativos arrendados a montante (Cat. 8)",
+    "categoryProcessingSoldProducts": "Processamento de produtos vendidos (Cat. 10)",
+    "categoryUseOfSoldProducts": "Uso de produtos vendidos (Cat. 11)",
+    "categoryDownstreamLeasedAssets": "Ativos arrendados a jusante (Cat. 13)",
+    "categoryFranchises": "Franquias (Cat. 14)",
+    "external": {
+      "hint": "Nenhum fator corresponde? Pesquise mais de 16.000 fatores com fonte do GreenCalculus. O fator escolhido é adicionado à biblioteca com a sua citação.",
+      "placeholder": "ex. diesel, eletricidade da rede Quénia, frete aéreo",
+      "noResults": "Nenhum fator utilizável encontrado. Tente um termo mais amplo.",
+      "source": "fonte",
+      "use": "Usar",
+      "searchFailed": "A pesquisa de fatores falhou",
+      "importFailed": "Não foi possível adicionar esse fator"
+    }
   },
   "forum": {
     "anonymous": "Anónimo",

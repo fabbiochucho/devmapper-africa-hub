@@ -11,7 +11,7 @@ interface PaymentRequest {
   // Organization payment
   organizationId?: string;
   provider?: 'flutterwave' | 'paystack';
-  planType?: 'lite' | 'pro' | 'advanced' | 'enterprise';
+  planType?: 'lite' | 'individual' | 'pro' | 'advanced' | 'enterprise';
   interval?: 'monthly' | 'yearly';
   // Donation payment
   payment_type?: 'subscription' | 'donation' | 'marketplace_purchase';
@@ -304,17 +304,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { organizationId, provider, planType, interval, redirect_url: subscriptionRedirectUrl } = requestData;
 
-    // Verify user has access to the organization
-    const { data: org, error: orgError } = await supabase
-      .from('organizations')
-      .select('*')
-      .eq('id', organizationId)
-      .eq('created_by', user.id)
-      .single();
-
-    if (orgError || !org) {
-      throw new Error('Organization not found or access denied');
+    // Individual plans are bought by the signed-in user for themselves; every other plan
+    // belongs to an organisation the user created.
+    const isIndividual = planType === 'individual';
+    let org: { plan_type: string } | null = null;
+    if (!isIndividual) {
+      const { data: orgRow, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', organizationId)
+        .eq('created_by', user.id)
+        .single();
+      if (orgError || !orgRow) {
+        throw new Error('Organization not found or access denied');
+      }
+      org = orgRow;
     }
+    const payer = isIndividual
+      ? { refPrefix: `ind_${user.id}`, meta: { user_id: user.id, plan_type: planType, interval, payment_type: 'individual_subscription' }, billing: { user_id: user.id, organization_id: null } }
+      : { refPrefix: `sub_${organizationId}`, meta: { organization_id: organizationId, plan_type: planType, interval, payment_type: 'subscription' }, billing: { organization_id: organizationId } };
 
     // The client chooses which plan and interval, never how much that
     // costs - the client-supplied `amount` was previously charged
@@ -343,7 +351,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
       }
       // Create real Flutterwave payment
-      const tx_ref = `sub_${organizationId}_${Date.now()}`;
+      const tx_ref = `${payer.refPrefix}_${Date.now()}`;
       
       const flutterwavePayload = {
         tx_ref,
@@ -361,12 +369,7 @@ const handler = async (req: Request): Promise<Response> => {
           description: `${planType} plan - ${interval}ly`,
           logo: 'https://devmapper.africa/logo.png'
         },
-        meta: {
-          organization_id: organizationId,
-          plan_type: planType,
-          interval,
-          payment_type: 'subscription'
-        }
+        meta: payer.meta
       };
 
       const response = await fetch('https://api.flutterwave.com/v3/payments', {
@@ -385,9 +388,9 @@ const handler = async (req: Request): Promise<Response> => {
         await supabase
           .from('billing_events')
           .insert([{
-            organization_id: organizationId,
+            ...payer.billing,
             event_type: 'payment_initiated',
-            old_plan: org.plan_type,
+            old_plan: org?.plan_type ?? null,
             new_plan: planType,
             provider: 'flutterwave',
             amount: subscriptionAmount,
@@ -421,7 +424,7 @@ const handler = async (req: Request): Promise<Response> => {
           status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
-      const tx_ref = `sub_${organizationId}_${Date.now()}`;
+      const tx_ref = `${payer.refPrefix}_${Date.now()}`;
       const paystackPayload = {
         email: user.email,
         amount: subscriptionAmount * 100, // Paystack uses kobo/cents
@@ -430,12 +433,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Post-checkout browser landing page only - the real webhook is
         // configured separately in the Paystack dashboard.
         callback_url: subscriptionRedirectUrl || `${Deno.env.get('SUPABASE_URL')}/functions/v1/paystack-webhook`,
-        metadata: {
-          organization_id: organizationId,
-          plan_type: planType,
-          interval,
-          payment_type: 'subscription',
-        },
+        metadata: payer.meta,
       };
 
       const response = await fetch('https://api.paystack.co/transaction/initialize', {
@@ -451,9 +449,9 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (paystackData.status && paystackData.data?.authorization_url) {
         await supabase.from('billing_events').insert([{
-          organization_id: organizationId,
+          ...payer.billing,
           event_type: 'payment_initiated',
-          old_plan: org.plan_type,
+          old_plan: org?.plan_type ?? null,
           new_plan: planType,
           provider: 'paystack',
           amount: subscriptionAmount,
@@ -487,9 +485,9 @@ const handler = async (req: Request): Promise<Response> => {
     await supabase
       .from('billing_events')
       .insert([{
-        organization_id: organizationId,
+        ...payer.billing,
         event_type: 'payment_initiated',
-        old_plan: org.plan_type,
+        old_plan: org?.plan_type ?? null,
         new_plan: planType,
         provider: provider || 'flutterwave',
         amount: subscriptionAmount,

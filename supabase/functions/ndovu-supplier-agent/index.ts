@@ -12,10 +12,9 @@ For every analysis:
 4. Suggest engagement strategy: template emails, data request format, escalation pathway
 5. Estimate total Scope 3 exposure based on available data
 
-Output format: Summary → Key Insights → Risks → Recommended Actions
 Be specific about which supplier records are incomplete. The record lists are samples; the totals are exact.`;
 
-Deno.serve((req) => handleAgent(req, "supplier_ai", SYSTEM_PROMPT, async (supabase) => {
-  const { contextStr } = await buildSupplierContext(supabase);
-  return { contextStr, dataSources: ["esg_suppliers", "esg_supplier_emissions", "esg_indicators"] };
+Deno.serve((req) => handleAgent(req, "supplier_ai", SYSTEM_PROMPT, async (db, _ctx, ev) => {
+  const { contextStr, total } = await buildSupplierContext(db);
+  if (total > 0) ev.add({ label: "Your supplier portfolio (computed from esg_suppliers and esg_supplier_emissions)", source: "devmapper", kind: "record", path: "/esg", content: contextStr });
 }));

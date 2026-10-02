@@ -1,4 +1,5 @@
 import { handleAgent } from "../_shared/agent-utils.ts";
+import { addSearchResults, projectIdOf } from "../_shared/gather.ts";
 
 const SYSTEM_PROMPT = `You are the Investor AI agent for Ndovu Akili, DevMapper's AI copilot.
 Your role: evaluate financial viability, ROI, and investment readiness of development projects.
@@ -11,24 +12,17 @@ For every analysis:
 4. Identify funding match: World Bank, AfDB, UNDP, GEF, climate funds
 5. Flag investment risks: unverified claims, missing financials, timeline gaps
 
-Output format: Summary → Key Insights → Risks → Recommended Actions
 Never speculate beyond available data. State confidence level explicitly.`;
 
-Deno.serve((req) => handleAgent(req, "investor_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
-  const dataSources = ["reports", "carbon_assets", "fundraising_campaigns"];
-  let contextStr = "";
-  const projectId = typeof ctx.projectId === "string" ? ctx.projectId : null;
-
+Deno.serve((req) => handleAgent(req, "investor_ai", SYSTEM_PROMPT, async (db, ctx, ev) => {
+  const projectId = projectIdOf(ctx);
   if (projectId) {
-    const { data: report } = await supabase.from("reports").select("title, description, cost, sdg_goal, project_status, country").eq("id", projectId).maybeSingle();
-    if (report) contextStr += `Project: ${JSON.stringify(report)}\n`;
+    const { data: report } = await db.from("reports").select("id, title, description, cost, cost_currency, sdg_goal, project_status, country_code").eq("id", projectId).maybeSingle();
+    if (report) ev.rows([report], { label: (r) => `Project: ${r.title}`, entityType: "project", id: (r) => r.id, path: (r) => `/project/${r.id}` });
   }
-
-  const { data: assets } = await supabase.from("carbon_assets").select("*").limit(10);
-  if (assets?.length) contextStr += `Carbon assets: ${JSON.stringify(assets)}\n`;
-
-  const { data: campaigns } = await supabase.from("fundraising_campaigns").select("title, target_amount, raised_amount, status").limit(5);
-  if (campaigns?.length) contextStr += `Campaigns: ${JSON.stringify(campaigns)}\n`;
-
-  return { contextStr: contextStr || "No financial context available.", dataSources };
+  const { data: assets } = await db.from("carbon_assets").select("id, methodology, credits_generated, credits_retired, reference_price_usd, estimated_value_usd, verification_status, issuance_date").limit(10);
+  ev.rows(assets, { label: (a) => `Carbon asset: ${a.methodology ?? "unspecified methodology"}` });
+  const { data: campaigns } = await db.from("fundraising_campaigns").select("id, title, target_amount, raised_amount, currency, status").limit(5);
+  ev.rows(campaigns, { label: (c) => `Campaign: ${c.title}`, entityType: "campaign", id: (c) => c.id, path: () => "/fundraising" });
+  await addSearchResults(db, ctx, ev, { types: ["programme", "funding_opportunity", "organization", "project"], perTerm: 4 });
 }));

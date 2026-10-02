@@ -43,5 +43,8 @@ export function getPlanPrice(planType: string | undefined, interval: string | un
   const yearly = interval === "yearly";
   if (planType === "pro") return yearly ? 490 : 49;
   if (planType === "advanced") return yearly ? 1490 : 149;
+  // Individual / Professional: a personal plan (researchers, journalists, consultants).
+  // ponytail: provisional price pending a pricing decision; change here and in BillingUpgrade.tsx.
+  if (planType === "individual") return yearly ? 150 : 15;
   return 0;
 }

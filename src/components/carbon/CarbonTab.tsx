@@ -71,6 +71,11 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   cat9_downstream_transport: "carbon.categoryDownstreamTransport",
   cat2_capital_goods: "carbon.categoryCapitalGoods",
   cat12_end_of_life: "carbon.categoryEndOfLife",
+  cat8_upstream_leased_assets: "carbon.categoryUpstreamLeasedAssets",
+  cat10_processing_sold_products: "carbon.categoryProcessingSoldProducts",
+  cat11_use_of_sold_products: "carbon.categoryUseOfSoldProducts",
+  cat13_downstream_leased_assets: "carbon.categoryDownstreamLeasedAssets",
+  cat14_franchises: "carbon.categoryFranchises",
   electricity_lifecycle_estimate: "carbon.categoryElectricityLifecycle",
 };
 

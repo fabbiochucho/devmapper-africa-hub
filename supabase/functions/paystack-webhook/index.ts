@@ -4,6 +4,7 @@ import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
 import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
 import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
 import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
+import { activateIndividualPlan } from "../_shared/individualPlan.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,6 +64,20 @@ serve(async (req: Request) => {
 
     if (event.event === 'charge.success') {
       const { metadata, amount, currency, reference } = event.data;
+
+      if (metadata?.payment_type === 'individual_subscription' && metadata?.user_id) {
+        const failure = await activateIndividualPlan(supabase, {
+          userId: metadata.user_id, interval: metadata.interval, provider: 'paystack',
+          amount: amount / 100, currency: currency || 'NGN', reference,
+        });
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'paystack', p_event_type: event.event,
+          p_payload: event, p_status: failure ? 'failed' : 'success', p_error_message: failure,
+        });
+        return new Response(JSON.stringify(failure ? { error: failure } : { message: 'Individual plan activated' }), {
+          status: failure ? 500 : 200, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
 
       if (metadata?.payment_type === 'subscription' && metadata?.organization_id) {
         // Whitelist plan types to prevent arbitrary values from webhook payload
