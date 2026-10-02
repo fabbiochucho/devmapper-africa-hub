@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,11 +33,16 @@ interface DonationDialogProps {
   onDonationComplete: () => void;
 }
 
-const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
+// Naira amounts are ~1000x smaller per unit, so a $10-style ladder would mean ₦10.
+const presetsFor = (currency: string) =>
+  currency === 'NGN' ? [1000, 2500, 5000, 10000, 25000, 50000] : [10, 25, 50, 100, 250, 500];
 
 export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogProps) {
   const { profile } = useAuth();
   const [amount, setAmount] = useState<string>('25');
+  const currency = campaign?.currency ?? 'USD';
+  // Default to the second preset whenever the campaign's currency changes.
+  useEffect(() => { setAmount(String(presetsFor(currency)[1])); }, [currency]);
   const [email, setEmail] = useState<string>(profile?.email || '');
   const [name, setName] = useState<string>(profile?.full_name || '');
   const [message, setMessage] = useState<string>('');
@@ -173,7 +178,7 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
           <div>
             <Label>Select Amount ({campaign.currency})</Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
-              {PRESET_AMOUNTS.map((preset) => (
+              {presetsFor(campaign.currency).map((preset) => (
                 <Button
                   key={preset}
                   type="button"
