@@ -10,7 +10,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Users, MessageSquare, Search, Target, Loader2 } from "lucide-react";
+import { FileText, Users, MessageSquare, Search, Target, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface SearchResult {
@@ -164,6 +164,17 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
 
         {!loading && query.length >= 2 && results.length === 0 && (
           <CommandEmpty>No results found for "{query}"</CommandEmpty>
+        )}
+
+        {query.trim().length >= 2 && (
+          <CommandGroup heading="Go further">
+            <CommandItem value={`search-all ${query}`} onSelect={() => { onOpenChange(false); navigate(`/search?q=${encodeURIComponent(query.trim())}`); }}>
+              <Search className="mr-2 h-4 w-4" />Search organisations, policies, programmes and research for "{query.trim()}"
+            </CommandItem>
+            <CommandItem value={`ask-ndovu ${query}`} onSelect={() => { onOpenChange(false); navigate(`/ndovu?q=${encodeURIComponent(query.trim())}`); }}>
+              <Sparkles className="mr-2 h-4 w-4" />Ask Ndovu Akili about "{query.trim()}"
+            </CommandItem>
+          </CommandGroup>
         )}
 
         {!loading && query.length < 2 && (

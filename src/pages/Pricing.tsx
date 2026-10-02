@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Crown, Shield, Zap, Building2, GraduationCap, Award } from 'lucide-react';
+import { Check, X, Crown, Shield, Zap, Building2, GraduationCap, Award, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 
 const plans = [
   {
     id: 'lite',
-    name: 'DevMapper Lite',
-    tagline: 'For learning',
+    name: 'DevMapper Free',
+    tagline: 'Free · for exploring',
     icon: Shield,
     iconColor: 'text-blue-500',
     price: { monthly: 0, quarterly: 0, yearly: 0 },
@@ -58,9 +58,59 @@ const plans = [
     },
   },
   {
+    id: 'individual',
+    name: 'DevMapper Individual',
+    tagline: 'For researchers, journalists & consultants',
+    icon: User,
+    iconColor: 'text-sky-500',
+    // Provisional price; must match getPlanPrice() in supabase/functions/_shared/planQuotas.ts.
+    price: { monthly: 15, quarterly: 40, yearly: 150 },
+    description: 'A personal plan: more Ndovu Akili analyses, live-source search, investigations and exports. No organisation needed.',
+    projectLimit: 'Up to 10',
+    monthlyAdd: 3,
+    rollover: false,
+    users: '1',
+    features: {
+      project_workspace: true,
+      multi_module: false,
+      system_dependencies: false,
+      cross_project: true,
+      custom_logic: false,
+      basic_reports: true,
+      advanced_analytics: true,
+      custom_dashboards: false,
+      pdf_export: true,
+      excel_csv_export: true,
+      json_api_export: false,
+      automated_reporting: false,
+      sdg_tagging: true,
+      agenda2063: true,
+      esg_alignment: false,
+      regulatory_readiness: true,
+      scenario_modeling: false,
+      sovereign_frameworks: false,
+      team_workspaces: false,
+      roles_permissions: false,
+      audit_trail: false,
+      approval_workflows: false,
+      api_access: false,
+      webhooks: false,
+      csv_import: true,
+      alphaearth_free: true,
+      alphaearth_pro: false,
+      erp_integration: false,
+      custom_integrations: false,
+      community_support: true,
+      email_support: true,
+      priority_support: false,
+      sla: false,
+      dedicated_manager: false,
+    },
+  },
+  {
     id: 'pro',
     name: 'DevMapper Pro',
-    tagline: 'For building',
+    tagline: 'Organisation · for building',
     icon: Zap,
     iconColor: 'text-amber-500',
     price: { monthly: 49, quarterly: 129, yearly: 490 },
@@ -110,7 +160,7 @@ const plans = [
   {
     id: 'advanced',
     name: 'DevMapper Advanced',
-    tagline: 'For governing',
+    tagline: 'Organisation · for governing',
     icon: Crown,
     iconColor: 'text-purple-500',
     price: { monthly: 149, quarterly: 399, yearly: 1490 },
@@ -159,7 +209,7 @@ const plans = [
   {
     id: 'enterprise',
     name: 'DevMapper Enterprise',
-    tagline: 'For shaping systems',
+    tagline: 'Enterprise & institutional',
     icon: Building2,
     iconColor: 'text-emerald-500',
     price: { monthly: -1, quarterly: -1, yearly: -1 },
@@ -323,7 +373,7 @@ const Pricing = () => {
             Simple, transparent pricing
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-2">
-            DevMapper Lite is for learning. Pro is for building. Advanced is for governing. Enterprise is for shaping systems.
+            Free for exploring. Individual for researchers, journalists and consultants. Pro and Advanced for organisations. Enterprise for institutions. Scholarships for those who can't pay.
           </p>
         </div>
 
@@ -343,7 +393,7 @@ const Pricing = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-16">
           {plans.map((plan) => {
             const Icon = plan.icon;
             return (
@@ -408,7 +458,7 @@ const Pricing = () => {
                   ) : (
                     <Button
                       className="w-full"
-                      onClick={() => navigate(`/billing-upgrade?plan=${plan.id}`)}
+                      onClick={() => navigate(`/billing-upgrade?plan=${plan.id}&interval=${billingPeriod}`)}
                     >
                       Upgrade to {plan.name.split(' ')[1]}
                     </Button>

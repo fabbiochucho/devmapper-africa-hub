@@ -1,4 +1,6 @@
-import { handleAgent, fetchSimilarReports } from "../_shared/agent-utils.ts";
+import { handleAgent } from "../_shared/agent-utils.ts";
+import { semanticSearch } from "../_shared/intel.ts";
+import { addHits, addSearchResults, projectIdOf } from "../_shared/gather.ts";
 
 const SYSTEM_PROMPT = `You are the Project Developer AI agent for Ndovu Akili, DevMapper's AI copilot.
 Your role: guide users through structured carbon and development project design.
@@ -11,45 +13,24 @@ For every interaction:
 4. Recommend verification pathway (what evidence to collect for each tier)
 5. Generate a step-by-step action checklist for the next 30 days
 
-Output format: Summary → Key Insights → Risks → Recommended Actions
 Be specific — reference actual field names and required evidence types.`;
 
-Deno.serve((req) => handleAgent(req, "project_developer_ai", SYSTEM_PROMPT, async (supabase, ctx) => {
-  const dataSources = ["reports", "agenda2063_links"];
-  let contextStr = "";
-  const projectId = typeof ctx.projectId === "string" ? ctx.projectId : null;
-
+Deno.serve((req) => handleAgent(req, "project_developer_ai", SYSTEM_PROMPT, async (db, ctx, ev) => {
+  const projectId = projectIdOf(ctx);
+  let sdg: number | null = null;
   if (projectId) {
-    const { data: report } = await supabase.from("reports").select("*").eq("id", projectId).maybeSingle();
+    const { data: report } = await db.from("reports").select("id, title, description, location, country_code, sdg_goal, project_status, cost, cost_currency, beneficiaries, start_date, end_date").eq("id", projectId).maybeSingle();
     if (report) {
-      contextStr += `Project: ${JSON.stringify(report)}\n`;
-
-      // #53 RAG retrieval step: ground advice in semantically similar prior
-      // reports (not just this one project), instead of only ever looking
-      // up a single exact project_id. Best-effort - a missing/misconfigured
-      // embeddings backend should never block the agent's core response.
-      const { matches, error: ragError } = await fetchSimilarReports(
-        supabase,
-        `${report.title}\n\n${report.description}`,
-        ctx.userId,
-        5,
-      );
-      if (matches.length > 0) {
-        const similarOthers = matches.filter((m) => m.report_id !== projectId);
-        if (similarOthers.length > 0) {
-          dataSources.push("report_embeddings");
-          contextStr += `Similar prior projects (for reference/precedent, most similar first):\n${
-            similarOthers.map((m) => `- "${m.title}" (similarity ${m.similarity.toFixed(2)}): ${m.description.slice(0, 200)}`).join("\n")
-          }\n`;
-        }
-      } else if (ragError) {
-        contextStr += `(Similar-project retrieval unavailable: ${ragError})\n`;
-      }
+      sdg = report.sdg_goal;
+      ev.rows([report], { label: (r) => `Project: ${r.title}`, entityType: "project", id: (r) => r.id, path: (r) => `/project/${r.id}` });
+      // Precedent: semantically similar prior projects the user can see.
+      const { hits } = await semanticSearch(db, `${report.title}\n\n${report.description}`, { types: ["project"], limit: 6 });
+      addHits(ev, hits.filter((h) => h.id !== projectId && h.score >= 0.3).map((h) => ({ ...h, title: `similar prior project: ${h.title}` })));
     }
   }
-
-  const { data: agenda } = await supabase.from("agenda2063_links").select("*").limit(20);
-  contextStr += `Agenda 2063 links: ${JSON.stringify(agenda)}\n`;
-
-  return { contextStr: contextStr || "No project context.", dataSources };
+  let agenda = db.from("agenda2063_links").select("sdg_goal, sdg_target, agenda_aspiration, agenda_goal, alignment_description").limit(10);
+  if (sdg) agenda = agenda.eq("sdg_goal", sdg);
+  const { data: links } = await agenda;
+  ev.rows(links, { label: (l) => `Agenda 2063 alignment: SDG ${l.sdg_goal} → ${l.agenda_goal ?? l.agenda_aspiration}` });
+  await addSearchResults(db, ctx, ev, { types: ["programme", "research", "project"], perTerm: 4 });
 }));

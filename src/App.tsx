@@ -23,6 +23,11 @@ const UserManagement = lazy(() => import("./pages/UserManagement"));
 const CorporateTargets = lazy(() => import("./pages/CorporateTargets"));
 const GovernmentDashboard = lazy(() => import("./pages/GovernmentDashboard"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
+const ExplorePage = lazy(() => import("./pages/ExplorePage"));
+const NdovuPage = lazy(() => import("./pages/NdovuPage"));
+const WorkspacePage = lazy(() => import("./pages/WorkspacePage"));
+const CollectionPage = lazy(() => import("./pages/CollectionPage"));
+const ComparePage = lazy(() => import("./pages/ComparePage"));
 const CountryDirectory = lazy(() => import("./pages/CountryDirectory"));
 const CertificateVerification = lazy(() => import("./pages/CertificateVerification"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -109,6 +114,11 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     {/* Public routes */}
                     <Route path="/search" element={S(<SearchPage />)} />
+                    <Route path="/explore/:type/:id" element={S(<ExplorePage />)} />
+                    <Route path="/ndovu" element={S(<NdovuPage />)} />
+                    <Route path="/compare" element={S(<ComparePage />)} />
+                    <Route path="/workspace" element={<Guarded>{S(<WorkspacePage />)}</Guarded>} />
+                    <Route path="/workspace/:id" element={<Guarded>{S(<CollectionPage />)}</Guarded>} />
                     <Route path="/countries" element={S(<CountryDirectory />)} />
                     <Route path="/certificates/:certificateNumber" element={S(<CertificateVerification />)} />
                     <Route path="/change-makers" element={S(<ChangeMakers />)} />

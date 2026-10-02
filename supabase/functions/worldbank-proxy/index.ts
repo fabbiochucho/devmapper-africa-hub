@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { type Database, type Db, asJson } from "../_shared/db.ts";
+import { worldBankIndicators } from "../_shared/connectors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,38 +9,23 @@ const corsHeaders = {
 };
 
 // World Bank Open Data API - public, no key required (confirmed live).
-const WORLD_BANK_API = "https://api.worldbank.org/v2";
-
-// Curated indicators relevant to a donor/development report's country context.
-const INDICATORS: Record<string, string> = {
-  "NY.GDP.MKTP.CD": "GDP (current US$)",
-  "NY.GDP.PCAP.CD": "GDP per capita (current US$)",
-  "SP.POP.TOTL": "Population, total",
-  "SI.POV.DDAY": "Poverty headcount ratio at $2.15/day (% of population)",
-  "EN.ATM.CO2E.PC": "CO2 emissions (metric tons per capita)",
-};
 
 interface WorldBankRequest {
   countryCode: string;
 }
 
-interface IndicatorResult {
-  code: string;
-  label: string;
-  value: number | null;
-  year: string | null;
-}
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  let supabaseClient: ReturnType<typeof createClient> | null = null;
+  let supabaseClient: Db | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    if (!authHeader) throw new Error("Unauthorized");
 
-    supabaseClient = createClient(
+    supabaseClient = createClient<Database>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       { global: { headers: { Authorization: authHeader } } },
@@ -48,7 +35,7 @@ serve(async (req) => {
     if (authError || !user) throw new Error("Unauthorized");
 
     const { countryCode }: WorldBankRequest = await req.json();
-    if (!countryCode || countryCode.length !== 2) throw new Error("countryCode must be a 2-letter ISO code");
+    if (!countryCode || !/^[A-Za-z]{2,3}$/.test(countryCode)) throw new Error("countryCode must be an ISO 3166 alpha-2 or alpha-3 code");
 
     const code = countryCode.toUpperCase();
     const cacheKey = `worldbank:${code}`;
@@ -67,23 +54,7 @@ serve(async (req) => {
       });
     }
 
-    const indicatorEntries = Object.entries(INDICATORS);
-    const results = await Promise.all(
-      indicatorEntries.map(async ([indicatorCode, label]): Promise<IndicatorResult> => {
-        try {
-          const url = `${WORLD_BANK_API}/country/${code}/indicator/${indicatorCode}?format=json&date=2015:2024&per_page=20`;
-          const resp = await fetch(url, { headers: { Accept: "application/json" } });
-          if (!resp.ok) return { code: indicatorCode, label, value: null, year: null };
-
-          const json = await resp.json();
-          const rows: { value: number | null; date: string }[] = Array.isArray(json) ? json[1] ?? [] : [];
-          const withValue = rows.find((r) => r.value != null);
-          return { code: indicatorCode, label, value: withValue?.value ?? null, year: withValue?.date ?? null };
-        } catch {
-          return { code: indicatorCode, label, value: null, year: null };
-        }
-      }),
-    );
+    const results = await worldBankIndicators(code);
 
     const payload = {
       countryCode: code,
@@ -97,7 +68,7 @@ serve(async (req) => {
     await supabaseClient.from("alphaearth_cache").insert({
       cache_key: cacheKey,
       provider: "worldbank",
-      payload,
+      payload: asJson(payload),
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     });
 

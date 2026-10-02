@@ -63,7 +63,7 @@ export async function submitReportToServer(
     // sessions can retrieve it as a semantically-similar prior project.
     // Best-effort and fire-and-forget - the embeddings backend being
     // unavailable should never block or slow down report submission.
-    supabase.functions.invoke('report-embeddings', { body: { action: 'index', reportId: report.id } })
+    supabase.functions.invoke('intel', { body: { action: 'index', type: 'project', id: report.id } })
       .catch((err) => console.error('Report embedding indexing failed:', err));
   }
 

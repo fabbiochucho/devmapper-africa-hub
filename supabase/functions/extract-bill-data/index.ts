@@ -37,7 +37,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    if (!authHeader) throw new Error("Unauthorized");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

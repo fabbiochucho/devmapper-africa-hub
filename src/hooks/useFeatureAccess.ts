@@ -5,7 +5,11 @@ interface FeatureFlags {
   [feature: string]: boolean;
 }
 
-type PlanType = 'free' | 'lite' | 'pro' | 'advanced' | 'enterprise';
+type PlanType = 'free' | 'lite' | 'individual' | 'pro' | 'advanced' | 'enterprise';
+
+// Plans are cumulative: a plan includes every lower tier's features (matches plan_rank() in SQL).
+const PLAN_ORDER: PlanType[] = ['free', 'lite', 'individual', 'pro', 'advanced', 'enterprise'];
+const plansUpTo = (plan: PlanType) => PLAN_ORDER.slice(0, Math.max(PLAN_ORDER.indexOf(plan), 0) + 1);
 
 export function useFeatureAccess() {
   const [features, setFeatures] = useState<FeatureFlags>({});
@@ -43,15 +47,18 @@ export function useFeatureAccess() {
         return;
       }
 
-      // Get user's organization, plan, and scholarship override
-      const { data: membership } = await supabase
-        .from('organization_members')
-        .select('organization_id, organizations(plan_type, scholarship_override, project_quota_remaining, project_cap)')
-        .eq('user_id', user.id)
-        .single();
+      // Plan: the best of the organisation's plan, an individual plan, or an approved scholarship.
+      const [{ data: planName }, { data: membership }] = await Promise.all([
+        supabase.rpc('effective_plan'),
+        supabase
+          .from('organization_members')
+          .select('organization_id, organizations(project_quota_remaining, project_cap)')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
 
       const org = membership?.organizations;
-      const effectivePlan = org?.scholarship_override || org?.plan_type || 'lite';
+      const effectivePlan = (PLAN_ORDER.includes(planName as PlanType) ? planName : 'free') as PlanType;
       setUserPlan(effectivePlan as PlanType);
       setQuotaRemaining(org?.project_quota_remaining ?? null);
       setProjectCap(org?.project_cap ?? null);
@@ -73,7 +80,7 @@ export function useFeatureAccess() {
     const flagsResult = await supabase
       .from('feature_flags')
       .select('feature, enabled')
-      .eq('plan', plan)
+      .in('plan', plansUpTo(plan))
       .eq('enabled', true);
 
     const featureMap: FeatureFlags = {};

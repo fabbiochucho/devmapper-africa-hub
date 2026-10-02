@@ -1,4 +1,4 @@
-import type { Db } from "./db.ts";
+import { type Db, logAuditEvent } from "./db.ts";
 // deno-lint-ignore-file no-explicit-any
 
 import { getPlanQuotas } from "./planQuotas.ts";
@@ -75,8 +75,8 @@ export async function downgradeOrganizationForRefund(
     console.error("[planDowngrade] Failed to log billing event:", billingError);
   }
 
-  await supabase.rpc("log_audit_event", {
-    p_actor_id: null as unknown as string, // SQL arg is nullable; generated rpc types drop that
+  await logAuditEvent(supabase, {
+    p_actor_id: null,
     p_actor_type: "webhook",
     p_org_id: organizationId,
     p_action: "plan_downgraded_refund",

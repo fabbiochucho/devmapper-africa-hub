@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { UserRole } from "@/contexts/UserRoleContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, MapPin, Users, Target, CheckCircle } from "lucide-react";
+import { ArrowRight, Search, MapPin, Users, Target, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 
@@ -104,9 +104,9 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
                   className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold text-lg px-8 py-6 h-auto"
                   asChild
                 >
-                  <Link to="/about">
-                    <Play className="mr-2 h-5 w-5" />
-                    {t('hero.watchDemo')}
+                  <Link to="/search">
+                    <Search className="mr-2 h-5 w-5" />
+                    {t('hero.exploreCta')}
                   </Link>
                 </Button>
               </div>

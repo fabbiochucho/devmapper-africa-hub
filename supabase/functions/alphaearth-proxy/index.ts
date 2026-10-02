@@ -1,4 +1,4 @@
-import type { Db } from "../_shared/db.ts";
+import { type Database, type Db, logAuditEvent } from "../_shared/db.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -32,7 +32,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let supabaseClient: ReturnType<typeof createClient> | null = null;
+  let supabaseClient: Db | null = null;
 
   try {
     console.log('[ALPHAEARTH-PROXY] Incoming request');
@@ -40,10 +40,10 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Missing authorization header');
+      throw new Error('Unauthorized');
     }
 
-    supabaseClient = createClient(
+    supabaseClient = createClient<Database>(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -195,10 +195,10 @@ async function handleBenchmark(
     });
 
   // Log audit event
-  await supabase.rpc('log_audit_event', {
+  await logAuditEvent(supabase, {
     p_actor_id: userId,
     p_actor_type: 'user',
-    p_org_id: (organizationId || null) as string, // SQL arg is nullable; generated rpc types drop that
+    p_org_id: organizationId || null,
     p_action: 'alphaearth_benchmark_request',
     p_payload: { country, sector, year, plan_type: planType }
   });

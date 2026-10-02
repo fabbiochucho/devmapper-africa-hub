@@ -11,8 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building, Download, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCorporateTargets, addCorporateEsgTarget, updateCorporateTarget, CorporateTarget } from "@/data/mockCorporateTargets";
+import { getCorporateTargets, addCorporateEsgTarget, updateCorporateTarget, CorporateTarget } from "@/lib/corporateTargets";
+import { downloadFile } from "@/lib/reportExport";
 import { toast } from "sonner";
+import { errorMessageOf } from "@/lib/error-handler";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CorporateTargets = () => {
@@ -53,15 +55,15 @@ const CorporateTargets = () => {
       setIsAddingTarget(false);
       setNewTarget({ sdgGoal: "", title: "", description: "", targetValue: "", targetUnit: "", targetDate: "", countryCode: "", region: "" });
     },
-    onError: () => {
-      toast.error("Failed to create target");
+    onError: (e) => {
+      toast.error("Failed to create target", { description: errorMessageOf(e) });
     },
   });
 
   const updateProgressMutation = useMutation({
     mutationFn: updateCorporateTarget,
     onSuccess: (data) => {
-      if (data) {
+      {
         queryClient.invalidateQueries({ queryKey: ["corporateTargets"] });
         toast.success("Progress Updated", { description: `Successfully updated progress for: "${data.title}"` });
         setIsUpdatingProgress(false);
@@ -69,8 +71,8 @@ const CorporateTargets = () => {
         setProgressUpdate({ value: "", notes: "" });
       }
     },
-    onError: () => {
-      toast.error("Failed to update progress");
+    onError: (e) => {
+      toast.error("Failed to update progress", { description: errorMessageOf(e) });
     },
   });
 
@@ -82,11 +84,18 @@ const CorporateTargets = () => {
   const handleUpdateProgress = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTarget) return;
-    updateProgressMutation.mutate({ targetId: selectedTarget.id, progressData: progressUpdate });
+    updateProgressMutation.mutate({ target: selectedTarget, progressData: progressUpdate });
   };
 
-  const generateEsgReport = async () => {
-    toast.info("Generating Report...", { description: "This feature is for demonstration purposes." });
+  const generateEsgReport = () => {
+    if (!targets.length) {
+      toast.info("Add a target first.");
+      return;
+    }
+    const cell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = targets.map((t) => [t.title, t.sdgGoal || "", t.countryCode ?? "", t.currentValue, t.targetValue, t.targetUnit, `${t.progress}%`, t.deadline.slice(0, 10)].map(cell).join(","));
+    const csv = [["Target", "SDG", "Country", "Current", "Target", "Unit", "Progress", "Deadline"].map(cell).join(","), ...rows].join("\n");
+    downloadFile(csv, `esg-targets-${new Date().toISOString().slice(0, 10)}.csv`, "text/csv");
   };
 
   const getProgressColor = (progress: number) => {
@@ -219,7 +228,7 @@ const CorporateTargets = () => {
                       </div>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600">
-                      <span>SDG {target.sdgGoal}.{target.sdgTarget}</span>
+                      <span>{target.sdgGoal ? `SDG ${target.sdgGoal}` : "No SDG"}{target.countryCode ? ` · ${target.countryCode}` : ""}</span>
                       <span>Target: {new Date(target.deadline).toLocaleDateString()}</span>
                     </div>
                   </div>

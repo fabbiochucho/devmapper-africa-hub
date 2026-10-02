@@ -105,6 +105,14 @@ jobs:
           echo "🔤 Running TypeScript check..."
           npm run typecheck
 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check Edge Functions (blocking)
+        run: deno check --quiet supabase/functions/*/index.ts
+
       # ─────────────────────────────────────────────────────
       # 6️⃣ UNIT TESTS: Vitest (blocking)
       # ─────────────────────────────────────────────────────

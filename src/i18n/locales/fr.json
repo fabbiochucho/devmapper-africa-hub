@@ -7,15 +7,16 @@
     "africaSdgTracker": "Suivi ODD Afrique"
   },
   "hero": {
-    "liveTracking": "Intelligence d'impact vérifié dans 54 nations africaines",
-    "title": "Suivez les objectifs. Vérifiez l'impact. Débloquez les financements. Bâtissez la confiance.",
-    "subtitle": "DevMapper est l'infrastructure africaine de l'impact vérifié et de la redevabilité ESG. Elle permet aux gouvernements, aux entreprises et aux partenaires de développement de passer de l'impact déclaré à l'impact prouvé.",
+    "liveTracking": "Intelligence du développement dans 54 nations africaines",
+    "title": "L'intelligence du développement. Connectée.",
+    "subtitle": "Trouvez les organisations, projets, programmes, politiques, financements et recherches derrière chaque question de développement en Afrique. Voyez d'où vient chaque information et transformez-la en éléments probants pour agir.",
     "getStarted": "Commencer gratuitement",
     "watchDemo": "Devenez partenaire",
     "projectsMapped": "Projets cartographiés",
     "activeUsers": "Utilisateurs actifs",
     "sdgGoalsTracked": "Objectifs ODD suivis",
-    "verifiedReports": "Rapports vérifiés"
+    "verifiedReports": "Rapports vérifiés",
+    "exploreCta": "Explorer les données"
   },
   "features": {
     "badge": "Capacités de la plateforme",
@@ -573,7 +574,21 @@
     "categoryDownstreamTransport": "Transport aval",
     "categoryCapitalGoods": "Biens d'équipement",
     "categoryEndOfLife": "Traitement en fin de vie des produits vendus",
-    "categoryElectricityLifecycle": "Électricité (estimation sur le cycle de vie)"
+    "categoryElectricityLifecycle": "Électricité (estimation sur le cycle de vie)",
+    "categoryUpstreamLeasedAssets": "Actifs loués en amont (Cat. 8)",
+    "categoryProcessingSoldProducts": "Transformation des produits vendus (Cat. 10)",
+    "categoryUseOfSoldProducts": "Utilisation des produits vendus (Cat. 11)",
+    "categoryDownstreamLeasedAssets": "Actifs loués en aval (Cat. 13)",
+    "categoryFranchises": "Franchises (Cat. 14)",
+    "external": {
+      "hint": "Aucun facteur ne correspond ? Recherchez parmi plus de 16 000 facteurs sourcés de GreenCalculus. Celui que vous choisissez est ajouté à la bibliothèque avec sa citation.",
+      "placeholder": "ex. diesel, électricité du réseau Kenya, fret aérien",
+      "noResults": "Aucun facteur utilisable trouvé. Essayez un terme plus large.",
+      "source": "source",
+      "use": "Utiliser",
+      "searchFailed": "La recherche de facteurs a échoué",
+      "importFailed": "Impossible d'ajouter ce facteur"
+    }
   },
   "forum": {
     "anonymous": "Anonyme",

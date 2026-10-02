@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { AlertTriangle, CheckCircle, Clock, Loader2, Send, Sparkles } from "lucide-react";
+import { CheckCircle, Clock, Loader2, Send } from "lucide-react";
 import { useNdovuMultiAgent, SynthesisOutput } from "@/hooks/useNdovuMultiAgent";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -13,6 +12,7 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import NdovuAuditTrail from "./NdovuAuditTrail";
+import { NdovuAnswer } from "./NdovuAnswer";
 import ndoviLogo from "@/assets/ndovi-aklil-logo.png";
 import { errorMessageOf } from '@/lib/error-handler';
 
@@ -139,51 +139,11 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
         {/* Synthesis output */}
         {synthesis && (
           <div className="space-y-3">
-            {synthesis.requiresHumanApproval && (
-              <div className="flex items-center gap-2 p-2 rounded-md bg-yellow-50 text-yellow-800 text-sm">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                Low confidence — manual review recommended
-              </div>
-            )}
-
-            <div className="text-sm">{synthesis.summary}</div>
-
-            <Accordion type="multiple" className="w-full">
-              <AccordionItem value="insights">
-                <AccordionTrigger className="text-sm py-2">Key Insights ({synthesis.keyInsights?.length || 0})</AccordionTrigger>
-                <AccordionContent>
-                  <ul className="space-y-1 text-sm">
-                    {synthesis.keyInsights?.map((insight, i) => (
-                      <li key={i} className="flex gap-2"><Sparkles className="h-3 w-3 mt-1 shrink-0 text-primary" />{insight}</li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="risks">
-                <AccordionTrigger className="text-sm py-2">Risks ({synthesis.risks?.length || 0})</AccordionTrigger>
-                <AccordionContent>
-                  <ul className="space-y-1 text-sm">
-                    {synthesis.risks?.map((risk, i) => (
-                      <li key={i} className="flex gap-2"><AlertTriangle className="h-3 w-3 mt-1 shrink-0 text-destructive" />{risk}</li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="actions">
-                <AccordionTrigger className="text-sm py-2">Recommended Actions ({synthesis.recommendedActions?.length || 0})</AccordionTrigger>
-                <AccordionContent>
-                  <ul className="space-y-1 text-sm">
-                    {synthesis.recommendedActions?.map((action, i) => (
-                      <li key={i} className="flex gap-2"><CheckCircle className="h-3 w-3 mt-1 shrink-0 text-green-600" />{action}</li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <NdovuAnswer s={synthesis} />
 
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">Confidence:</span>
+                <span className="text-xs text-muted-foreground">Sourced statements:</span>
                 <Progress value={synthesis.overallConfidence} className="w-24 h-2" />
                 <span className="text-xs font-medium">{synthesis.overallConfidence}%</span>
               </div>
@@ -192,9 +152,6 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground italic">
-              {synthesis.disclaimer || "AI-generated guidance. Not legal or financial advice."}
-            </p>
 
             {/* Audit Trail */}
             {sessionId && (
@@ -203,7 +160,7 @@ export default function NdovuMultiAgentPanel({ mockSynthesis }: NdovuMultiAgentP
                 entries={synthesis.agentContributions?.map(a => ({
                   agentName: a.agentName,
                   confidenceScore: a.confidence ?? synthesis.overallConfidence,
-                  dataSources: [],
+                  dataSources: [...new Set(synthesis.evidence.map((e) => e.source))],
                   createdAt: new Date().toISOString(),
                 })) || []}
               />

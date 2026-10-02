@@ -1,282 +1,139 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { sdgGoals } from '@/lib/constants';
-import { getCountries, Country } from '@/data/countries';
-import { Search, FolderKanban, User, Building, SearchX, Loader2 } from 'lucide-react';
+import { Search, SearchX, Loader2, ExternalLink } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
-
-interface SearchProject {
-  id: string;
-  title: string;
-  description: string | null;
-  location: string | null;
-}
-
-interface UserProfile {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-}
-
-interface SearchOrganization {
-  name: string;
-  country: string | null;
-  members_count: number;
-}
-
-type SearchResults = {
-  projects: SearchProject[];
-  users: UserProfile[];
-  organizations: SearchOrganization[];
-};
+import { useAuth } from '@/contexts/AuthContext';
+import { africanCountries } from '@/data/countries';
+import { searchEntities, entityMeta, sourceName, type EntityHit } from '@/lib/entities';
+import { SaveButton } from '@/components/workspace/SaveButton';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [results, setResults] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [countries, setCountries] = useState<Country[]>([]);
-
+  const { user } = useAuth();
+  const q = (searchParams.get('q') || '').trim();
   const typeFilter = searchParams.get('type') || 'all';
-  const countryFilter = searchParams.get('country') || 'all';
-  const sdgFilter = searchParams.get('sdg_goal') || 'all';
+  const country = searchParams.get('country') || 'all';
+  const live = searchParams.get('live') === '1';
+  const [draft, setDraft] = useState(q);
 
-  useEffect(() => {
-    async function fetchCountries() {
-      const fetchedCountries = await getCountries();
-      setCountries(fetchedCountries);
-    }
-    fetchCountries();
-  }, []);
+  const { data: results = [], isFetching, error } = useQuery({
+    queryKey: ['entity-search', q, country, live, !!user],
+    queryFn: () => searchEntities(q, { country: country === 'all' ? undefined : country, live, signedIn: !!user }),
+    enabled: q.length >= 2,
+    staleTime: 60_000,
+  });
 
-  const performSearch = useCallback(async (q: string, type: string, country: string, sdg: string) => {
-    // `,` and `(`/`)` are structural characters in PostgREST's `.or()` filter
-    // syntax - left unescaped, a search string containing them could inject
-    // extra filter conditions rather than being treated as literal text.
-    const safeTerm = q.replace(/[,()]/g, '');
-    const term = `%${safeTerm}%`;
+  const counts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of results) m.set(r.type, (m.get(r.type) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [results]);
+  const shown = typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
 
-    const wantsProjects = type === 'all' || type === 'projects';
-    const wantsProfiles = type === 'all' || type === 'users' || type === 'organizations';
-
-    const [projectsResult, profilesResult] = await Promise.all([
-      wantsProjects
-        ? (() => {
-            let projectsQuery = supabase
-              .from('reports')
-              .select('id, title, description, location, country_code, sdg_goal')
-              .or(`title.ilike.${term},description.ilike.${term}`)
-              .limit(30);
-            if (country !== 'all') projectsQuery = projectsQuery.eq('country_code', country);
-            if (sdg !== 'all') projectsQuery = projectsQuery.eq('sdg_goal', Number(sdg));
-            return projectsQuery;
-          })()
-        : Promise.resolve({ data: [], error: null }),
-      wantsProfiles
-        ? (() => {
-            let profilesQuery = supabase
-              .from('public_profiles')
-              .select('id, user_id, full_name, avatar_url, organization, country')
-              .or(`full_name.ilike.${term},organization.ilike.${term}`)
-              .limit(50);
-            if (country !== 'all') profilesQuery = profilesQuery.eq('country', country);
-            return profilesQuery;
-          })()
-        : Promise.resolve({ data: [], error: null }),
-    ]);
-
-    const lowerCaseQuery = q.toLowerCase();
-    const projects: SearchProject[] = (projectsResult.data || []) as SearchProject[];
-    const profiles = profilesResult.data || [];
-
-    const users: UserProfile[] = (type === 'all' || type === 'users')
-      ? profiles
-          .filter(p => p.full_name?.toLowerCase().includes(lowerCaseQuery))
-          .map(p => ({ id: p.id, full_name: p.full_name, avatar_url: p.avatar_url }))
-      : [];
-
-    const organizations: SearchOrganization[] = [];
-    if (type === 'all' || type === 'organizations') {
-      const orgMap = new Map<string, SearchOrganization>();
-      profiles
-        .filter(p => p.organization?.toLowerCase().includes(lowerCaseQuery))
-        .forEach(p => {
-          const name = p.organization as string;
-          const existing = orgMap.get(name);
-          if (existing) {
-            existing.members_count += 1;
-          } else {
-            orgMap.set(name, { name, country: p.country, members_count: 1 });
-          }
-        });
-      organizations.push(...orgMap.values());
-    }
-
-    setResults({ projects, users, organizations });
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    const q = searchParams.get('q');
-    if (q && q.length >= 2) {
-      setLoading(true);
-      performSearch(q, typeFilter, countryFilter, sdgFilter);
-    } else {
-      setResults(null);
-    }
-  }, [searchParams, performSearch, typeFilter, countryFilter, sdgFilter]);
-
-  const handleSearch = (e: React.FormEvent) => {
+  const updateParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === null || value === 'all') params.delete(key); else params.set(key, value);
+    setSearchParams(params);
+  };
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchParams(params => {
-      params.set('q', query);
-      return params;
-    });
+    const params = new URLSearchParams(searchParams);
+    params.set('q', draft.trim());
+    params.delete('type');
+    setSearchParams(params);
   };
 
-  const updateParam = (key: string, value: string) => {
-    setSearchParams(params => {
-      params.set(key, value);
-      return params;
-    });
-  }
-
-  const totalResults = results ? results.projects.length + results.users.length + results.organizations.length : 0;
-
   return (
-    <div className="space-y-6">
-      <SEOHead
-        title="Search — Dev Mapper"
-        description="Search verified SDG projects, change-makers, and organisations across Africa on Dev Mapper."
-        canonicalUrl="/search"
-      />
-      <h1 className="text-3xl font-bold">Search</h1>
-      <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <Input
-          type="search"
-          placeholder="Search for projects, people, or organizations..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-grow"
-        />
-        <Button type="submit"><Search className="mr-2 h-4 w-4" /> Search</Button>
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <SEOHead title="Search development intelligence" description="Search projects, organisations, policies, programmes, research, funding and more across Africa." />
+      <h1 className="text-2xl font-bold mb-1">Search</h1>
+      <p className="text-muted-foreground mb-6">Projects, organisations, policies, programmes, research, funding, indicators and countries, each with its source.</p>
+
+      <form onSubmit={submit} className="flex gap-2 mb-4">
+        <Input id="search-q" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="e.g. food security Nigeria, solar mini-grids, climate disclosure" className="flex-1" />
+        <Button type="submit"><Search className="h-4 w-4 mr-2" />Search</Button>
       </form>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Select value={typeFilter} onValueChange={(v) => updateParam('type', v)}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <Select value={country} onValueChange={(v) => updateParam('country', v)}>
+          <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Country" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="projects">Projects</SelectItem>
-            <SelectItem value="users">Users</SelectItem>
-            <SelectItem value="organizations">Organizations</SelectItem>
+            <SelectItem value="all">All countries</SelectItem>
+            {africanCountries.map((c) => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={countryFilter} onValueChange={(v) => updateParam('country', v)}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Countries</SelectItem>
-            {countries.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={sdgFilter} onValueChange={(v) => updateParam('sdg_goal', v)}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="SDG Goal" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All SDG Goals</SelectItem>
-            {sdgGoals.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-3 text-sm text-muted-foreground">Searching...</p>
-          </div>
-        ) : results ? (
-          <div className="space-y-6 animate-in fade-in-0 duration-300 motion-reduce:duration-0">
-            <p className="text-muted-foreground">
-              {totalResults} {totalResults === 1 ? 'result' : 'results'} found for "{searchParams.get('q')}".
-            </p>
-            {results.projects.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Projects</h2>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {results.projects.map(p => (
-                    <Card key={p.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/project/${p.id}`)}>
-                      <CardHeader>
-                        <CardTitle className="flex items-start gap-2"><FolderKanban className="w-5 h-5 text-primary mt-1" /><span>{p.title}</span></CardTitle>
-                        <CardDescription>{p.location}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-            {results.users.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Users</h2>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {results.users.map(u => (
-                    <Card key={u.id}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><User className="w-5 h-5 text-primary" />{u.full_name || 'Anonymous'}</CardTitle>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-            {results.organizations.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-4">Organizations</h2>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {results.organizations.map(o => (
-                    <Card key={o.name}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Building className="w-5 h-5 text-primary" />{o.name}</CardTitle>
-                        <CardDescription>{o.country || 'Unknown location'} • {o.members_count} member{o.members_count === 1 ? '' : 's'}</CardDescription>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-            {totalResults === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <SearchX className="h-10 w-10 text-muted-foreground" />
-                <h3 className="mt-3 text-sm font-medium text-foreground">No results found</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Try a different search term or clear a filter.</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Search className="h-10 w-10 text-muted-foreground" />
-            <h3 className="mt-3 text-sm font-medium text-foreground">Search Dev Mapper</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Enter at least 2 characters to search projects, people, or organizations.</p>
-          </div>
+        {user && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={live} onChange={(e) => updateParam('live', e.target.checked ? '1' : null)} />
+            Also search live sources (IATI, OpenAlex, World Bank)
+          </label>
         )}
       </div>
+
+      {q.length >= 2 && counts.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="Filter by type">
+          <Button size="sm" variant={typeFilter === 'all' ? 'default' : 'outline'} onClick={() => updateParam('type', null)}>
+            All ({results.length})
+          </Button>
+          {counts.map(([type, n]) => (
+            <Button key={type} size="sm" variant={typeFilter === type ? 'default' : 'outline'} onClick={() => updateParam('type', type)}>
+              {entityMeta(type).plural} ({n})
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {q.length < 2 ? (
+        <p className="text-muted-foreground">Type at least two characters to search.</p>
+      ) : isFetching ? (
+        <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Searching…</div>
+      ) : error ? (
+        <p className="text-destructive">Search failed. Try again in a moment.</p>
+      ) : shown.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <SearchX className="h-10 w-10 mx-auto mb-3" />
+          <p>No results for "{q}".{user && !live ? ' Try including live sources.' : ''}</p>
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {shown.map((r) => <ResultRow key={`${r.type}:${r.id}`} hit={r} canSave={!!user} />)}
+        </ul>
+      )}
     </div>
   );
 };
+
+function ResultRow({ hit, canSave }: { hit: EntityHit; canSave: boolean }) {
+  const meta = entityMeta(hit.type);
+  const Icon = meta.icon;
+  return (
+    <li className="border rounded-lg p-4 flex gap-3">
+      <Icon className="h-5 w-5 mt-0.5 text-muted-foreground shrink-0" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to={hit.path} className="font-medium hover:underline">{hit.title}</Link>
+          <Badge variant="secondary">{meta.label}</Badge>
+          {hit.countryCode && <Badge variant="outline">{hit.countryCode}</Badge>}
+          {hit.match === 'semantic' && <Badge variant="outline">Related by meaning</Badge>}
+        </div>
+        {hit.snippet && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{hit.snippet}</p>}
+        <p className="text-xs text-muted-foreground mt-1">
+          Source: {sourceName(hit.source)}
+          {hit.sourceUrl && (
+            <a href={hit.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 inline-flex items-center underline">
+              original <ExternalLink className="h-3 w-3 ml-0.5" />
+            </a>
+          )}
+        </p>
+      </div>
+      {canSave && <SaveButton type={hit.type} id={hit.id} title={hit.title} />}
+    </li>
+  );
+}
 
 export default SearchPage;

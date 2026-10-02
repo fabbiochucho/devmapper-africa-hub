@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { Database, Db } from "../_shared/db.ts";
+import { toEmissionFactorRow, type GcFactor } from "../_shared/greencalculus.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +28,32 @@ const ALLOWED_PATHS = new Set([
   "calculate/embodied",
 ]);
 
+// Re-fetches the factor server-side so the stored value can't be supplied by the client.
+async function importFactor(key: string, apiKey: string): Promise<string> {
+  const resp = await fetch(`${GREENCALCULUS_API}/factors?${new URLSearchParams({ key_prefix: key, limit: "20" })}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  if (!resp.ok) throw new Error(`GreenCalculus API error ${resp.status}`);
+  const { factors = [] } = await resp.json() as { factors?: GcFactor[] };
+  const factor = factors.find((f) => f.key === key);
+  if (!factor) throw new Error(`Factor ${key} not found`);
+  const row = toEmissionFactorRow(factor);
+  if (!row) throw new Error("This factor's unit or scope can't be used in the carbon calculator");
+
+  const admin = createClient<Database>(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data, error } = await admin
+    .from("emission_factors")
+    .upsert(row, { onConflict: "scope,category,activity,region,source" })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return data.id;
+}
+
 interface ProxyRequest {
+  /** "import": copy one factor (by key) into emission_factors so carbon entries can cite it. */
+  action?: "import";
+  key?: string;
   path: string;
   method?: "GET" | "POST";
   query?: Record<string, string>;
@@ -36,13 +63,13 @@ interface ProxyRequest {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  let supabaseClient: ReturnType<typeof createClient> | null = null;
+  let supabaseClient: Db | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    if (!authHeader) throw new Error("Unauthorized");
 
-    supabaseClient = createClient(
+    supabaseClient = createClient<Database>(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       { global: { headers: { Authorization: authHeader } } },
@@ -51,10 +78,20 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { path, method = "GET", query, body }: ProxyRequest = await req.json();
+    const { action, key, path, method = "GET", query, body }: ProxyRequest = await req.json();
+    const apiKey = Deno.env.get("GREENCALCULUS_API_KEY");
+
+    if (action === "import") {
+      if (!apiKey) throw new Error("GreenCalculus is not configured");
+      if (typeof key !== "string" || !/^[a-z0-9_.-]{3,200}$/i.test(key)) throw new Error("A valid factor key is required");
+      const id = await importFactor(key, apiKey);
+      return new Response(JSON.stringify({ configured: true, emission_factor_id: id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!ALLOWED_PATHS.has(path)) throw new Error(`Unsupported path: ${path}`);
 
-    const apiKey = Deno.env.get("GREENCALCULUS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({
         configured: false,
