@@ -15,6 +15,7 @@ import { TestAccountManager } from "@/components/admin/TestAccountManager";
 import { ScholarshipManager } from "@/components/admin/ScholarshipManager";
 import { useAdminVerification } from "@/hooks/useAdminVerification";
 import PlatformHealthDashboard from "@/components/admin/PlatformHealthDashboard";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface PendingUser {
   id: string;
@@ -51,7 +52,7 @@ interface FundraisingCampaign {
 // Inline Audit Log Viewer
 function AuditLogViewer() {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<Tables<'audit_logs'>[]>([]);
   const [logLoading, setLogLoading] = useState(true);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ function AuditLogViewer() {
           <p className="text-center text-muted-foreground py-8">{t('admin.auditLogEmpty')}</p>
         ) : (
           <div className="space-y-2 max-h-[500px] overflow-y-auto">
-            {logs.map((log: any) => (
+            {logs.map((log) => (
               <div key={log.id} className="p-3 border rounded-lg text-sm">
                 <div className="flex items-center justify-between mb-1">
                   <Badge variant="outline">{log.action}</Badge>
@@ -94,7 +95,7 @@ function AuditLogViewer() {
 // had no UI at all - the only way to see them was a direct DB query.
 function DataProvidersPanel() {
   const { t } = useTranslation();
-  const [providers, setProviders] = useState<any[]>([]);
+  const [providers, setProviders] = useState<Tables<'data_providers'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -162,7 +163,7 @@ function DataProvidersPanel() {
 function CertificationReviewPanel() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [apps, setApps] = useState<any[]>([]);
+  const [apps, setApps] = useState<Pick<Tables<'certification_applications'>, 'id' | 'requested_tier' | 'status' | 'project_description' | 'budget_usd' | 'geographic_scope' | 'evidence_summary' | 'applicant_id' | 'submitted_at'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState<string | null>(null);
 

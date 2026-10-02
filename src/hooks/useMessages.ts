@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type ProfileSummary = Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url'>;
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { detectPrivacyViolations, formatPrivacyError } from '@/lib/contentPrivacy';
@@ -46,7 +49,7 @@ export function useMessages() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<(Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url' | 'organization'> & { email: string | null })[]>([]);
   const realtimeRef = useRef<any>(null);
 
   const fetchConversations = useCallback(async () => {
@@ -89,7 +92,7 @@ export function useMessages() {
             .select('user_id, full_name, avatar_url')
             .in('user_id', userIds)
         : { data: [] };
-      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+      const profileMap = new Map<string, ProfileSummary>((profilesData || []).map((p) => [p.user_id, p]));
 
       // Fetch last message per conversation
       const lastMsgPromises = convIds.map(id =>
@@ -107,7 +110,7 @@ export function useMessages() {
         const parts = (allParts || [])
           .filter(p => p.conversation_id === conv.id)
           .map(p => {
-            const prof: any = profileMap.get(p.user_id);
+            const prof = profileMap.get(p.user_id);
             return {
               user_id: p.user_id,
               full_name: prof?.full_name ?? null,
@@ -164,7 +167,7 @@ export function useMessages() {
             .select('user_id, full_name, avatar_url')
             .in('user_id', senderIds)
         : { data: [] };
-      const profileMap = new Map((profilesData || []).map((p: any) => [p.user_id, p]));
+      const profileMap = new Map<string, ProfileSummary>((profilesData || []).map((p) => [p.user_id, p]));
 
       const withProfiles = (data || []).map((m) => ({
         ...m,

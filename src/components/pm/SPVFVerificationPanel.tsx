@@ -31,6 +31,8 @@ import {
 import VerificationLedgerView from '@/components/verification/VerificationLedgerView';
 import AuditTrailExport from '@/components/verification/AuditTrailExport';
 import AICopilot from '@/components/ai/AICopilot';
+import type { Tables } from "@/integrations/supabase/types";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 
 interface SPVFVerificationPanelProps {
   reportId: string;
@@ -47,11 +49,11 @@ const STAGE_STATUS_ICONS: Record<string, React.ReactNode> = {
 export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerificationPanelProps) {
   const { user } = useAuth();
   const { hasRole } = useUserRole();
-  const [workflowStages, setWorkflowStages] = useState<any[]>([]);
-  const [scores, setScores] = useState<any>(null);
-  const [evidenceItems, setEvidenceItems] = useState<any[]>([]);
-  const [, setVerifications] = useState<any[]>([]);
-  const [certifications, setCertifications] = useState<any[]>([]);
+  const [workflowStages, setWorkflowStages] = useState<Tables<'verification_workflow_stages'>[]>([]);
+  const [scores, setScores] = useState<Tables<'verification_scores'> | null>(null);
+  const [evidenceItems, setEvidenceItems] = useState<Tables<'evidence_items'>[]>([]);
+  const [, setVerifications] = useState<Tables<'project_verifications'>[]>([]);
+  const [certifications, setCertifications] = useState<Tables<'project_certifications'>[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Scoring form state
@@ -106,7 +108,7 @@ export default function SPVFVerificationPanel({ reportId, isOwner }: SPVFVerific
 
   const updateStageStatus = async (stage: string, status: string) => {
     const now = new Date().toISOString();
-    const updates: any = { status, updated_at: now, notes: stageNotes || null };
+    const updates: TablesUpdate<'verification_workflow_stages'> = { status, updated_at: now, notes: stageNotes || null };
     if (status === 'in_progress') updates.started_at = now;
     if (status === 'completed') updates.completed_at = now;
 

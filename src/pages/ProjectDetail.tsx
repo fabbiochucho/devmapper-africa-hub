@@ -26,6 +26,7 @@ import {
   Shield, ArrowLeft, FileText, Star, AlertTriangle, Eye, Send
 } from "lucide-react";
 import { errorMessageOf } from '@/lib/error-handler';
+import type { Tables } from "@/integrations/supabase/types";
 
 const VERIFICATION_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
   self_report: { label: "Self Report", icon: <FileText className="h-3 w-3" /> },
@@ -49,11 +50,11 @@ const STATUS_STEPS = [
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [report, setReport] = useState<any>(null);
-  const [milestones, setMilestones] = useState<any[]>([]);
-  const [updates, setUpdates] = useState<any[]>([]);
-  const [verifications, setVerifications] = useState<any[]>([]);
-  const [feedback, setFeedback] = useState<any[]>([]);
+  const [report, setReport] = useState<Tables<'reports'> | null>(null);
+  const [milestones, setMilestones] = useState<Tables<'project_milestones'>[]>([]);
+  const [updates, setUpdates] = useState<Tables<'project_updates'>[]>([]);
+  const [verifications, setVerifications] = useState<Tables<'project_verifications'>[]>([]);
+  const [feedback, setFeedback] = useState<Tables<'citizen_project_feedback'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState<ReportAssignment[]>([]);
   const [availableVerifiers, setAvailableVerifiers] = useState<VerifierProfileOption[]>([]);
@@ -130,17 +131,17 @@ export default function ProjectDetail() {
   const issueCount = feedback.filter(f => f.is_issue_report).length;
 
   // Impact Credibility Score
-  const hasVerified = verifications.some((v: any) => v.status === "approved");
+  const hasVerified = verifications.some((v) => v.status === "approved");
   const tierMap: Record<string, 'none' | 'self' | 'community' | 'partner' | 'institutional'> = {
     self_report: 'self', citizen: 'community', ngo: 'partner', government: 'institutional', platform_audit: 'institutional',
   };
-  const bestVerification = verifications.find((v: any) => v.status === "approved");
+  const bestVerification = verifications.find((v) => v.status === "approved");
   const credibilityScore = calculateCredibilityScore({
     verificationTier: bestVerification ? (tierMap[bestVerification.verification_level] || 'none') : 'none',
-    evidenceCount: updates.length + milestones.filter((m: any) => m.completed).length,
+    evidenceCount: updates.length + milestones.filter((m) => m.status === "completed").length,
     carbonDataVerified: hasVerified,
     reportCompleteness: report.description ? 0.8 : 0.3,
-    lastUpdated: report.updated_at || report.created_at,
+    lastUpdated: report.updated_at || report.submitted_at,
   });
 
   // Funding Readiness + Risk Flags - computed from the same already-fetched
@@ -166,11 +167,11 @@ export default function ProjectDetail() {
     evidenceCount: updates.length,
     deadline: report.end_date ?? null,
     milestonesTotal: milestones.length,
-    milestonesCompleted: milestones.filter((m: any) => m.completed).length,
+    milestonesCompleted: milestones.filter((m) => m.status === "completed").length,
   });
 
   const getVerificationStatus = (level: string) => {
-    const v = verifications.find((vr: any) => vr.verification_level === level);
+    const v = verifications.find((vr) => vr.verification_level === level);
     return v?.status || "pending";
   };
 
@@ -362,15 +363,15 @@ export default function ProjectDetail() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {milestones.map((m: any) => (
+              {milestones.map((m) => (
                 <div key={m.id} className="flex items-center gap-3">
-                  {m.completed ? (
+                  {m.status === "completed" ? (
                     <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   ) : (
                     <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className={`text-sm font-medium ${m.completed ? "line-through text-muted-foreground" : ""}`}>
+                    <p className={`text-sm font-medium ${m.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
                       {m.title}
                     </p>
                     {m.target_date && (
@@ -394,7 +395,7 @@ export default function ProjectDetail() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {updates.map((u: any) => (
+              {updates.map((u) => (
                 <div key={u.id} className="border-l-2 border-primary/30 pl-4">
                   <div className="flex items-center justify-between mb-1">
                     <Badge variant="outline">{u.progress_percent}% complete</Badge>
@@ -444,7 +445,7 @@ export default function ProjectDetail() {
             </div>
             <ScrollArea className="max-h-[300px]">
               <div className="space-y-2">
-                {feedback.slice(0, 5).map((f: any) => (
+                {feedback.slice(0, 5).map((f) => (
                   <div key={f.id} className={`p-3 rounded-lg text-sm ${f.is_issue_report ? "bg-destructive/5" : "bg-muted/50"}`}>
                     {f.rating && (
                       <div className="flex gap-0.5 mb-1">

@@ -21,13 +21,14 @@ import { GrantVerifierAccessDialog } from '@/components/compliance/GrantVerifier
 import StandardsPhase2Panel from '@/components/esg/StandardsPhase2Panel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Tables } from "@/integrations/supabase/types";
 
 const ESGPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [organizations, setOrganizations] = useState<Tables<'organizations'>[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedOrg, setSelectedOrg] = useState<any>(null);
+  const [selectedOrg, setSelectedOrg] = useState<Tables<'organizations'> | null>(null);
 
   const createDefaultOrganization = useCallback(async () => {
     try {

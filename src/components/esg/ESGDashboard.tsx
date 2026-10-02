@@ -40,6 +40,7 @@ import EmissionsManager from './EmissionsManager';
 import ExportManager from '@/components/export/ExportManager';
 import IFRSReadinessAssessment from './IFRSReadinessAssessment';
 import FrameworkGapAnalysis from './FrameworkGapAnalysis';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface ESGIndicators {
   id: string;
@@ -71,12 +72,12 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [indicators, setIndicators] = useState<ESGIndicators[]>([]);
-  const [benchmark, setBenchmark] = useState<any>(null);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [indicators, setIndicators] = useState<Tables<'esg_indicators'>[]>([]);
+  const [benchmark, setBenchmark] = useState<AlphaEarthBenchmark | null>(null);
+  const [suppliers, setSuppliers] = useState<Tables<'esg_suppliers'>[]>([]);
   const [supplierEmissions, setSupplierEmissions] = useState<Record<string, { total: number; year: number; quality: string }>>({});
   const [sectorBenchmarks, setSectorBenchmarks] = useState<Record<string, AlphaEarthBenchmark>>({});
-  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [scenarios, setScenarios] = useState<Tables<'esg_scenarios'>[]>([]);
 
   const loadESGData = useCallback(async () => {
     try {

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface ESGDataVerificationProps {
   organizationId: string;
@@ -51,7 +52,7 @@ export default function ESGDataVerification({
   const [verificationNotes, setVerificationNotes] = useState('');
   const [overallScore, setOverallScore] = useState(0);
 
-  const checkDataCompleteness = (indicator: any): 'pass' | 'fail' | 'warning' => {
+  const checkDataCompleteness = (indicator: Tables<'esg_indicators'>): 'pass' | 'fail' | 'warning' => {
     const requiredFields = ['carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'energy_consumption_kwh'];
     const optionalFields = ['carbon_scope3_tonnes', 'water_consumption_m3', 'waste_generated_tonnes'];
     
@@ -63,7 +64,7 @@ export default function ESGDataVerification({
     return 'pass';
   };
 
-  const getCompletenessDetails = useCallback((indicator: any): string => {
+  const getCompletenessDetails = useCallback((indicator: Tables<'esg_indicators'>): string => {
     const fields = [
       'carbon_scope1_tonnes', 'carbon_scope2_tonnes', 'carbon_scope3_tonnes',
       'energy_consumption_kwh', 'water_consumption_m3', 'waste_generated_tonnes'
@@ -72,7 +73,7 @@ export default function ESGDataVerification({
     return t('esg.dataVerification.fieldsPopulatedDetail', { filled, total: fields.length });
   }, [t]);
 
-  const checkScopeBreakdown = (indicator: any): 'pass' | 'fail' | 'warning' => {
+  const checkScopeBreakdown = (indicator: Tables<'esg_indicators'>): 'pass' | 'fail' | 'warning' => {
     const hasScope1 = indicator.carbon_scope1_tonnes !== null;
     const hasScope2 = indicator.carbon_scope2_tonnes !== null;
     const hasScope3 = indicator.carbon_scope3_tonnes !== null;
@@ -82,7 +83,7 @@ export default function ESGDataVerification({
     return 'fail';
   };
 
-  const getScopeDetails = useCallback((indicator: any): string => {
+  const getScopeDetails = useCallback((indicator: Tables<'esg_indicators'>): string => {
     const scopes = [];
     if (indicator.carbon_scope1_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel1'));
     if (indicator.carbon_scope2_tonnes !== null) scopes.push(t('esg.dataVerification.scopeLabel2'));
@@ -90,7 +91,7 @@ export default function ESGDataVerification({
     return scopes.length > 0 ? t('esg.dataVerification.scopeIncludesDetail', { scopes: scopes.join(', ') }) : t('esg.dataVerification.noScopeDataDetail');
   }, [t]);
 
-  const checkTemporalConsistency = (indicator: any): 'pass' | 'fail' | 'warning' => {
+  const checkTemporalConsistency = (indicator: Tables<'esg_indicators'>): 'pass' | 'fail' | 'warning' => {
     const currentYear = new Date().getFullYear();
     const reportingYear = indicator.reporting_year;
     
@@ -99,7 +100,7 @@ export default function ESGDataVerification({
     return 'fail';
   };
 
-  const checkValueRanges = (indicator: any): 'pass' | 'fail' | 'warning' => {
+  const checkValueRanges = (indicator: Tables<'esg_indicators'>): 'pass' | 'fail' | 'warning' => {
     // Basic sanity checks
     const checks = [
       indicator.renewable_energy_percentage === null || (indicator.renewable_energy_percentage >= 0 && indicator.renewable_energy_percentage <= 100),
@@ -115,7 +116,7 @@ export default function ESGDataVerification({
     return 'fail';
   };
 
-  const getValueRangeDetails = useCallback((indicator: any): string => {
+  const getValueRangeDetails = useCallback((indicator: Tables<'esg_indicators'>): string => {
     const issues = [];
     if (indicator.renewable_energy_percentage !== null && (indicator.renewable_energy_percentage < 0 || indicator.renewable_energy_percentage > 100)) {
       issues.push(t('esg.dataVerification.renewableOutOfRangeIssue'));

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { errorMessageOf } from '@/lib/error-handler';
+import type { LucideIcon } from "lucide-react";
 
 type PlanId = 'lite' | 'pro' | 'advanced' | 'enterprise';
 
@@ -22,7 +23,7 @@ interface Organization {
   project_cap: number;
 }
 
-const planDetails: Record<string, { name: string; icon: any; color: string; price: { monthly: number; yearly: number }; features: string[] }> = {
+const planDetails: Record<string, { name: string; icon: LucideIcon; color: string; price: { monthly: number; yearly: number }; features: string[] }> = {
   lite: {
     name: 'Lite',
     icon: Shield,

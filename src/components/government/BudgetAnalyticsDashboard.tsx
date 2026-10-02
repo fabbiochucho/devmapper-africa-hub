@@ -27,7 +27,7 @@ export default function BudgetAnalyticsDashboard() {
   const { user } = useAuth();
   const [analytics, setAnalytics] = useState<BudgetAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
-  const [aggregateFeedback, setAggregateFeedback] = useState<any>(null);
+  const [aggregateFeedback, setAggregateFeedback] = useState<{ total_feedback: number; positive_count: number; issue_count: number; avg_rating: string } | null>(null);
 
   useEffect(() => {
     if (!user) return;

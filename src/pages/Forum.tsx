@@ -10,6 +10,7 @@ import ForumPost from '@/components/forum/ForumPost';
 import CreatePostDialog from '@/components/forum/CreatePostDialog';
 import { RealtimeForumUpdates } from '@/components/realtime/RealtimeForumUpdates';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminVerification } from '@/hooks/useAdminVerification';
 import { toast } from 'sonner';
@@ -91,12 +92,12 @@ const Forum = () => {
             .select('user_id, full_name, avatar_url, is_verified')
             .in('user_id', authorIds)
         : { data: [] };
-      const profileMap = new Map((authorProfiles || []).map((p: any) => [p.user_id, p]));
+      const profileMap = new Map<string, Pick<Tables<'public_profiles'>, 'user_id' | 'full_name' | 'avatar_url' | 'is_verified'>>((authorProfiles || []).map((p) => [p.user_id, p]));
 
       const userLikes = likesData || [];
 
       const formattedPosts = postsData?.map(post => {
-        const prof: any = profileMap.get(post.author_id);
+        const prof = profileMap.get(post.author_id);
         return ({
         id: post.id,
         title: post.title,

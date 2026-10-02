@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Ticket, Search, Clock, CheckCircle, AlertCircle, Loader2, MessageSquare } from "lucide-react";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 
 interface SupportTicket {
   id: string;
@@ -75,7 +76,7 @@ const TicketManager = () => {
   const updateTicketStatus = async (ticketId: string, newStatus: string) => {
     setUpdating(true);
     try {
-      const updates: Record<string, any> = { status: newStatus };
+      const updates: TablesUpdate<'support_tickets'> = { status: newStatus };
       
       if (newStatus === "resolved" || newStatus === "closed") {
         updates.resolution_notes = resolutionNotes;

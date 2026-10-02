@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Send, Megaphone, Users, Clock, Loader2 } from "lucide-react";
+import type { Json } from "@/integrations/supabase/types";
 
 interface Broadcast {
   id: string;
@@ -18,7 +19,7 @@ interface Broadcast {
   recipient_type: string;
   priority: string;
   created_at: string;
-  is_read_by: any;
+  is_read_by: Json | null;
 }
 
 // value fields are stored/matched (recipient_type, priority columns) - do not translate them.

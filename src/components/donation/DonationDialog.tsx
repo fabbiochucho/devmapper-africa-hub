@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { errorMessageOf } from '@/lib/error-handler';
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 interface Campaign {
   id: string;
@@ -82,7 +83,7 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
 
     try {
       // Create donation record
-      const donationData: any = {
+      const donationData: TablesInsert<'campaign_donations'> = {
         campaign_id: campaign.id,
         amount: donationAmount,
         currency: campaign.currency,

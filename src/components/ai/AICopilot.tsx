@@ -37,7 +37,7 @@ const contextOptions: { value: CopilotContext; label: string; icon: React.ReactN
 type PageContext = "general" | "emissions" | "verification" | "marketplace" | "compliance" | "government" | "investor";
 
 interface AICopilotProps {
-  projectData?: any;
+  projectData?: { id?: string; [key: string]: unknown };
   /** Overrides the route-derived page context - for callers embedded on a
    * page whose URL doesn't reflect what's actually being worked on (e.g. a
    * verification panel mounted inside /project-management's tabs). */

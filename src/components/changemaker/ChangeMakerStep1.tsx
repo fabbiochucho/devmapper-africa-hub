@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { sdgGoals } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
+import type { ChangeMakerFormValues } from "@/lib/changeMakerSchema";
 
 interface ChangeMakerStep1Props {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<ChangeMakerFormValues>;
 }
 
 const ChangeMakerStep1: React.FC<ChangeMakerStep1Props> = ({ form }) => {

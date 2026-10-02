@@ -9,12 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Save, Plus, Trash2, Eye, EyeOff, Loader2, FileText, GripVertical } from "lucide-react";
+import type { Json } from "@/integrations/supabase/types";
 
 interface CMSContent {
   id: string;
   page_key: string;
   title: string;
-  content: any;
+  content: Json;
   is_published: boolean;
   updated_at: string;
 }
@@ -24,7 +25,7 @@ interface CMSSection {
   page_key: string;
   section_key: string;
   title: string | null;
-  content: any;
+  content: Json;
   display_order: number;
   is_visible: boolean;
 }

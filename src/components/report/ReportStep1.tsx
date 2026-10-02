@@ -24,8 +24,7 @@ import { toast } from "@/components/ui/sonner";
 import { sdgGoals, projectStatuses } from "@/lib/constants";
 import { responsibilityAreas } from "@/data/responsibilityAreas";
 import { ImagePlus, Trash2, MapPin } from "lucide-react";
-import ExifReader from "exif-reader";
-import { Buffer } from 'buffer';
+import { gpsFromImage } from "@/lib/exifGps";
 import { reportSchema } from '@/lib/reportSchema';
 import { reverseGeocode } from '@/lib/geocode';
 import { getCountries, Country, findCountryByCode2 } from '@/data/countries';
@@ -36,13 +35,6 @@ interface ReportStep1Props {
   form: UseFormReturn<ReportFormValues>;
   sdgTargets: string[];
 }
-
-const getGpsData = (tags: any): { latitude: number | null; longitude: number | null } => {
-  if (tags && tags.gps && tags.gps.Latitude && tags.gps.Longitude) {
-    return { latitude: tags.gps.Latitude, longitude: tags.gps.Longitude };
-  }
-  return { latitude: null, longitude: null };
-};
 
 const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
   const { control, watch, setValue, getValues, formState: { dirtyFields } } = form;
@@ -87,10 +79,7 @@ const ReportStep1: React.FC<ReportStep1Props> = ({ form, sdgTargets }) => {
 
       for (const file of Array.from(files)) {
         try {
-          const arrayBuffer = await file.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-          const tags = ExifReader(buffer);
-          const { latitude, longitude } = getGpsData(tags);
+          const { latitude, longitude } = gpsFromImage(new Uint8Array(await file.arrayBuffer()));
 
           if (latitude && longitude && !getValues('lat') && !getValues('lng')) {
             setValue('lat', parseFloat(latitude.toFixed(6)));

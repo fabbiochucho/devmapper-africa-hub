@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { DollarSign, Plus, TrendingUp, Wallet } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface BudgetTrackerProps {
   reportId: string;
@@ -17,7 +18,7 @@ interface BudgetTrackerProps {
 
 export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps) {
   const { user } = useAuth();
-  const [budgets, setBudgets] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<Tables<'project_budgets'>[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [allocated, setAllocated] = useState("");
   const [spent, setSpent] = useState("");
@@ -98,7 +99,7 @@ export default function BudgetTracker({ reportId, isOwner }: BudgetTrackerProps)
         <Card>
           <CardHeader><CardTitle className="text-base">Funding Sources</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {budgets.map((b: any) => (
+            {budgets.map((b) => (
               <div key={b.id} className="border rounded-lg p-3 space-y-1">
                 <div className="flex justify-between">
                   <span className="font-medium text-sm">{b.funding_source || "General"}</span>

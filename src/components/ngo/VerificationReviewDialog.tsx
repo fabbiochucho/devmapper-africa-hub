@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapPin, Target, Calendar, FileText, Image, CheckCircle2, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
 import { errorMessageOf } from '@/lib/error-handler';
+import type { Tables } from "@/integrations/supabase/types";
 
 interface VerificationReviewDialogProps {
   open: boolean;
@@ -39,7 +40,7 @@ export default function VerificationReviewDialog({
   const [decision, setDecision] = useState<'approved' | 'rejected' | 'needs_revision'>('approved');
   const [comments, setComments] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [evidence, setEvidence] = useState<any[]>([]);
+  const [evidence, setEvidence] = useState<Tables<'evidence_items'>[]>([]);
   const [loadingEvidence, setLoadingEvidence] = useState(false);
 
   useEffect(() => {

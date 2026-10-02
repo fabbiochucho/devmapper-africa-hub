@@ -13,7 +13,7 @@ export type ExportFormat = 'pdf' | 'excel' | 'json';
 export interface ExportableData {
   type: 'esg_indicators' | 'esg_suppliers' | 'esg_scenarios' | 'reports' | 'analytics';
   label: string;
-  data: any[];
+  data: object[];
 }
 
 interface ExportManagerProps {
@@ -45,14 +45,15 @@ export default function ExportManager({ organizationName, availableData, planTyp
     );
   };
 
-  const exportToJSON = (data: Record<string, any[]> | any[], filename: string) => {
+  const exportToJSON = (data: Record<string, object[]> | object[], filename: string) => {
     const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     downloadBlob(blob, `${filename}.json`);
   };
 
-  const exportToCSV = (data: any[], filename: string) => {
-    if (!data.length) return;
+  const exportToCSV = (rows: object[], filename: string) => {
+    if (!rows.length) return;
+    const data = rows as Record<string, unknown>[]; // plain row objects
     
     const headers = Object.keys(data[0]);
     const csvContent = [
@@ -155,7 +156,7 @@ export default function ExportManager({ organizationName, availableData, planTyp
 
        switch (format) {
         case 'json': {
-          const combinedData: Record<string, any[]> = {};
+          const combinedData: Record<string, object[]> = {};
           selectedData.forEach(d => {
             combinedData[d.type] = d.data;
           });

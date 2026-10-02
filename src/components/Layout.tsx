@@ -20,6 +20,8 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import LanguagePromptBanner from "./LanguagePromptBanner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import type { UserProfile } from "@/lib/types";
 
 const roleDisplayNames: Record<string, string> = {
   'citizen_reporter': 'Citizen',
@@ -40,8 +42,8 @@ const LayoutHeader = memo(({
   onLogout, 
   onSearchOpen 
 }: {
-  user: any;
-  profile: any;
+  user: User | null;
+  profile: UserProfile | null;
   currentRole: string;
   onLogout: () => void;
   onSearchOpen: () => void;

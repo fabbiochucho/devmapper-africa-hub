@@ -18,14 +18,16 @@ import {
   Building
 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { Json, Tables } from "@/integrations/supabase/types";
+import type { AlphaEarthBenchmark } from "@/lib/alphaearth-client";
 
 interface ESGReportGeneratorProps {
   organizationName: string;
   organizationId: string;
-  indicators: any[];
-  suppliers: any[];
-  scenarios: any[];
-  benchmark: any;
+  indicators: Tables<'esg_indicators'>[];
+  suppliers: Tables<'esg_suppliers'>[];
+  scenarios: Tables<'esg_scenarios'>[];
+  benchmark: AlphaEarthBenchmark | null;
   planType: 'free' | 'lite' | 'pro';
 }
 
@@ -46,6 +48,12 @@ const reportSections: ReportSection[] = [
   { id: 'scenarios', label: 'Decarbonization Pathways', icon: <TrendingDown className="w-4 h-4" />, description: 'Scenario modeling results', proOnly: true },
   { id: 'benchmarks', label: 'Industry Benchmarks', icon: <Target className="w-4 h-4" />, description: 'Comparison against peers', proOnly: true },
 ];
+
+// esg_scenarios.results is jsonb written by ESGScenarioAnalysis; read numeric fields defensively.
+function scenarioNumber(results: Json | null, key: 'cost_savings' | 'roi_years'): number {
+  const value = results && typeof results === 'object' && !Array.isArray(results) ? results[key] : undefined;
+  return typeof value === 'number' ? value : 0;
+}
 
 export default function ESGReportGenerator({
   organizationName,
@@ -132,7 +140,7 @@ export default function ESGReportGenerator({
     };
   };
 
-  const generateHTMLReport = (reportData: any) => {
+  const generateHTMLReport = (reportData: ReturnType<typeof buildReportData>) => {
     const { organization, reportYear, generatedAt, data } = reportData;
     const date = new Date(generatedAt).toLocaleDateString();
 
@@ -248,8 +256,8 @@ export default function ESGReportGenerator({
         <tr>
           <td>${escapeHtml(s.name)}</td>
           <td>${s.baseline_year} → ${s.target_year}</td>
-          <td>$${(s.results?.cost_savings || 0).toLocaleString()}</td>
-          <td>${s.results?.roi_years || '-'} years</td>
+          <td>${scenarioNumber(s.results, 'cost_savings').toLocaleString()}</td>
+          <td>${scenarioNumber(s.results, 'roi_years') || '-'} years</td>
         </tr>
       `).join('');
 

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import ForumModeration from './ForumModeration';
+import type { Json, Tables } from "@/integrations/supabase/types";
 
 interface PlatformStats {
   total_reports: number;
@@ -25,12 +26,16 @@ interface PlatformStats {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
+// audit_logs.payload is jsonb; compliance flags carry an optional issue string.
+const payloadIssue = (payload: Json | null) =>
+  payload && typeof payload === 'object' && !Array.isArray(payload) && typeof payload.issue === 'string' ? payload.issue : '';
+
 export default function PlatformHealthDashboard() {
   const { t } = useTranslation();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [complianceAlerts, setComplianceAlerts] = useState<any[]>([]);
-  const [roleDistribution, setRoleDistribution] = useState<any[]>([]);
+  const [complianceAlerts, setComplianceAlerts] = useState<Tables<'audit_logs'>[]>([]);
+  const [roleDistribution, setRoleDistribution] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -299,7 +304,7 @@ export default function PlatformHealthDashboard() {
                     >
                       <div>
                         <p className="text-sm font-medium">
-                          {(alert.payload)?.issue || t('admin.platformHealth.complianceIssueFallback')}
+                          {payloadIssue(alert.payload) || t('admin.platformHealth.complianceIssueFallback')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {t('admin.platformHealth.orgIdLabel', { id: alert.org_id?.slice(0, 8), date: new Date(alert.created_at).toLocaleDateString() })}

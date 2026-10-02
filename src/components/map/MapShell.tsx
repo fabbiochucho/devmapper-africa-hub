@@ -31,7 +31,7 @@ interface MapShellProps {
   markers?: Array<{
     id: string;
     coordinates: [number, number];
-    properties: Record<string, any>;
+    properties: Record<string, unknown>;
   }>;
 }
 

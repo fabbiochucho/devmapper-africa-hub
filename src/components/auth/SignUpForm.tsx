@@ -87,7 +87,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
       const redirectUrl = `${window.location.origin}/`;
       
-      const signUpOptions: any = {
+      const signUpOptions: { emailRedirectTo: string; data: Record<string, string>; captchaToken?: string } = {
         emailRedirectTo: redirectUrl,
         data: { full_name: values.name, selected_role: selectedRole },
       };

@@ -11,6 +11,11 @@ import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { errorMessageOf } from '@/lib/error-handler';
 
+// Shape returned by the gee/sentinel/climatetrace proxy functions for heatmap layers.
+interface EarthLayerResponse {
+  data?: { lat: number; lng: number; value: number }[];
+}
+
 interface GeoLayersProps {
   map: maplibregl.Map | null;
 }
@@ -128,7 +133,7 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     }
   };
 
-  const addLayerToMap = (layerType: LayerType, data: any) => {
+  const addLayerToMap = (layerType: LayerType, data: EarthLayerResponse) => {
     if (!map) return;
 
     const sourceId = `${layerType}-source`;
@@ -145,7 +150,7 @@ export default function GeoLayers({ map }: GeoLayersProps) {
     // Convert data to GeoJSON
     const geojsonData = {
       type: 'FeatureCollection' as const,
-      features: data.data?.map((point: any) => ({
+      features: data.data?.map((point) => ({
         type: 'Feature' as const,
         geometry: {
           type: 'Point' as const,

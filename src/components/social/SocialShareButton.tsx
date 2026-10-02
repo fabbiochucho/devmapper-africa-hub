@@ -22,12 +22,19 @@ import {
   Globe
 } from 'lucide-react';
 
+interface ShareContent {
+  title: string;
+  description: string;
+  hashtags: string[];
+  url: string;
+}
+
 interface SocialShareButtonProps {
   title: string;
   description: string;
   url: string;
   imageUrl?: string;
-  data?: any;
+  data?: object;
   type: 'project' | 'analytics' | 'report';
 }
 
@@ -120,6 +127,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     
     // Stats overlay (if analytics data available)
     if (type === 'analytics' && data) {
+      const stat = (key: string) => String((data as Record<string, unknown>)[key] ?? 'N/A');
       ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.fillRect(canvas.width - 300, 100, 250, 200);
       
@@ -129,9 +137,9 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       ctx.fillText('Quick Stats:', canvas.width - 280, 130);
       
       ctx.font = '16px Arial';
-      ctx.fillText(`Projects: ${data.totalProjects || 'N/A'}`, canvas.width - 280, 160);
-      ctx.fillText(`Countries: ${data.countriesCount || 'N/A'}`, canvas.width - 280, 185);
-      ctx.fillText(`SDGs: ${data.sdgCount || 'N/A'}`, canvas.width - 280, 210);
+      ctx.fillText(`Projects: ${stat('totalProjects')}`, canvas.width - 280, 160);
+      ctx.fillText(`Countries: ${stat('countriesCount')}`, canvas.width - 280, 185);
+      ctx.fillText(`SDGs: ${stat('sdgCount')}`, canvas.width - 280, 210);
     }
     
     return canvas.toDataURL('image/png');
@@ -142,7 +150,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       name: 'Twitter',
       icon: <Twitter className="w-5 h-5" />,
       color: 'bg-blue-500',
-      generateUrl: (content: any) => {
+      generateUrl: (content: ShareContent) => {
         const text = `${content.title}\n\n${content.description.slice(0, 200)}...`;
         const hashtags = content.hashtags.join(',');
         return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&hashtags=${hashtags}&url=${encodeURIComponent(content.url)}`;
@@ -152,7 +160,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       name: 'Facebook',
       icon: <Facebook className="w-5 h-5" />,
       color: 'bg-blue-600',
-      generateUrl: (content: any) => {
+      generateUrl: (content: ShareContent) => {
         return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.title + ' - ' + content.description)}`;
       }
     },
@@ -160,7 +168,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       name: 'LinkedIn',
       icon: <Linkedin className="w-5 h-5" />,
       color: 'bg-blue-700',
-      generateUrl: (content: any) => {
+      generateUrl: (content: ShareContent) => {
         return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(content.url)}&title=${encodeURIComponent(content.title)}&summary=${encodeURIComponent(content.description)}`;
       }
     },
@@ -168,14 +176,14 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       name: 'WhatsApp',
       icon: <MessageCircle className="w-5 h-5" />,
       color: 'bg-green-500',
-      generateUrl: (content: any) => {
+      generateUrl: (content: ShareContent) => {
         const text = `${content.title}\n\n${content.description}\n\n${content.url}`;
         return `https://wa.me/?text=${encodeURIComponent(text)}`;
       }
     }
   ];
 
-  const handleShare = async (platform: any) => {
+  const handleShare = async (platform: (typeof socialPlatforms)[number]) => {
     const content = generateShareableContent();
     const shareUrl = platform.generateUrl(content);
     

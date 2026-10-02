@@ -24,9 +24,10 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import type { LucideIcon } from "lucide-react";
 
 // Role display names and colors
-const roleConfig: Record<UserRole, { label: string; color: string; icon: any }> = {
+const roleConfig: Record<UserRole, { label: string; color: string; icon: LucideIcon }> = {
   citizen_reporter: { label: 'Citizen', color: 'bg-blue-500', icon: User },
   ngo_member: { label: 'NGO', color: 'bg-green-500', icon: Users },
   government_official: { label: 'Gov', color: 'bg-purple-500', icon: Building2 },

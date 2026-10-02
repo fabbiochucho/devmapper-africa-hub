@@ -12,13 +12,14 @@ import { UserRole } from '@/contexts/UserRoleContext';
 import { ALL_ROLES } from '@/lib/roles';
 import { Copy, UserPlus, Shield, Users, Building2, Briefcase, Globe, Heart, User } from 'lucide-react';
 import { errorMessageOf } from '@/lib/error-handler';
+import type { LucideIcon } from "lucide-react";
 
 // role keys below are stored UserRole values (used for DB rpc calls, checkbox ids) - never translate the keys.
 // label/description text is resolved via translation inside the component (see roleConfig below).
 export function TestAccountManager() {
   const { t } = useTranslation();
 
-  const roleConfig: Record<UserRole, { label: string; color: string; icon: any; description: string }> = {
+  const roleConfig: Record<UserRole, { label: string; color: string; icon: LucideIcon; description: string }> = {
     citizen_reporter: {
       label: t('admin.testAccounts.role.citizenReporterLabel'),
       color: 'bg-blue-500',
