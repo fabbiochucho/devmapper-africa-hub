@@ -100,77 +100,46 @@ const handler = async (req: Request): Promise<Response> => {
       const siteUrl = Deno.env.get('SITE_URL') ?? 'https://devmapper.africa';
       const redirect_url = requestData.redirect_url?.startsWith(siteUrl) ? requestData.redirect_url : `${siteUrl}/fundraising?donation=success`;
 
-      const FLUTTERWAVE_SECRET = Deno.env.get('FLUTTERWAVE_SECRET_KEY');
-      
-      if (!FLUTTERWAVE_SECRET) {
-        console.log('Flutterwave secret not configured, using mock payment');
-        // Mock payment for development
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            payment_link: `${redirect_url}&mock_payment=true&donation_id=${donation_id}`,
-            message: 'Mock payment link generated (Flutterwave not configured)'
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
+      // Donations go through Paystack; paystack-webhook confirms them (amount + currency checked).
+      const PAYSTACK_SECRET = Deno.env.get('PAYSTACK_SECRET_KEY');
+      if (!PAYSTACK_SECRET) {
+        return new Response(JSON.stringify({ error: 'Payments are not configured' }), {
+          status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
       }
 
-      // Create Flutterwave payment link
-      const tx_ref = `donation_${donation_id}_${Date.now()}`;
-      
-      const flutterwavePayload = {
-        tx_ref,
-        amount,
-        currency,
-        redirect_url: redirect_url || `${Deno.env.get('SUPABASE_URL')}/functions/v1/flutterwave-webhook`,
-        customer: {
-          email,
-          name: name || 'Anonymous Donor'
-        },
-        customizations: {
-          title: 'DevMapper Donation',
-          description: `Donation to campaign ${campaign_id}`,
-          logo: 'https://devmapper.africa/logo.png'
-        },
-        meta: {
-          donation_id,
-          campaign_id,
-          payment_type: 'donation'
-        }
-      };
-
-      const response = await fetch('https://api.flutterwave.com/v3/payments', {
+      const reference = `donation_${donation_id}_${Date.now()}`;
+      const response = await fetch('https://api.paystack.co/transaction/initialize', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${FLUTTERWAVE_SECRET}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(flutterwavePayload)
+        headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          amount: Math.round(amount * 100), // subunits (kobo/cents)
+          currency, // the campaign's; a non-NGN currency must be enabled on the Paystack account
+          reference,
+          callback_url: redirect_url,
+          metadata: { donation_id, campaign_id, payment_type: 'donation', donor_name: name || 'Anonymous Donor' },
+        }),
       });
+      const paystackData = await response.json();
+      // Log the outcome only - the full response carries the payment link.
+      console.log('Paystack initialize status:', paystackData?.status);
 
-      const flutterwaveData = await response.json();
-      // Log the outcome only - the full response carries customer details and the payment link.
-      console.log('Flutterwave response status:', flutterwaveData?.status);
-
-      if (flutterwaveData.status === 'success' && flutterwaveData.data?.link) {
-        // Update donation with transaction reference (only if not already linked)
+      if (paystackData.status && paystackData.data?.authorization_url) {
         await supabase
           .from('campaign_donations')
-          .update({ payment_intent_id: tx_ref })
+          .update({ payment_intent_id: reference })
           .eq('id', donation_id)
           .is('payment_intent_id', null);
 
         return new Response(
-          JSON.stringify({ 
-            success: true, 
-            payment_link: flutterwaveData.data.link,
-            tx_ref
-          }),
+          JSON.stringify({ success: true, payment_link: paystackData.data.authorization_url, reference }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
 
-      throw new Error(flutterwaveData.message || 'Failed to create payment link');
+      // The donation row stays 'pending' with no reference; nothing was charged.
+      throw new Error(paystackData.message || 'Failed to create payment link');
     }
 
     // Handle subscription payments (requires authentication)

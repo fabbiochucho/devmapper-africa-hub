@@ -270,7 +270,7 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Secure payment powered by Flutterwave.
+            Secure payment powered by Paystack.
           </p>
         </div>
       </DialogContent>
