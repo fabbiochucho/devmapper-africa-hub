@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyHmacSignature } from "../_shared/webhookSignature.ts";
 import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
-import { computePlanExpiry, getPlanQuotas } from "../_shared/planQuotas.ts";
+import { computePlanExpiry, getPlanPrice, getPlanQuotas, paidInFull } from "../_shared/planQuotas.ts";
 import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
 import { activateIndividualPlan } from "../_shared/individualPlan.ts";
 
@@ -64,8 +64,24 @@ serve(async (req: Request) => {
 
     if (event.event === 'charge.success') {
       const { metadata, amount, currency, reference } = event.data;
+      // Metadata is caller-controlled (anyone can open a checkout with our public key), so every
+      // branch below also checks the charge covers what is owed. 200 so Paystack doesn't retry.
+      const paid = { amount: (Number(amount) || 0) / 100, currency };
+      const rejectUnderpaid = async (what: string) => {
+        console.error(`Charge does not cover ${what}`);
+        await supabase.rpc('record_webhook_event', {
+          p_event_id: eventId, p_provider: 'paystack', p_event_type: event.event,
+          p_payload: event, p_status: 'failed', p_error_message: `Underpaid: ${what}`,
+        });
+        return new Response(JSON.stringify({ error: 'Payment does not cover the amount due' }), {
+          status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      };
 
       if (metadata?.payment_type === 'individual_subscription' && metadata?.user_id) {
+        if (!paidInFull(paid, { amount: getPlanPrice('individual', metadata.interval), currency: 'USD' })) {
+          return rejectUnderpaid(`individual plan for ${metadata.user_id}`);
+        }
         const failure = await activateIndividualPlan(supabase, {
           userId: metadata.user_id, interval: metadata.interval, provider: 'paystack',
           amount: amount / 100, currency: currency || 'USD', reference,
@@ -89,6 +105,9 @@ serve(async (req: Request) => {
             status: 400,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
           });
+        }
+        if (!paidInFull(paid, { amount: getPlanPrice(requestedPlan, metadata.interval), currency: 'USD' })) {
+          return rejectUnderpaid(`${requestedPlan} plan for ${metadata.organization_id}`);
         }
 
         // Validate organization exists before updating - matches
@@ -184,6 +203,11 @@ serve(async (req: Request) => {
       }
 
       if (metadata?.payment_type === 'donation' && metadata?.donation_id) {
+        const { data: owed } = await supabase
+          .from('campaign_donations').select('amount, currency').eq('id', metadata.donation_id).maybeSingle();
+        if (owed && !paidInFull(paid, { amount: Number(owed.amount), currency: owed.currency })) {
+          return rejectUnderpaid(`donation ${metadata.donation_id}`);
+        }
         // Guard on status != 'completed' so a duplicate webhook delivery
         // (on top of the idempotency check already done above) can't
         // double-increment the campaign total. Use the donation's own
@@ -209,7 +233,8 @@ serve(async (req: Request) => {
       }
 
       if (metadata?.payment_type === 'marketplace_purchase' && metadata?.order_id) {
-        const result = await confirmOrderPaid(supabase, metadata.order_id, reference);
+        const result = await confirmOrderPaid(supabase, metadata.order_id, reference, { ...paid, defaultCurrency: 'NGN' });
+        if (result.reason === 'underpaid') return rejectUnderpaid(`order ${metadata.order_id}`);
         if (!result.success) {
           console.error('Marketplace purchase confirmation failed:', result.reason);
         }

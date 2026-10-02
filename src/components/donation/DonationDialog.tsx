@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { errorMessageOf } from '@/lib/error-handler';
-import type { TablesInsert } from "@/integrations/supabase/types";
 
 interface Campaign {
   id: string;
@@ -37,7 +36,7 @@ interface DonationDialogProps {
 const PRESET_AMOUNTS = [10, 25, 50, 100, 250, 500];
 
 export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogProps) {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const [amount, setAmount] = useState<string>('25');
   const [email, setEmail] = useState<string>(profile?.email || '');
   const [name, setName] = useState<string>(profile?.full_name || '');
@@ -82,37 +81,15 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
     setLoading(true);
 
     try {
-      // Create donation record
-      const donationData: TablesInsert<'campaign_donations'> = {
-        campaign_id: campaign.id,
-        amount: donationAmount,
-        currency: campaign.currency,
-        anonymous,
-        message: message || null,
-        status: 'pending'
-      };
-
-      if (user) {
-        donationData.donor_id = user.id;
-      }
-
-      const { data: donation, error: donationError } = await supabase
-        .from('campaign_donations')
-        .insert([donationData])
-        .select()
-        .single();
-
-      if (donationError) throw donationError;
-
-      // Initialize Flutterwave payment
+      // create-payment records the donation server-side (guests included) and returns the checkout link.
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: donationAmount,
-          currency: campaign.currency,
           email,
           name: anonymous ? 'Anonymous Donor' : name,
+          message: message || undefined,
+          anonymous,
           campaign_id: campaign.id,
-          donation_id: donation.id,
           redirect_url: `${window.location.origin}/fundraising?donation=success`,
           payment_type: 'donation'
         }
@@ -293,7 +270,7 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Secure payment powered by Flutterwave. Your donation is tax-deductible.
+            Secure payment powered by Flutterwave.
           </p>
         </div>
       </DialogContent>

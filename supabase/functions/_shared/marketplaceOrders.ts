@@ -1,9 +1,10 @@
 import type { Db } from "./db.ts";
+import { paidInFull } from "./planQuotas.ts";
 // deno-lint-ignore-file no-explicit-any
 
 export interface ConfirmOrderPaidResult {
   success: boolean;
-  reason?: "order_not_found_or_already_processed" | "update_failed" | "portfolio_failed";
+  reason?: "order_not_found_or_already_processed" | "underpaid" | "update_failed" | "portfolio_failed";
 }
 
 /**
@@ -17,7 +18,21 @@ export async function confirmOrderPaid(
   supabase: Db,
   orderId: string,
   paymentReference: string,
+  /** What the gateway says was charged; defaultCurrency mirrors create-payment's per-provider fallback. */
+  paid: { amount: number; currency?: string | null; defaultCurrency: string },
 ): Promise<ConfirmOrderPaidResult> {
+  const { data: pending } = await supabase
+    .from("carbon_credit_orders")
+    .select("total_amount, currency")
+    .eq("id", orderId)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (!pending) return { success: false, reason: "order_not_found_or_already_processed" };
+  if (!paidInFull(paid, { amount: Number(pending.total_amount), currency: pending.currency || paid.defaultCurrency })) {
+    console.error("[marketplaceOrders] Charge does not cover order", orderId);
+    return { success: false, reason: "underpaid" };
+  }
+
   // Guard on status='pending' so a duplicate webhook delivery (on top of the
   // idempotency check already done at the webhook level) can't double-fire
   // the inventory-decrement trigger or create a second portfolio holding.

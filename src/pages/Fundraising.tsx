@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +103,18 @@ const Fundraising = () => {
     fetchCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStatus]);
+
+  // Shared links (?campaign=<id>, from handleShare) open that campaign's donation dialog.
+  const sharedCampaignId = searchParams.get('campaign');
+  const openedSharedId = useRef<string | null>(null);
+  useEffect(() => {
+    const shared = sharedCampaignId && campaigns.find(c => c.id === sharedCampaignId);
+    if (shared && openedSharedId.current !== shared.id) { // once, not on every refetch
+      openedSharedId.current = shared.id;
+      setSelectedCampaign(shared);
+      setShowDonationDialog(true);
+    }
+  }, [sharedCampaignId, campaigns]);
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
