@@ -573,7 +573,16 @@
     "categoryDownstreamTransport": "Downstream transportation",
     "categoryCapitalGoods": "Capital goods",
     "categoryEndOfLife": "End-of-life treatment of sold products",
-    "categoryElectricityLifecycle": "Electricity (lifecycle estimate)"
+    "categoryElectricityLifecycle": "Electricity (lifecycle estimate)",
+    "external": {
+      "hint": "No matching factor above? Search 16,000+ sourced factors from GreenCalculus. The one you pick is added to the library with its citation.",
+      "placeholder": "e.g. diesel, grid electricity Kenya, air freight",
+      "noResults": "No usable factors found. Try a broader term.",
+      "source": "source",
+      "use": "Use",
+      "searchFailed": "Factor search failed",
+      "importFailed": "Couldn't add that factor"
+    }
   },
   "forum": {
     "anonymous": "Anonymous",

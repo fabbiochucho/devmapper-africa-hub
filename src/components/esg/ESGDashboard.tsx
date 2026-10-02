@@ -151,10 +151,12 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
       setScenarios(scenariosData || []);
 
       // Try to load benchmark data
-      if (orgData.primary_sector) {
+      // Benchmark against the organisation's own country; skip when it hasn't set one.
+      const benchmarkCountry = orgData.incorporation_country || orgData.operating_countries?.[0];
+      if (orgData.primary_sector && benchmarkCountry) {
         try {
           const benchmarkData = await getBenchmark(
-            'US', // Default country
+            benchmarkCountry,
             orgData.primary_sector,
             orgData.reporting_year,
             organizationId

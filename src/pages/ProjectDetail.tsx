@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { LocalConditionsCard } from "@/components/project/LocalConditionsCard";
 import CitizenFeedbackPanel from "@/components/pm/CitizenFeedbackPanel";
 import ImpactCredibilityBadge from "@/components/scoring/ImpactCredibilityBadge";
 import { calculateCredibilityScore } from "@/lib/impact-credibility";
@@ -307,6 +308,8 @@ export default function ProjectDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {user && report.lat != null && report.lng != null && <LocalConditionsCard lat={report.lat} lng={report.lng} />}
 
       {/* Cross-entity review routing (owner-only) */}
       {user && report.user_id === user.id && (

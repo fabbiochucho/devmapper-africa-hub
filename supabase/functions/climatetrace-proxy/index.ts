@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { type Database, type Db, asJson, logAuditEvent } from '../_shared/db.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,15 +22,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let supabaseClient: ReturnType<typeof createClient> | null = null;
+  let supabaseClient: Db | null = null;
 
   try {
     console.log('[CLIMATETRACE-PROXY] Incoming request');
 
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Missing authorization header');
+    if (!authHeader) throw new Error('Unauthorized');
 
-    supabaseClient = createClient(
+    supabaseClient = createClient<Database>(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
@@ -111,11 +112,11 @@ serve(async (req) => {
       .insert({
         cache_key: cacheKey,
         provider: 'climatetrace',
-        payload: emissionsData,
+        payload: asJson(emissionsData),
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       });
 
-    await supabaseClient.rpc('log_audit_event', {
+    await logAuditEvent(supabaseClient, {
       p_actor_id: user.id,
       p_actor_type: 'user',
       p_org_id: null,

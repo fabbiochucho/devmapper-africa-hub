@@ -34,9 +34,11 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import type { ReportListItem } from "@/hooks/useReportsList";
+import { buildReportHtml, downloadFile, reportsInRange, type ReportKind } from "@/lib/reportExport";
 
 const generateReportSchema = z.object({
-  reportType: z.string({ required_error: "Please select a report type." }),
+  reportType: z.enum(["Summary", "Detailed", "Financial"], { required_error: "Please select a report type." }),
   dateRange: z.custom<DateRange>().refine(
     (date) => !!date?.from && !!date?.to,
     { message: "A complete date range is required." }
@@ -48,9 +50,10 @@ type GenerateReportValues = z.infer<typeof generateReportSchema>;
 interface GenerateReportDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  reports: ReportListItem[];
 }
 
-const GenerateReportDialog = ({ isOpen, onOpenChange }: GenerateReportDialogProps) => {
+const GenerateReportDialog = ({ isOpen, onOpenChange, reports }: GenerateReportDialogProps) => {
   const form = useForm<GenerateReportValues>({
     resolver: zodResolver(generateReportSchema),
     defaultValues: {
@@ -59,17 +62,17 @@ const GenerateReportDialog = ({ isOpen, onOpenChange }: GenerateReportDialogProp
     },
   });
 
-  // ponytail: still a mock - nothing is generated or downloaded; wire to a real report endpoint.
   const onSubmit = (values: GenerateReportValues) => {
-    toast.success("Report generated successfully!", {
-      description: `Your ${values.reportType} report is ready.`,
-      action: {
-        label: "Download",
-        onClick: () => {
-          toast.info("Download started (mock).");
-        },
-      },
-    });
+    const { from, to } = values.dateRange;
+    if (!from || !to) return;
+    const rows = reportsInRange(reports, from, to);
+    if (rows.length === 0) {
+      toast.info("No reports were submitted in that date range.");
+      return;
+    }
+    const kind: ReportKind = values.reportType;
+    downloadFile(buildReportHtml(kind, rows, from, to), `devmapper-${kind.toLowerCase()}-report.html`, "text/html");
+    toast.success(`${kind} report downloaded (${rows.length} reports).`);
 
     onOpenChange(false);
     form.reset();
@@ -107,7 +110,6 @@ const GenerateReportDialog = ({ isOpen, onOpenChange }: GenerateReportDialogProp
                       <SelectItem value="Summary">Summary Report</SelectItem>
                       <SelectItem value="Detailed">Detailed Report</SelectItem>
                       <SelectItem value="Financial">Financial Report</SelectItem>
-                      <SelectItem value="ESG">ESG Report</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

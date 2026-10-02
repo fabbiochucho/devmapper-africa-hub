@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Flame, ShieldCheck, Plus, Trash2, TrendingDown, Calculator, BookText, Upload, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ExternalFactorSearch } from "./ExternalFactorSearch";
 
 interface CarbonTabProps {
   reportId: string;
@@ -373,8 +374,8 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                       <Select value={category} onValueChange={(v) => { setCategory(v); setFactorId(""); }}>
                         <SelectTrigger><SelectValue placeholder={t("carbon.selectCategory")} /></SelectTrigger>
                         <SelectContent>
-                          {Object.keys(CATEGORY_LABEL_KEYS).filter(c => factors.some(f => f.category === c)).map(c => (
-                            <SelectItem key={c} value={c}>{t(CATEGORY_LABEL_KEYS[c])}</SelectItem>
+                          {[...new Set(factors.map(f => f.category))].map(c => (
+                            <SelectItem key={c} value={c}>{CATEGORY_LABEL_KEYS[c] ? t(CATEGORY_LABEL_KEYS[c]) : c.replace(/_/g, " ")}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -393,6 +394,13 @@ export default function CarbonTab({ reportId, isOwner }: CarbonTabProps) {
                       </Select>
                     </div>
                   </div>
+                  <ExternalFactorSearch onImported={async (id) => {
+                    const { data } = await supabase.from("emission_factors").select("id, category, activity, region, unit, factor_kgco2e, scope, source, source_year").eq("id", id).single();
+                    if (!data) return;
+                    setFactors(prev => prev.some(f => f.id === id) ? prev : [...prev, data as EmissionFactor]);
+                    setCategory(data.category);
+                    setFactorId(id);
+                  }} />
                   {selectedFactor && (
                     <div>
                       <Label>{t("carbon.activityQuantity", { unit: selectedFactor.unit })}</Label>

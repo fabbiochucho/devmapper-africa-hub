@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import type { Database, Db } from "./db.ts";
+import { applyAgentRules } from "./agentRules.ts";
 
 /** What every agent's data fetcher receives: the caller plus any client-supplied context. */
 export type AgentContext = { userId: string } & Record<string, unknown>;
@@ -224,7 +225,17 @@ async function handleAgent(
     return jsonError(llmError, status);
   }
 
-  const output = parseAgentOutput(rawOutput, agentName, dataSources);
+  const ruled = applyAgentRules(parseAgentOutput(rawOutput, agentName, dataSources));
+  const output = ruled.output;
+  if (!ruled.passed) {
+    await supabaseAdmin.from("ai_audit_log").insert({
+      user_id: user.id,
+      session_id: sessionId,
+      agent_name: agentName,
+      action: "rule_violation",
+      output_summary: `Violations: ${ruled.violations.join(", ")}`,
+    });
+  }
 
   await supabaseAdmin.from("ai_agent_outputs").insert({
     session_id: sessionId,

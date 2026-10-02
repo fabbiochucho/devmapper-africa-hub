@@ -1212,10 +1212,12 @@ export type Database = {
       corporate_targets: {
         Row: {
           company_id: string
+          country_code: string | null
           created_at: string
           current_value: number | null
           description: string
           id: string
+          progress_history: Json
           sdg_goals: number[]
           status: string
           target_date: string
@@ -1227,10 +1229,12 @@ export type Database = {
         }
         Insert: {
           company_id: string
+          country_code?: string | null
           created_at?: string
           current_value?: number | null
           description: string
           id?: string
+          progress_history?: Json
           sdg_goals: number[]
           status?: string
           target_date: string
@@ -1242,10 +1246,12 @@ export type Database = {
         }
         Update: {
           company_id?: string
+          country_code?: string | null
           created_at?: string
           current_value?: number | null
           description?: string
           id?: string
+          progress_history?: Json
           sdg_goals?: number[]
           status?: string
           target_date?: string
