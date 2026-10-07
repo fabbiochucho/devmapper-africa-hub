@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isServiceRoleRequest } from "../_shared/serviceAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,11 +20,11 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Require shared secret (function is intended for scheduled execution)
+    // Scheduled execution only: the pg_cron job sends the service-role key from Vault.
+    // CRON_SECRET (never set in production) is still accepted for manual runs.
     const CRON_SECRET = Deno.env.get("CRON_SECRET");
-    const provided = req.headers.get("Authorization")?.replace("Bearer ", "")
-      ?? req.headers.get("x-cron-secret");
-    if (!CRON_SECRET || provided !== CRON_SECRET) {
+    const provided = req.headers.get("x-cron-secret");
+    if (!isServiceRoleRequest(req.headers.get("Authorization")) && !(CRON_SECRET && provided === CRON_SECRET)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
