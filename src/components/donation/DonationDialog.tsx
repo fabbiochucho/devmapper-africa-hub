@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { errorMessageOf } from '@/lib/error-handler';
+import { donationPresets, type DonorContext } from '@/lib/donationPresets';
 
 interface Campaign {
   id: string;
@@ -33,16 +34,20 @@ interface DonationDialogProps {
   onDonationComplete: () => void;
 }
 
-// Suggested amounts only - donors can type any sum in the custom field below them.
-const presetsFor = (currency: string) =>
-  currency === 'NGN' ? [5000, 10000, 25000, 50000, 100000, 250000] : [25, 50, 100, 250, 500, 1000];
-
 export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogProps) {
   const { profile } = useAuth();
   const [amount, setAmount] = useState<string>('25');
-  const currency = campaign?.currency ?? 'USD';
-  // Default to the second preset whenever the campaign's currency changes.
-  useEffect(() => { setAmount(String(presetsFor(currency)[1])); }, [currency]);
+  const [donor, setDonor] = useState<DonorContext | null>(null);
+  // Where the donor is picks the suggested amounts; if the lookup fails the default ladders still work.
+  // Suggestions only - donors can type any sum in the custom field.
+  useEffect(() => {
+    if (!open || donor) return;
+    supabase.functions.invoke('donor-context').then(({ data }) => { if (data?.perNgn !== undefined) setDonor(data as DonorContext); });
+  }, [open, donor]);
+  const presets = donationPresets(campaign?.currency ?? 'USD', donor);
+  const presetKey = presets.map((p) => p.amount).join(',');
+  // Default to the second preset whenever the ladder changes.
+  useEffect(() => { setAmount(String(presets[1].amount)); }, [presetKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const [email, setEmail] = useState<string>(profile?.email || '');
   const [name, setName] = useState<string>(profile?.full_name || '');
   const [message, setMessage] = useState<string>('');
@@ -69,6 +74,8 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
       currency: currency,
     }).format(value);
   };
+  const formatWhole = (value: number, currency: string) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
 
   const handleDonate = async () => {
     const donationAmount = parseFloat(amount);
@@ -178,18 +185,31 @@ export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogP
           <div>
             <Label>Select Amount ({campaign.currency})</Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
-              {presetsFor(campaign.currency).map((preset) => (
+              {presets.map((preset) => (
                 <Button
-                  key={preset}
+                  key={preset.amount}
                   type="button"
-                  variant={amount === String(preset) ? 'default' : 'outline'}
-                  className="w-full"
-                  onClick={() => setAmount(String(preset))}
+                  variant={amount === String(preset.amount) ? 'default' : 'outline'}
+                  className="w-full h-auto py-2 flex-col gap-0"
+                  onClick={() => setAmount(String(preset.amount))}
                 >
-                  {formatCurrency(preset, campaign.currency)}
+                  <span>{formatCurrency(preset.amount, campaign.currency)}</span>
+                  {preset.estimate && (
+                    <span className="text-xs font-normal opacity-80">
+                      ≈ {formatWhole(preset.estimate.value, preset.estimate.currency)}
+                    </span>
+                  )}
                 </Button>
               ))}
             </div>
+            {presets.some((p) => p.estimate) && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Charged in {campaign.currency}; local amounts are estimates.{' '}
+                <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" className="underline">
+                  Rates by ExchangeRate-API
+                </a>
+              </p>
+            )}
             <div className="mt-2">
               <Label htmlFor="custom-amount">Or enter custom amount</Label>
               <div className="relative">
