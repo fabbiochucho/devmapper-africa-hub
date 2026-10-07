@@ -70,8 +70,8 @@ serve(async (req) => {
         geeData = await fetchLiveGEEData(body, geeServiceAccount);
         try { await supabaseClient.rpc('record_provider_health', { p_provider_key: 'gee', p_success: true }); } catch { /* best-effort */ }
       } catch (geeError) {
-        console.warn('[GEE-PROXY] GEE API failed, falling back to estimates:', geeError);
-        geeData = generateEstimatedGEEData(body.type, body.bounds);
+        console.warn('[GEE-PROXY] GEE API failed:', geeError);
+        geeData = notAvailable(body, 'Earth Engine request failed; no reading available.');
         try {
           await supabaseClient.rpc('record_provider_health', {
             p_provider_key: 'gee', p_success: false, p_error_message: geeError instanceof Error ? geeError.message : 'Unknown error',
@@ -79,12 +79,12 @@ serve(async (req) => {
         } catch { /* best-effort */ }
       }
     } else {
-      console.log('[GEE-PROXY] No GEE_SERVICE_ACCOUNT_KEY configured, using estimated data');
-      geeData = generateEstimatedGEEData(body.type, body.bounds);
+      console.log('[GEE-PROXY] No GEE_SERVICE_ACCOUNT_KEY configured');
+      geeData = notAvailable(body, 'Earth Engine is not configured (GEE_SERVICE_ACCOUNT_KEY); no reading available.');
     }
 
-    // Cache the response
-    await supabaseClient
+    // Cache real readings only, so a fixed key or outage isn't masked for 24h
+    if ((geeData as { metadata?: { available?: boolean } }).metadata?.available !== false) await supabaseClient
       .from('alphaearth_cache')
       .insert({
         cache_key: cacheKey,
@@ -209,33 +209,13 @@ async function fetchLiveGEEData(body: GEERequest, serviceAccountKey: string) {
   };
 }
 
-function generateEstimatedGEEData(type: string, bounds: GEERequest['bounds']) {
-  const resolution = 0.1;
-  const data = [];
-  const latDiff = Math.min(bounds.north - bounds.south, 10);
-  const lngDiff = Math.min(bounds.east - bounds.west, 10);
-
-  for (let lat = bounds.south; lat < bounds.south + latDiff; lat += resolution) {
-    for (let lng = bounds.west; lng < bounds.west + lngDiff; lng += resolution) {
-      let value;
-      switch (type) {
-        case 'ndvi': value = 0.3 + Math.random() * 0.5; break;
-        case 'water': value = Math.random() > 0.8 ? 1 : 0; break;
-        case 'urban': value = Math.random() * 0.7; break;
-        default: value = Math.random();
-      }
-      if (value > 0.1) data.push({ lat, lng, value });
-    }
-  }
-
+// No reading: say so instead of inventing one. Random 'estimated' NDVI used to reach report
+// evidence and auto-validation verdicts.
+function notAvailable(body: GEERequest, note: string) {
   return {
-    type,
-    bounds,
-    data: data.slice(0, 500),
-    metadata: {
-      source: 'Google Earth Engine (Estimated)',
-      generated_at: new Date().toISOString(),
-      note: 'Add GEE_SERVICE_ACCOUNT_KEY secret for live data'
-    }
+    type: body.type,
+    bounds: body.bounds,
+    data: [],
+    metadata: { source: 'Google Earth Engine', available: false, note, generated_at: new Date().toISOString() },
   };
 }
