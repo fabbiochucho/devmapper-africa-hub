@@ -1,7 +1,11 @@
 // Where a donor is, so the donation dialog can suggest sensible amounts (src/lib/donationPresets.ts).
 // Country: Cloudflare's cf-ipcountry header when present, else a geojs.io lookup of the request IP.
 // The IP is used for that lookup only - never stored or logged. Rates: open.er-api.com, from 1 NGN.
-import { corsHeaders } from "../_shared/agent-utils.ts";
+// Defined here, not imported from agent-utils, which would bundle the whole agent stack.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 // ISO 3166 alpha-2 -> ISO 4217. African Union members plus the usual diaspora countries;
 // anyone else gets their estimate in USD.
