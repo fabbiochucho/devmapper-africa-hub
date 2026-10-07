@@ -84,6 +84,21 @@ describe("DonationDialog", () => {
     });
   });
 
+  it("charges a custom amount typed by the donor", async () => {
+    renderWithAuth(<DonationDialog campaign={campaign} open onOpenChange={() => {}} onDonationComplete={() => {}} />);
+
+    fireEvent.change(screen.getByLabelText(/Or enter custom amount/), { target: { value: "75" } });
+    fireEvent.change(screen.getByLabelText(/Email Address/), { target: { value: "donor@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Donate \$75\.00/ }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "create-payment",
+        expect.objectContaining({ body: expect.objectContaining({ amount: 75 }) }),
+      );
+    });
+  });
+
   it("asks create-payment to record the donation and redirects to the returned payment link", async () => {
     renderWithAuth(<DonationDialog campaign={campaign} open onOpenChange={() => {}} onDonationComplete={() => {}} />);
 
@@ -94,7 +109,7 @@ describe("DonationDialog", () => {
       expect(invokeMock).toHaveBeenCalledWith(
         "create-payment",
         expect.objectContaining({
-          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1", amount: 25, email: "donor@example.com" }),
+          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1", amount: 50, email: "donor@example.com" }),
         }),
       );
     });

@@ -33,9 +33,9 @@ interface DonationDialogProps {
   onDonationComplete: () => void;
 }
 
-// Naira amounts are ~1000x smaller per unit, so a $10-style ladder would mean ₦10.
+// Suggested amounts only - donors can type any sum in the custom field below them.
 const presetsFor = (currency: string) =>
-  currency === 'NGN' ? [1000, 2500, 5000, 10000, 25000, 50000] : [10, 25, 50, 100, 250, 500];
+  currency === 'NGN' ? [5000, 10000, 25000, 50000, 100000, 250000] : [25, 50, 100, 250, 500, 1000];
 
 export function DonationDialog({ campaign, open, onOpenChange }: DonationDialogProps) {
   const { profile } = useAuth();
