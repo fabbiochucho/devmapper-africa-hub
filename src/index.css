@@ -131,6 +131,15 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+
+  /* Laptops and desktops: render at 75%, like browser zoom. Tailwind sizes are rem-based, so
+     text, spacing and controls all scale; phones and tablets keep the 16px base. Respects a
+     user's own browser font-size setting because it is a percentage. */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 75%;
+    }
+  }
 }
 
 /* Image optimization utilities */
