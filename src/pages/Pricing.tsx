@@ -378,7 +378,7 @@ const Pricing = () => {
         </div>
 
         {/* Billing Period Toggle */}
-        <div className="flex items-center justify-center gap-3 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
           {(['monthly', 'quarterly', 'yearly'] as BillingPeriod[]).map((period) => (
             <Button
               key={period}

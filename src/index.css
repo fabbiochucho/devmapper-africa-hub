@@ -133,9 +133,10 @@
   }
 
   /* Laptops and desktops: render at 75%, like browser zoom. Tailwind sizes are rem-based, so
-     text, spacing and controls all scale; phones and tablets keep the 16px base. Respects a
-     user's own browser font-size setting because it is a percentage. */
-  @media (min-width: 1024px) {
+     text, spacing and controls all scale. Mouse/trackpad only: a 1024px+ touch tablet in
+     landscape keeps the 16px base so tap targets stay full size. Respects a user's own
+     browser font-size setting because it is a percentage. */
+  @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
     html {
       font-size: 75%;
     }

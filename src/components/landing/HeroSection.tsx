@@ -69,7 +69,8 @@ export default function HeroSection({ user, setShowAuthModal }: HeroSectionProps
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* w-full min-w-0: as a flex item this box otherwise sizes to its content (up to 1280px) and widened phones' layout */}
+      <div className="relative w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full text-primary-foreground/90 text-sm mb-6">
