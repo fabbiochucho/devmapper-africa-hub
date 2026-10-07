@@ -224,8 +224,9 @@ const Layout = () => {
         {/* Main Content Area with Sidebar */}
         <div className="flex flex-1">
           <AppSidebar />
-          <SidebarInset className="flex-1 flex flex-col">
-            <main className="p-4 flex-1 flex flex-col pb-20 md:pb-4">
+          <SidebarInset className="flex-1 flex flex-col min-w-0">
+            {/* min-w-0: flex items otherwise refuse to shrink below their content and widen the page on phones */}
+            <main className="p-4 flex-1 flex flex-col min-w-0 pb-20 md:pb-4">
               <header className="flex justify-between items-center mb-4 gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger />
