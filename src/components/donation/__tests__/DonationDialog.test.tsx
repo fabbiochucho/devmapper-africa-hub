@@ -3,6 +3,7 @@ import { renderWithAuth, screen, fireEvent, waitFor } from "@/test/test-utils";
 
 const insertSingle = vi.fn();
 const invokeMock = vi.fn();
+let donorContext: unknown = null;
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -43,7 +44,10 @@ describe("DonationDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     insertSingle.mockResolvedValue({ data: { id: "donation-1" }, error: null });
-    invokeMock.mockResolvedValue({ data: { payment_link: "https://pay.example/checkout" }, error: null });
+    donorContext = null;
+    invokeMock.mockImplementation((fn: string) => Promise.resolve(
+      fn === "create-payment" ? { data: { payment_link: "https://pay.example/checkout" }, error: null } : { data: donorContext, error: null },
+    ));
     // jsdom doesn't implement navigation - stub it so handleDonate's redirect doesn't throw
     delete (window as any).location;
     (window as any).location = { href: "" };
@@ -80,7 +84,31 @@ describe("DonationDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /Donate/ }));
 
     await waitFor(() => {
-      expect(invokeMock).not.toHaveBeenCalled();
+      expect(invokeMock).not.toHaveBeenCalledWith("create-payment", expect.anything());
+    });
+  });
+
+  it("suggests naira amounts with a local estimate for a donor abroad", async () => {
+    donorContext = { country: "KE", currency: "KES", perNgn: { USD: 1 / 1328, KES: 0.0976 } };
+    renderWithAuth(<DonationDialog campaign={{ ...campaign, currency: "NGN" }} open onOpenChange={() => {}} onDonationComplete={() => {}} />);
+
+    expect(await screen.findByText(/≈ KES\s?3,221/)).toBeInTheDocument(); // ₦33,000
+    expect(screen.getByText(/Rates by ExchangeRate-API/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Donate NGN\s?66,000\.00/ })).toBeInTheDocument(); // second preset
+  });
+
+  it("charges a custom amount typed by the donor", async () => {
+    renderWithAuth(<DonationDialog campaign={campaign} open onOpenChange={() => {}} onDonationComplete={() => {}} />);
+
+    fireEvent.change(screen.getByLabelText(/Or enter custom amount/), { target: { value: "75" } });
+    fireEvent.change(screen.getByLabelText(/Email Address/), { target: { value: "donor@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Donate \$75\.00/ }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "create-payment",
+        expect.objectContaining({ body: expect.objectContaining({ amount: 75 }) }),
+      );
     });
   });
 
@@ -94,7 +122,7 @@ describe("DonationDialog", () => {
       expect(invokeMock).toHaveBeenCalledWith(
         "create-payment",
         expect.objectContaining({
-          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1", amount: 25, email: "donor@example.com" }),
+          body: expect.objectContaining({ payment_type: "donation", campaign_id: "campaign-1", amount: 50, email: "donor@example.com" }),
         }),
       );
     });
