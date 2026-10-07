@@ -125,9 +125,12 @@ function ResultRow({ hit, canSave }: { hit: EntityHit; canSave: boolean }) {
         <p className="text-xs text-muted-foreground mt-1">
           Source: {sourceName(hit.source)}
           {hit.sourceUrl && (
-            <a href={hit.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 inline-flex items-center underline">
-              original <ExternalLink className="h-3 w-3 ml-0.5" />
-            </a>
+            <>
+              {' · '}
+              <a href={hit.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center underline">
+                View source <ExternalLink className="h-3 w-3 ml-0.5" aria-hidden />
+              </a>
+            </>
           )}
         </p>
       </div>
