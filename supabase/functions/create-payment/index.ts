@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Sanity cap, about $100,000 in the campaign's currency - a flat 1,000,000 was only ~$750 in naira.
       const maxDonation = DONATION_CAP[campaign.currency] ?? 100_000;
       if (amount > maxDonation) {
-        return new Response(JSON.stringify({ error: `The most one donation can be is ${maxDonation.toLocaleString('en-US')} ${campaign.currency}` }), {
+        return new Response(JSON.stringify({ error: `A single donation can be at most ${maxDonation.toLocaleString("en-US")} ${campaign.currency}` }), {
           status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
