@@ -46,11 +46,11 @@ export async function entitySourceText(admin: Db, ref: EntityRef): Promise<strin
     }
     case "framework": {
       const { data: r } = await admin.from("reporting_frameworks").select("name, code, category").eq("id", ref.id).maybeSingle();
-      return r && [r.name, r.code, r.category].filter(Boolean).join(" · ");
+      return r && [r.name, r.code, r.category?.replace(/_/g, " ")].filter(Boolean).join(" · ");
     }
     case "policy": {
       const { data: r } = await admin.from("regulatory_frameworks").select("name, regulator_name, category, country_code").eq("id", ref.id).maybeSingle();
-      if (r) return [r.name, r.regulator_name, r.category, r.country_code].filter(Boolean).join(" · ");
+      if (r) return [r.name, r.regulator_name, r.category?.replace(/_/g, " "), r.country_code].filter(Boolean).join(" · ");
       break;
     }
     case "organization": {
@@ -102,7 +102,9 @@ export async function semanticSearch(
   if (rpcError) return { hits: [], error: rpcError.message };
   return {
     hits: (data ?? []).map((m) => ({
-      type: m.entity_type, id: m.entity_id, title: m.title, snippet: m.source_text?.slice(0, 240) ?? null, path: m.path,
+      type: m.entity_type, id: m.entity_id, title: m.title, path: m.path,
+      // source_text starts with the title; don't show it twice.
+      snippet: m.source_text?.replace(`${m.title} · `, "").slice(0, 240) ?? null,
       source: "devmapper", sourceUrl: null, countryCode: null, score: m.similarity, match: "semantic" as const,
     })),
   };
