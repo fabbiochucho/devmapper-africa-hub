@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Largest single donation per campaign currency (~$100,000 each).
+const DONATION_CAP: Record<string, number> = { NGN: 150_000_000, USD: 100_000 };
+
 interface PaymentRequest {
   // Organization payment
   organizationId?: string;
@@ -64,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
         !email || !campaign_id ||
         typeof email !== 'string' || email.length > 255 || !emailRe.test(email) ||
         !uuidRe.test(campaign_id) ||
-        typeof amount !== 'number' || !isFinite(amount) || amount < 1 || amount > 1_000_000 ||
+        typeof amount !== 'number' || !isFinite(amount) || amount < 1 ||
         (name && (typeof name !== 'string' || name.length > 200)) ||
         (message && (typeof message !== 'string' || message.length > 500))
       ) {
@@ -78,6 +81,13 @@ const handler = async (req: Request): Promise<Response> => {
       if (!campaign || campaign.status !== 'active' || (campaign.deadline && new Date(campaign.deadline) < new Date())) {
         return new Response(JSON.stringify({ error: 'This campaign is not accepting donations' }), {
           status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+      // Sanity cap, about $100,000 in the campaign's currency - a flat 1,000,000 was only ~$750 in naira.
+      const maxDonation = DONATION_CAP[campaign.currency] ?? 100_000;
+      if (amount > maxDonation) {
+        return new Response(JSON.stringify({ error: `The most one donation can be is ${maxDonation.toLocaleString('en-US')} ${campaign.currency}` }), {
+          status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
       }
 
