@@ -55,16 +55,18 @@ Deno.serve(async (req) => {
     if (insertErr) throw insertErr;
 
     // Notify admins in-app
-    const { data: admins } = await supabase
+    const { data: adminRoles } = await supabase
       .from('user_roles')
       .select('user_id')
       .in('role', ['admin', 'platform_admin'])
       .eq('is_active', true);
+    // One row per role, so someone who is both admin and platform_admin appears twice.
+    const adminIds = [...new Set((adminRoles ?? []).map((r: { user_id: string }) => r.user_id))];
 
-    if (admins?.length) {
+    if (adminIds.length) {
       await supabase.from('notifications').insert(
-        admins.map((a: { user_id: string }) => ({
-          user_id: a.user_id,
+        adminIds.map((userId) => ({
+          user_id: userId,
           type: 'info',
           title: `New contact: ${subject ?? 'No subject'}`,
           message: `${name} <${email}>: ${message.slice(0, 180)}${message.length > 180 ? '…' : ''}`,
@@ -76,11 +78,11 @@ Deno.serve(async (req) => {
     // Email the admins too. Plain text so user input can't inject markup; a send
     // failure is logged, not returned, since the submission is already saved.
     const resendKey = Deno.env.get('RESEND_API_KEY');
-    if (resendKey && admins?.length) {
+    if (resendKey && adminIds.length) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('email')
-        .in('user_id', admins.map((a: { user_id: string }) => a.user_id));
+        .in('user_id', adminIds);
       const to = [...new Set((profiles ?? []).map((p: { email: string | null }) => p.email).filter(Boolean))];
       if (to.length) {
         const resp = await fetch('https://api.resend.com/emails', {
