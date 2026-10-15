@@ -66,7 +66,7 @@ serve(async (req) => {
     const year = body.year ?? DEFAULT_YEAR;
     console.log('[CLIMATETRACE-PROXY] Request:', { sector, year, bounds: body.bounds });
 
-    const cacheKey = `climatetrace:assets:africa:${sector || 'all'}:${year}`;
+    const cacheKey = `climatetrace:assets:v2:africa:${sector || 'all'}:${year}`;
     const { data: cached } = await cacheClient
       .from('alphaearth_cache')
       .select('payload')
@@ -89,6 +89,9 @@ serve(async (req) => {
         facilities = (raw.assets ?? []).flatMap((a) => {
           const [lng, lat] = a.Centroid?.Geometry ?? [];
           const co2e = a.EmissionsSummary?.find((e) => e.Gas === 'co2e_100yr')?.EmissionsQuantity;
+          // 'removals' are carbon sinks (CO2 taken out), reported as positive quantities -
+          // drawing them on an emissions heatmap would show forests as pollution hot spots.
+          if (a.Sector === 'removals') return [];
           if (typeof lat !== 'number' || typeof lng !== 'number' || !co2e || co2e <= 0) return [];
           return [{ lat, lng, emissions_t: co2e, name: a.Name ?? '', country: a.Country ?? '', sector: a.Sector ?? '' }];
         });
