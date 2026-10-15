@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '@/data/resourcesApiData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,20 +72,21 @@ const Connect = () => {
     {
       id: 'api',
       name: 'API Access',
-      description: 'Integrate DevMapper data into your applications',
+      description: 'Read DevMapper public data from your own applications',
       icon: <Code className="w-8 h-8" />,
       status: 'Available',
+      href: '/resources?tab=api',
       features: [
-        'RESTful API endpoints',
-        'Real-time data feeds',
-        'Webhook notifications',
-        'SDKs for popular languages'
+        'Projects, milestones, campaigns and change makers',
+        'Country regulatory profiles for 54 countries',
+        'SDG, Agenda 2063 and certificate lookups',
+        'No API key - plain HTTPS and JSON'
       ],
       instructions: [
-        'Register for API access',
-        'Generate your API key',
-        'Review documentation',
-        'Start building integrations'
+        'Open the API documentation',
+        'Call GET /v1/projects from any language',
+        'Filter by country, SDG or status',
+        'Credit DevMapper when you publish the data'
       ]
     },
     {
@@ -161,30 +163,10 @@ const Connect = () => {
   ];
 
   const apiEndpoints = [
-    {
-      method: 'GET',
-      endpoint: '/api/v1/projects',
-      description: 'Retrieve all projects with optional filtering',
-      parameters: ['country', 'sdg', 'status', 'dateRange']
-    },
-    {
-      method: 'POST',
-      endpoint: '/api/v1/projects',
-      description: 'Create a new project report',
-      parameters: ['title', 'description', 'location', 'sdg_goals']
-    },
-    {
-      method: 'GET',
-      endpoint: '/api/v1/analytics',
-      description: 'Get analytics data and statistics',
-      parameters: ['metric', 'timeframe', 'region']
-    },
-    {
-      method: 'GET',
-      endpoint: '/api/v1/verification',
-      description: 'Access verification status and reports',
-      parameters: ['project_id', 'verification_level']
-    }
+    { method: 'GET', endpoint: '/v1/projects', description: 'Public projects, with paging and filters', parameters: ['country', 'sdg', 'status', 'verified', 'search'] },
+    { method: 'GET', endpoint: '/v1/projects/{id}/milestones', description: "A public project's milestones", parameters: ['id'] },
+    { method: 'GET', endpoint: '/v1/countries/{code}', description: 'Country regulatory and institutional profile', parameters: ['code'] },
+    { method: 'GET', endpoint: '/v1/stats', description: 'Public project counts by SDG and country', parameters: [] },
   ];
 
   return (
@@ -285,29 +267,21 @@ const Connect = () => {
             <CardContent>
               <div className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Code className="w-8 h-8 mx-auto mb-2 text-primary" />
-                      <h3 className="font-semibold mb-1">REST API</h3>
-                      <p className="text-sm text-muted-foreground">Full REST API access</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Zap className="w-8 h-8 mx-auto mb-2 text-primary" />
-                      <h3 className="font-semibold mb-1">Webhooks</h3>
-                      <p className="text-sm text-muted-foreground">Real-time notifications</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Download className="w-8 h-8 mx-auto mb-2 text-primary" />
-                      <h3 className="font-semibold mb-1">SDKs</h3>
-                      <p className="text-sm text-muted-foreground">Multiple languages</p>
-                    </CardContent>
-                  </Card>
+                  {[
+                    { icon: <Code className="w-8 h-8 mx-auto mb-2 text-primary" />, title: 'REST API', text: 'Read-only GET endpoints' },
+                    { icon: <Zap className="w-8 h-8 mx-auto mb-2 text-primary" />, title: 'No API key', text: 'Public data, open access' },
+                    { icon: <Download className="w-8 h-8 mx-auto mb-2 text-primary" />, title: 'JSON', text: 'Works from any language' },
+                  ].map((c) => (
+                    <Card key={c.title}>
+                      <CardContent className="p-4 text-center">
+                        {c.icon}
+                        <h3 className="font-semibold mb-1">{c.title}</h3>
+                        <p className="text-sm text-muted-foreground">{c.text}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold mb-4">Available Endpoints</h3>
                   <div className="space-y-2">
@@ -337,13 +311,11 @@ const Connect = () => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button>
-                    <Code className="w-4 h-4 mr-2" />
-                    Get API Key
-                  </Button>
-                  <Button variant="outline">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Documentation
+                  <Button asChild>
+                    <a href="/resources?tab=api">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View Documentation
+                    </a>
                   </Button>
                 </div>
               </div>
@@ -413,40 +385,28 @@ const Connect = () => {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Quick Start Guides</h3>
+                  <h3 className="font-semibold">Guides</h3>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Code className="w-4 h-4 mr-2" />
-                      JavaScript SDK
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Code className="w-4 h-4 mr-2" />
-                      Python SDK
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Code className="w-4 h-4 mr-2" />
-                      REST API Tutorial
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Code className="w-4 h-4 mr-2" />
-                      Webhook Setup
-                    </Button>
+                    {[
+                      { label: 'API documentation', href: '/resources?tab=api' },
+                      { label: 'Bulk upload templates (CSV)', href: '/bulk-upload' },
+                      { label: 'SDG indicator registry', href: '/sdg-indicators' },
+                    ].map((g) => (
+                      <Button key={g.href} variant="outline" className="w-full justify-start" asChild>
+                        <a href={g.href}><Code className="w-4 h-4 mr-2" />{g.label}</a>
+                      </Button>
+                    ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h3 className="font-semibold">Code Examples</h3>
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-sm font-medium mb-2">Fetch Projects Example</p>
                     <pre className="text-xs bg-background p-2 rounded overflow-x-auto">
-{`fetch('https://api.devmapper.africa/v1/projects', {
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  }
-})
-.then(response => response.json())
-.then(data => console.log(data));`}
+{`fetch('${API_BASE_URL}/v1/projects?country=KE')
+  .then((res) => res.json())
+  .then(({ data, meta }) => console.log(meta.total, data));`}
                     </pre>
                   </div>
                 </div>

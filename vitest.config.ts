@@ -8,6 +8,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // jsdom renders of dialogs/forms can pass 5s (the default) when 40+ files run in
+    // parallel on a busy machine or CI runner; that showed up as random one-off failures.
+    testTimeout: 15000,
     include: ["src/**/*.{test,spec}.{ts,tsx}", "supabase/functions/**/*.{test,spec}.ts"],
     coverage: {
       reporter: ["text", "lcov"],

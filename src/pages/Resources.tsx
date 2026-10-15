@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import ApiDocsTab from '@/components/resources/ApiDocsTab';
 import { resources, externalResources, categories } from '@/data/resourcesLibraryData';
 
 const Resources = () => {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -37,7 +39,7 @@ const Resources = () => {
         <p className="text-muted-foreground">Access tools, guides, and resources for sustainable development tracking</p>
       </div>
 
-      <Tabs defaultValue="library" className="space-y-6">
+      <Tabs defaultValue={searchParams.get('tab') ?? 'library'} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="library">Resource Library</TabsTrigger>
           <TabsTrigger value="external">External Links</TabsTrigger>
