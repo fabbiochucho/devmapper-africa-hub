@@ -77,7 +77,7 @@ export default function PageFooter() {
 
         {/* Bottom bar */}
         <div className="border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {currentYear} Dev Mapper Africa. All rights reserved.</p>
+          <p>© {currentYear} DiBadili Institute. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/verify" className="hover:text-foreground transition-colors flex items-center gap-1">
               <Shield className="w-3 h-3" />
