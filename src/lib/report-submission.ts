@@ -27,6 +27,7 @@ export async function submitReportToServer(
       title: values.title,
       description: values.description,
       sdg_goal: parseInt(values.sdg_goal),
+      sdg_target: values.sdg_target || null,
       project_status: values.project_status || 'planned',
       location: values.location,
       country_code: values.country_code || null,

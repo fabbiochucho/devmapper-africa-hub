@@ -3702,6 +3702,7 @@ export type Database = {
           id: string
           notes: string | null
           report_id: string
+          sdg_indicators: number[] | null
           status: string
           target_date: string | null
           title: string
@@ -3716,6 +3717,7 @@ export type Database = {
           id?: string
           notes?: string | null
           report_id: string
+          sdg_indicators?: number[] | null
           status?: string
           target_date?: string | null
           title: string
@@ -3730,6 +3732,7 @@ export type Database = {
           id?: string
           notes?: string | null
           report_id?: string
+          sdg_indicators?: number[] | null
           status?: string
           target_date?: string | null
           title?: string
@@ -4260,6 +4263,7 @@ export type Database = {
           project_status: string
           responsibility_area: string | null
           sdg_goal: number
+          sdg_target: string | null
           sponsor: string | null
           start_date: string | null
           submitted_at: string
@@ -4293,6 +4297,7 @@ export type Database = {
           project_status?: string
           responsibility_area?: string | null
           sdg_goal: number
+          sdg_target?: string | null
           sponsor?: string | null
           start_date?: string | null
           submitted_at?: string
@@ -4326,6 +4331,7 @@ export type Database = {
           project_status?: string
           responsibility_area?: string | null
           sdg_goal?: number
+          sdg_target?: string | null
           sponsor?: string | null
           start_date?: string | null
           submitted_at?: string
