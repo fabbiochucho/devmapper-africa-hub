@@ -114,7 +114,7 @@ const CarbonMarketplace = () => {
   });
 
   const purchaseCredits = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (provider: "paystack" | "flutterwave") => {
       if (!user || !selectedListing) throw new Error("Missing data");
       const qty = parseFloat(purchaseQty);
       if (qty <= 0 || qty > (selectedListing.available_credits || 0)) throw new Error("Invalid quantity");
@@ -134,6 +134,7 @@ const CarbonMarketplace = () => {
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke("create-payment", {
         body: {
           payment_type: "marketplace_purchase",
+          provider,
           order_id: order.id,
           amount: totalAmount,
           currency: selectedListing.currency,
@@ -465,21 +466,30 @@ const CarbonMarketplace = () => {
             <div className="space-y-4">
               <div>
                 <p className="font-medium">{selectedListing.title}</p>
-                <p className="text-sm text-muted-foreground">Price: ${selectedListing.price_per_tonne}/tCO2e | Available: {selectedListing.available_credits} tCO2e</p>
+                <p className="text-sm text-muted-foreground">Price: {selectedListing.price_per_tonne} {selectedListing.currency}/tCO2e | Available: {selectedListing.available_credits} tCO2e</p>
               </div>
               <Input type="number" placeholder="Quantity (tCO2e)" value={purchaseQty} onChange={e => setPurchaseQty(e.target.value)} max={selectedListing.available_credits} />
               {purchaseQty && parseFloat(purchaseQty) > 0 && (
                 <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm">Total: <span className="font-bold text-lg">${(parseFloat(purchaseQty) * selectedListing.price_per_tonne).toFixed(2)}</span> {selectedListing.currency}</p>
+                  <p className="text-sm">Total: <span className="font-bold text-lg">{(parseFloat(purchaseQty) * selectedListing.price_per_tonne).toFixed(2)}</span> {selectedListing.currency}</p>
                 </div>
               )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowPurchaseDialog(false)}>Cancel</Button>
-            <Button onClick={() => purchaseCredits.mutate()} disabled={!purchaseQty || parseFloat(purchaseQty) <= 0 || purchaseCredits.isPending}>
-              {purchaseCredits.isPending ? "Processing..." : "Confirm Purchase"}
-            </Button>
+            {(["paystack", "flutterwave"] as const).map((provider) => (
+              <Button
+                key={provider}
+                variant={provider === "paystack" ? "default" : "secondary"}
+                onClick={() => purchaseCredits.mutate(provider)}
+                disabled={!purchaseQty || parseFloat(purchaseQty) <= 0 || purchaseCredits.isPending}
+              >
+                {purchaseCredits.isPending && purchaseCredits.variables === provider
+                  ? "Processing..."
+                  : `Pay with ${provider === "paystack" ? "Paystack" : "Flutterwave"}`}
+              </Button>
+            ))}
           </DialogFooter>
         </DialogContent>
       </Dialog>
