@@ -1,37 +1,55 @@
-
-import React from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { BookOpen, Users, Award, Clock, Star, Info } from 'lucide-react';
+import { BookOpen, Users, Award, Clock, Star, Info, Download, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { TEMPLATES, downloadTemplate } from '@/lib/bulkUploadTemplates';
 
-// This page has no backing courses/enrollments/workshops/certifications
-// tables yet - everything below is a preview of planned curriculum, not
-// live content. Do not add per-user progress, dates, instructor names, or
-// download counts without a real table behind them.
+// Courses are self-guided study paths through DevMapper's own published guides and
+// standards pages - there are no separate lesson, enrolment or workshop tables. Progress
+// toward certification is computed from real activity (verified reports, verification logs).
+
+const GUIDE_PAGES = {
+  overview: '/platform-overview',
+  guidelines: '/guidelines',
+  sdgOverview: '/sdg-overview',
+  search: '/search',
+  submitReport: '/submit-report',
+  indicators: '/sdg-indicators',
+  spvf: '/spvf-standards',
+  certWorkflow: '/certification-workflow',
+  dspm: '/dspm-methodology',
+  verify: '/verify',
+  verifiers: '/verifier-marketplace',
+} as const;
+type GuideKey = keyof typeof GUIDE_PAGES;
+
+const REPORTER_TARGET = 5;
+const VERIFIER_TARGET = 20;
+
 const Training = () => {
   const { t } = useTranslation();
-  const courses = [
+  const { user } = useAuth();
+
+  const courses: { id: string; title: string; description: string; duration: string; level: string; topics: string[]; path: GuideKey[] }[] = [
     {
       id: 'basics',
       title: t('training.courseBasicsTitle'),
       description: t('training.courseBasicsDescription'),
       duration: t('training.courseBasicsDuration'),
       level: 'Beginner',
-      lessons: 8,
-      topics: [
-        t('training.courseBasicsTopic1'),
-        t('training.courseBasicsTopic2'),
-        t('training.courseBasicsTopic3'),
-        t('training.courseBasicsTopic4'),
-        t('training.courseBasicsTopic5'),
-        t('training.courseBasicsTopic6'),
-        t('training.courseBasicsTopic7'),
-        t('training.courseBasicsTopic8'),
-      ]
+      topics: Array.from({ length: 8 }, (_, i) => t(`training.courseBasicsTopic${i + 1}`)),
+      path: ['overview', 'guidelines', 'sdgOverview', 'search', 'submitReport'],
     },
     {
       id: 'reporting',
@@ -39,21 +57,8 @@ const Training = () => {
       description: t('training.courseReportingDescription'),
       duration: t('training.courseReportingDuration'),
       level: 'Intermediate',
-      lessons: 12,
-      topics: [
-        t('training.courseReportingTopic1'),
-        t('training.courseReportingTopic2'),
-        t('training.courseReportingTopic3'),
-        t('training.courseReportingTopic4'),
-        t('training.courseReportingTopic5'),
-        t('training.courseReportingTopic6'),
-        t('training.courseReportingTopic7'),
-        t('training.courseReportingTopic8'),
-        t('training.courseReportingTopic9'),
-        t('training.courseReportingTopic10'),
-        t('training.courseReportingTopic11'),
-        t('training.courseReportingTopic12'),
-      ]
+      topics: Array.from({ length: 12 }, (_, i) => t(`training.courseReportingTopic${i + 1}`)),
+      path: ['guidelines', 'submitReport', 'indicators', 'spvf'],
     },
     {
       id: 'verification',
@@ -61,30 +66,63 @@ const Training = () => {
       description: t('training.courseVerificationDescription'),
       duration: t('training.courseVerificationDuration'),
       level: 'Advanced',
-      lessons: 15,
-      topics: [
-        t('training.courseVerificationTopic1'),
-        t('training.courseVerificationTopic2'),
-        t('training.courseVerificationTopic3'),
-        t('training.courseVerificationTopic4'),
-        t('training.courseVerificationTopic5'),
-        t('training.courseVerificationTopic6'),
-        t('training.courseVerificationTopic7'),
-        t('training.courseVerificationTopic8'),
-        t('training.courseVerificationTopic9'),
-        t('training.courseVerificationTopic10'),
-        t('training.courseVerificationTopic11'),
-        t('training.courseVerificationTopic12'),
-        t('training.courseVerificationTopic13'),
-        t('training.courseVerificationTopic14'),
-        t('training.courseVerificationTopic15'),
-      ]
-    }
+      topics: Array.from({ length: 15 }, (_, i) => t(`training.courseVerificationTopic${i + 1}`)),
+      path: ['certWorkflow', 'dspm', 'spvf', 'verify', 'verifiers'],
+    },
   ];
 
-  // Workshop scheduling and downloadable resources aren't live yet either -
-  // no fabricated instructor names, dates, or download counts in the
-  // meantime (see the "coming soon" states in each tab below).
+  // Certification progress from real activity.
+  const [progress, setProgress] = useState<{ verifiedReports: number; reviews: number } | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const [reports, reviews] = await Promise.all([
+        supabase.from('reports').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_verified', true),
+        supabase.from('verification_logs').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      ]);
+      if (!cancelled) setProgress({ verifiedReports: reports.count ?? 0, reviews: reviews.count ?? 0 });
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Workshop requests go through the contact pipeline (saved + admins notified + emailed).
+  const [workshop, setWorkshop] = useState({ name: '', email: '', organisation: '', topic: '', message: '' });
+  const [sending, setSending] = useState(false);
+  useEffect(() => {
+    if (user?.email) setWorkshop((w) => (w.email ? w : { ...w, email: user.email ?? '' }));
+  }, [user]);
+  const requestWorkshop = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    const { error } = await supabase.functions.invoke('send-contact-email', {
+      body: {
+        name: workshop.name,
+        email: workshop.email,
+        subject: `Workshop request: ${workshop.topic || 'General'}`,
+        message: `Organisation: ${workshop.organisation || '-'}\nTopic: ${workshop.topic || '-'}\n\n${workshop.message}`,
+      },
+    });
+    setSending(false);
+    if (error) {
+      toast.error(t('training.workshopError'));
+      return;
+    }
+    toast.success(t('training.workshopSent'));
+    setWorkshop((w) => ({ ...w, organisation: '', topic: '', message: '' }));
+  };
+
+  const ProgressRow = ({ label, value, target }: { label: string; value: number; target: number }) => (
+    <div className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span>{label}</span>
+        <span className="font-medium">{Math.min(value, target)} / {target}</span>
+      </div>
+      <div className="h-2 rounded-full bg-muted">
+        <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, (value / target) * 100)}%` }} />
+      </div>
+    </div>
+  );
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -104,7 +142,7 @@ const Training = () => {
       </Alert>
 
       <Tabs defaultValue="courses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
           <TabsTrigger value="courses">{t('training.tabCourses')}</TabsTrigger>
           <TabsTrigger value="workshops">{t('training.tabWorkshops')}</TabsTrigger>
           <TabsTrigger value="resources">{t('training.tabResources')}</TabsTrigger>
@@ -114,7 +152,7 @@ const Training = () => {
         <TabsContent value="courses" className="space-y-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow">
+              <Card key={course.id} className="hover:shadow-lg transition-shadow flex flex-col">
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
                     <Badge variant={course.level === 'Beginner' ? 'default' : course.level === 'Intermediate' ? 'secondary' : 'destructive'}>
@@ -128,9 +166,8 @@ const Training = () => {
                   <CardTitle className="text-lg">{course.title}</CardTitle>
                   <CardDescription>{course.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-sm text-muted-foreground">{t('training.lessonsPlanned', { count: course.lessons })}</div>
+                <CardContent className="flex-1 flex flex-col">
+                  <div className="space-y-4 flex-1 flex flex-col">
                     <div className="space-y-1">
                       <p className="text-sm font-medium">{t('training.courseTopicsLabel')}</p>
                       <div className="flex flex-wrap gap-1">
@@ -146,8 +183,22 @@ const Training = () => {
                         )}
                       </div>
                     </div>
-                    <Button className="w-full" variant="outline" disabled>
-                      {t('training.comingSoon')}
+                    <div className="space-y-1 flex-1">
+                      <p className="text-sm font-medium">{t('training.studyPathLabel')}</p>
+                      <ol className="space-y-1 text-sm">
+                        {course.path.map((key, i) => (
+                          <li key={key}>
+                            <Link to={GUIDE_PAGES[key]} className="text-primary hover:underline">
+                              {i + 1}. {t(`training.guide.${key}`)}
+                            </Link>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                    <Button className="w-full" asChild>
+                      <Link to={GUIDE_PAGES[course.path[0]]}>
+                        {t('training.startCourse')} <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -159,9 +210,44 @@ const Training = () => {
         <TabsContent value="workshops" className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">{t('training.workshopsTitle')}</h2>
           <Card>
-            <CardContent className="py-16 text-center text-muted-foreground">
-              <Users className="mx-auto h-10 w-10 mb-3 text-gray-400" />
-              <p>{t('training.noWorkshopsMessage')}</p>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg"><Users className="w-5 h-5" />{t('training.workshopRequestTitle')}</CardTitle>
+              <CardDescription>{t('training.workshopsIntro')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={requestWorkshop} className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ws-name">{t('training.workshopName')}</Label>
+                  <Input id="ws-name" required value={workshop.name} onChange={(e) => setWorkshop({ ...workshop, name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ws-email">{t('training.workshopEmail')}</Label>
+                  <Input id="ws-email" type="email" required value={workshop.email} onChange={(e) => setWorkshop({ ...workshop, email: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ws-org">{t('training.workshopOrg')}</Label>
+                  <Input id="ws-org" value={workshop.organisation} onChange={(e) => setWorkshop({ ...workshop, organisation: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ws-topic">{t('training.workshopTopic')}</Label>
+                  <select
+                    id="ws-topic"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={workshop.topic}
+                    onChange={(e) => setWorkshop({ ...workshop, topic: e.target.value })}
+                  >
+                    <option value="">{t('training.workshopTopicAny')}</option>
+                    {courses.map((c) => <option key={c.id} value={c.title}>{c.title}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="ws-message">{t('training.workshopMessage')}</Label>
+                  <Textarea id="ws-message" required rows={4} value={workshop.message} onChange={(e) => setWorkshop({ ...workshop, message: e.target.value })} />
+                </div>
+                <div className="sm:col-span-2">
+                  <Button type="submit" disabled={sending}>{sending ? t('training.workshopSending') : t('training.workshopSubmit')}</Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -169,9 +255,34 @@ const Training = () => {
         <TabsContent value="resources" className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">{t('training.resourcesTitle')}</h2>
           <Card>
-            <CardContent className="py-16 text-center text-muted-foreground">
-              <BookOpen className="mx-auto h-10 w-10 mb-3 text-gray-400" />
-              <p>{t('training.noResourcesMessage')}</p>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('training.templatesTitle')}</CardTitle>
+              <CardDescription>{t('training.templatesDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              {TEMPLATES.map((tpl) => (
+                <div key={tpl.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                  <div className="min-w-0">
+                    <p className="font-medium">{tpl.label}</p>
+                    <p className="text-xs text-muted-foreground">{tpl.description}</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => downloadTemplate(tpl)}>
+                    <Download className="w-4 h-4 mr-1" />CSV
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg"><BookOpen className="w-5 h-5" />{t('training.guidesTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 sm:grid-cols-2">
+              {(['guidelines', 'spvf', 'dspm', 'certWorkflow', 'indicators', 'sdgOverview'] as GuideKey[]).map((key) => (
+                <Link key={key} to={GUIDE_PAGES[key]} className="rounded-lg border p-3 text-sm text-primary hover:bg-muted">
+                  {t(`training.guide.${key}`)}
+                </Link>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
@@ -198,7 +309,7 @@ const Training = () => {
                       </div>
                       <div>
                         <p className="font-medium">Certified Reporter</p>
-                        <p className="text-sm text-muted-foreground">Complete basic training and submit 5 verified reports</p>
+                        <p className="text-sm text-muted-foreground">Submit {REPORTER_TARGET} reports that pass verification</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -207,7 +318,7 @@ const Training = () => {
                       </div>
                       <div>
                         <p className="font-medium">Certified Verifier</p>
-                        <p className="text-sm text-muted-foreground">Complete verification training and review 20 reports</p>
+                        <p className="text-sm text-muted-foreground">Complete {VERIFIER_TARGET} verification reviews</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -216,18 +327,28 @@ const Training = () => {
                       </div>
                       <div>
                         <p className="font-medium">Certified Trainer</p>
-                        <p className="text-sm text-muted-foreground">Lead workshops and mentor new community members</p>
+                        <p className="text-sm text-muted-foreground">Awarded by nomination to members who lead workshops and mentor others</p>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Your Progress</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Certification progress tracking isn't live yet — there's nothing here to show until courses
-                    and verification counts are wired up to your account.
-                  </p>
-                  <Button className="w-full" variant="outline" disabled>Coming Soon</Button>
+                  <h3 className="font-semibold text-lg">{t('training.progressTitle')}</h3>
+                  {!user ? (
+                    <p className="text-sm text-muted-foreground">
+                      <Link to="/auth" className="text-primary underline">{t('training.progressSignIn')}</Link>
+                    </p>
+                  ) : !progress ? (
+                    <p className="text-sm text-muted-foreground">{t('training.progressLoading')}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <ProgressRow label={t('training.progressVerifiedReports')} value={progress.verifiedReports} target={REPORTER_TARGET} />
+                      <ProgressRow label={t('training.progressReviews')} value={progress.reviews} target={VERIFIER_TARGET} />
+                      <Button variant="outline" className="w-full" asChild>
+                        <Link to="/submit-report">{t('training.guide.submitReport')}</Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

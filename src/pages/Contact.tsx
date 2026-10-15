@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Phone, MapPin, Clock, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -139,16 +139,15 @@ const Contact = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
-                Visit Our Office
+                Write to Us
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="font-medium">Dibadili Institute</p>
+                <p className="font-medium">DiBadili Institute</p>
                 <p className="text-muted-foreground">
-                  123 Development Avenue<br />
-                  Lagos, Nigeria<br />
-                  West Africa
+                  P.O. Box 2550, Festac Town<br />
+                  Lagos, Nigeria
                 </p>
               </div>
             </CardContent>
@@ -163,29 +162,12 @@ const Contact = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="font-medium">Office</p>
-                <p className="text-muted-foreground">+234 (0) 123 456 7890</p>
-                <p className="font-medium">WhatsApp</p>
-                <p className="text-muted-foreground">+234 (0) 987 654 3210</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Office Hours
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="font-medium">Monday - Friday</p>
-                <p className="text-muted-foreground">9:00 AM - 6:00 PM (WAT)</p>
-                <p className="font-medium">Saturday</p>
-                <p className="text-muted-foreground">10:00 AM - 2:00 PM (WAT)</p>
-                <p className="font-medium">Sunday</p>
-                <p className="text-muted-foreground">Closed</p>
+                <p className="font-medium">Phone &amp; WhatsApp</p>
+                <p className="text-muted-foreground">
+                  <a href="tel:+2348188466444" className="hover:underline">+234 818 846 6444</a>
+                  {' · '}
+                  <a href="https://wa.me/2348188466444" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Chat on WhatsApp</a>
+                </p>
               </div>
             </CardContent>
           </Card>

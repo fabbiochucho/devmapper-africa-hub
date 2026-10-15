@@ -364,8 +364,12 @@ const Support = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-1">{t('support.whatsappTelegramDesc')}</p>
-                  <p className="text-sm">{t('support.whatsappLabel')} <span className="font-medium">+234 XXX DEVMAP</span></p>
-                  <p className="text-sm">{t('support.telegramLabel')} <span className="font-medium">@DevMapperSupport</span></p>
+                  <p className="text-sm">
+                    {t('support.whatsappLabel')}{' '}
+                    <a href="https://wa.me/2348188466444" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                      +234 818 846 6444
+                    </a>
+                  </p>
                 </CardContent>
               </Card>
             </div>
