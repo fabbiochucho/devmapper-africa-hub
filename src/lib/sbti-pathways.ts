@@ -28,12 +28,12 @@
  * licensed source. Sectors where SBTi requires SDA rather than ACA: power,
  * iron & steel, aluminium, cement, pulp & paper, transport, buildings.
  *
- * TODO(business-logic): the long-term net-zero pathway below (≥90%
- * reduction, ≤10% residual by the target year) is per SBTi's Corporate
- * Net-Zero Standard's baseline requirement, but the *exact* interim
- * milestone shape (linear vs. front-loaded) is a company-specific choice
- * SBTi does not fully prescribe - treat the interim points as one
- * reasonable linear path, not the only valid one.
+ * Net-zero pathways follow the Corporate Net-Zero Standard's two-part
+ * structure: a near-term target (5-10 years) at no less than the 1.5°C ACA
+ * rate (4.2%/yr linear), then the long-term target of >=90% reduction
+ * (<=10% residual) by the target year. Between the near-term point and the
+ * target year the path is linear; SBTi doesn't prescribe that segment's
+ * shape, only its end point, so a company may front-load it further.
  */
 
 export type SbtiTargetType = 'near_term' | 'net_zero' | 'renewable_energy';
@@ -43,7 +43,7 @@ export interface SbtiSectorDefinition {
   sector: string;
   label: string;
   description: string;
-  /** True if SBTi requires the Sectoral Decarbonization Approach for this sector (not implemented here - see module docs). */
+  /** True if SBTi requires the Sectoral Decarbonization Approach for this sector (see computeSdaPathway). */
   requiresSda: boolean;
 }
 
@@ -89,26 +89,38 @@ export interface SbtiPathwayResult {
   withinRecommendedHorizon: boolean;
 }
 
+/** Longest near-term horizon SBTi accepts, and the long-term residual ceiling. */
+const NEAR_TERM_MAX_YEARS = 10;
+const NET_ZERO_RESIDUAL = 0.1;
+
 /**
  * Computes an Absolute Contraction Approach pathway. For near_term targets,
  * uses the published 4.2%/yr (1.5°C) or 2.5%/yr (well-below-2°C) linear
- * reduction rate. For net_zero targets, computes the linear rate needed to
- * reach ~90% reduction (10% residual) by the target year, per SBTi's
- * Corporate Net-Zero Standard floor. renewable_energy targets are a
- * procurement commitment (% renewable electricity), not an emissions
- * trajectory - see computeRenewableEnergyTarget below instead.
+ * reduction rate. For net_zero targets: the 1.5°C rate (or faster, if that's
+ * what reaching 10% residual needs) for the near-term horizon (up to 10
+ * years), then linear to 10% residual by the target year - so the near-term
+ * part never falls below what SBTi requires. annualReductionRate reports the
+ * near-term rate. renewable_energy targets are a procurement commitment (%
+ * renewable electricity), not an emissions trajectory - see
+ * computeRenewableEnergyTarget below instead.
  */
 export function computeSbtiPathway(input: SbtiPathwayInput): SbtiPathwayResult {
   const years = Math.max(1, input.targetYear - input.baselineYear);
 
-  const annualReductionRate = input.targetType === 'net_zero'
-    ? 0.9 / years // reach 90% cumulative reduction (10% residual) by the target year
+  const isNetZero = input.targetType === 'net_zero';
+  const annualReductionRate = isNetZero
+    ? Math.max(ACA_ANNUAL_RATE['1.5C'], (1 - NET_ZERO_RESIDUAL) / years)
     : ACA_ANNUAL_RATE[input.temperatureScenario ?? '1.5C'];
+  const nearYears = isNetZero ? Math.min(years, NEAR_TERM_MAX_YEARS) : years;
+  const nearEnd = 1 - annualReductionRate * nearYears;
 
   const points: SbtiPathwayPoint[] = [];
   for (let i = 0; i <= years; i++) {
     const year = input.baselineYear + i;
-    const fractionOfBaseline = Math.max(0, 1 - annualReductionRate * i);
+    const linear = i <= nearYears
+      ? 1 - annualReductionRate * i
+      : nearEnd - (nearEnd - NET_ZERO_RESIDUAL) * (i - nearYears) / (years - nearYears);
+    const fractionOfBaseline = Math.max(isNetZero ? NET_ZERO_RESIDUAL : 0, linear);
     points.push({
       year,
       emissions: Math.round(input.baselineEmissions * fractionOfBaseline),

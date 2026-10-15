@@ -19,7 +19,7 @@ import {
   estimateGlecTransportEmissions,
   type TransportMode, type RoadVehicleClass, type RailTraction, type SeaVesselClass, type AirCargoClass,
 } from '@/lib/glec-transport';
-import { LCA_STAGES, characterizeInventory, characterizeOdpInventory, characterizeAcidificationInventory } from '@/lib/lca-lifecycle';
+import { LCA_STAGES, characterizeInventory, characterizeOdpInventory, characterizeAcidificationInventory, characterizeEutrophicationInventory } from '@/lib/lca-lifecycle';
 import { summarizeGpcInventory, type GpcSectorEmissions } from '@/lib/gpc-city-aggregation';
 import {
   saveSbtiPathway, listSbtiPathways, deleteSbtiPathway, type SbtiPathwayRecord,
@@ -175,6 +175,7 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
 
   const lcaOdpResult = useMemo(() => characterizeOdpInventory([]), []);
   const lcaApResult = useMemo(() => characterizeAcidificationInventory([]), []);
+  const lcaEpResult = useMemo(() => characterizeEutrophicationInventory([]), []);
 
   const csrdMapping = useMemo(
     () => mapEsgIndicatorsToFramework('CSRD', csrdIndicators, csrdEsgRow, baselineYear),
@@ -560,6 +561,12 @@ export default function StandardsPhase2Panel({ organizationId }: StandardsPhase2
               <span className="font-medium">{lcaApResult.totalKgSo2e} kg SO2-eq</span>
             </p>
             <p className="text-xs text-muted-foreground">{lcaApResult.note}</p>
+            <Separator />
+            <p className="text-sm">
+              Eutrophication Potential (no nutrient flows entered — 0 by default):{' '}
+              <span className="font-medium">{lcaEpResult.totalKgPo4e} kg PO4-eq</span>
+            </p>
+            <p className="text-xs text-muted-foreground">{lcaEpResult.note}</p>
             <Button
               size="sm"
               disabled={saving === 'lca'}

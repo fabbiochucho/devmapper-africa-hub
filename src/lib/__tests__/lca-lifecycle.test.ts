@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { characterizeInventory, characterizeOdpInventory, characterizeAcidificationInventory } from "../lca-lifecycle";
+import { characterizeInventory, characterizeOdpInventory, characterizeAcidificationInventory, characterizeEutrophicationInventory } from "../lca-lifecycle";
 
 describe("characterizeInventory (GWP100)", () => {
   it("treats 1kg CO2 as exactly 1kg CO2e", () => {
@@ -82,5 +82,22 @@ describe("characterizeAcidificationInventory (TRACI 2.1)", () => {
   it("returns zero for an empty inventory", () => {
     const result = characterizeAcidificationInventory([]);
     expect(result.totalKgSo2e).toBe(0);
+  });
+});
+
+describe("characterizeEutrophicationInventory (CML-IA baseline)", () => {
+  it("weights each nutrient by its kg PO4-eq factor and nets inputs against outputs", () => {
+    const result = characterizeEutrophicationInventory([
+      { substance: "total_p", amountKg: 1, direction: "output", stage: "use" },
+      { substance: "nox", amountKg: 10, direction: "output", stage: "use" },
+      { substance: "nh3", amountKg: 2, direction: "input", stage: "use" },
+    ]);
+    // 1 x 3.06 + 10 x 0.13 - 2 x 0.35
+    expect(result.totalKgPo4e).toBeCloseTo(3.66, 5);
+    expect(result.breakdownBySubstance.total_p).toBeCloseTo(3.06, 5);
+  });
+
+  it("is zero for an empty inventory", () => {
+    expect(characterizeEutrophicationInventory([]).totalKgPo4e).toBe(0);
   });
 });

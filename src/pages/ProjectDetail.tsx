@@ -168,6 +168,7 @@ export default function ProjectDetail() {
     reportCost: report.cost ?? null,
     verificationStatus: bestVerification ? "approved" : "none",
     evidenceCount: updates.length,
+    startDate: report.start_date ?? null,
     deadline: report.end_date ?? null,
     milestonesTotal: milestones.length,
     milestonesCompleted: milestones.filter((m) => m.status === "completed").length,
