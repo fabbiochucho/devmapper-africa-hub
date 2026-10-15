@@ -6,6 +6,7 @@ import { type Database, type Db } from '../_shared/db.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Expose-Headers': 'X-Cache',
 };
 
 serve(async (req) => {
