@@ -1137,7 +1137,10 @@
       "noEmissionsDataYet": "No emissions data yet",
       "annualSpendLabel": "Annual Spend",
       "vsSectorAvg": "{{pct}}% vs {{sector}} avg",
-      "noSuppliersMessage": "No suppliers added yet. Use the importer above or add suppliers manually."
+      "noSuppliersMessage": "No suppliers added yet. Use the importer above or add suppliers manually.",
+      "countryAverageLabel": "Country average ({{country}}), economy-wide",
+      "kgCo2ePerUsdUnit": "kg CO2e per US$ of GDP",
+      "vsCountryAvg": "{{pct}}% vs {{country}} economy average"
     },
     "csvImporter": {
       "invalidFileError": "Please select a valid CSV file",

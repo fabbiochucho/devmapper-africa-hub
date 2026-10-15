@@ -9,7 +9,7 @@ function makeBenchmark(overrides: Partial<AlphaEarthBenchmark> = {}): AlphaEarth
     country: "NG",
     sector: "renewable_energy",
     avg_carbon_intensity: 1,
-    source: "AlphaEarth Foundations (Calculated)",
+    source: "Climate TRACE emissions ÷ World Bank GDP (2024)",
     confidence_score: 0.75,
     ...overrides,
   };
@@ -100,5 +100,13 @@ describe("computeSuggestedPriceRange", () => {
       makeBenchmark({ confidence_score: 0.5 }),
     );
     expect(cookstoves.confidence).toBeGreaterThan(waste.confidence);
+  });
+  it("prices from the market anchor alone when no benchmark is available", () => {
+    const range = computeSuggestedPriceRange(
+      { projectType: "renewable_energy", countryCode: "NG", vintageYear: currentYear },
+      makeBenchmark({ avg_carbon_intensity: null, available: false }),
+    );
+    expect(range.mid).toBe(5.8);
+    expect(range.source).toBe("VCM market average");
   });
 });

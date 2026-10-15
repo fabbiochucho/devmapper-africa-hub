@@ -22,7 +22,6 @@ import {
   Factory, 
   Zap, 
   TrendingUp, 
-  TrendingDown,
   Target,
   Users,
   AlertTriangle,
@@ -426,17 +425,17 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
             <CardHeader>
               <CardTitle>{t('esg.dashboard.industryBenchmarksTitle')}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                {t('esg.dashboard.poweredBy', { apiName: organization.plan_type === 'pro' ? t('esg.dashboard.alphaEarthCommercialApi') : t('esg.dashboard.alphaEarthFoundationsApi') })}
+                {t('esg.dashboard.poweredBy', { apiName: 'Climate TRACE + World Bank' })}
               </p>
             </CardHeader>
             <CardContent>
-              {benchmark ? (
+              {benchmark && benchmark.avg_carbon_intensity != null ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="text-center p-4 border rounded-lg">
                       <div className="text-2xl font-bold">{benchmark.avg_carbon_intensity}</div>
-                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.industryAverageLabel')}</div>
-                      <div className="text-xs text-muted-foreground">{t('esg.dashboard.tonnesCo2eUnit')}</div>
+                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.countryAverageLabel', { country: benchmark.country })}</div>
+                      <div className="text-xs text-muted-foreground">{t('esg.dashboard.kgCo2ePerUsdUnit')}</div>
                     </div>
                     <div className="text-center p-4 border rounded-lg">
                       <div className="text-2xl font-bold">
@@ -445,27 +444,11 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                       <div className="text-sm text-muted-foreground">{t('esg.dashboard.yourPerformanceLabel')}</div>
                       <div className="text-xs text-muted-foreground">{t('esg.dashboard.tonnesCo2eUnit')}</div>
                     </div>
-                    <div className="text-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold flex items-center justify-center">
-                        {totalEmissions > 0 && benchmark.avg_carbon_intensity > 0 ? (
-                          <>
-                            {totalEmissions < benchmark.avg_carbon_intensity ? (
-                              <TrendingDown className="w-6 h-6 text-green-500 mr-2" />
-                            ) : (
-                              <TrendingUp className="w-6 h-6 text-red-500 mr-2" />
-                            )}
-                            {Math.abs(((totalEmissions - benchmark.avg_carbon_intensity) / benchmark.avg_carbon_intensity) * 100).toFixed(0)}%
-                          </>
-                        ) : t('esg.dashboard.naLabel')}
-                      </div>
-                      <div className="text-sm text-muted-foreground">{t('esg.dashboard.vsIndustryLabel')}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {totalEmissions < benchmark.avg_carbon_intensity ? t('esg.dashboard.betterLabel') : t('esg.dashboard.needsImprovementLabel')}
-                      </div>
-                    </div>
                   </div>
+                  {/* Total tonnes and a per-US$ intensity can't be compared without the
+                      organisation's revenue, which isn't recorded - so no "vs" figure. */}
                   <div className="text-xs text-muted-foreground">
-                    {t('esg.dashboard.sourceFetchedLabel', { source: benchmark.source, date: new Date().toLocaleDateString() })}
+                    {benchmark.note} {t('esg.dashboard.sourceFetchedLabel', { source: benchmark.source, date: new Date().toLocaleDateString() })}
                   </div>
                 </div>
               ) : (
@@ -510,9 +493,9 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                     const benchmark = supplier.country_code && supplier.sector
                       ? sectorBenchmarks[`${supplier.country_code}:${supplier.sector}`]
                       : null;
-                    // Same basis alphaearth-proxy uses server-side: tonnes CO2e per $1M spend.
+                    // Same unit as the benchmark: kg CO2e per US$ (tonnes x 1000 / US$ spend).
                     const actualIntensity = emissions && supplier.annual_spend
-                      ? emissions.total / (supplier.annual_spend / 1_000_000)
+                      ? (emissions.total * 1000) / supplier.annual_spend
                       : null;
                     const vsBenchmark = actualIntensity != null && benchmark?.avg_carbon_intensity
                       ? ((actualIntensity - benchmark.avg_carbon_intensity) / benchmark.avg_carbon_intensity) * 100
@@ -531,7 +514,7 @@ const ESGDashboard = ({ organizationId }: { organizationId: string }) => {
                               <Badge variant="outline" className="text-xs">{emissions.quality}</Badge>
                               {vsBenchmark != null && (
                                 <Badge variant={vsBenchmark > 15 ? 'destructive' : vsBenchmark < -15 ? 'default' : 'secondary'} className="text-xs">
-                                  {t('esg.dashboard.vsSectorAvg', { pct: `${vsBenchmark > 0 ? '+' : ''}${vsBenchmark.toFixed(0)}`, sector: supplier.sector })}
+                                  {t('esg.dashboard.vsCountryAvg', { pct: `${vsBenchmark > 0 ? '+' : ''}${vsBenchmark.toFixed(0)}`, country: supplier.country_code })}
                                 </Badge>
                               )}
                             </div>

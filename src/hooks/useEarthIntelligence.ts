@@ -19,18 +19,6 @@ interface GEERequest {
   endDate?: string;
 }
 
-interface ClimateTraceRequest {
-  country: string;
-  sector?: string;
-  year?: number;
-}
-
-interface SDGRequest {
-  goal: number;
-  country: string;
-  indicator?: string;
-}
-
 export function useEarthIntelligence() {
   const [loading, setLoading] = useState(false);
 
@@ -47,44 +35,6 @@ export function useEarthIntelligence() {
     } catch (error: unknown) {
       console.error('Error fetching GEE data:', error);
       toast.error(`Failed to fetch ${request.type} data: ${errorMessageOf(error)}`);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchClimateData = async (request: ClimateTraceRequest) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('climatetrace-proxy', {
-        body: request
-      });
-
-      if (error) throw error;
-
-      return data;
-    } catch (error: unknown) {
-      console.error('Error fetching climate data:', error);
-      toast.error(`Failed to fetch emissions data: ${errorMessageOf(error)}`);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSDGData = async (request: SDGRequest) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('sdg-proxy', {
-        body: request
-      });
-
-      if (error) throw error;
-
-      return data;
-    } catch (error: unknown) {
-      console.error('Error fetching SDG data:', error);
-      toast.error(`Failed to fetch SDG data: ${errorMessageOf(error)}`);
       throw error;
     } finally {
       setLoading(false);
@@ -113,8 +63,6 @@ export function useEarthIntelligence() {
   return {
     loading,
     fetchGEEData,
-    fetchClimateData,
-    fetchSDGData,
     fetchSentinelTile
   };
 }

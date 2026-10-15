@@ -281,25 +281,22 @@ export default function ESGReportGenerator({
       `;
     }
 
-    if (selectedSections.includes('benchmarks') && benchmark) {
+    if (selectedSections.includes('benchmarks') && benchmark && benchmark.avg_carbon_intensity != null) {
+      // Total tonnes and a per-US$ intensity aren't comparable without revenue, so no "vs" figure.
       sectionsHTML += `
         <section class="section">
-          <h2>Industry Benchmarks</h2>
+          <h2>Carbon Intensity Benchmark</h2>
           <div class="metrics-grid">
             <div class="metric-card">
-              <div class="metric-value">${benchmark.avg_carbon_intensity || '-'}</div>
-              <div class="metric-label">Industry Average (tCO2e)</div>
+              <div class="metric-value">${benchmark.avg_carbon_intensity}</div>
+              <div class="metric-label">${benchmark.country} economy-wide average (kg CO2e per US$ of GDP)</div>
             </div>
             <div class="metric-card">
               <div class="metric-value">${data.totalEmissions.toLocaleString()}</div>
-              <div class="metric-label">Your Performance</div>
-            </div>
-            <div class="metric-card ${data.totalEmissions < (benchmark.avg_carbon_intensity || 0) ? 'positive' : 'negative'}">
-              <div class="metric-value">${benchmark.avg_carbon_intensity ? Math.abs(((data.totalEmissions - benchmark.avg_carbon_intensity) / benchmark.avg_carbon_intensity) * 100).toFixed(0) : '-'}%</div>
-              <div class="metric-label">${data.totalEmissions < (benchmark.avg_carbon_intensity || 0) ? 'Below' : 'Above'} Industry Average</div>
+              <div class="metric-label">Your total emissions (tCO2e)</div>
             </div>
           </div>
-          <p class="source">Source: ${benchmark.source || 'AlphaEarth'}</p>
+          <p class="source">Source: ${benchmark.source}. ${benchmark.note ?? ''}</p>
         </section>
       `;
     }

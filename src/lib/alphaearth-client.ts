@@ -5,12 +5,13 @@ export interface AlphaEarthBenchmark {
   country: string;
   sector: string;
   year?: number;
-  avg_carbon_intensity: number;
-  water_intensity?: number;
-  waste_intensity?: number;
+  /** kg CO2e per US$ of GDP (economy-wide, Climate TRACE / World Bank). null when unavailable. */
+  avg_carbon_intensity: number | null;
+  available?: boolean;
+  scope?: 'economy-wide';
+  note?: string;
   source: string;
   confidence_score?: number;
-  data_points?: number;
   cached?: boolean;
 }
 
@@ -81,7 +82,8 @@ export async function enrichSuppliers(
 }
 
 /**
- * Get cached benchmark (for display purposes, falls back gracefully)
+ * Benchmark for display, or null when there is none. Goes through the proxy (which
+ * caches server-side): the shared cache rows aren't readable by ordinary users.
  */
 export async function getCachedBenchmark(
   country: string,
@@ -89,20 +91,8 @@ export async function getCachedBenchmark(
   year?: number
 ): Promise<AlphaEarthBenchmark | null> {
   try {
-    const cacheKey = `benchmark:${country}:${sector}:${year || 'latest'}`;
-    
-    const { data, error } = await supabase
-      .from('alphaearth_cache')
-      .select('payload')
-      .eq('cache_key', cacheKey)
-      .gt('expires_at', new Date().toISOString())
-      .maybeSingle();
-
-    if (error || !data?.payload) return null;
-    
-    // Safely cast the JSON payload
-    const payload = data.payload as unknown as AlphaEarthBenchmark;
-    return payload;
+    const benchmark = await getBenchmark(country, sector, year);
+    return benchmark.available === false || benchmark.avg_carbon_intensity == null ? null : benchmark;
   } catch {
     return null;
   }
