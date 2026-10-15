@@ -19,8 +19,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Who we are',
     body: (
       <p>
-        Dev Mapper (devmapper.africa) is operated by the Di Badili Leadership Sustainability Initiative, through
-        its arms the Di Badili Institute and the Become Change Institute. We decide how and why personal data on
+        Dev Mapper (devmapper.africa) is operated by the Di Badili Leadership Sustainability Initiative, trading
+        as DiBadili Institute, also known as Become Change Institute. We decide how and why personal data on
         Dev Mapper is processed, so we are its <b>controller</b>. Data protection contact: <Mail />.
       </p>
     ),
@@ -41,7 +41,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
   {
     title: 'How we use it and our lawful bases',
     body: (
-      <table>
+      <div className="overflow-x-auto"><table>
         <thead><tr><th>Purpose</th><th>Lawful basis</th></tr></thead>
         <tbody>
           <tr><td>Provide the platform: accounts, maps, reports, workspaces, verification, messaging</td><td>Contract with you</td></tr>
@@ -52,7 +52,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <tr><td>Usage analytics and error monitoring</td><td>Legitimate interests</td></tr>
           <tr><td>Answer requests and complaints; meet legal duties</td><td>Legal obligation; legitimate interests</td></tr>
         </tbody>
-      </table>
+      </table></div>
     ),
   },
   {
@@ -76,7 +76,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           needed for verification, support, security or legal compliance. We do not sell personal data.
         </p>
         <p>We use these service providers (sub-processors):</p>
-        <table>
+        <div className="overflow-x-auto"><table>
           <thead><tr><th>Provider</th><th>Purpose</th><th>Data</th></tr></thead>
           <tbody>
             <tr><td>Supabase</td><td>Database, sign-in, file storage, server functions</td><td>All account and platform data</td></tr>
@@ -88,7 +88,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
             <tr><td>Google Fonts</td><td>Web fonts</td><td>IP address</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <p>
           Satellite and open-data sources (Google Earth Engine, World Bank, IATI, Climate TRACE, Open-Meteo and
           others) receive only map areas and search terms, never your personal data.
@@ -141,7 +141,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Cookies and browser storage',
     body: (
       <>
-        <table>
+        <div className="overflow-x-auto"><table>
           <thead><tr><th>Name</th><th>Purpose</th><th>Type</th><th>Duration</th></tr></thead>
           <tbody>
             <tr><td><code>sb-…-auth-token</code></td><td>Keeps you signed in</td><td>Strictly necessary (browser storage)</td><td>Until you sign out</td></tr>
@@ -150,7 +150,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td><code>i18nextLng</code></td><td>Remembers your language</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>
             <tr><td><code>onboarding_shown</code>, <code>devmapper_profile_prompt_dismissed</code></td><td>Stops the welcome tour and profile prompt reappearing</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>
           </tbody>
-        </table>
+        </table></div>
         <p>We do not use advertising or cross-site tracking cookies.</p>
       </>
     ),

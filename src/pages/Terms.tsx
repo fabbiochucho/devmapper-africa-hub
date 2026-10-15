@@ -16,7 +16,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <p>
         These terms govern your use of Dev Mapper (devmapper.africa), operated by the Di Badili Leadership
-        Sustainability Initiative through the Di Badili Institute and the Become Change Institute. By creating an
+        Sustainability Initiative, trading as DiBadili Institute, also known as Become Change Institute. By creating an
         account or using the platform you agree to them, to our <A to="/privacy">Privacy Policy</A> and to our{' '}
         <A to="/guidelines">Community Guidelines</A>.
       </p>
