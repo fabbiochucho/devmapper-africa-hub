@@ -1,3 +1,4 @@
+import { plainText } from '@/lib/plainText';
 import { Fragment } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -58,7 +59,7 @@ export default function ExplorePage() {
             <Card className="lg:col-span-3">
               <CardHeader><CardTitle className="text-base">About</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-sm">
-                {data.summary && <p className="whitespace-pre-line">{data.summary}</p>}
+                {data.summary && <p className="whitespace-pre-line">{plainText(data.summary)}</p>}
                 {facts.length > 0 && (
                   <dl className="grid grid-cols-[minmax(0,10rem)_1fr] gap-x-4 gap-y-1.5">
                     {facts.map(([k, v]) => (<Fragment key={k}><dt className="text-muted-foreground">{k}</dt><dd className="break-words">{v}</dd></Fragment>))}

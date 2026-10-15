@@ -1,3 +1,4 @@
+import { plainText } from '@/lib/plainText';
 import React, { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -121,7 +122,7 @@ function ResultRow({ hit, canSave }: { hit: EntityHit; canSave: boolean }) {
           {hit.countryCode && <Badge variant="outline">{hit.countryCode}</Badge>}
           {hit.match === 'semantic' && <Badge variant="outline">Related by meaning</Badge>}
         </div>
-        {hit.snippet && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{hit.snippet}</p>}
+        {hit.snippet && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{plainText(hit.snippet)}</p>}
         <p className="text-xs text-muted-foreground mt-1">
           Source: {sourceName(hit.source)}
           {hit.sourceUrl && (
