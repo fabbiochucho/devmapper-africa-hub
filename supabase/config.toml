@@ -237,3 +237,6 @@ enabled = true
 
 [functions.delete-account]
 verify_jwt = true
+
+[functions.public-api]
+verify_jwt = false
