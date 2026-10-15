@@ -131,8 +131,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
           Privacy Act 2019, Rwanda’s Law No. 058/2021, the EU and UK GDPR, and similar laws elsewhere.
         </p>
         <p>
-          You can edit your profile in Settings. To exercise any other right, including deleting your account,
-          contact our Data Protection Officer (below).
+          You can edit your profile, and delete your account immediately, in Settings. Deleting erases your
+          personal details and private data and disables your login; published reports, verifications and payment
+          records stay as anonymous records. To exercise any other right, contact our Data Protection Officer
+          (below).
         </p>
       </>
     ),

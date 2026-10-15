@@ -111,7 +111,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Ending your use',
     body: (
       <p>
-        You can stop using Dev Mapper at any time and ask for your account to be deleted by emailing{' '}
+        You can stop using Dev Mapper at any time and delete your account in Settings, or ask us to by emailing{' '}
         <a href={`mailto:${DPO_EMAIL}`} className="text-primary underline-offset-2 hover:underline">{DPO_EMAIL}</a>.
       </p>
     ),
