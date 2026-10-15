@@ -237,7 +237,7 @@ const Privacy = () => (
           <CardHeader>
             <CardTitle className="text-lg">{i + 1}. {s.title}</CardTitle>
           </CardHeader>
-          <CardContent className={`space-y-3 text-sm leading-relaxed ${table}`}>{s.body}</CardContent>
+          <CardContent className={`space-y-3 break-words text-sm leading-relaxed ${table}`}>{s.body}</CardContent>
         </Card>
       ))}
     </div>
