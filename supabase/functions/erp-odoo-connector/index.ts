@@ -25,11 +25,12 @@ interface SyncRequest {
  * `display_type = false` rather than the less-documented
  * `exclude_from_invoice_tab`, which an earlier version of this file used).
  *
- * TODO(business-logic, unverified): field *documentation* is confirmed, but
- * this has still NOT been exercised against a live Odoo sandbox - exact
- * behavior can still vary by Odoo version/localization (eg. some
- * installations customize account.move.line with extra required fields).
- * Verify against a real instance before production use.
+ * Transport checked live against Odoo 20 (demo.odoo.com, Oct 2026): /jsonrpc
+ * and /xmlrpc return 404 there and /json/2 is served, so JSON-2 is tried
+ * first with a fallback to JSON-RPC for older instances. The line query
+ * itself couldn't be run on the demo (an API key needs an interactive
+ * identity check), so it follows the account.move.line field reference; a
+ * customised installation can still differ.
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -112,30 +113,52 @@ serve(async (req) => {
     // Credentials are stored as a JSON-encoded secret: {"db","username","apiKey"}
     const { db, username, apiKey } = JSON.parse(rawCreds);
 
-    const rpc = async (service: string, method: string, args: unknown[]) => {
-      const response = await fetch(`${connection.base_url}/jsonrpc`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service, method, args }, id: Date.now() }),
-      });
-      const json = await response.json();
-      if (json.error) throw new Error(json.error.data?.message || 'Odoo RPC error');
-      return json.result;
-    };
+    type OdooLine = { partner_id?: [number, string] | false; name?: string | false; price_subtotal?: number };
+    // Product lines on posted vendor bills. Since Odoo 16 these have display_type
+    // 'product' (sections/notes/tax/payment-term lines have other values); before 16
+    // they had display_type False, so accept both and exclude tax lines explicitly.
+    const domain = [
+      ['move_id.move_type', '=', 'in_invoice'],
+      ['parent_state', '=', 'posted'],
+      ['display_type', 'in', ['product', false]],
+      ['tax_line_id', '=', false],
+    ];
+    const fields = ['id', 'partner_id', 'name', 'quantity', 'price_subtotal', 'product_id'];
 
-    // 'authenticate' is the current documented method name (Odoo external
-    // API docs); 'login' is an older alias that also works on most
-    // versions. Odoo 19+ is introducing a newer JSON-2 API that will
-    // eventually supersede this JSON-RPC interface - re-check against the
-    // target instance's version before relying on this long-term.
-    const uid = await rpc('common', 'authenticate', [db, username, apiKey]);
-    if (!uid) throw new Error('Odoo authentication failed');
+    // Odoo 19+ External JSON-2 API (the XML-RPC/JSON-RPC endpoints are deprecated, and
+    // Odoo 20 - e.g. demo.odoo.com - already answers 404 on /jsonrpc and /xmlrpc).
+    const json2 = await fetch(`${connection.base_url}/json/2/account.move.line/search_read`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `bearer ${apiKey}`,
+        ...(db ? { 'X-Odoo-Database': db } : {}),
+        'User-Agent': 'DevMapper ERP connector',
+      },
+      body: JSON.stringify({ domain, fields, limit: 200 }),
+    });
 
-    const lines: { partner_id?: [number, string] | false; name?: string | false; price_subtotal?: number }[] = await rpc('object', 'execute_kw', [
-      db, uid, apiKey, 'account.move.line', 'search_read',
-      [[['move_id.move_type', '=', 'in_invoice'], ['display_type', '=', false]]],
-      { fields: ['id', 'partner_id', 'name', 'quantity', 'price_subtotal', 'product_id'], limit: 200 },
-    ]);
+    let lines: OdooLine[];
+    if (json2.status !== 404) {
+      const body = await json2.json().catch(() => null);
+      if (!json2.ok) throw new Error(`Odoo JSON-2 API error ${json2.status}: ${body?.message ?? 'unknown error'}`);
+      lines = body as OdooLine[];
+    } else {
+      // Older Odoo (< 19): legacy JSON-RPC object service.
+      const rpc = async (service: string, method: string, args: unknown[]) => {
+        const response = await fetch(`${connection.base_url}/jsonrpc`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { service, method, args }, id: Date.now() }),
+        });
+        const json = await response.json();
+        if (json.error) throw new Error(json.error.data?.message || 'Odoo RPC error');
+        return json.result;
+      };
+      const uid = await rpc('common', 'authenticate', [db, username, apiKey, {}]);
+      if (!uid) throw new Error('Odoo authentication failed');
+      lines = await rpc('object', 'execute_kw', [db, uid, apiKey, 'account.move.line', 'search_read', [domain], { fields, limit: 200 }]);
+    }
 
     const lineItems: ErpLineItem[] = lines.map((line) => ({
       vendorName: Array.isArray(line.partner_id) ? line.partner_id[1] : 'Unknown vendor',

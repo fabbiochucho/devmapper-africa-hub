@@ -25,7 +25,15 @@ export default function FundingReadinessBadge({ score, showLabel = true, size = 
           </Badge>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
-          <p>Preliminary score - the underlying weighting is pending review and hasn't been validated against real funding outcomes yet.</p>
+          <p className="font-medium">Project funding readiness (indicative)</p>
+          <ul className="mt-1 list-disc pl-4 text-xs">
+            <li>Return on investment: up to 30</li>
+            <li>Financials entered: 25</li>
+            <li>Fundraising raised vs target: up to 20</li>
+            <li>Revenue, savings or carbon-credit income: up to 15</li>
+            <li>Timeline on track: 10</li>
+          </ul>
+          <p className="mt-1 text-xs">Measures the project, not the organisation's capacity to manage funds.</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

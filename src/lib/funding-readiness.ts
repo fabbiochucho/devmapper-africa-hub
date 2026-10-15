@@ -2,9 +2,13 @@
 // score computed inline from already-fetched data (not persisted), plus
 // matching color/label helpers for consistent styling.
 //
-// TODO(business-logic): weightings below are initial placeholders pending
-// review by someone with real fundraising/underwriting diligence
-// experience - not validated against real funding outcomes.
+// What it measures: the *project's* financial readiness - return, whether
+// financials exist, fundraising traction, revenue diversification, schedule.
+// It deliberately says nothing about the implementing *organisation's*
+// capacity to manage funds (fiduciary controls, grant management); that is
+// what an institutional assessment such as CRAFT measures. The points are a
+// transparent heuristic, shown to users component by component - there is no
+// outcome data on the platform yet to calibrate them against.
 
 export interface FundingReadinessInput {
   reportCost: number | null;

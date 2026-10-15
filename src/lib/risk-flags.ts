@@ -4,8 +4,11 @@
 // ndovu-investor-agent system prompt ("Flag investment risks: unverified
 // claims, missing financials, timeline gaps").
 //
-// TODO(business-logic): severity thresholds are initial placeholders
-// pending review by someone with real fundraising-diligence experience.
+// Severity rules: missing financials and rejected claims are high (an
+// investor can't diligence the project); unverified claims or no evidence
+// are medium. Schedule slippage uses the standard schedule-variance idea:
+// compare the share of milestones done with the share of the planned
+// duration elapsed, and flag a gap of 25+ points (medium) or 50+ (high).
 
 export type RiskFlagType = 'missing_financials' | 'unverified_claims' | 'timeline_gap';
 export type RiskSeverity = 'low' | 'medium' | 'high';
@@ -21,6 +24,8 @@ export interface RiskFlagInput {
   reportCost: number | null;
   verificationStatus: 'none' | 'pending' | 'approved' | 'rejected';
   evidenceCount: number;
+  /** Project start; without it, progress can't be compared with elapsed time. */
+  startDate?: Date | string | null;
   deadline: Date | string | null;
   milestonesTotal: number;
   milestonesCompleted: number;
@@ -54,22 +59,36 @@ export function deriveRiskFlags(input: RiskFlagInput): RiskFlag[] {
   }
 
   if (input.deadline) {
-    const deadlineDate = new Date(input.deadline);
-    const isPastDue = deadlineDate.getTime() < Date.now();
-    const completionRatio = input.milestonesTotal > 0 ? input.milestonesCompleted / input.milestonesTotal : 0;
+    const deadline = new Date(input.deadline).getTime();
+    const now = Date.now();
+    const hasMilestones = input.milestonesTotal > 0;
+    const completionRatio = hasMilestones ? input.milestonesCompleted / input.milestonesTotal : 0;
 
-    if (isPastDue && completionRatio < 1) {
-      flags.push({
-        type: 'timeline_gap',
-        severity: 'high',
-        message: 'Deadline has passed with incomplete milestones.',
-      });
-    } else if (input.milestonesTotal > 0 && completionRatio < 0.3) {
-      flags.push({
-        type: 'timeline_gap',
-        severity: 'low',
-        message: 'Milestone completion is significantly behind schedule.',
-      });
+    if (deadline < now) {
+      if (!hasMilestones) {
+        flags.push({
+          type: 'timeline_gap',
+          severity: 'medium',
+          message: 'The deadline has passed and no milestones are recorded to show progress.',
+        });
+      } else if (completionRatio < 1) {
+        flags.push({
+          type: 'timeline_gap',
+          severity: 'high',
+          message: 'Deadline has passed with incomplete milestones.',
+        });
+      }
+    } else if (hasMilestones && input.startDate) {
+      const start = new Date(input.startDate).getTime();
+      const elapsedRatio = deadline > start ? Math.min(1, Math.max(0, (now - start) / (deadline - start))) : 0;
+      const gap = elapsedRatio - completionRatio;
+      if (gap >= 0.25) {
+        flags.push({
+          type: 'timeline_gap',
+          severity: gap >= 0.5 ? 'high' : 'medium',
+          message: `Milestones are behind schedule: ${Math.round(completionRatio * 100)}% done with ${Math.round(elapsedRatio * 100)}% of the time elapsed.`,
+        });
+      }
     }
   }
 

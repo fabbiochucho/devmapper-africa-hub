@@ -43,6 +43,21 @@ describe("computeSbtiPathway (Absolute Contraction Approach)", () => {
     const lastPoint = result.points[result.points.length - 1];
     expect(lastPoint.fractionOfBaseline).toBeCloseTo(0.1, 5);
   });
+
+  it("keeps a long net-zero path at the 1.5°C near-term rate for its first 10 years", () => {
+    const result = computeSbtiPathway({ baselineYear: 2025, targetYear: 2050, baselineEmissions: 1000, targetType: "net_zero" });
+    expect(result.annualReductionRate).toBeCloseTo(0.042, 5);
+    const at2035 = result.points.find((p) => p.year === 2035)!;
+    expect(at2035.fractionOfBaseline).toBeCloseTo(1 - 0.042 * 10, 5);
+    // never below the 10% residual, and monotonically falling
+    result.points.slice(1).forEach((p, i) => expect(p.fractionOfBaseline).toBeLessThan(result.points[i].fractionOfBaseline));
+  });
+
+  it("uses a faster rate when a short net-zero horizon needs it", () => {
+    const result = computeSbtiPathway({ baselineYear: 2025, targetYear: 2035, baselineEmissions: 1000, targetType: "net_zero" });
+    expect(result.annualReductionRate).toBeCloseTo(0.09, 5);
+    expect(result.points[result.points.length - 1].fractionOfBaseline).toBeCloseTo(0.1, 5);
+  });
 });
 
 describe("computeSdaPathway (Sectoral Decarbonization Approach)", () => {

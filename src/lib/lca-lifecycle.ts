@@ -16,12 +16,13 @@
  *   reference substance, =1.0 by definition), NOx (~0.7), and NH3 (1.88,
  *   directly sourced from EPA's published TRACI 2.1/FEDEFL factor list).
  *
- * NOT implemented: Eutrophication Potential. TRACI's *current* (2.2)
- * eutrophication factors are spatially-resolved (Henderson et al. 2021) -
- * public search did not turn up confident single numeric kg-N-eq factors
- * for NOx/NH3/phosphorus to cite directly, so rather than guess a plausible
- * number, this category is left out entirely. Same reasoning applies to
- * further categories (ozone formation/smog, resource depletion, etc.).
+ * - Eutrophication Potential (EP) - CML-IA baseline (Leiden University
+ *   CML, after Heijungs et al. 1992) generic factors, kg PO4(3-)-eq. TRACI
+ *   2.2's eutrophication factors are spatially resolved, so the
+ *   site-independent CML factors are used instead and the result says so.
+ *
+ * NOT implemented: ozone formation/smog, resource depletion and other
+ * categories - left out rather than characterized with guessed factors.
  */
 
 export type LcaStage = 'goal_and_scope' | 'inventory_analysis' | 'impact_assessment' | 'interpretation';
@@ -48,7 +49,7 @@ const GWP100: Record<LcaInventoryFlow['substance'], number> = {
   co2: 1,
   ch4: 27.9,
   n2o: 273,
-  hfc: 1430, // representative value for common refrigerant HFC-134a; actual HFCs vary widely (140-14800) - flag per-substance if precision matters
+  hfc: 1530, // HFC-134a, the most common refrigerant (IPCC AR6 Table 7.SM.7); other HFCs vary widely (~4-14,600) - flag per-substance if precision matters
   other: 0,
 };
 
@@ -188,6 +189,54 @@ export function characterizeAcidificationInventory(flows: AcidificationInventory
     totalKgSo2e: Math.round(total * 1000) / 1000,
     breakdownBySubstance: breakdown,
     note: 'Acidification Potential (kg SO2-eq), US EPA TRACI 2.1 characterization factors.',
+  };
+}
+
+export type EutrophyingSubstance = 'nox' | 'nh3' | 'no3' | 'po4' | 'total_n' | 'total_p' | 'cod';
+
+export interface EutrophicationInventoryFlow {
+  substance: EutrophyingSubstance;
+  amountKg: number;
+  direction: 'input' | 'output';
+  stage: string;
+}
+
+/**
+ * Eutrophication Potential, kg PO4(3-)-eq, CML-IA baseline generic
+ * (site-independent) characterization factors. NOx is expressed as NO2;
+ * total N and total P are emissions to water; COD is chemical oxygen demand.
+ */
+const EP_CML_IA: Record<EutrophyingSubstance, number> = {
+  nox: 0.13,
+  nh3: 0.35,
+  no3: 0.1,
+  po4: 1,
+  total_n: 0.42,
+  total_p: 3.06,
+  cod: 0.022,
+};
+
+export interface EpAssessmentResult {
+  totalKgPo4e: number;
+  breakdownBySubstance: Record<string, number>;
+  note: string;
+}
+
+export function characterizeEutrophicationInventory(flows: EutrophicationInventoryFlow[]): EpAssessmentResult {
+  const breakdown: Record<string, number> = {};
+  let total = 0;
+
+  for (const flow of flows) {
+    const sign = flow.direction === 'output' ? 1 : -1;
+    const po4e = sign * flow.amountKg * EP_CML_IA[flow.substance];
+    breakdown[flow.substance] = (breakdown[flow.substance] ?? 0) + po4e;
+    total += po4e;
+  }
+
+  return {
+    totalKgPo4e: Math.round(total * 1000) / 1000,
+    breakdownBySubstance: breakdown,
+    note: 'Eutrophication Potential (kg PO4-eq), CML-IA baseline generic factors (not site-specific).',
   };
 }
 

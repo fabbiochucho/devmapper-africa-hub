@@ -60,15 +60,33 @@ describe("deriveRiskFlags", () => {
     expect(flags.some((f) => f.type === "timeline_gap")).toBe(false);
   });
 
-  it("flags a low-severity timeline_gap when significantly behind schedule but not past due", () => {
-    const futureDeadline = new Date();
-    futureDeadline.setMonth(futureDeadline.getMonth() + 3);
+  const daysFromNow = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
+
+  it("flags slippage when milestone progress trails elapsed time by 25+ points", () => {
+    // 75% of the time elapsed, 30% of milestones done -> 45-point gap -> medium
     const flags = deriveRiskFlags({
       ...baseInput,
-      deadline: futureDeadline.toISOString(),
+      startDate: daysFromNow(-75),
+      deadline: daysFromNow(25),
       milestonesTotal: 10,
-      milestonesCompleted: 1,
+      milestonesCompleted: 3,
     });
-    expect(flags).toContainEqual(expect.objectContaining({ type: "timeline_gap", severity: "low" }));
+    expect(flags).toContainEqual(expect.objectContaining({ type: "timeline_gap", severity: "medium" }));
+  });
+
+  it("does not flag an early project just for having few milestones done", () => {
+    const flags = deriveRiskFlags({
+      ...baseInput,
+      startDate: daysFromNow(-5),
+      deadline: daysFromNow(95),
+      milestonesTotal: 10,
+      milestonesCompleted: 0,
+    });
+    expect(flags.some((f) => f.type === "timeline_gap")).toBe(false);
+  });
+
+  it("flags a past deadline without milestones as medium, not as incomplete milestones", () => {
+    const flags = deriveRiskFlags({ ...baseInput, deadline: daysFromNow(-10), milestonesTotal: 0, milestonesCompleted: 0 });
+    expect(flags).toContainEqual(expect.objectContaining({ type: "timeline_gap", severity: "medium" }));
   });
 });
