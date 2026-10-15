@@ -1,11 +1,10 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Smartphone, 
-  MessageSquare, 
   Code, 
   Handshake, 
   Download, 
@@ -17,63 +16,56 @@ import {
   MessageCircle
 } from 'lucide-react';
 
+const WHATSAPP_DISPLAY = '+234 818 846 6444';
+const WHATSAPP_URL = 'https://wa.me/2348188466444';
+
+type InstallPromptEvent = Event & { prompt: () => Promise<void> };
+
 const Connect = () => {
+  // Browsers that support installing web apps fire this; others use the written steps.
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
+  useEffect(() => {
+    const onPrompt = (e: Event) => { e.preventDefault(); setInstallPrompt(e as InstallPromptEvent); };
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', onPrompt);
+  }, []);
+
   const integrations = [
     {
-      id: 'telegram',
-      name: 'Telegram Bot',
-      description: 'Report projects and get updates directly through Telegram',
-      icon: <MessageSquare className="w-8 h-8" />,
-      status: 'Available',
-      features: [
-        'Submit project reports via chat',
-        'Receive real-time notifications',
-        'Community group discussions',
-        'Multilingual support'
-      ],
-      instructions: [
-        'Search for @DevMapperBot on Telegram',
-        'Send /start to begin setup',
-        'Link your DevMapper account',
-        'Start reporting projects!'
-      ]
-    },
-    {
       id: 'whatsapp',
-      name: 'WhatsApp Bot',
-      description: 'Access DevMapper features through WhatsApp messaging',
+      name: 'WhatsApp Support',
+      description: 'Chat with the DevMapper team on WhatsApp',
       icon: <MessageCircle className="w-8 h-8" />,
       status: 'Available',
+      href: WHATSAPP_URL,
       features: [
-        'Voice and text project reporting',
-        'Photo and location sharing',
-        'Status updates and notifications',
-        'Group collaboration features'
+        'Questions about reporting and verification',
+        'Help with your account or organisation',
+        'Send photos or locations from your phone'
       ],
       instructions: [
-        'Save +234 123 DEVMAP to your contacts',
-        'Send "Hello" to start conversation',
-        'Follow setup prompts to link account',
-        'Use voice commands or text to report'
+        `Save ${WHATSAPP_DISPLAY} to your contacts`,
+        'Open WhatsApp and send us a message',
+        'Tell us your DevMapper email if it is about your account'
       ]
     },
     {
       id: 'mobile',
-      name: 'Mobile App',
-      description: 'Full-featured mobile application for iOS and Android',
+      name: 'Install the App',
+      description: 'Install DevMapper on your phone or computer - no app store needed',
       icon: <Smartphone className="w-8 h-8" />,
-      status: 'Coming Soon',
+      status: 'Available',
       features: [
-        'Offline data collection',
-        'GPS-enabled reporting',
-        'Photo and video capture',
-        'Real-time synchronization'
+        'Opens full-screen from your home screen',
+        'GPS-tagged project reports',
+        'Photo upload from your camera',
+        'Loads faster after the first visit'
       ],
       instructions: [
-        'App will be available on App Store and Google Play',
-        'Sign up for beta testing notifications',
-        'Early access for verified contributors',
-        'Full launch planned for Q2 2025'
+        'Android (Chrome): menu ⋮ → Install app',
+        'iPhone/iPad (Safari): Share → Add to Home Screen',
+        'Desktop (Chrome/Edge): install icon in the address bar',
+        'Sign in once and keep using it like any app'
       ]
     },
     {
@@ -98,6 +90,7 @@ const Connect = () => {
     {
       id: 'partnerships',
       name: 'Partnerships',
+      href: '/contact',
       description: 'Collaborate with organizations and institutions',
       icon: <Handshake className="w-8 h-8" />,
       status: 'Open',
@@ -260,22 +253,19 @@ const Connect = () => {
                     </div>
                     
                     <div className="pt-2">
-                      <Button 
-                        className="w-full"
-                        disabled={integration.status === 'Coming Soon'}
-                      >
-                        {integration.status === 'Available' ? (
-                          <>
+                      {integration.href ? (
+                        <Button className="w-full" asChild>
+                          <a href={integration.href} {...(integration.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Get Started
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            Notify Me
-                          </>
-                        )}
-                      </Button>
+                          </a>
+                        </Button>
+                      ) : integration.id === 'mobile' && installPrompt ? (
+                        <Button className="w-full" onClick={async () => { await installPrompt.prompt(); setInstallPrompt(null); }}>
+                          <Smartphone className="w-4 h-4 mr-2" />
+                          Install DevMapper
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 </CardContent>
