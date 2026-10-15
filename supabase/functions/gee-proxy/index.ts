@@ -43,12 +43,19 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error('Unauthorized');
 
+    // Shared cache rows have no organization_id, which RLS only lets admins read or write,
+    // so cache reads/writes go through the service role (the user is already verified above).
+    const cacheClient = createClient<Database>(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const body: GEERequest = await req.json();
     console.log('[GEE-PROXY] Request params:', body);
 
     // Check cache
     const cacheKey = `gee:${body.type}:${JSON.stringify(body.bounds)}:${body.startDate}:${body.endDate}`;
-    const { data: cached } = await supabaseClient
+    const { data: cached } = await cacheClient
       .from('alphaearth_cache')
       .select('payload, fetched_at, expires_at')
       .eq('cache_key', cacheKey)
@@ -87,14 +94,18 @@ serve(async (req) => {
     }
 
     // Cache real readings only, so a fixed key or outage isn't masked for 24h
-    if ((geeData as { metadata?: { available?: boolean } }).metadata?.available !== false) await supabaseClient
-      .from('alphaearth_cache')
-      .insert({
-        cache_key: cacheKey,
-        provider: 'gee',
-        payload: asJson(geeData),
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      });
+    if ((geeData as { metadata?: { available?: boolean } }).metadata?.available !== false) {
+      const { error: cacheError } = await cacheClient
+        .from('alphaearth_cache')
+        .upsert({
+          cache_key: cacheKey,
+          provider: 'gee',
+          payload: asJson(geeData),
+          fetched_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        }, { onConflict: 'cache_key' });
+      if (cacheError) console.warn('[GEE-PROXY] Cache write failed:', cacheError.message);
+    }
 
     await logAuditEvent(supabaseClient, {
       p_actor_id: user.id,
