@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { type Database, type Db, logAuditEvent } from '../_shared/db.ts';
+import { type Database, type Db } from '../_shared/db.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -54,42 +54,22 @@ serve(async (req) => {
       });
     }
 
-    // Mock Sentinel tile data
-    const tileData = {
+    // No Sentinel Hub integration exists yet. This used to return a made-up ".../mock/..." tile URL
+    // and record the call as a success; say plainly that imagery isn't available instead.
+    try {
+      await supabaseClient.rpc('record_provider_health', {
+        p_provider_key: 'sentinel', p_success: false, p_error_message: 'Sentinel Hub is not connected',
+      });
+    } catch { /* best-effort */ }
+
+    return new Response(JSON.stringify({
       tile: { z, x, y },
       layer,
-      url: `https://services.sentinel-hub.com/ogc/wms/mock/${layer}/${z}/${x}/${y}`,
-      metadata: {
-        source: 'Copernicus Sentinel Hub',
-        note: 'Mock tile URL - Configure SENTINEL_CLIENT_ID for real data',
-        generated_at: new Date().toISOString()
-      }
-    };
-
-    // Cache for 7 days
-    await supabaseClient
-      .from('alphaearth_cache')
-      .insert({
-        cache_key: cacheKey,
-        provider: 'sentinel',
-        payload: tileData,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
-
-    await logAuditEvent(supabaseClient, {
-      p_actor_id: user.id,
-      p_actor_type: 'user',
-      p_org_id: null,
-      p_action: 'sentinel_proxy_request',
-      p_target_table: null,
-      p_target_id: null,
-      p_payload: { layer, tile: { z, x, y }, cached: false }
-    });
-
-    try { await supabaseClient.rpc('record_provider_health', { p_provider_key: 'sentinel', p_success: true }); } catch { /* best-effort */ }
-
-    return new Response(JSON.stringify(tileData), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'MISS' },
+      url: null,
+      metadata: { source: 'Copernicus Sentinel Hub', available: false, note: 'Sentinel Hub is not connected; no imagery available.' },
+    }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('[SENTINEL-PROXY] Error:', error);

@@ -115,6 +115,9 @@ export default function GeoLayers({ map }: GeoLayersProps) {
       if (!data || !data.data) {
         throw new Error('No data returned from Earth Intelligence service');
       }
+      if (data.metadata?.available === false) {
+        throw new Error(data.metadata.note || 'This layer has no live data source yet');
+      }
 
       // Add layer to map
       addLayerToMap(layerType, data);
