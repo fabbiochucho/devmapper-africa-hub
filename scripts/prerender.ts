@@ -32,6 +32,8 @@ const PUBLIC_ROUTES = [
   "/change-makers",
   "/fundraising",
   "/guidelines",
+  "/privacy",
+  "/terms",
   "/support",
   "/resources",
   "/about",

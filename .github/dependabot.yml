@@ -16,8 +16,6 @@ updates:
     labels:
       - "dependencies"
       - "automated"
-    reviewers:
-      - "fabbiochucho"
     commit-message:
       prefix: "chore(deps):"
     # Only update production & dev dependencies
