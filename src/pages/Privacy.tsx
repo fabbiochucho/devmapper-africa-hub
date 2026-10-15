@@ -19,7 +19,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
     title: 'Who we are',
     body: (
       <p>
-        Dev Mapper (devmapper.africa) is operated by the Di Badili Leadership Sustainability Initiative, trading
+        Dev Mapper (devmapper.africa) is operated by the Di Badili Leadership Sustainability Initiative, operating
         as DiBadili Institute, also known as Become Change Institute. We decide how and why personal data on
         Dev Mapper is processed, so we are its <b>controller</b>. Data protection contact: <Mail />.
       </p>
