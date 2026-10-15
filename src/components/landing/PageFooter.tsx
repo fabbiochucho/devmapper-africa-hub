@@ -78,11 +78,13 @@ export default function PageFooter() {
         {/* Bottom bar */}
         <div className="border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© {currentYear} Dev Mapper Africa. All rights reserved.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/verify" className="hover:text-foreground transition-colors flex items-center gap-1">
               <Shield className="w-3 h-3" />
               Verify Certificate
             </Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
             <Link to="/sdg-overview" className="hover:text-foreground transition-colors">SDG Overview</Link>
             <Link to="/resources" className="hover:text-foreground transition-colors">{t('footer.resources')}</Link>
           </div>

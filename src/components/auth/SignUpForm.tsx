@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -217,6 +218,11 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          By signing up you agree to our{" "}
+          <Link to="/terms" className="underline hover:text-foreground">Terms of Use</Link> and{" "}
+          <Link to="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+        </p>
       </form>
     </Form>
   );
