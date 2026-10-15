@@ -1137,7 +1137,10 @@
       "noEmissionsDataYet": "لا توجد بيانات انبعاثات بعد",
       "annualSpendLabel": "الإنفاق السنوي",
       "vsSectorAvg": "{{pct}}% مقارنة بمتوسط {{sector}}",
-      "noSuppliersMessage": "لم تتم إضافة أي مورّدين بعد. استخدم أداة الاستيراد أعلاه أو أضف المورّدين يدوياً."
+      "noSuppliersMessage": "لم تتم إضافة أي مورّدين بعد. استخدم أداة الاستيراد أعلاه أو أضف المورّدين يدوياً.",
+      "countryAverageLabel": "متوسط البلد ({{country}})، على مستوى الاقتصاد",
+      "kgCo2ePerUsdUnit": "كغ مكافئ ثاني أكسيد الكربون لكل دولار أمريكي من الناتج المحلي",
+      "vsCountryAvg": "{{pct}}٪ مقارنة بمتوسط اقتصاد {{country}}"
     },
     "csvImporter": {
       "invalidFileError": "يرجى اختيار ملف CSV صالح",

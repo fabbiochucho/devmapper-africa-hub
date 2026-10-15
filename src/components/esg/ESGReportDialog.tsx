@@ -536,11 +536,11 @@ function buildReport(opts: {
     }
     // Benchmark / Risk sections
     else if (sId.includes('benchmark') || sId.includes('risk')) {
-      if (benchmark) {
+      if (benchmark && benchmark.avg_carbon_intensity != null) {
         content = `<div class="metrics-grid">
-          <div class="metric-card"><div class="metric-value">${benchmark.avg_carbon_intensity || 'N/A'}</div><div class="metric-label">Industry Avg (tCO2e)</div></div>
-          <div class="metric-card"><div class="metric-value">${totalEmissions.toLocaleString()}</div><div class="metric-label">Your Performance</div></div>
-        </div><p class="source">Source: ${benchmark.source || 'AlphaEarth'}</p>`;
+          <div class="metric-card"><div class="metric-value">${benchmark.avg_carbon_intensity}</div><div class="metric-label">${benchmark.country} economy-wide average (kg CO2e per US$ of GDP)</div></div>
+          <div class="metric-card"><div class="metric-value">${totalEmissions.toLocaleString()}</div><div class="metric-label">Your total emissions (tCO2e)</div></div>
+        </div><p class="source">Source: ${benchmark.source}. ${benchmark.note ?? ''}</p>`;
       } else {
         content = '<p>Benchmark data not available.</p>';
       }

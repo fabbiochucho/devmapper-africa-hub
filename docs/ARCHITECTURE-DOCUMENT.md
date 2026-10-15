@@ -37,7 +37,6 @@
 | exchange-rates | Public | Multi-currency rate fetching |
 | gee-proxy | JWT | Google Earth Engine proxy |
 | sentinel-proxy | JWT | Sentinel Hub satellite imagery |
-| sdg-proxy | JWT | UN SDG API proxy |
 | climatetrace-proxy | JWT | Climate TRACE emissions data |
 | alphaearth-proxy | JWT | AlphaEarth environmental data |
 | email-digest | Public | Scheduled email notifications |

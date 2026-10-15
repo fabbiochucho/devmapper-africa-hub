@@ -1137,7 +1137,10 @@
       "noEmissionsDataYet": "Aucune donnée d'émissions pour le moment",
       "annualSpendLabel": "Dépenses annuelles",
       "vsSectorAvg": "{{pct}} % vs moyenne {{sector}}",
-      "noSuppliersMessage": "Aucun fournisseur ajouté pour le moment. Utilisez l'outil d'importation ci-dessus ou ajoutez des fournisseurs manuellement."
+      "noSuppliersMessage": "Aucun fournisseur ajouté pour le moment. Utilisez l'outil d'importation ci-dessus ou ajoutez des fournisseurs manuellement.",
+      "countryAverageLabel": "Moyenne nationale ({{country}}), toute l'économie",
+      "kgCo2ePerUsdUnit": "kg CO2e par dollar US de PIB",
+      "vsCountryAvg": "{{pct}} % vs moyenne de l'économie ({{country}})"
     },
     "csvImporter": {
       "invalidFileError": "Veuillez sélectionner un fichier CSV valide",

@@ -95,11 +95,7 @@ export default function GeoLayers({ map }: GeoLayersProps) {
           break;
         case 'emissions':
           endpoint = 'climatetrace-proxy';
-          requestData = {
-            country: 'all',
-            sector: 'all',
-            year: 2022
-          };
+          requestData = { bounds: boundsData };
           break;
       }
 

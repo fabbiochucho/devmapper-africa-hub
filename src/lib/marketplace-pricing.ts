@@ -75,7 +75,9 @@ export function computeSuggestedPriceRange(
   // avg_carbon_intensity from the benchmark is a kg-CO2e-per-USD figure built
   // for ESG reporting, not a carbon-credit market signal - this mapping is a
   // heuristic, not a derived market price.
-  const intensityMultiplier = 0.85 + Math.min(benchmark.avg_carbon_intensity, 2) * 0.15;
+  // No benchmark available: price from the market anchor alone.
+  const intensity = benchmark.available === false ? null : benchmark.avg_carbon_intensity;
+  const intensityMultiplier = intensity == null ? 1 : 0.85 + Math.min(intensity, 2) * 0.15;
 
   // Older vintages typically trade at a discount.
   const age = Math.max(0, CURRENT_YEAR - input.vintageYear);
@@ -90,7 +92,7 @@ export function computeSuggestedPriceRange(
   // because no category-specific figure was found - see
   // PROJECT_TYPE_PRICE_CONFIDENCE above). Lower confidence widens the
   // suggested range.
-  const benchmarkConfidence = benchmark.confidence_score ?? 0.5;
+  const benchmarkConfidence = intensity == null ? 0 : benchmark.confidence_score ?? 0.5;
   const priceAnchorConfidence = PROJECT_TYPE_PRICE_CONFIDENCE[input.projectType] ?? PROJECT_TYPE_PRICE_CONFIDENCE.other;
   const confidence = Math.round((benchmarkConfidence * 0.4 + priceAnchorConfidence * 0.6) * 100) / 100;
   const spread = mid * (0.35 - confidence * 0.2);
@@ -102,7 +104,7 @@ export function computeSuggestedPriceRange(
     // Kept short for inline UI display; see module comments above for the
     // full attribution (Ecosystem Marketplace SOVCM 2024/2025, S&P Global
     // Blue Carbon index) behind the per-type price anchors.
-    source: `VCM market average + ${benchmark.source}`,
+    source: intensity == null ? 'VCM market average' : `VCM market average + ${benchmark.source}`,
     confidence,
   };
 }
@@ -115,6 +117,7 @@ export async function getSuggestedPrice(
   input: SuggestedPriceInput,
   organizationId?: string,
 ): Promise<SuggestedPriceRange> {
-  const benchmark = await getBenchmark(input.countryCode, input.projectType, input.vintageYear, organizationId);
+  // Latest available benchmark year: a credit's vintage is often newer than the source data.
+  const benchmark = await getBenchmark(input.countryCode, input.projectType, undefined, organizationId);
   return computeSuggestedPriceRange(input, benchmark);
 }

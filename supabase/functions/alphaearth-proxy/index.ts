@@ -1,14 +1,27 @@
-import { type Database, type Db, logAuditEvent } from "../_shared/db.ts";
+import { type Database, type Db, asJson, logAuditEvent } from "../_shared/db.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Carbon-intensity benchmark: a country's total greenhouse-gas emissions (Climate TRACE)
+// divided by its GDP (World Bank), for the same year, in kg CO2e per US$ of output.
+// It is an economy-wide average - there is no free, sourced sector-level series, so the
+// requested sector is echoed back but does not change the number. Nothing here is estimated
+// or invented: if either source has no figure, the benchmark is reported as unavailable.
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Expose-Headers': 'X-Cache',
 };
 
+const CLIMATETRACE_API = 'https://api.climatetrace.org/v6';
+const WORLDBANK_API = 'https://api.worldbank.org/v2';
+// Climate TRACE's last full year; the current year is partial.
+const LATEST_FULL_YEAR = 2024;
+const CACHE_DAYS = 30;
+
 interface BenchmarkRequest {
-  country: string;
+  country: string; // ISO 3166-1 alpha-2 (as stored on organisations/suppliers)
   sector: string;
   year?: number;
   organizationId?: string;
@@ -26,8 +39,22 @@ interface SupplierEnrichRequest {
   year?: number;
 }
 
+interface Benchmark {
+  country: string;
+  sector: string;
+  year: number | null;
+  /** kg CO2e per US$ of GDP (= tonnes CO2e per US$1,000). null when unavailable. */
+  avg_carbon_intensity: number | null;
+  available: boolean;
+  scope: 'economy-wide';
+  source: string;
+  note?: string;
+  inputs?: { emissions_t_co2e: number; gdp_usd: number };
+  confidence_score: number;
+  cached?: boolean;
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -37,7 +64,6 @@ serve(async (req) => {
   try {
     console.log('[ALPHAEARTH-PROXY] Incoming request');
 
-    // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Unauthorized');
@@ -54,6 +80,13 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Shared cache rows have no organization_id, which RLS only lets admins read or write,
+    // so cache reads/writes go through the service role (the user is already verified above).
+    const cacheClient = createClient<Database>(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const url = new URL(req.url);
     const action = url.searchParams.get('action') || 'benchmark';
     const body = await req.json();
@@ -64,10 +97,10 @@ serve(async (req) => {
 
     switch (action) {
       case 'benchmark':
-        result = await handleBenchmark(body as BenchmarkRequest, supabaseClient, user.id);
+        result = await handleBenchmark(body as BenchmarkRequest, supabaseClient, cacheClient, user.id);
         break;
       case 'enrich-suppliers':
-        result = await handleSupplierEnrichment(body as SupplierEnrichRequest, supabaseClient, user.id);
+        result = await handleSupplierEnrichment(body as SupplierEnrichRequest, supabaseClient, cacheClient, user.id);
         break;
       default:
         throw new Error(`Unknown action: ${action}`);
@@ -95,124 +128,118 @@ serve(async (req) => {
 });
 
 async function handleBenchmark(
-  request: BenchmarkRequest, 
+  request: BenchmarkRequest,
   supabase: Db,
+  cacheClient: Db,
   userId: string
-) {
-  const { country, sector, year, organizationId } = request;
-  const cacheKey = `benchmark:${country}:${sector}:${year || 'latest'}`;
+): Promise<Benchmark> {
+  const country = (request.country || '').toUpperCase();
+  const { sector, organizationId } = request;
+  const cacheKey = `benchmark:${country}:${request.year || 'latest'}`;
 
-  // Check cache first
-  const { data: cached } = await supabase
+  const { data: cached } = await cacheClient
     .from('alphaearth_cache')
-    .select('payload, fetched_at, expires_at')
+    .select('payload')
     .eq('cache_key', cacheKey)
     .gt('expires_at', new Date().toISOString())
     .maybeSingle();
 
   if (cached) {
     console.log('[ALPHAEARTH-PROXY] Cache hit for benchmark');
-    return { ...(cached.payload as Record<string, unknown>), cached: true };
+    return { ...(cached.payload as unknown as Benchmark), sector, cached: true };
   }
 
-  // Get organization plan type
-  let planType = 'free';
-  if (organizationId) {
-    const { data: org } = await supabase
-      .from('organizations')
-      .select('plan_type')
-      .eq('id', organizationId)
-      .single();
-    planType = org?.plan_type || 'free';
-  }
+  const benchmark = await computeBenchmark(country, sector, request.year);
 
-  let benchmark;
-  
-  if (planType === 'pro') {
-    // Use AlphaEarth Commercial API (requires ALPHAEARTH_API_KEY secret)
-    const apiKey = Deno.env.get('ALPHAEARTH_API_KEY');
-    if (apiKey) {
-      try {
-        const params = new URLSearchParams({
-          country,
-          sector,
-          ...(year && { year: year.toString() })
-        });
-
-        const response = await fetch(`https://api.alphaearth.ai/benchmarks/sector?${params}`, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          benchmark = {
-            ...data,
-            source: 'AlphaEarth (Commercial)',
-            country,
-            sector,
-            year
-          };
-          try { await supabase.rpc('record_provider_health', { p_provider_key: 'alphaearth', p_success: true }); } catch { /* best-effort */ }
-        } else {
-          try {
-            await supabase.rpc('record_provider_health', {
-              p_provider_key: 'alphaearth', p_success: false, p_error_message: `AlphaEarth API returned ${response.status}`,
-            });
-          } catch { /* best-effort */ }
-        }
-      } catch (apiError) {
-        console.warn('[ALPHAEARTH-PROXY] Commercial API error:', apiError);
-        try {
-          await supabase.rpc('record_provider_health', {
-            p_provider_key: 'alphaearth', p_success: false, p_error_message: apiError instanceof Error ? apiError.message : 'Unknown error',
-          });
-        } catch { /* best-effort */ }
-      }
-    }
-  }
-
-  // Fallback to calculated benchmarks (based on country/sector data)
-  if (!benchmark) {
-    benchmark = calculateBenchmark(country, sector, year);
-  }
-
-  // Cache the result
-  const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 24);
-
-  await supabase
-    .from('alphaearth_cache')
-    .upsert({
+  // Only real readings are cached, so an outage isn't remembered for a month.
+  if (benchmark.available) {
+    const { error: cacheError } = await cacheClient.from('alphaearth_cache').upsert({
       cache_key: cacheKey,
-      payload: benchmark,
-      provider: planType === 'pro' ? 'alphaearth' : 'gee',
-      organization_id: organizationId || null,
+      payload: asJson(benchmark),
+      provider: 'benchmark',
       fetched_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString()
-    });
+      expires_at: new Date(Date.now() + CACHE_DAYS * 24 * 60 * 60 * 1000).toISOString(),
+    }, { onConflict: 'cache_key' });
+    if (cacheError) console.warn('[ALPHAEARTH-PROXY] Cache write failed:', cacheError.message);
+  }
 
-  // Log audit event
+  try {
+    await supabase.rpc('record_provider_health', {
+      p_provider_key: 'alphaearth', p_success: benchmark.available, p_error_message: benchmark.available ? undefined : benchmark.note,
+    });
+  } catch { /* best-effort */ }
+
   await logAuditEvent(supabase, {
     p_actor_id: userId,
     p_actor_type: 'user',
     p_org_id: organizationId || null,
     p_action: 'alphaearth_benchmark_request',
-    p_payload: { country, sector, year, plan_type: planType }
+    p_payload: { country, sector, year: benchmark.year, available: benchmark.available }
   });
 
   return { ...benchmark, cached: false };
 }
 
+async function computeBenchmark(country: string, sector: string, year?: number): Promise<Benchmark> {
+  const unavailable = (note: string): Benchmark => ({
+    country, sector, year: year ?? null, avg_carbon_intensity: null, available: false,
+    scope: 'economy-wide', source: 'Climate TRACE ÷ World Bank GDP', note, confidence_score: 0,
+  });
+
+  if (!/^[A-Z]{2}$/.test(country)) return unavailable('A two-letter country code is required for a benchmark.');
+
+  try {
+    // GDP for recent years; World Bank also returns the ISO3 code Climate TRACE needs.
+    const wbRes = await fetch(
+      `${WORLDBANK_API}/country/${country}/indicator/NY.GDP.MKTP.CD?format=json&mrv=8`,
+      { signal: AbortSignal.timeout(20_000) },
+    );
+    if (!wbRes.ok) return unavailable(`World Bank returned ${wbRes.status}.`);
+    const wb = await wbRes.json() as [unknown, { date: string; value: number | null; countryiso3code: string }[] | null];
+    const rows = (wb[1] ?? []).filter((r) => r.value && Number(r.date) <= LATEST_FULL_YEAR && (!year || Number(r.date) === year));
+    if (!rows.length) return unavailable('World Bank has no GDP figure for this country and year.');
+
+    // Newest year that both sources cover.
+    for (const row of rows.sort((a, b) => Number(b.date) - Number(a.date))) {
+      const y = Number(row.date);
+      const ctRes = await fetch(
+        `${CLIMATETRACE_API}/country/emissions?since=${y}&to=${y}&countries=${row.countryiso3code}`,
+        { signal: AbortSignal.timeout(30_000) },
+      );
+      if (!ctRes.ok) return unavailable(`Climate TRACE returned ${ctRes.status}.`);
+      const ct = await ctRes.json() as { emissions?: { co2e_100yr?: number } }[];
+      const tonnes = ct[0]?.emissions?.co2e_100yr;
+      if (!tonnes || tonnes <= 0) continue;
+
+      const gdp = row.value as number;
+      return {
+        country, sector, year: y,
+        // tonnes * 1000 kg / US$
+        avg_carbon_intensity: Math.round(((tonnes * 1000) / gdp) * 1000) / 1000,
+        available: true,
+        scope: 'economy-wide',
+        source: `Climate TRACE emissions ÷ World Bank GDP (${y})`,
+        note: 'Economy-wide average for the country, not specific to the sector.',
+        inputs: { emissions_t_co2e: Math.round(tonnes), gdp_usd: Math.round(gdp) },
+        // Real data, but an economy-wide proxy for a sector comparison.
+        confidence_score: 0.5,
+      };
+    }
+    return unavailable('Climate TRACE has no emissions figure for this country in the years World Bank covers.');
+  } catch (error) {
+    console.warn('[ALPHAEARTH-PROXY] Benchmark sources failed:', error);
+    return unavailable('Benchmark sources are unreachable right now.');
+  }
+}
+
 async function handleSupplierEnrichment(
   request: SupplierEnrichRequest,
   supabase: Db,
+  cacheClient: Db,
   userId: string
 ) {
-  const { organizationId, suppliers, year = new Date().getFullYear() } = request;
-  
+  const { organizationId, suppliers, year } = request;
+
   const enrichedResults = [];
 
   for (const supplier of suppliers) {
@@ -222,11 +249,20 @@ async function handleSupplierEnrichment(
         sector: supplier.sector,
         year,
         organizationId
-      }, supabase, userId);
+      }, supabase, cacheClient, userId);
 
-      // Calculate estimated emissions based on spend and intensity
-      const estimatedEmissions = supplier.annual_spend 
-        ? (supplier.annual_spend * benchmark.avg_carbon_intensity) / 1000000
+      if (!benchmark.available || benchmark.avg_carbon_intensity == null) {
+        enrichedResults.push({
+          supplier_id: supplier.id,
+          supplier_name: supplier.name,
+          error: benchmark.note || 'No benchmark available for this supplier',
+        });
+        continue;
+      }
+
+      // Spend-based estimate: US$ spend x kg CO2e/US$ = kg; / 1000 = tonnes CO2e.
+      const estimatedEmissions = supplier.annual_spend
+        ? (supplier.annual_spend * benchmark.avg_carbon_intensity) / 1000
         : 0;
 
       enrichedResults.push({
@@ -237,7 +273,6 @@ async function handleSupplierEnrichment(
         enrichment_date: new Date().toISOString()
       });
 
-      // Update supplier as enriched
       await supabase
         .from('esg_suppliers')
         .update({ alphaearth_enriched: true })
@@ -254,42 +289,4 @@ async function handleSupplierEnrichment(
   }
 
   return { enriched: enrichedResults, total: suppliers.length };
-}
-
-function calculateBenchmark(country: string, sector: string, year?: number) {
-  // Country emission factors (kg CO2e per USD)
-  const countryFactors: Record<string, number> = {
-    'NG': 0.52, 'ZA': 0.91, 'KE': 0.34, 'GH': 0.45, 'EG': 0.55,
-    'US': 0.42, 'GB': 0.28, 'DE': 0.35, 'CN': 0.65, 'IN': 0.82,
-    'BR': 0.48, 'MX': 0.51, 'JP': 0.38, 'AU': 0.72, 'CA': 0.41
-  };
-
-  // Sector multipliers
-  const sectorMultipliers: Record<string, number> = {
-    'manufacturing': 1.4,
-    'energy': 2.1,
-    'transport': 1.6,
-    'construction': 1.2,
-    'agriculture': 0.8,
-    'services': 0.6,
-    'technology': 0.4,
-    'retail': 0.5,
-    'healthcare': 0.7,
-    'finance': 0.3
-  };
-
-  const baseIntensity = countryFactors[country] || 0.45;
-  const sectorMultiplier = sectorMultipliers[sector?.toLowerCase()] || 1.0;
-  
-  return {
-    country,
-    sector,
-    year,
-    avg_carbon_intensity: baseIntensity * sectorMultiplier,
-    water_intensity: 0.5 + Math.random() * 0.3,
-    waste_intensity: 0.1 + Math.random() * 0.1,
-    source: 'AlphaEarth Foundations (Calculated)',
-    confidence_score: 0.7,
-    data_points: Math.floor(50 + Math.random() * 100)
-  };
 }

@@ -1137,7 +1137,10 @@
       "noEmissionsDataYet": "Hakuna data ya hewa chafu bado",
       "annualSpendLabel": "Matumizi ya Kila Mwaka",
       "vsSectorAvg": "{{pct}}% ukilinganisha na wastani wa {{sector}}",
-      "noSuppliersMessage": "Hakuna wasambazaji walioongezwa bado. Tumia kiingizaji hapo juu au ongeza wasambazaji kwa mkono."
+      "noSuppliersMessage": "Hakuna wasambazaji walioongezwa bado. Tumia kiingizaji hapo juu au ongeza wasambazaji kwa mkono.",
+      "countryAverageLabel": "Wastani wa nchi ({{country}}), uchumi mzima",
+      "kgCo2ePerUsdUnit": "kg CO2e kwa kila dola ya Marekani ya Pato la Taifa",
+      "vsCountryAvg": "{{pct}}% dhidi ya wastani wa uchumi wa {{country}}"
     },
     "csvImporter": {
       "invalidFileError": "Tafadhali chagua faili sahihi ya CSV",
