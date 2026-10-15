@@ -234,3 +234,6 @@ backend = "postgres"
 
 [experimental.pgdelta]
 enabled = true
+
+[functions.delete-account]
+verify_jwt = true

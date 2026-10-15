@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { africanCountries } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationPreferences from "@/components/settings/NotificationPreferences";
+import DeleteAccountCard from "@/components/settings/DeleteAccountCard";
 
 const Settings = () => {
   const { user, profile, signOut, updateProfile, updatePassword } = useAuth();
@@ -104,10 +105,6 @@ const Settings = () => {
     navigate("/");
   };
 
-  const handleDeleteAccount = async () => {
-    if (!confirm("Are you sure? This action cannot be undone.")) return;
-    toast.error("Account deletion requires admin assistance. Please contact support@devmapper.africa");
-  };
 
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {
@@ -332,9 +329,7 @@ const Settings = () => {
               <CardTitle className="text-destructive">Danger Zone</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button variant="destructive" onClick={handleDeleteAccount}>
-                Delete Account
-              </Button>
+              <DeleteAccountCard onDeleted={async () => { await signOut(); navigate("/"); }} />
             </CardContent>
           </Card>
         </TabsContent>
