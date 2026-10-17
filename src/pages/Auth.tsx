@@ -27,8 +27,14 @@ const Auth = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetCaptchaToken, setResetCaptchaToken] = useState<string | null>(null);
-  const [resetCaptchaKey, setResetCaptchaKey] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
+  // Turnstile tokens are single-use: show a fresh widget after every attempt.
+  const newCaptcha = () => { setCaptchaToken(null); setCaptchaKey((k) => k + 1); };
+  const captchaMissing = () => {
+    if (CAPTCHA_ENABLED && !captchaToken) { setError('Please complete the CAPTCHA check'); return true; }
+    return false;
+  };
   
   const { signIn, signUp, resetPassword, updatePassword, user } = useAuth();
   const navigate = useNavigate();
@@ -69,9 +75,11 @@ const Auth = () => {
       return;
     }
     
+    if (captchaMissing()) return;
     setLoading(true);
-    const { error } = await signIn(email.trim(), password);
+    const { error } = await signIn(email.trim(), password, captchaToken ?? undefined);
     setLoading(false);
+    newCaptcha();
     
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
@@ -94,14 +102,15 @@ const Auth = () => {
       setError(validationError);
       return;
     }
-    
+    if (captchaMissing()) return;
     setLoading(true);
     // The chosen role travels in signUp's user metadata and is applied by
     // the handle_new_user() database trigger at account-creation time - a
     // client-side write here can't work because there's no session yet
     // until the user confirms their email (see migration for handle_new_user).
-    const { error: signUpError } = await signUp(email.trim(), password, fullName.trim(), selectedRole);
+    const { error: signUpError } = await signUp(email.trim(), password, fullName.trim(), selectedRole, captchaToken ?? undefined);
     setLoading(false);
+    newCaptcha();
 
     if (signUpError) {
       if (signUpError.message.includes('already registered')) {
@@ -128,15 +137,11 @@ const Auth = () => {
       return;
     }
     
-    if (CAPTCHA_ENABLED && !resetCaptchaToken) {
-      setError('Please complete the CAPTCHA verification');
-      return;
-    }
+    if (captchaMissing()) return;
     setLoading(true);
-    const { error } = await resetPassword(email.trim(), resetCaptchaToken ?? undefined);
+    const { error } = await resetPassword(email.trim(), captchaToken ?? undefined);
     setLoading(false);
-    setResetCaptchaToken(null);
-    setResetCaptchaKey((k) => k + 1);
+    newCaptcha();
     
     if (error) {
       setError(error.message);
@@ -301,7 +306,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Turnstile key={resetCaptchaKey} onVerify={setResetCaptchaToken} onExpire={() => setResetCaptchaToken(null)} onError={() => setResetCaptchaToken(null)} />
+                <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Sending...' : 'Send Reset Link'}
                 </Button>
@@ -388,6 +393,7 @@ const Auth = () => {
                       required
                     />
                   </div>
+                  {CAPTCHA_ENABLED && <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />}
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
@@ -454,6 +460,7 @@ const Auth = () => {
 
                   <RoleSelector value={selectedRole} onChange={setSelectedRole} email={email} />
                   
+                  {CAPTCHA_ENABLED && <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />}
                   <Button type="submit" className="w-full" disabled={loading || !isRoleValid}>
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>
