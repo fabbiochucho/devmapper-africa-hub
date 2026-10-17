@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { notifyDowngrade } from "../_shared/planDowngrade.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -136,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Send email notification for downgrades
       if (plan_type === 'lite' && oldPlan === 'pro') {
-        await sendDowngradeEmail(orgId, currentOrg.name);
+        await notifyDowngrade(orgId);
       }
 
       console.log(`Organization ${orgId} plan updated from ${oldPlan} to ${plan_type}`);
@@ -176,57 +176,5 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-async function sendDowngradeEmail(orgId: string, orgName: string) {
-  try {
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.log('No Resend API key configured, skipping email');
-      return;
-    }
-
-    const resend = new Resend(resendApiKey);
-    const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || 'https://your-app.com';
-    const upgradeUrl = `${baseUrl}/billing/upgrade?orgId=${orgId}`;
-
-    await resend.emails.send({
-      from: "DevMapper <noreply@devmapper.org>",
-      to: ["admin@example.com"], // In production, fetch org admin emails
-      subject: `${orgName} - Plan Downgraded to Lite`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333; margin-bottom: 20px;">Plan Downgrade Notification</h1>
-          
-          <p>Hello,</p>
-          
-          <p>Your organization <strong>${orgName}</strong> has been downgraded to the Lite plan.</p>
-          
-          <p>This means you now have access to:</p>
-          <ul>
-            <li>Up to 10 projects</li>
-            <li>Basic reporting</li>
-            <li>Community support</li>
-            <li>Standard SDG tracking</li>
-          </ul>
-          
-          <p>To restore your Pro features and unlock unlimited projects, advanced analytics, and priority support, you can upgrade anytime:</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${upgradeUrl}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Upgrade to Pro
-            </a>
-          </div>
-          
-          <p>If you have any questions, feel free to contact our support team.</p>
-          
-          <p>Best regards,<br>The DevMapper Team</p>
-        </div>
-      `,
-    });
-
-    console.log('Downgrade email sent successfully');
-  } catch (error) {
-    console.error('Error sending downgrade email:', error);
-  }
-}
 
 serve(handler);

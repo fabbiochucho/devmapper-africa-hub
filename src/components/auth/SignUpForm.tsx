@@ -16,6 +16,7 @@ import { checkPasswordBreached } from "@/lib/passwordSecurity";
 import type { UserRole } from "@/contexts/UserRoleContext";
 import { HCaptcha } from "./HCaptcha";
 import { UserPlus } from "lucide-react";
+import { TERMS_EFFECTIVE_DATE } from "@/pages/Terms";
 
 interface SignUpFormProps {
   onAuthSuccess: () => void;
@@ -90,7 +91,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
       
       const signUpOptions: { emailRedirectTo: string; data: Record<string, string>; captchaToken?: string } = {
         emailRedirectTo: redirectUrl,
-        data: { full_name: values.name, selected_role: selectedRole },
+        data: { full_name: values.name, selected_role: selectedRole, terms_version: TERMS_EFFECTIVE_DATE, terms_accepted_at: new Date().toISOString() },
       };
       
       if (captchaToken) {

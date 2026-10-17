@@ -230,11 +230,11 @@ const Layout = () => {
               <header className="flex justify-between items-center mb-4 gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger />
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)} aria-label="Go back">
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                    <Link to="/">
+                    <Link to="/" aria-label="Home">
                       <Home className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -245,6 +245,7 @@ const Layout = () => {
                   size="icon"
                   className="h-8 w-8 sm:hidden"
                   onClick={handleSearchOpen}
+                  aria-label="Search"
                 >
                   <Search className="h-4 w-4" />
                 </Button>

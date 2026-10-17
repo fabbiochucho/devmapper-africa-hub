@@ -278,6 +278,7 @@ export default function AICopilot({ projectData, pageContextOverride }: AICopilo
                 <img src={ndoviLogo} alt="Ndovu Akili AI" className="h-12 w-12 mx-auto mb-3 opacity-60" />
                 <p className="font-medium">How can I help?</p>
                 <p className="text-sm mt-1">Ask about compliance gaps, draft reports, or get project insights.</p>
+                <p className="text-xs">You are chatting with an AI assistant, not a person. Answers can be wrong, so check anything important.</p>
                 <AICopilotQuickActions
                   onAction={(prompt, ctx) => {
                     setContext(ctx as CopilotContext);

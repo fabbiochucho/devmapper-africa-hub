@@ -7,12 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, Phone, MapPin, Clock, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useSearchParams } from 'react-router-dom';
 
 const Contact = () => {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
+    subject: searchParams.get('subject')?.slice(0, 300) ?? '',
     message: ''
   });
   const [submitting, setSubmitting] = useState(false);

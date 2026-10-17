@@ -89,7 +89,7 @@ const ChangeMakersSection = () => {
         )}
 
         <div className="text-center">
-          <Button asChild className="bg-green-600 hover:bg-green-700">
+          <Button asChild>
             <Link to="/change-makers">
               <Users className="w-4 h-4 mr-2" />
               View All Change Makers

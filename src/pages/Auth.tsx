@@ -191,6 +191,7 @@ const Auth = () => {
               variant="outline"
               size="icon"
               onClick={() => navigate('/')}
+              aria-label="Back"
               className="h-8 w-8"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -263,6 +264,7 @@ const Auth = () => {
               variant="outline"
               size="icon"
               onClick={() => setShowForgotPassword(false)}
+              aria-label="Back"
               className="h-8 w-8"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -331,6 +333,7 @@ const Auth = () => {
             variant="outline"
             size="icon"
             onClick={() => navigate('/')}
+            aria-label="Back"
             className="h-8 w-8"
           >
             <ArrowLeft className="h-4 w-4" />

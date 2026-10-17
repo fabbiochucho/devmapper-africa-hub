@@ -4,7 +4,7 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { DPO_EMAIL } from '@/lib/dpo';
 
 // Last substantive revision of these terms. Update when the text changes.
-export const TERMS_EFFECTIVE_DATE = '15 October 2026';
+export const TERMS_EFFECTIVE_DATE = '17 October 2026';
 
 const A = ({ to, children }: { to: string; children: React.ReactNode }) => (
   <Link to={to} className="text-primary underline-offset-2 hover:underline">{children}</Link>
@@ -60,7 +60,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <li>use the platform for fraud, money laundering, or fundraising for anything other than the stated campaign.</li>
         </ul>
         <p>
-          Report breaches with the Report button or by email. We may remove content and suspend or close accounts
+          Report breaches with Report post in the forum, through the Contact page, or by email. We may remove content and suspend or close accounts
           that break these terms, and will tell you why unless the law or safety prevents it.
         </p>
       </>
@@ -72,7 +72,10 @@ const sections: { title: string; body: React.ReactNode }[] = [
       <p>
         Donations and subscriptions are processed by Paystack or Flutterwave under their own terms. Campaign
         organisers are responsible for using funds as described. Donations are generally non-refundable unless a
-        payment was made in error or the law requires a refund; contact us within 30 days.
+        payment was made in error or the law requires a refund; contact us within 30 days. Paid plans are a single
+        payment, in US dollars, for the period you choose (monthly, quarterly or yearly). They do not renew
+        automatically and we never charge you again without a new payment from you; when the period ends your
+        account returns to the free plan. For a refund on a plan payment, contact us within 30 days.
       </p>
     ),
   },

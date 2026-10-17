@@ -91,7 +91,7 @@ export async function downgradeOrganizationForRefund(
   return { success: true };
 }
 
-async function notifyDowngrade(organizationId: string): Promise<void> {
+export async function notifyDowngrade(organizationId: string): Promise<void> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
