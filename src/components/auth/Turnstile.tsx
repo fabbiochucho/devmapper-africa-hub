@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 // Cloudflare Turnstile. The site key is public; the secret lives in Supabase Auth
 // (Attack Protection). Empty key = CAPTCHA off. Localhost uses Cloudflare's always-pass test key.
-const SITE_KEY = '';
+const SITE_KEY: string = '0x4AAAAAAFZJofiUbFasBoIR';
 const TEST_KEY = '1x00000000000000000000AA';
 const SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
