@@ -54,7 +54,8 @@ async function flushMetrics() {
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    
+    if (!user) return; // analytics_events only accepts signed-in users' own rows
+
     const events = metrics.map(metric => ({
       event_type: 'web_vital',
       user_id: user?.id || null,

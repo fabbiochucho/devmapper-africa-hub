@@ -2,6 +2,8 @@
 // Country: Cloudflare's cf-ipcountry header when present, else a geojs.io lookup of the request IP.
 // The IP is used for that lookup only - never stored or logged. Rates: open.er-api.com, from 1 NGN.
 // Defined here, not imported from agent-utils, which would bundle the whole agent stack.
+import { countryOf } from "../_shared/geo.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -37,20 +39,6 @@ async function ngnRates(): Promise<Record<string, number> | null> {
     return cachedRates.perNgn;
   } catch {
     return cachedRates?.perNgn ?? null;
-  }
-}
-
-async function countryOf(req: Request): Promise<string | null> {
-  const cf = req.headers.get("cf-ipcountry")?.toUpperCase();
-  if (cf && /^[A-Z]{2}$/.test(cf) && cf !== "XX" && cf !== "T1") return cf;
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim();
-  if (!ip || !/^[0-9a-fA-F:.]+$/.test(ip)) return null;
-  try {
-    const res = await fetch(`https://get.geojs.io/v1/ip/country/${ip}.json`, { signal: AbortSignal.timeout(3000) });
-    const country = (await res.json())?.country;
-    return typeof country === "string" && /^[A-Z]{2}$/.test(country) ? country : null;
-  } catch {
-    return null;
   }
 }
 

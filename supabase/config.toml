@@ -240,3 +240,6 @@ verify_jwt = true
 
 [functions.public-api]
 verify_jwt = false
+
+[functions.track-visit]
+verify_jwt = false

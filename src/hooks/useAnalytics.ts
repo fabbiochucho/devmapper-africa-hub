@@ -27,9 +27,20 @@ export function useAnalytics() {
     eventQueue.current = [];
     
     try {
-      const formattedEvents = eventsToSend.map(event => ({
+      // Page views go through track-visit for everyone (it adds the country); other
+      // events need a signed-in user, since analytics_events only accepts their own rows.
+      for (const event of eventsToSend.filter(e => e.event_type === 'page_view')) {
+        const url = typeof event.event_data?.url === 'string' ? event.event_data.url : window.location.href;
+        void supabase.functions.invoke('track-visit', {
+          body: { path: new URL(url).pathname, referrer: document.referrer, title: event.event_data?.title ?? document.title },
+        });
+      }
+      const others = eventsToSend.filter(e => e.event_type !== 'page_view');
+      if (!user || others.length === 0) return;
+
+      const formattedEvents = others.map(event => ({
         ...event,
-        user_id: user?.id || null,
+        user_id: user.id,
         page_url: event.page_url || (typeof window !== 'undefined' ? window.location.href : ''),
         referrer: event.referrer || (typeof document !== 'undefined' ? document.referrer : ''),
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',

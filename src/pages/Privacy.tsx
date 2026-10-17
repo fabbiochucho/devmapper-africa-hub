@@ -33,8 +33,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <li><b>Content you submit:</b> project reports (including location coordinates, photos and documents), change-maker nominations, forum posts and replies, direct messages, comments, verification evidence, workspace collections and uploaded files.</li>
         <li><b>Donations and payments:</b> amount, currency, an optional message and the payment reference. Card and bank details are entered on Paystack’s or Flutterwave’s own checkout; we never see or store them.</li>
         <li><b>Contact and support:</b> the name, email address and message you send through the contact form, and your browser type.</li>
-        <li><b>Usage data:</b> pages viewed, referring page, browser type and, if you are signed in, your account ID, recorded in our own database to understand how the platform is used and to diagnose errors. We do not use advertising trackers or third-party analytics.</li>
-        <li><b>Approximate country:</b> derived from your IP address when you open a fundraising page, to suggest a currency. The IP address is not stored.</li>
+        <li><b>Usage data:</b> for every visit, signed in or not: the page viewed (without anything after the “?” in its address), the referring website (its domain only), browser type, approximate country and the time; plus your account ID if you are signed in. It is recorded in our own database to understand how the platform is used. We store no cookie or identifier on your device for this, so anonymous visits can’t be linked together. We do not use advertising trackers or third-party analytics.</li>
+        <li><b>Approximate country:</b> derived from your IP address, for the usage statistics above and to suggest a currency on fundraising pages. The IP address itself is not stored.</li>
       </ul>
     ),
   },
@@ -89,7 +89,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>Cloudflare (Turnstile)</td><td>Bot protection at sign-up, sign-in and password reset</td><td>Browser and device signals, IP address</td></tr>
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
             <tr><td>Flagpedia (flagcdn.com)</td><td>Country flag images</td><td>IP address</td></tr>
-            <tr><td>GeoJS</td><td>Approximate country for currency suggestions on fundraising pages</td><td>IP address (not stored)</td></tr>
+            <tr><td>GeoJS</td><td>Approximate country for usage statistics and currency suggestions</td><td>IP address (not stored)</td></tr>
           </tbody>
         </table></div>
         <p>
