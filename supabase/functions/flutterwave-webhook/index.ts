@@ -5,6 +5,7 @@ import { downgradeOrganizationForRefund } from "../_shared/planDowngrade.ts";
 import { computePlanExpiry, getPlanPrice, getPlanQuotas, paidInFull } from "../_shared/planQuotas.ts";
 import { confirmOrderPaid } from "../_shared/marketplaceOrders.ts";
 import { activateIndividualPlan } from "../_shared/individualPlan.ts";
+import { sendPlanReceipt } from "../_shared/planReceipt.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -200,6 +201,10 @@ serve(async (req) => {
           userId: metadata.user_id, interval: metadata.interval, provider: 'flutterwave',
           amount: Number(data.amount) || 0, currency: data.currency || 'USD', reference: externalId ?? '',
         });
+        if (!failure) {
+          await sendPlanReceipt({ to: data.customer?.email, plan: 'individual', interval: metadata.interval,
+            amount: Number(data.amount) || 0, currency: data.currency || 'USD', reference: externalId ?? '' });
+        }
         await supabase.rpc('record_webhook_event', {
           p_event_id: eventId, p_provider: 'flutterwave', p_event_type: event,
           p_payload: payload, p_status: failure ? 'failed' : 'success', p_error_message: failure,
@@ -337,6 +342,8 @@ serve(async (req) => {
       });
 
       console.log("Successfully upgraded organization:", organizationId, "to plan:", newPlan);
+      await sendPlanReceipt({ to: data.customer?.email, plan: newPlan, interval,
+        amount: Number(data.amount) || 0, currency: data.currency || 'USD', reference: externalId ?? '' });
 
       return new Response(
         JSON.stringify({ message: "Webhook processed successfully" }),

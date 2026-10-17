@@ -35,6 +35,7 @@ const Forum = lazy(() => import("./pages/Forum"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Guidelines = lazy(() => import("./pages/Guidelines"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const Accessibility = lazy(() => import("./pages/Accessibility"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Support = lazy(() => import("./pages/Support"));
 const Training = lazy(() => import("./pages/Training"));
@@ -128,6 +129,7 @@ const App = () => (
                     <Route path="/fundraising" element={S(<Fundraising />)} />
                     <Route path="/guidelines" element={S(<Guidelines />)} />
                     <Route path="/privacy" element={S(<Privacy />)} />
+                    <Route path="/accessibility" element={S(<Accessibility />)} />
                     <Route path="/terms" element={S(<Terms />)} />
                     <Route path="/support" element={S(<Support />)} />
                     <Route path="/resources" element={S(<Resources />)} />

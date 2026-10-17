@@ -36,7 +36,7 @@ export default function PWAInstallPrompt() {
         <p className="text-xs text-muted-foreground">Access offline & get push notifications</p>
       </div>
       <Button size="sm" onClick={handleInstall}>Install</Button>
-      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setDismissed(true)}>
+      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setDismissed(true)} aria-label="Dismiss">
         <X className="h-3 w-3" />
       </Button>
     </div>

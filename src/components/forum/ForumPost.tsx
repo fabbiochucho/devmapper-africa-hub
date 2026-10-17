@@ -31,6 +31,7 @@ import {
 import { UserBadgeList } from '@/components/badges/UserBadgeList';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 interface ForumReply {
   id: string;
@@ -192,9 +193,11 @@ const ForumPost: React.FC<ForumPostProps> = ({
                   <Share2 className="w-4 h-4 mr-2" />
                   {t('forum.copyLink')}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Flag className="w-4 h-4 mr-2" />
-                  {t('forum.reportPost')}
+                <DropdownMenuItem asChild>
+                  <Link to={`/contact?subject=${encodeURIComponent(`Report forum post: ${post.title} (${post.id})`)}`}>
+                    <Flag className="w-4 h-4 mr-2" />
+                    {t('forum.reportPost')}
+                  </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
                   <>

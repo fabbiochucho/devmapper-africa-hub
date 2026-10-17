@@ -120,7 +120,7 @@ const Guidelines = () => {
       title: "Reporting & Moderation",
       description: "How to report issues and what to expect from moderation",
       rules: [
-        "Report violations using the Report button on any content, reports are reviewed within 48 hours",
+        "Report violations with Report post in the forum menu, or for any other content through the Contact page with a link to it; we aim to review reports within 48 hours",
         "Provide specific details about the policy violation including timestamps and evidence",
         "Don't engage in arguments — let moderators handle disputes professionally",
         "Appeals can be submitted through the Support Center within 14 days of any moderation action",

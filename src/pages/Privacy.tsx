@@ -4,7 +4,7 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { DPO_CLAUSE, DPO_EMAIL } from '@/lib/dpo';
 
 // Last substantive revision of this policy. Update when the text changes.
-export const PRIVACY_EFFECTIVE_DATE = '15 October 2026';
+export const PRIVACY_EFFECTIVE_DATE = '17 October 2026';
 
 const Mail = () => (
   <a href={`mailto:${DPO_EMAIL}`} className="font-medium text-primary underline-offset-2 hover:underline">
@@ -71,7 +71,9 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          Content you publish (reports, public profiles, forum posts, change-maker pages) is visible to everyone.
+          Content you publish (reports, forum posts, change-maker pages) is visible to everyone. Every account has a
+          public profile showing your name, photo, organisation and country (the last two only if you fill them in),
+          so other users can see who posted or published something.
           Private content is visible only to you, the people you share it with, and platform administrators where
           needed for verification, support, security or legal compliance. We do not sell personal data.
         </p>
@@ -86,7 +88,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>Resend</td><td>Sending email</td><td>Email address, email content</td></tr>
             <tr><td>hCaptcha (Intuition Machines)</td><td>Bot protection at sign-up and sign-in</td><td>Browser and device signals, IP address</td></tr>
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
-            <tr><td>Google Fonts</td><td>Web fonts</td><td>IP address</td></tr>
+            <tr><td>Flagpedia (flagcdn.com)</td><td>Country flag images</td><td>IP address</td></tr>
+            <tr><td>GeoJS</td><td>Approximate country for currency suggestions on fundraising pages</td><td>IP address (not stored)</td></tr>
           </tbody>
         </table></div>
         <p>

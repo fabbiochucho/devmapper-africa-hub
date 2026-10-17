@@ -73,21 +73,21 @@ export default function ImpactMetricsSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('impact.title')}</h2>
-          <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">{t('impact.subtitle')}</p>
+          <p className="text-primary-foreground text-lg max-w-2xl mx-auto">{t('impact.subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {metrics.map((metric, index) => (
             <Card 
               key={index} 
-              className="bg-primary-foreground/10 border-primary-foreground/20 text-center hover:bg-primary-foreground/15 transition-all duration-300 hover:scale-105"
+              className="bg-primary-foreground/5 border-primary-foreground/20 text-primary-foreground text-center hover:bg-primary-foreground/10 transition-all duration-300 hover:scale-105"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardContent className="p-6">
                 <metric.icon className="h-8 w-8 mx-auto mb-3 text-primary-foreground/80" aria-hidden="true" />
                 <div className="text-3xl font-bold mb-1 tabular-nums">{metric.value}</div>
                 <div className="font-medium text-sm mb-1">{metric.label}</div>
-                <div className="text-xs text-primary-foreground/60">{metric.description}</div>
+                <div className="text-xs text-primary-foreground">{metric.description}</div>
               </CardContent>
             </Card>
           ))}

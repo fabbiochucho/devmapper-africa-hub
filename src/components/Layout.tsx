@@ -212,6 +212,9 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex flex-col bg-background">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:shadow-lg focus:ring-2 focus:ring-ring">
+          Skip to main content
+        </a>
         <LanguagePromptBanner />
         <LayoutHeader
           user={user}
@@ -230,11 +233,11 @@ const Layout = () => {
               <header className="flex justify-between items-center mb-4 gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger />
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(-1)} aria-label="Go back">
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                    <Link to="/">
+                    <Link to="/" aria-label="Home">
                       <Home className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -245,11 +248,12 @@ const Layout = () => {
                   size="icon"
                   className="h-8 w-8 sm:hidden"
                   onClick={handleSearchOpen}
+                  aria-label="Search"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
               </header>
-              <div className="flex-grow overflow-auto">
+              <div id="main-content" tabIndex={-1} className="flex-grow overflow-auto focus:outline-none">
                 <Outlet />
               </div>
             </main>

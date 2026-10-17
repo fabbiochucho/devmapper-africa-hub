@@ -13,9 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signUp: (email: string, password: string, fullName?: string, role?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
-  signInWithGithub: () => Promise<{ error: AuthError | null }>;
-  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  resetPassword: (email: string, captchaToken?: string) => Promise<{ error: AuthError | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | PostgrestError | null }>;
   hasRole: (role: string) => boolean;
@@ -171,27 +169,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     else toast.success('Signed out successfully!');
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/` }
-    });
-    if (error) toast.error(error.message);
-    return { error };
-  }, []);
-
-  const signInWithGithub = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: `${window.location.origin}/` }
-    });
-    if (error) toast.error(error.message);
-    return { error };
-  }, []);
-
-  const resetPassword = useCallback(async (email: string) => {
+  const resetPassword = useCallback(async (email: string, captchaToken?: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth?mode=reset`
+      redirectTo: `${window.location.origin}/auth?mode=reset`,
+      captchaToken,
     });
     if (error) toast.error(error.message);
     else toast.success('Password reset email sent! Check your inbox.');
@@ -229,11 +210,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo<AuthContextType>(() => ({
     user, session, profile, userRoles, loading,
-    signIn, signUp, signOut, signInWithGoogle, signInWithGithub,
+    signIn, signUp, signOut,
     resetPassword, updatePassword, updateProfile, hasRole, isAdmin, refreshProfile
   }), [
     user, session, profile, userRoles, loading,
-    signIn, signUp, signOut, signInWithGoogle, signInWithGithub,
+    signIn, signUp, signOut,
     resetPassword, updatePassword, updateProfile, hasRole, isAdmin, refreshProfile
   ]);
 

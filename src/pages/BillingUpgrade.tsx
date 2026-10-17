@@ -206,6 +206,10 @@ const BillingUpgrade = () => {
             </Button>
           ))}
         </div>
+        <p className="text-center text-sm text-muted-foreground -mt-6 mb-10">
+          One payment for the period you choose. Plans don't renew automatically, so you're never charged again
+          without paying again. When the period ends you return to the free plan.
+        </p>
 
         {/* Plan Cards */}
         <div className={`grid gap-8 ${plansToShow.length === 1 ? 'max-w-md mx-auto' : 'md:grid-cols-2'}`}>

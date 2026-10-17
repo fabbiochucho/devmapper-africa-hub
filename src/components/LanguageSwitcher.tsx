@@ -15,7 +15,7 @@ export default function LanguageSwitcher() {
 
   return (
     <Select value={i18n.language?.split('-')[0] || 'en'} onValueChange={(val) => i18n.changeLanguage(val)}>
-      <SelectTrigger className="w-auto gap-1 h-8 text-xs border-input">
+      <SelectTrigger aria-label="Language" className="w-auto gap-1 h-8 text-xs border-input">
         <Globe className="h-3.5 w-3.5" />
         <SelectValue />
       </SelectTrigger>
