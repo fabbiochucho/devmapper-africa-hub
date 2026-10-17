@@ -51,7 +51,7 @@ export function useAnalytics() {
     } catch (error) {
       console.error('Analytics tracking error:', error);
     }
-  }, [user?.id]);
+  }, [user]);
 
   // Queue event with debounced flush
   const queueEvent = useCallback((event: AnalyticsEvent) => {

@@ -13,6 +13,9 @@ Read these before changing anything. They hold the launch-readiness decisions th
 - No analytics, ad pixels or session replay. If that changes, the vendor needs consent handling first.
 - Sentry (`src/lib/sentry.ts`) reports errors only: no replay, tracing, user info, cookies, headers, bodies or query strings. Keep it that way, or update the privacy policy.
 - Email is sent only from `devmapper.africa` addresses, the domain verified in Resend.
+- Production builds carry a Content Security Policy (`CSP` in `vite.config.ts`). A new outside service the browser talks to (script, API, iframe, WebSocket) must be added there too, or it's silently blocked on the live site only. Test with a production build: `npm run build`, then serve `dist` as devmapper.africa.
+- `src/main.tsx` refuses to render inside another site's frame on devmapper.africa (Lovable can't send X-Frame-Options).
+- Lovable injects its own scripts into the published site (`/~flock.js`, `/__l5e/events…js`, which can do session replay if Lovable switches it on). They're same-origin, so the CSP allows them. If Lovable ever enables replay, the privacy policy must change first.
 
 ## Promises the UI makes
 - Don't describe features that don't exist (the old API docs did). Docs, Guidelines and Terms must match the code.

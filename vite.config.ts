@@ -3,13 +3,46 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+// Content Security Policy for production builds. Lovable hosting can't send response
+// headers, so it goes in a <meta> tag (which can't express frame-ancestors; main.tsx
+// guards against framing instead). Not applied to the dev server: Vite's dev client
+// needs an inline script, and the Lovable editor preview runs on it.
+// Adding an outside service? Add its origin here and to the privacy policy.
+const CSP = [
+  "default-src 'self'",
+  // The hash is next-themes' inline theme script, which prerendered pages contain.
+  // ponytail: if next-themes changes that script, the hash goes stale and dark-mode users see a
+  // brief flash on prerendered pages; recompute it from dist/*/index.html.
+  "script-src 'self' https://challenges.cloudflare.com 'sha256-eMuh8xiwcX72rRYNAGENurQBAcH7kLlAUQcoOri3BIo='",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://ptfrzwsivtetvmdotfui.supabase.co wss://ptfrzwsivtetvmdotfui.supabase.co https://*.ingest.de.sentry.io https://tile.openstreetmap.org https://nominatim.openstreetmap.org https://api.pwnedpasswords.com https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com",
+  "worker-src 'self' blob:",
+  "child-src 'self' blob:",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+
+const cspMeta = {
+  name: "csp-meta",
+  apply: "build" as const,
+  transformIndexHtml: (html: string) =>
+    html.replace("<head>", `<head>
+    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`),
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [react(), cspMeta, mode === "development" && componentTagger()].filter(Boolean),
   // Prevent duplicate instances of React / React Router that can break context
   optimizeDeps: {
     include: [
