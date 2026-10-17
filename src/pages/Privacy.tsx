@@ -86,7 +86,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>Google (Gemini), OpenAI</td><td>AI models behind AI features and search</td><td>Text and documents you submit to those features; search queries</td></tr>
             <tr><td>Paystack, Flutterwave</td><td>Payment processing</td><td>Name, email, amount, payment details you enter on their checkout</td></tr>
             <tr><td>Resend</td><td>Sending email</td><td>Email address, email content</td></tr>
-            <tr><td>hCaptcha (Intuition Machines)</td><td>Bot protection at sign-up and sign-in</td><td>Browser and device signals, IP address</td></tr>
+            <tr><td>Cloudflare (Turnstile)</td><td>Bot protection at sign-up, sign-in and password reset</td><td>Browser and device signals, IP address</td></tr>
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
             <tr><td>Flagpedia (flagcdn.com)</td><td>Country flag images</td><td>IP address</td></tr>
             <tr><td>GeoJS</td><td>Approximate country for currency suggestions on fundraising pages</td><td>IP address (not stored)</td></tr>
@@ -150,7 +150,6 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <thead><tr><th>Name</th><th>Purpose</th><th>Type</th><th>Duration</th></tr></thead>
           <tbody>
             <tr><td><code>sb-…-auth-token</code></td><td>Keeps you signed in</td><td>Strictly necessary (browser storage)</td><td>Until you sign out</td></tr>
-            <tr><td>hCaptcha cookies</td><td>Bot protection on sign-up and sign-in</td><td>Strictly necessary (set by hCaptcha)</td><td>Set by hCaptcha</td></tr>
             <tr><td><code>sidebar:state</code></td><td>Remembers whether the sidebar is open</td><td>Functional cookie</td><td>7 days</td></tr>
             <tr><td><code>i18nextLng</code></td><td>Remembers your language</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>
             <tr><td><code>onboarding_shown</code>, <code>devmapper_profile_prompt_dismissed</code></td><td>Stops the welcome tour and profile prompt reappearing</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>

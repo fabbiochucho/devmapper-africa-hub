@@ -3,6 +3,7 @@ import { User, Session, AuthError, PostgrestError } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { UserProfile } from '@/lib/types';
+import { TERMS_EFFECTIVE_DATE } from '@/pages/Terms';
 
 interface AuthContextType {
   user: User | null;
@@ -10,8 +11,8 @@ interface AuthContextType {
   profile: UserProfile | null;
   userRoles: string[];
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-  signUp: (email: string, password: string, fullName?: string, role?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, fullName?: string, role?: string, captchaToken?: string) => Promise<{ error: AuthError | null; data?: { user: User | null; session: Session | null } }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string, captchaToken?: string) => Promise<{ error: AuthError | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
@@ -139,16 +140,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchProfile]);
 
-  const signUp = useCallback(async (email: string, password: string, fullName?: string, role?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName?: string, role?: string, captchaToken?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const metadata: Record<string, string> = {};
+    // Record which terms the user accepted ("By signing up you agree to..." on the form).
+    const metadata: Record<string, string> = { terms_version: TERMS_EFFECTIVE_DATE, terms_accepted_at: new Date().toISOString() };
     if (fullName) metadata.full_name = fullName;
     if (role) metadata.selected_role = role;
     const { error, data } = await supabase.auth.signUp({
       email, password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: Object.keys(metadata).length ? metadata : undefined
+        data: metadata,
+        captchaToken,
       }
     });
     if (error) toast.error(error.message);
@@ -156,8 +159,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error, data };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const signIn = useCallback(async (email: string, password: string, captchaToken?: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
     if (error) toast.error(error.message);
     else toast.success('Signed in successfully!');
     return { error };
