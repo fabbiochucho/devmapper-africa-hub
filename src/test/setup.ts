@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import i18n from "@/i18n/config";
 
 // Components render through react-i18next; without the real config every t() call

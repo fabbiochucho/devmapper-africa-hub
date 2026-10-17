@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -2644,7 +2644,22 @@ export type Database = {
           step_type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investigation_steps_ai_session_id_fkey"
+            columns: ["ai_session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investigation_steps_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lca_assessments: {
         Row: {
@@ -4432,7 +4447,15 @@ export type Database = {
           title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sbti_pathways: {
         Row: {
@@ -5405,6 +5428,7 @@ export type Database = {
       }
     }
     Functions: {
+      _effective_plan: { Args: { p_user_id: string }; Returns: string }
       assign_test_role: {
         Args: {
           p_country?: string
@@ -5438,12 +5462,7 @@ export type Database = {
         }
         Returns: string
       }
-      effective_plan: {
-        Args: {
-          p_user_id?: string
-        }
-        Returns: string
-      }
+      effective_plan: { Args: { p_user_id?: string }; Returns: string }
       entities_missing_embeddings: {
         Args: { p_limit?: number }
         Returns: {
@@ -5452,24 +5471,12 @@ export type Database = {
         }[]
       }
       entity_label: {
-        Args: {
-          p_id: string
-          p_type: string
-        }
-        Returns: {
-          path: string
-          title: string
-        }[]
+        Args: { p_id: string; p_type: string }
+        Returns: Record<string, unknown>
       }
-      entity_types: {
-        Args: never
-        Returns: string[]
-      }
+      entity_types: { Args: never; Returns: string[] }
       entity_visible: {
-        Args: {
-          p_id: string
-          p_type: string
-        }
+        Args: { p_id: string; p_type: string }
         Returns: boolean
       }
       evaluate_user_badges: { Args: { p_user_id: string }; Returns: undefined }
@@ -5519,23 +5526,8 @@ export type Database = {
         }[]
       }
       get_effective_plan: { Args: { p_org_id: string }; Returns: string }
-      get_government_budget_analytics: {
-        Args: { p_user_id: string }
-        Returns: {
-          avg_completion: number
-          project_count: number
-          sdg_goal: number
-          sdg_label: string
-          total_budget: number
-          total_spent: number
-        }[]
-      }
       get_entity_links: {
-        Args: {
-          p_id: string
-          p_limit?: number
-          p_type: string
-        }
+        Args: { p_id: string; p_limit?: number; p_type: string }
         Returns: {
           confidence: number
           direction: string
@@ -5547,6 +5539,17 @@ export type Database = {
           relation: string
           source: string
           source_ref: string
+        }[]
+      }
+      get_government_budget_analytics: {
+        Args: { p_user_id: string }
+        Returns: {
+          avg_completion: number
+          project_count: number
+          sdg_goal: number
+          sdg_label: string
+          total_budget: number
+          total_spent: number
         }[]
       }
       get_most_improved_countries: {
@@ -5606,6 +5609,7 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: { Args: { target_user_id: string }; Returns: boolean }
+      iso3: { Args: { code: string }; Returns: string }
       list_users_by_role: {
         Args: { p_role: Database["public"]["Enums"]["app_role"] }
         Returns: {
@@ -5613,12 +5617,6 @@ export type Database = {
           organization: string
           user_id: string
         }[]
-      }
-      iso3: {
-        Args: {
-          code: string
-        }
-        Returns: string
       }
       log_audit_event: {
         Args: {
@@ -5664,16 +5662,8 @@ export type Database = {
           title: string
         }[]
       }
-      notify_watch_updates: {
-        Args: never
-        Returns: number
-      }
-      plan_rank: {
-        Args: {
-          p: string
-        }
-        Returns: number
-      }
+      notify_watch_updates: { Args: never; Returns: number }
+      plan_rank: { Args: { p: string }; Returns: number }
       record_provider_health: {
         Args: {
           p_error_message?: string
@@ -5694,14 +5684,11 @@ export type Database = {
         Returns: string
       }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
+      refresh_derived_links: { Args: never; Returns: number }
       reset_monthly_quotas: { Args: never; Returns: undefined }
       retire_carbon_credit_order: {
         Args: { p_order_id: string }
         Returns: undefined
-      }
-      refresh_derived_links: {
-        Args: never
-        Returns: number
       }
       search_entities: {
         Args: {
@@ -5735,7 +5722,13 @@ export type Database = {
         | "change_maker"
         | "citizen_reporter"
         | "funder"
-      plan_type: "free" | "lite" | "individual" | "pro" | "advanced" | "enterprise"
+      plan_type:
+        | "free"
+        | "lite"
+        | "individual"
+        | "pro"
+        | "advanced"
+        | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5874,7 +5867,14 @@ export const Constants = {
         "citizen_reporter",
         "funder",
       ],
-      plan_type: ["free", "lite", "individual", "pro", "advanced", "enterprise"],
+      plan_type: [
+        "free",
+        "lite",
+        "individual",
+        "pro",
+        "advanced",
+        "enterprise",
+      ],
     },
   },
 } as const

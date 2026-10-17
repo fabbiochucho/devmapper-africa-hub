@@ -17,7 +17,7 @@ export function useAnalytics() {
   const { user } = useAuth();
   const lastTrackedUrl = useRef<string | null>(null);
   const eventQueue = useRef<AnalyticsEvent[]>([]);
-  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const flushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Batched event flush - sends events in batches for efficiency
   const flushEvents = useCallback(async () => {

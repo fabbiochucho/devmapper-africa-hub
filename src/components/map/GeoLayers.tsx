@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import maplibregl, { type ExpressionSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import type { ExpressionSpecification } from 'maplibre-gl';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
