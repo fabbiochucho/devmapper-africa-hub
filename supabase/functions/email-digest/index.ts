@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { isTestAccountEmail } from "../_shared/testAccounts.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -121,7 +122,7 @@ serve(async (req) => {
       const hasContent = (broadcasts?.length || 0) > 0 || unreadMessages > 0 || (verificationUpdates?.length || 0) > 0
         || (notifications?.length || 0) > 0;
       
-      if (hasContent && profile.email) {
+      if (hasContent && profile.email && !isTestAccountEmail(profile.email)) {
         digests.push({
           user_id: profile.user_id,
           email: profile.email,
