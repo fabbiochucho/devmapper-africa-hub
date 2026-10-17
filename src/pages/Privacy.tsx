@@ -84,7 +84,6 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>Supabase</td><td>Database, sign-in, file storage, server functions</td><td>All account and platform data</td></tr>
             <tr><td>Lovable (with Cloudflare)</td><td>Website hosting and delivery; AI gateway</td><td>Requests to the site; text sent to AI features</td></tr>
             <tr><td>Google (Gemini), OpenAI</td><td>AI models behind AI features and search</td><td>Text and documents you submit to those features; search queries</td></tr>
-            <tr><td>Paystack, Flutterwave</td><td>Payment processing</td><td>Name, email, amount, payment details you enter on their checkout</td></tr>
             <tr><td>Resend</td><td>Sending email</td><td>Email address, email content</td></tr>
             <tr><td>Cloudflare (Turnstile)</td><td>Bot protection at sign-up, sign-in and password reset</td><td>Browser and device signals, IP address</td></tr>
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
@@ -92,6 +91,13 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>GeoJS</td><td>Approximate country for currency suggestions on fundraising pages</td><td>IP address (not stored)</td></tr>
           </tbody>
         </table></div>
+        <p>
+          Payments are handled by Paystack and Flutterwave. They receive your name, email, the amount and the
+          payment details you enter on their checkout, and process them as independent controllers under their own
+          privacy policies (<a href="https://paystack.com/terms#privacy" className="text-primary underline underline-offset-2">Paystack</a>,{' '}
+          <a href="https://flutterwave.com/us/privacy-notice" className="text-primary underline underline-offset-2">Flutterwave</a>),
+          because financial regulation requires them to decide how payment data is checked and kept.
+        </p>
         <p>
           Satellite and open-data sources (Google Earth Engine, World Bank, IATI, Climate TRACE, Open-Meteo and
           others) receive only map areas and search terms, never your personal data.
