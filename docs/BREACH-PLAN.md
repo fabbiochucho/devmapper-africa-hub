@@ -5,10 +5,10 @@ One page for the day personal data leaks, is changed or is lost. A breach includ
 ## Who decides
 | Role | Person | Contact |
 |---|---|---|
-| Decides and signs off notices | _TODO: name_ | _TODO_ |
+| Decides and signs off notices | Abiola Oshunniyi | devmapperafrica@becomechange.institute |
 | Data Protection Officer | see `src/lib/dpo.ts` | dpo email in `src/lib/dpo.ts` |
-| Technical lead (containment) | _TODO: name_ | _TODO_ |
-| Lawyer to call | _TODO: name, firm_ | _TODO: phone_ |
+| Technical lead (containment) | Abiola Oshunniyi | devmapperafrica@becomechange.institute |
+| Lawyer to call | _TODO: none yet, ideally a Nigerian data-protection lawyer_ | _TODO_ |
 
 ## First hour: contain
 1. Stop the leak: fix or drop the policy, disable the function (`supabase functions delete` or redeploy), or pause the project.
@@ -29,3 +29,5 @@ Each notice says what happened, what data and roughly how many people are affect
 - Record every breach, including ones that didn't need notifying: date, what happened, data affected, decision and reasons.
 - Fix the cause and add a check (test, CI step or policy review) so it can't happen again silently.
 - Update the privacy policy if the breach revealed a data flow it doesn't describe.
+
+Vendor contracts (who must tell us about a breach on their side): see `docs/DPA-REGISTER.md`.
