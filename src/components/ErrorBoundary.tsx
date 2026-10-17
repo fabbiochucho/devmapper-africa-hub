@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { captureError } from '@/lib/sentry';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Report error to analytics_events for monitoring
     this.reportError(error, errorInfo);
+    captureError(error);
   }
 
   private async reportError(error: Error, errorInfo: ErrorInfo) {

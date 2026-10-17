@@ -11,6 +11,7 @@ Read these before changing anything. They hold the launch-readiness decisions th
 ## Vendors and the privacy policy
 - `src/pages/Privacy.tsx` lists every service that receives personal data, including the visitor's IP. When you add or remove a script, SDK, font, map or image CDN, AI provider or email sender, update that table and `PRIVACY_EFFECTIVE_DATE` in the same change.
 - No analytics, ad pixels or session replay. If that changes, the vendor needs consent handling first.
+- Sentry (`src/lib/sentry.ts`) reports errors only: no replay, tracing, user info, cookies, headers, bodies or query strings. Keep it that way, or update the privacy policy.
 - Email is sent only from `devmapper.africa` addresses, the domain verified in Resend.
 
 ## Promises the UI makes
