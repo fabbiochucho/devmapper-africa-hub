@@ -10,12 +10,14 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 interface DailyActivity { date: string; events: number; }
 interface HourlyActivity { hour: string; events: number; }
 interface TopPage { page: string; views: number; }
+interface CountryViews { country: string; views: number; anonymous: number; }
 interface DeviceBreakdown { name: string; value: number; color: string; }
 
 interface AnalyticsData {
   dailyActivity: DailyActivity[];
   hourlyActivity: HourlyActivity[];
   topPages: TopPage[];
+  topCountries: CountryViews[];
   deviceTypes: DeviceBreakdown[];
   totalEvents: number;
   pageViewCount: number;
@@ -45,7 +47,7 @@ export function AdvancedAnalytics() {
 
       const { data: events, error } = await supabase
         .from('analytics_events')
-        .select('event_type, page_url, user_agent, user_id, created_at')
+        .select('event_type, event_data, page_url, user_agent, user_id, created_at')
         .gte('created_at', sevenDaysAgo.toISOString())
         .order('created_at', { ascending: true });
 
@@ -89,6 +91,22 @@ export function AdvancedAnalytics() {
         .slice(0, 5)
         .map(([page, views]) => ({ page, views }));
 
+      // Page views by country (from track-visit; the IP itself is never stored)
+      const countryMap = new Map<string, CountryViews>();
+      rows.filter(r => r.event_type === 'page_view').forEach(r => {
+        const data = r.event_data as { country?: string | null } | null;
+        const country = data?.country || 'Unknown';
+        const entry = countryMap.get(country) ?? { country, views: 0, anonymous: 0 };
+        entry.views++;
+        if (!r.user_id) entry.anonymous++;
+        countryMap.set(country, entry);
+      });
+      const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+      const topCountries = Array.from(countryMap.values())
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 15)
+        .map(c => ({ ...c, country: c.country === 'Unknown' ? c.country : regionNames.of(c.country) ?? c.country }));
+
       // Device split, parsed from the real user_agent string
       let mobile = 0, tablet = 0, desktop = 0;
       rows.forEach(r => {
@@ -104,13 +122,15 @@ export function AdvancedAnalytics() {
         { name: 'Tablet', value: Math.round((tablet / deviceTotal) * 100), color: '#ffc658' },
       ];
 
-      const uniqueVisitors = new Set(rows.map(r => r.user_id || 'anonymous')).size;
+      // Anonymous visitors carry no identifier, so only signed-in users can be counted uniquely.
+      const uniqueVisitors = new Set(rows.map(r => r.user_id).filter(Boolean)).size;
       const pageViewCount = rows.filter(r => r.event_type === 'page_view').length;
 
       setData({
         dailyActivity,
         hourlyActivity,
         topPages,
+        topCountries,
         deviceTypes,
         totalEvents: rows.length,
         pageViewCount,
@@ -152,7 +172,7 @@ export function AdvancedAnalytics() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Unique Visitors (7d)</p>
+                <p className="text-sm text-muted-foreground">Signed-in Users (7d)</p>
                 <p className="text-2xl font-bold">{data.uniqueVisitors}</p>
               </div>
               <Users className="w-4 h-4 text-green-500" />
@@ -198,10 +218,11 @@ export function AdvancedAnalytics() {
       </div>
 
       <Tabs defaultValue="traffic" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="traffic">Traffic</TabsTrigger>
           <TabsTrigger value="engagement">Engagement</TabsTrigger>
           <TabsTrigger value="pages">Top Pages</TabsTrigger>
+          <TabsTrigger value="countries">Countries</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
         </TabsList>
 
@@ -275,6 +296,42 @@ export function AdvancedAnalytics() {
                       </p>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="countries">
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Views by Country (7d)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.topCountries.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Not enough page-view data yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="py-2 font-medium">Country</th>
+                        <th className="py-2 text-right font-medium">Views</th>
+                        <th className="py-2 text-right font-medium">Signed in</th>
+                        <th className="py-2 text-right font-medium">Anonymous</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.topCountries.map(c => (
+                        <tr key={c.country} className="border-b last:border-0">
+                          <td className="py-2">{c.country}</td>
+                          <td className="py-2 text-right tabular-nums">{c.views.toLocaleString()}</td>
+                          <td className="py-2 text-right tabular-nums">{(c.views - c.anonymous).toLocaleString()}</td>
+                          <td className="py-2 text-right tabular-nums">{c.anonymous.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </CardContent>

@@ -39,6 +39,7 @@ class ErrorBoundary extends Component<Props, State> {
   private async reportError(error: Error, errorInfo: ErrorInfo) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return; // anonymous errors reach Sentry only
       await supabase.from('analytics_events').insert({
         event_type: 'client_error',
         user_id: user?.id || null,
