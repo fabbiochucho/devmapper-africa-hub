@@ -63,7 +63,7 @@ export function useSessionTimeout() {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     
     // Debounced activity tracker
-    let activityTimeout: NodeJS.Timeout | null = null;
+    let activityTimeout: ReturnType<typeof setTimeout> | null = null;
     const handleActivity = () => {
       if (activityTimeout) return;
       activityTimeout = setTimeout(() => {
