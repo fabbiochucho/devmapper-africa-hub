@@ -10,10 +10,22 @@ import { initWebVitals } from './lib/web-vitals';
 import { prefetchCommonRoutes } from './lib/route-prefetch';
 import { initSentry } from './lib/sentry';
 
+// Clickjacking guard. Lovable hosting can't send X-Frame-Options, so on the live domain
+// refuse to render inside another site's frame. Preview domains (the Lovable editor) are
+// left alone.
+const framedOnLiveSite = window.top !== window.self && /(^|\.)devmapper\.africa$/.test(location.hostname);
+
 createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  framedOnLiveSite ? (
+    <p style={{ fontFamily: 'sans-serif', padding: 24 }}>
+      For your security, Dev Mapper can't be shown inside another website.{' '}
+      <a href={location.href} target="_top" rel="noopener">Open devmapper.africa</a>
+    </p>
+  ) : (
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  )
 );
 
 // Register service worker for PWA + push notifications

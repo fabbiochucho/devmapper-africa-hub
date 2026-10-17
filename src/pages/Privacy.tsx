@@ -33,7 +33,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
         <li><b>Content you submit:</b> project reports (including location coordinates, photos and documents), change-maker nominations, forum posts and replies, direct messages, comments, verification evidence, workspace collections and uploaded files.</li>
         <li><b>Donations and payments:</b> amount, currency, an optional message and the payment reference. Card and bank details are entered on Paystack’s or Flutterwave’s own checkout; we never see or store them.</li>
         <li><b>Contact and support:</b> the name, email address and message you send through the contact form, and your browser type.</li>
-        <li><b>Usage data:</b> for every visit, signed in or not: the page viewed (without anything after the “?” in its address), the referring website (its domain only), browser type, approximate country and the time; plus your account ID if you are signed in. It is recorded in our own database to understand how the platform is used. We store no cookie or identifier on your device for this, so anonymous visits can’t be linked together. We do not use advertising trackers or third-party analytics.</li>
+        <li><b>Usage data:</b> for every visit, signed in or not: the page viewed (without anything after the “?” in its address), the referring website (its domain only), browser type, approximate country and the time; plus your account ID if you are signed in. It is recorded in our own database to understand how the platform is used. We store no cookie or identifier on your device for this, so anonymous visits can’t be linked together. We do not use advertising trackers or session recording.</li>
         <li><b>Approximate country:</b> derived from your IP address, for the usage statistics above and to suggest a currency on fundraising pages. The IP address itself is not stored.</li>
       </ul>
     ),
@@ -82,7 +82,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <thead><tr><th>Provider</th><th>Purpose</th><th>Data</th></tr></thead>
           <tbody>
             <tr><td>Supabase</td><td>Database, sign-in, file storage, server functions</td><td>All account and platform data</td></tr>
-            <tr><td>Lovable (with Cloudflare)</td><td>Website hosting and delivery; AI gateway</td><td>Requests to the site; text sent to AI features</td></tr>
+            <tr><td>Lovable (with Cloudflare)</td><td>Website hosting and delivery, including the host’s own page-view and error statistics for the site; AI gateway</td><td>Requests to the site, pages viewed, browser type; text sent to AI features</td></tr>
             <tr><td>Google (Gemini), OpenAI</td><td>AI models behind AI features and search</td><td>Text and documents you submit to those features; search queries</td></tr>
             <tr><td>Resend</td><td>Sending email</td><td>Email address, email content</td></tr>
             <tr><td>Sentry (Functional Software)</td><td>Error monitoring</td><td>Error details, the page address (without query parameters), browser and device type, IP address. No account details, form contents or session recordings</td></tr>
@@ -157,6 +157,8 @@ const sections: { title: string; body: React.ReactNode }[] = [
           <thead><tr><th>Name</th><th>Purpose</th><th>Type</th><th>Duration</th></tr></thead>
           <tbody>
             <tr><td><code>sb-…-auth-token</code></td><td>Keeps you signed in</td><td>Strictly necessary (browser storage)</td><td>Until you sign out</td></tr>
+            <tr><td><code>__cf_bm</code></td><td>Bot protection by Cloudflare, our hosting network</td><td>Strictly necessary (set by Cloudflare)</td><td>30 minutes</td></tr>
+            <tr><td><code>__dpl</code></td><td>Serves you the current version of the site</td><td>Strictly necessary (set by Lovable, our host)</td><td>7 days</td></tr>
             <tr><td><code>sidebar:state</code></td><td>Remembers whether the sidebar is open</td><td>Functional cookie</td><td>7 days</td></tr>
             <tr><td><code>i18nextLng</code></td><td>Remembers your language</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>
             <tr><td><code>onboarding_shown</code>, <code>devmapper_profile_prompt_dismissed</code></td><td>Stops the welcome tour and profile prompt reappearing</td><td>Functional (browser storage)</td><td>Until cleared</td></tr>
