@@ -8,7 +8,7 @@ One page for the day personal data leaks, is changed or is lost. A breach includ
 | Decides and signs off notices | Abiola Oshunniyi | devmapperafrica@becomechange.institute |
 | Data Protection Officer | see `src/lib/dpo.ts` | dpo email in `src/lib/dpo.ts` |
 | Technical lead (containment) | Abiola Oshunniyi | devmapperafrica@becomechange.institute |
-| Lawyer to call | _TODO: none yet, ideally a Nigerian data-protection lawyer_ | _TODO_ |
+| Lawyer to call | Adeola Osuntoki (to confirm) | _TODO: email, phone_ |
 
 ## First hour: contain
 1. Stop the leak: fix or drop the policy, disable the function (`supabase functions delete` or redeploy), or pause the project.

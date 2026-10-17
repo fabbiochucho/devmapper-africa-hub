@@ -8,6 +8,7 @@ import './i18n/config';
 import { registerServiceWorker } from './lib/sw-register';
 import { initWebVitals } from './lib/web-vitals';
 import { prefetchCommonRoutes } from './lib/route-prefetch';
+import { initSentry } from './lib/sentry';
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -23,6 +24,9 @@ if (typeof window !== 'undefined') {
   window.addEventListener('load', () => {
     // Start Web Vitals monitoring
     initWebVitals();
+
+    // Error monitoring (no-op until a Sentry DSN is set)
+    void initSentry();
     
     // Prefetch common routes when idle
     prefetchCommonRoutes();

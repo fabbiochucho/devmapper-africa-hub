@@ -85,6 +85,7 @@ const sections: { title: string; body: React.ReactNode }[] = [
             <tr><td>Lovable (with Cloudflare)</td><td>Website hosting and delivery; AI gateway</td><td>Requests to the site; text sent to AI features</td></tr>
             <tr><td>Google (Gemini), OpenAI</td><td>AI models behind AI features and search</td><td>Text and documents you submit to those features; search queries</td></tr>
             <tr><td>Resend</td><td>Sending email</td><td>Email address, email content</td></tr>
+            <tr><td>Sentry (Functional Software)</td><td>Error monitoring</td><td>Error details, the page address (without query parameters), browser and device type, IP address. No account details, form contents or session recordings</td></tr>
             <tr><td>Cloudflare (Turnstile)</td><td>Bot protection at sign-up, sign-in and password reset</td><td>Browser and device signals, IP address</td></tr>
             <tr><td>OpenStreetMap</td><td>Map tiles and place search</td><td>IP address, map area and search text</td></tr>
             <tr><td>Flagpedia (flagcdn.com)</td><td>Country flag images</td><td>IP address</td></tr>
