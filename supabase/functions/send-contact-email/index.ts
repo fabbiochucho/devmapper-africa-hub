@@ -1,6 +1,7 @@
 // Public contact-form intake. verify_jwt = false; persists to contact_submissions
 // and notifies all admins in-app and, when RESEND_API_KEY is set, by email.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { isTestAccountEmail } from "../_shared/testAccounts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
         .from('profiles')
         .select('email')
         .in('user_id', adminIds);
-      const to = [...new Set((profiles ?? []).map((p: { email: string | null }) => p.email).filter(Boolean))];
+      const to = [...new Set((profiles ?? []).map((p: { email: string | null }) => p.email).filter((e): e is string => !!e && !isTestAccountEmail(e)))];
       if (to.length) {
         const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
