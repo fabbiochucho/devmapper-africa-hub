@@ -1,7 +1,7 @@
 // Error monitoring with Sentry. The DSN is public (it only allows sending events);
 // empty = off. Privacy: no session replay, no tracing, no personal data, and events
 // carry the page path but not query strings, which can hold emails or tokens.
-const SENTRY_DSN = '';
+const SENTRY_DSN: string = 'https://f9232f11b084b861f376734c5e515ae0@o4512262223167488.ingest.de.sentry.io/4512271705964624';
 
 type SentryModule = typeof import('@sentry/react');
 let sentry: SentryModule | null = null;
