@@ -37,7 +37,11 @@ export default defineConfig(({ mode }) => ({
     // Chunk splitting for better caching & smaller initial load
     rollupOptions: {
       output: {
-        manualChunks: {
+        // Vite 8/Rolldown accepts a function, not Rollup's object shorthand.
+        manualChunks(id) {
+          const packagePath = id.replace(/\\/g, '/').split('/node_modules/').pop();
+          if (!packagePath || packagePath === id) return;
+          const chunks: Record<string, string[]> = {
           // Core React ecosystem - changes rarely
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           // Heavy charting library
@@ -62,6 +66,10 @@ export default defineConfig(({ mode }) => ({
           'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
           // i18n
           'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          };
+          return Object.entries(chunks).find(([, packages]) =>
+            packages.some(pkg => packagePath === pkg || packagePath.startsWith(`${pkg}/`))
+          )?.[0];
         },
       },
     },
