@@ -34,6 +34,7 @@ const PUBLIC_ROUTES = [
   "/guidelines",
   "/privacy",
   "/terms",
+  "/accessibility",
   "/support",
   "/resources",
   "/about",

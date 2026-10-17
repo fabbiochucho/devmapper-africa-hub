@@ -7,6 +7,7 @@
   <url><loc>https://devmapper.africa/support</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://devmapper.africa/guidelines</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://devmapper.africa/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://devmapper.africa/accessibility</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://devmapper.africa/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://devmapper.africa/resources</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://devmapper.africa/training</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>

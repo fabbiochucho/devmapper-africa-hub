@@ -85,6 +85,7 @@ export default function PageFooter() {
             </Link>
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
+            <Link to="/accessibility" className="hover:text-foreground transition-colors">Accessibility</Link>
             <Link to="/sdg-overview" className="hover:text-foreground transition-colors">SDG Overview</Link>
             <Link to="/resources" className="hover:text-foreground transition-colors">{t('footer.resources')}</Link>
           </div>

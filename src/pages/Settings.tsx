@@ -162,6 +162,11 @@ const Settings = () => {
                 </div>
               </div>
 
+              <p className="text-sm text-muted-foreground">
+                Your name, photo, organisation and country appear on your public profile, next to anything you post or
+                publish. Leave organisation and country blank if you don't want them shown.
+              </p>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>

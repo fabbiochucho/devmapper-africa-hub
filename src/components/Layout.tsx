@@ -212,6 +212,9 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex flex-col bg-background">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:shadow-lg focus:ring-2 focus:ring-ring">
+          Skip to main content
+        </a>
         <LanguagePromptBanner />
         <LayoutHeader
           user={user}
@@ -250,7 +253,7 @@ const Layout = () => {
                   <Search className="h-4 w-4" />
                 </Button>
               </header>
-              <div className="flex-grow overflow-auto">
+              <div id="main-content" tabIndex={-1} className="flex-grow overflow-auto focus:outline-none">
                 <Outlet />
               </div>
             </main>

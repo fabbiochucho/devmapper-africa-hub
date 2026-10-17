@@ -71,7 +71,9 @@ const sections: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>
-          Content you publish (reports, public profiles, forum posts, change-maker pages) is visible to everyone.
+          Content you publish (reports, forum posts, change-maker pages) is visible to everyone. Every account has a
+          public profile showing your name, photo, organisation and country (the last two only if you fill them in),
+          so other users can see who posted or published something.
           Private content is visible only to you, the people you share it with, and platform administrators where
           needed for verification, support, security or legal compliance. We do not sell personal data.
         </p>
