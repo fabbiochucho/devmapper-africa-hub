@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import MapShell from './MapShell';
 import GeoLayers from './GeoLayers';
 import { supabase } from '@/integrations/supabase/client';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 
 interface Project {
   id: string;

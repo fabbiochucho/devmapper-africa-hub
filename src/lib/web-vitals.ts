@@ -44,7 +44,7 @@ function getRating(name: string, value: number): 'good' | 'needs-improvement' | 
 
 // Batch metrics to reduce API calls
 let metricsQueue: WebVitalMetric[] = [];
-let flushTimeout: NodeJS.Timeout | null = null;
+let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 
 async function flushMetrics() {
   if (metricsQueue.length === 0) return;

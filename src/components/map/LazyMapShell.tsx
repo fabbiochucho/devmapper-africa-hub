@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 
 // Lazy load the MapShell component
 const MapShell = lazy(() => import('./MapShell'));
