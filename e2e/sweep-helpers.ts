@@ -20,10 +20,13 @@ export type TestRole = keyof typeof TEST_ACCOUNTS;
 export async function loginAs(page: Page, role: TestRole, baseURL: string) {
   // Auth.tsx: Tabs defaultValue="signin" is active by default, fields are
   // #signin-email / #signin-password inside that tab's content.
+  // Supabase Auth enforces Cloudflare Turnstile, which a headless browser can't pass, so CI
+  // skips the signed-in tests. Locally they still run (localhost uses Turnstile's test key,
+  // which only works while CAPTCHA is off in the project).
+  test.skip(process.env.E2E_SKIP_AUTH === 'true', 'Signed-in tests skipped: CAPTCHA is enforced or no password');
   if (!TEST_PASSWORD) {
     // GitHub gives Dependabot PRs no Actions secrets; skip the signed-in tests there
     // (CI sets E2E_SKIP_AUTH for those runs) but keep failing loudly everywhere else.
-    test.skip(process.env.E2E_SKIP_AUTH === 'true', 'No test-account password on Dependabot runs');
     throw new Error('E2E_TEST_PASSWORD is not set (Actions secret in CI, .env locally)');
   }
   await page.goto(`${baseURL}/auth`);
