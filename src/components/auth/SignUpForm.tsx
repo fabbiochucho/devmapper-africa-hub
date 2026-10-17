@@ -14,7 +14,7 @@ import RoleSelector from "./RoleSelector";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 import { checkPasswordBreached } from "@/lib/passwordSecurity";
 import type { UserRole } from "@/contexts/UserRoleContext";
-import { HCaptcha } from "./HCaptcha";
+import { Turnstile, CAPTCHA_ENABLED } from "./Turnstile";
 import { UserPlus } from "lucide-react";
 import { TERMS_EFFECTIVE_DATE } from "@/pages/Terms";
 
@@ -27,6 +27,9 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
+  // Turnstile tokens are single-use: get a fresh widget after every failed attempt.
+  const resetCaptcha = () => { setCaptchaToken(null); setCaptchaKey((k) => k + 1); };
   const [selectedRole, setSelectedRole] = useState<UserRole>('citizen_reporter');
   const [isBreached, setIsBreached] = useState(false);
   const [passwordValue, setPasswordValue] = useState('');
@@ -58,7 +61,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
   const handleSignUp = async (values: SignUpFormValues) => {
     // Only require captcha if the site key is configured
-    const captchaEnabled = !!import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+    const captchaEnabled = CAPTCHA_ENABLED;
     if (captchaEnabled && !captchaToken) {
       toast.error("Please complete the CAPTCHA verification");
       return;
@@ -106,7 +109,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
 
       if (error) {
         toast.error(error.message);
-        setCaptchaToken(null); // Reset captcha on error
+        resetCaptcha();
         if (error.message.includes("already registered")) {
           form.setError("email", {
             type: "manual",
@@ -132,7 +135,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
       }
     } catch {
       toast.error("An error occurred during sign up");
-      setCaptchaToken(null); // Reset captcha on error
+      resetCaptcha();
     } finally {
       setIsLoading(false);
     }
@@ -198,9 +201,10 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
           email={watchedEmail} 
         />
         
-        {import.meta.env.VITE_HCAPTCHA_SITE_KEY && (
+        {CAPTCHA_ENABLED && (
           <div className="flex justify-center">
-            <HCaptcha
+            <Turnstile
+              key={captchaKey}
               onVerify={(token) => setCaptchaToken(token)}
               onExpire={() => setCaptchaToken(null)}
               onError={() => {
@@ -214,7 +218,7 @@ const SignUpForm = ({ onAuthSuccess }: SignUpFormProps) => {
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={isLoading || isBreached || (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !captchaToken)}
+          disabled={isLoading || isBreached || (CAPTCHA_ENABLED && !captchaToken)}
         >
           <UserPlus className="mr-2 h-4 w-4" />
           {isLoading ? "Creating account..." : "Sign Up"}

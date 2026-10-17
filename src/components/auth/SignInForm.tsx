@@ -10,7 +10,7 @@ import { signInSchema } from "@/lib/authSchema";
 import { toast } from "sonner";
 import { LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { HCaptcha } from "./HCaptcha";
+import { Turnstile, CAPTCHA_ENABLED } from "./Turnstile";
 
 interface SignInFormProps {
   onAuthSuccess: () => void;
@@ -21,6 +21,9 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
+  // Turnstile tokens are single-use: get a fresh widget after every failed attempt.
+  const resetCaptcha = () => { setCaptchaToken(null); setCaptchaKey((k) => k + 1); };
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -29,7 +32,7 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
 
   const handleSignIn = async (values: SignInFormValues) => {
     // Only require captcha if the site key is configured
-    const captchaEnabled = !!import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+    const captchaEnabled = CAPTCHA_ENABLED;
     if (captchaEnabled && !captchaToken) {
       toast.error("Please complete the CAPTCHA verification");
       return;
@@ -49,14 +52,14 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
           type: "manual",
           message: "Invalid credentials",
         });
-        setCaptchaToken(null); // Reset captcha on error
+        resetCaptcha();
       } else {
         toast.success("Signed in successfully!");
         onAuthSuccess();
       }
     } catch {
       toast.error("An error occurred during sign in");
-      setCaptchaToken(null); // Reset captcha on error
+      resetCaptcha();
     } finally {
       setIsLoading(false);
     }
@@ -91,9 +94,10 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
             </FormItem>
           )}
         />
-        {import.meta.env.VITE_HCAPTCHA_SITE_KEY && (
+        {CAPTCHA_ENABLED && (
           <div className="flex justify-center">
-            <HCaptcha
+            <Turnstile
+              key={captchaKey}
               onVerify={(token) => setCaptchaToken(token)}
               onExpire={() => setCaptchaToken(null)}
               onError={() => {
@@ -106,7 +110,7 @@ const SignInForm = ({ onAuthSuccess }: SignInFormProps) => {
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={isLoading || (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !captchaToken)}
+          disabled={isLoading || (CAPTCHA_ENABLED && !captchaToken)}
         >
           <LogIn className="mr-2 h-4 w-4" /> {isLoading ? "Signing in..." : "Sign In"}
         </Button>

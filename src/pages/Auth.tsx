@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, AlertCircle, Mail } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import RoleSelector from '@/components/auth/RoleSelector';
-import { HCaptcha } from '@/components/auth/HCaptcha';
+import { Turnstile, CAPTCHA_ENABLED } from '@/components/auth/Turnstile';
 import type { UserRole } from '@/contexts/UserRoleContext';
 import { validateEmailForRole } from '@/lib/emailDomainValidation';
 
@@ -28,6 +28,7 @@ const Auth = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetCaptchaToken, setResetCaptchaToken] = useState<string | null>(null);
+  const [resetCaptchaKey, setResetCaptchaKey] = useState(0);
   
   const { signIn, signUp, resetPassword, updatePassword, user } = useAuth();
   const navigate = useNavigate();
@@ -127,13 +128,15 @@ const Auth = () => {
       return;
     }
     
-    if (import.meta.env.VITE_HCAPTCHA_SITE_KEY && !resetCaptchaToken) {
+    if (CAPTCHA_ENABLED && !resetCaptchaToken) {
       setError('Please complete the CAPTCHA verification');
       return;
     }
     setLoading(true);
     const { error } = await resetPassword(email.trim(), resetCaptchaToken ?? undefined);
     setLoading(false);
+    setResetCaptchaToken(null);
+    setResetCaptchaKey((k) => k + 1);
     
     if (error) {
       setError(error.message);
@@ -298,7 +301,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <HCaptcha onVerify={setResetCaptchaToken} onExpire={() => setResetCaptchaToken(null)} onError={() => setResetCaptchaToken(null)} />
+                <Turnstile key={resetCaptchaKey} onVerify={setResetCaptchaToken} onExpire={() => setResetCaptchaToken(null)} onError={() => setResetCaptchaToken(null)} />
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Sending...' : 'Send Reset Link'}
                 </Button>
